@@ -1,3 +1,9 @@
+group("mcu_rom") {
+  deps = [
+    ":mcu.bin(//toolchain:arm-none-eabi-gcc)"
+  ]
+}
+
 arm_shared_flags = [
   "-mcpu=cortex-m0plus",
   "-mthumb",
