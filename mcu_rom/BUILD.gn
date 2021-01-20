@@ -11,7 +11,7 @@ arm_shared_flags = [
   "-g3",
 ]
 
-config("mcu_rom") {
+config("arm_rom") {
   cflags = arm_shared_flags + [
              "-std=c11",
              "-fno-builtin",
@@ -35,5 +35,5 @@ executable("mcu.bin") {
     "crt.s",
     "entry.c",
   ]
-  configs += [ ":mcu_rom" ]
+  configs += [ ":arm_rom" ]
 }
