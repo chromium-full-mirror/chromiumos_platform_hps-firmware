@@ -39,8 +39,12 @@ void entry(void)
 
 	while(1)
 	{
-		GPIOA_ODR |=  GPIOA1;
-		for (int i = 0; i < 500000; i++); // arbitrary delay
+		// Drive LED at 1/10th of full brightness
+		for (int i = 0; i < 50000; i++) {
+			GPIOA_ODR |=  GPIOA1;
+			GPIOA_ODR &= ~GPIOA1;
+			for (int j = 0; j < 10; j++);
+		}
 		GPIOA_ODR &= ~GPIOA1;
 		for (int i = 0; i < 500000; i++); // arbitrary delay
 	}
