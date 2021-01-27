@@ -29,6 +29,7 @@ config("arm_rom") {
               "-nodefaultlibs",
               "-nostartfiles",
               "-Wl,--gc-sections",
+              "-Wl,--print-gc-sections",
               "-Wl,--no-warn-mismatch",
               "-Wl,--build-id=none",
             ]

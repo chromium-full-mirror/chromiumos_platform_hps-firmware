@@ -4,14 +4,15 @@ MEMORY
   RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 8K
 }
 
-/* Define the entry point of the output file. */
-/*ENTRY(entry)*/
-
 /* Define sections. */
 SECTIONS
 {
         .text : {
                 *(.vectors)     /* Vector table */
+                /* crt0 runtime entry code */
+                *crt*(.text)
+                /* Avoid GC on crt0 with -function-sections passed. */
+                KEEP(*crt*(.text))
                 *(.text*)       /* Program code */
                 . = ALIGN(4);
                 *(.rodata*)     /* Read-only data */
