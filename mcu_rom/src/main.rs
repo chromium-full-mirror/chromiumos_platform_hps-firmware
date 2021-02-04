@@ -169,18 +169,23 @@ fn main() -> ! {
     //z[2] = 'C' as u8;
     //flash.write_bytes(addr, &mut z);
 
+    let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
+
     let mut hasher = Hash::new();
     let mut buf:[u8; 16*256] = [0x00; 16*256]; // 4K sector: each page is 256B and each sector is 16 pages.
     hprintln!("read SPI rom sectors..").unwrap();
-    for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
-//    for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
-//        writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
-        flash.read(addr, &mut buf).unwrap(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
-        hasher.update(&buf); // extend hash a sector at a time..
-        led.toggle().unwrap();
-    }
+    let elapsed_us = stopwatch.trace(|| {
+        for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
+//        for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
+//            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
+            flash.read(addr, &mut buf).unwrap(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
+            hasher.update(&buf); // extend hash a sector at a time..
+            led.toggle().unwrap();
+        }
+    });
     writeln!(usart, "spi rom@..={:02X?}\r", buf).unwrap();
     let rom_sha = hasher.finalize();
+    hprintln!("Time elapsed {}us", elapsed_us.0).unwrap();
 
     // $ yes this is test file | head -c 16777216 > uran.rom
     // $ sudo ./flashrom -p dediprog -w uran.rom
