@@ -34,6 +34,7 @@ use hal::{delay::Delay, prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
 use hal::spi;
 use hal::serial::BasicConfig;
+use hal::i2c::Config;
 
 use spi_memory::{prelude::*, series25::Flash};
 use hmac_sha256::*;
@@ -240,6 +241,14 @@ fn main() -> ! {
     } else {
         writeln!(usart, "FPGA wait\r").unwrap();
     }
+
+// MCU_I2C_CAM_xxx
+//    let mut i2c = p.I2C1.i2c(
+//        gpiob.pb7.into_open_drain_output(), // sda
+//        gpiob.pb6.into_open_drain_output(), // scl
+//        Config::new(1.mhz()),
+//        &mut rcc
+//    );
 
     loop {
         led.toggle().unwrap();
