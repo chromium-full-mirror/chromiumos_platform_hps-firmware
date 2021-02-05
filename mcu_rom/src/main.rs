@@ -1,8 +1,20 @@
 #![no_main]
 #![no_std]
 
+
+// pick a panicking behavior
 #[allow(unused)]
-use panic_semihosting as _;
+
+// dev profile: easier to debug panics; can put a breakpoint on `rust_begin_unwind`
+#[cfg(debug_assertions)]
+use panic_halt as _;
+// release profile: minimize the binary size of the application (requires nightly?)
+#[cfg(not(debug_assertions))]
+use panic_abort as _;
+
+// Reports panic messages to the host stderr using semihosting; requires a debugger
+// NOTE to use this you need to uncomment the `panic-semihosting` dependency in Cargo.toml
+// use panic_semihosting as _;
 
 extern crate stm32g0xx_hal as hal;
 use cortex_m::peripheral::Peripherals;
