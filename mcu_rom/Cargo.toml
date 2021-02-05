@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
+cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
 panic-halt = "0.2.0"
 panic-abort = "0.3.2"
 #panic-semihosting = "0.5.6"
