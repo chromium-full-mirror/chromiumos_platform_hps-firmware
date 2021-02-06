@@ -1,0 +1,34 @@
+[package]
+name = "stage1"
+version = "0.1.0"
+authors = ["Edward O'Callaghan <quasisec@google.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "0.7.1"
+cortex-m-rt = "0.6.13"
+cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
+stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
+panic-abort = "0.3.2"
+git-version = "0.3.4"
+
+
+# Optimize all dependencies
+[profile.dev.package."*"]
+opt-level = "z"
+
+[profile.release.package."*"]
+opt-level = "z"
+
+[profile.dev]
+lto = true
+opt-level = "z"
+panic = "abort"
+
+[profile.release]
+debug = true
+lto = true
+opt-level = "z"
+panic = "abort"
