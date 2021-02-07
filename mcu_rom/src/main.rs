@@ -77,6 +77,36 @@ unsafe fn init_boot0_state() {
     BOOT0STATE.assume_init_mut().count = BOOT0STATE.assume_init_ref().count + 1;
 }
 
+#[repr(C,packed(4))]
+pub struct ImageHeader {
+    magic: u32,
+    version: u16,
+    vector_addr: *const u32, // re-interpret
+    git_hash: &'static str,
+    sig: [u8; 64],
+}
+
+extern "C" {
+    #[no_mangle]
+    pub static _slot_start: ImageHeader;
+}
+
+fn loader() {
+    let magic = unsafe{ _slot_start.magic };
+    if magic == 0xC03FEFE {
+        hprintln!("Found stage 1").unwrap();
+        unsafe{
+        hprintln!(" [[stage 1]] >> version={}", _slot_start.version).unwrap();
+        hprintln!(" [[stage 1]] >> should I jmp to vector=0x{:08X?}", _slot_start.vector_addr).unwrap();
+        hprintln!(" [[stage 1]] >> git hash build={}?", _slot_start.git_hash).unwrap();
+        hprintln!(" [[stage 1]] >> sig[0]={}", _slot_start.sig[0]).unwrap();
+        let sp: *const u32 = ((_slot_start.vector_addr as u32)-4) as *const u32;
+        cortex_m::asm::bootload(sp);
+        }
+    } else {
+        hprintln!("Could not find stage 1").unwrap();
+    }
+}
 
 #[entry]
 fn main() -> ! {
@@ -110,6 +140,8 @@ fn main() -> ! {
 
     // the art of implementing a stm32 bootloader in rust.
     hprintln!("{}\n", banner()).unwrap();
+
+    loader();
 
     let mut delay = Delay::syst(cp.SYST, &rcc);
     hprintln!("init USART..").unwrap();
