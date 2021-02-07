@@ -3,16 +3,26 @@
 
 #![feature(alloc_error_handler)]
 
+#[macro_use]
 extern crate alloc;
+
 use alloc_cortex_m::CortexMHeap;
 use core::alloc::Layout;
+use self::alloc::vec;
 
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
 use cortex_m::{asm};
+use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::{entry};
 use cortex_m_semihosting::*;
+
+use hal::{delay::Delay, prelude::*, stm32};
+use hal::spi;
+
+use spi_memory::{prelude::*, series25::Flash};
+use hmac_sha256::*;
 
 use git_version::git_version;
 
@@ -55,6 +65,68 @@ fn main() -> ! {
     // Initialize the allocator BEFORE you use it
     let start = cortex_m_rt::heap_start() as usize;
     unsafe { ALLOCATOR.init(start, HEAP_SIZE) }
+
+    let p = stm32::Peripherals::take().expect("No peripherals");
+
+    // APB bus clocks configured in stage 0. Just inherit system state.
+    let mut rcc = p.RCC.constrain();
+
+    // configure PA1 as o/p
+    let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
+    let mut led = gpioa.pa1.into_push_pull_output();
+    // configure PA4 as o/p
+//    let spi_cs = {
+//        let mut cs = gpioa.pa4.into_open_drain_output();
+//        //cs.set_high().unwrap(); // de-select
+//        cs.set_low().unwrap(); // select
+//        cs
+//    };
+    let mut spi_cs = gpioa.pa4.into_push_pull_output();
+
+    led.set_high().ok();
+
+    let mut spi = p.SPI1.spi(
+        (gpioa.pa5, gpioa.pa6, gpioa.pa7), // (SCK, MISO, MOSI)
+//        spi::MODE_0, // CPOL = 0, CPHA = 0
+        spi::MODE_3, // Mode 3: CPOL = 1, (SCK=1 in idle), CPHA = 1
+        1.mhz(),
+        &mut rcc,
+    );
+    hprintln!("SPI up!, attempt to init SPI rom..").ok();
+
+    let cp = Peripherals::take().expect("No peripherals");
+    let mut delay = Delay::syst(cp.SYST, &rcc);
+    delay.delay(20.ms()); // wait for SPI to quiesce.
+
+    let mut flash = Flash::init(spi, spi_cs).expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
+    hprintln!("attempt to query SPI rom..").ok();
+    let jedec_id = flash.read_jedec_id(); // expect Identification([c8, 60, 18])
+    match jedec_id {
+        Ok(id) => {
+            if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
+                hprintln!("Found GigaDevice GD25LQ128C/D !\r").ok();
+            }
+        },
+        Err(..) => {},
+    }
+
+    let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
+
+    let mut hasher = Hash::new();
+//    let mut buf = vec![0; 16*256];
+    let mut buf:[u8; 16*256] = [0x00; 16*256]; // 4K sector: each page is 256B and each sector is 16 pages.
+    let elapsed_us = stopwatch.trace(|| {
+        for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
+//        for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
+//            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
+            flash.read(addr, &mut buf).ok(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
+//            hasher.update(&buf); // extend hash a sector at a time..
+            led.toggle().unwrap();
+        }
+    });
+//    hprintln!("spi rom@..={:02X?}\r", buf).unwrap();
+//    let rom_sha = hasher.finalize();
+//    hprintln!("Time elapsed {}us", elapsed_us.0).unwrap();
 
     loop {}
 }

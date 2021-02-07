@@ -27,12 +27,8 @@ use cortex_m_semihosting::*;//hio;
 
 use hal::{delay::Delay, prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
-use hal::spi;
 use hal::serial::BasicConfig;
 use hal::i2c::Config;
-
-use spi_memory::{prelude::*, series25::Flash};
-use hmac_sha256::*;
 
 
 use core::mem::MaybeUninit;
@@ -113,8 +109,6 @@ fn main() -> ! {
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
     let mut led = gpioa.pa1.into_push_pull_output();
-    // configure PA4 as o/p
-    let spi_cs = gpioa.pa4.into_open_drain_output();
     // configure PB4 as o/p
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
@@ -154,76 +148,8 @@ fn main() -> ! {
         writeln!(usart, "FPGA wait\r").unwrap();
     }
 
-    let mut spi = p.SPI1.spi(
-        (gpioa.pa5, gpioa.pa6, gpioa.pa7), // (SCK, MISO, MOSI)
-//        spi::MODE_0, // CPOL = 0, CPHA = 0
-        spi::MODE_3, // Mode 3: CPOL = 1, (SCK=1 in idle), CPHA = 1
-        4.mhz(),
-        &mut rcc,
-    );
-    hprintln!("SPI up!, attempt to init SPI rom..").unwrap();
-
-    delay.delay(20.ms()); // wait for SPI to quiesce.
-    // XXX Here we don't expect any writes to be in progress, and the latch must also be deasserted.
-    // strap WP and HOLD lines correctly or WEL wont be 0? - HOLD looks like highZ???
-    // things that can cause BUSY bit to be set??
-    let mut flash = Flash::init(spi, spi_cs).expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
-    hprintln!("attempt to query SPI rom..").unwrap();
-    let jedec_id = flash.read_jedec_id(); // expect Identification([c8, 60, 18])
-    match jedec_id {
-        Ok(id) => {
-            if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
-                writeln!(usart, "Found GigaDevice GD25LQ128C/D !\r").unwrap();
-            }
-        },
-        Err(..) => {},
-    }
-
-    //flash.erase_all();
-
-    //let addr = 0x0000AA; // 24bit start addr.
-    //let mut z:[u8; 12] = [0x00; 12];
-    //z[0] = 'A' as u8;
-    //z[1] = 'B' as u8;
-    //z[2] = 'C' as u8;
-    //flash.write_bytes(addr, &mut z);
 
     let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
-
-    let mut hasher = Hash::new();
-    let mut buf:[u8; 16*256] = [0x00; 16*256]; // 4K sector: each page is 256B and each sector is 16 pages.
-    hprintln!("read SPI rom sectors..").unwrap();
-    let elapsed_us = stopwatch.trace(|| {
-        for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
-//        for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
-//            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
-            flash.read(addr, &mut buf).unwrap(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
-            hasher.update(&buf); // extend hash a sector at a time..
-            led.toggle().unwrap();
-        }
-    });
-    writeln!(usart, "spi rom@..={:02X?}\r", buf).unwrap();
-    let rom_sha = hasher.finalize();
-    hprintln!("Time elapsed {}us", elapsed_us.0).unwrap();
-
-    // $ yes this is test file | head -c 16777216 > uran.rom
-    // $ sudo ./flashrom -p dediprog -w uran.rom
-    let valid_rom = [
-        0xE7, 0xBB, 0xCC, 0x0B, 0x5E, 0x68, 0x3A, 0x16,
-        0xD1, 0x5A, 0x25, 0xB0, 0xA0, 0x42, 0xA8, 0xDD,
-        0xB2, 0xD4, 0xB1, 0x81, 0x1A, 0xD4, 0x47, 0xB9,
-        0xF6, 0x7E, 0x94, 0x0B, 0x94, 0x82, 0x3E, 0x26
-    ];
-
-    if rom_sha != valid_rom {
-        writeln!(usart, "INVALID hash!!!\r").unwrap();
-        writeln!(usart, "  FOUND => rom hash={:02X?}\r", rom_sha).unwrap();
-        writeln!(usart, "  starting FPGA anyway because security is annoying..\r").unwrap();
-    } else {
-        writeln!(usart, "FOUND VALID hash!!!\r").unwrap();
-        writeln!(usart, "  FOUND => rom hash={:02X?}\r", rom_sha).unwrap();
-        writeln!(usart, "  starting secure FPGA bitstream..\r").unwrap();
-    }
 
     led.set_high().unwrap();
     writeln!(usart, "continue? [Y]\r").unwrap();

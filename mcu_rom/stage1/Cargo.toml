@@ -14,6 +14,8 @@ stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
 panic-abort = "0.3.2"
 git-version = "0.3.4"
 alloc-cortex-m = "0.4.1"
+spi-memory = "0.2.0"
+hmac-sha256 = "0.1.6"
 
 
 # Optimize all dependencies
