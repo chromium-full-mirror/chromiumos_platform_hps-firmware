@@ -13,6 +13,7 @@ cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
 stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
 panic-abort = "0.3.2"
 git-version = "0.3.4"
+alloc-cortex-m = "0.4.1"
 
 
 # Optimize all dependencies

@@ -2,12 +2,7 @@
 #![no_std]
 
 #![feature(maybe_uninit_ref)]
-#![feature(alloc_error_handler)]
 
-extern crate alloc;
-use alloc_cortex_m::CortexMHeap;
-
-use core::alloc::Layout;
 use core::fmt::Write;
 
 // pick a panicking behavior
@@ -38,10 +33,6 @@ use hal::i2c::Config;
 
 use spi_memory::{prelude::*, series25::Flash};
 use hmac_sha256::*;
-
-
-#[global_allocator]
-static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 
 use core::mem::MaybeUninit;
@@ -110,11 +101,6 @@ fn loader() {
 
 #[entry]
 fn main() -> ! {
-    // Initialize the allocator BEFORE you use it
-    let start = cortex_m_rt::heap_start() as usize;
-    let size = 2048; // in bytes
-    unsafe { ALLOCATOR.init(start, size) }
-
     let p = stm32::Peripherals::take().expect("No peripherals");
     let cp = Peripherals::take().expect("No peripherals");
 
@@ -294,12 +280,6 @@ fn HardFault(ef: &ExceptionFrame) -> ! {
         writeln!(hstdout, "{:#?}", ef).ok();
     }
 
-    loop {}
-}
-
-#[alloc_error_handler]
-fn oom(_: Layout) -> ! {
-    asm::bkpt();
     loop {}
 }
 

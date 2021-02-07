@@ -1,9 +1,16 @@
 #![no_main]
 #![no_std]
 
+#![feature(alloc_error_handler)]
+
+extern crate alloc;
+use alloc_cortex_m::CortexMHeap;
+use core::alloc::Layout;
+
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
+use cortex_m::{asm};
 use cortex_m_rt::{entry};
 use cortex_m_semihosting::*;
 
@@ -33,10 +40,27 @@ pub static __IMAGE_HDR: ImageHeader = ImageHeader{
 };
 
 
+#[global_allocator]
+static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
+
+const HEAP_SIZE: usize = 2048; // in bytes
+
+
 #[entry]
 fn main() -> ! {
     unsafe{
         hprintln!("booting stage1 {:?}", __IMAGE_HDR.git_hash).unwrap();
     }
+
+    // Initialize the allocator BEFORE you use it
+    let start = cortex_m_rt::heap_start() as usize;
+    unsafe { ALLOCATOR.init(start, HEAP_SIZE) }
+
+    loop {}
+}
+
+#[alloc_error_handler]
+fn oom(_: Layout) -> ! {
+    asm::bkpt();
     loop {}
 }
