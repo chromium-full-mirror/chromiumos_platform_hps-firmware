@@ -19,9 +19,11 @@ bitflags = "1.2.1"
 # Optimize all dependencies
 [profile.dev.package."*"]
 opt-level = "z"
+codegen-units = 1
 
 [profile.release.package."*"]
 opt-level = "z"
+codegen-units = 1
 
 [profile.dev]
 lto = true
