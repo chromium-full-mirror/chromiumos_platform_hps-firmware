@@ -58,15 +58,25 @@ const HEAP_SIZE: usize = 2048; // in bytes
 
 #[entry]
 fn main() -> ! {
-    unsafe{
-        hprintln!("booting stage1 {:?}", __IMAGE_HDR.git_hash).unwrap();
+    match inner_main() {
+        Ok(()) => cortex_m::peripheral::SCB::sys_reset(),
+        //Err(e) => panic!(e),
+        Err(_) => loop {},
     }
+}
+
+fn build_hash() -> &'static str {
+    __IMAGE_HDR.git_hash
+}
+
+fn inner_main() -> Result<(), ()> {
+    hprintln!("booting stage1 {:?}", build_hash()).map_err(drop)?;
 
     // Initialize the allocator BEFORE you use it
     let start = cortex_m_rt::heap_start() as usize;
     unsafe { ALLOCATOR.init(start, HEAP_SIZE) }
 
-    let p = stm32::Peripherals::take().expect("No peripherals");
+    let p = stm32::Peripherals::take().ok_or(())?;
 
     // APB bus clocks configured in stage 0. Just inherit system state.
     let mut rcc = p.RCC.constrain();
@@ -83,7 +93,7 @@ fn main() -> ! {
 //    };
     let mut spi_cs = gpioa.pa4.into_push_pull_output();
 
-    led.set_high().ok();
+    led.set_high().map_err(drop)?;
 
     let mut spi = p.SPI1.spi(
         (gpioa.pa5, gpioa.pa6, gpioa.pa7), // (SCK, MISO, MOSI)
@@ -92,14 +102,14 @@ fn main() -> ! {
         1.mhz(),
         &mut rcc,
     );
-    hprintln!("SPI up!, attempt to init SPI rom..").ok();
+//    hprintln!("SPI up!, attempt to init SPI rom..").map_err(drop)?;
 
-    let cp = Peripherals::take().expect("No peripherals");
+    let cp = Peripherals::take().ok_or(())?;
     let mut delay = Delay::syst(cp.SYST, &rcc);
     delay.delay(20.ms()); // wait for SPI to quiesce.
 
-    let mut flash = Flash::init(spi, spi_cs).expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
-    hprintln!("attempt to query SPI rom..").ok();
+    let mut flash = Flash::init(spi, spi_cs).map_err(drop)?;//.expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
+    //hprintln!("attempt to query SPI rom..").map_err(drop)?;
     let jedec_id = flash.read_jedec_id(); // expect Identification([c8, 60, 18])
     match jedec_id {
         Ok(id) => {
@@ -119,14 +129,14 @@ fn main() -> ! {
         for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
 //        for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
 //            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
-            flash.read(addr, &mut buf).ok(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
+            flash.read(addr, &mut buf).map_err(drop).unwrap(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
 //            hasher.update(&buf); // extend hash a sector at a time..
-            led.toggle().unwrap();
+            led.toggle().map_err(drop).unwrap();
         }
     });
-//    hprintln!("spi rom@..={:02X?}\r", buf).unwrap();
+//    hprintln!("spi rom@..={:02X?}\r", buf).map_err(drop)?;
 //    let rom_sha = hasher.finalize();
-//    hprintln!("Time elapsed {}us", elapsed_us.0).unwrap();
+//    hprintln!("Time elapsed {}us", elapsed_us.0).map_err(drop)?;
 
     loop {}
 }
