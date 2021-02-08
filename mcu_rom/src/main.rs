@@ -100,11 +100,9 @@ fn main() -> ! {
     let p = stm32::Peripherals::take().expect("No peripherals");
     let cp = Peripherals::take().expect("No peripherals");
 
-    // Configure APB bus clock to 48MHz, as we requires 3Mbps SPI
-    //let pll_cfg = PllConfig::with_hsi(4, 24, 2);
-    let pll_cfg = PllConfig::default(); // (1, 8, 2) -> ((16MHz/1) * 8)/2 = 64Mhz (max APB bus speed).
-    let rcc_cfg = rcc::Config::pll().pll_cfg(pll_cfg);
-    let mut rcc = p.RCC.freeze(rcc_cfg);
+    // Leave clocks as defaults and let stage 1 configure them.
+    let mut rcc = p.RCC.constrain();
+    rcc.disable_low_power_mode();
 
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
