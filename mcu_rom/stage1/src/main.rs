@@ -23,7 +23,7 @@ use hal::rcc::{self, PllConfig};
 use hal::serial::{BasicConfig, Serial};
 
 use spi_memory::{prelude::*, series25::Flash};
-use hmac_sha256::*;
+use hmac_sha256::Hash;
 
 use git_version::git_version;
 
