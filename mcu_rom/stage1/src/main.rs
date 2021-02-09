@@ -142,9 +142,10 @@ fn inner_main() -> Result<(), ()> {
         for addr in ((0)..(16384*1024)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
 //        for addr in ((16*256)..(8192)).step_by(16*256) { // addr += 4K [16*256] < 64K [16777216B] of flash
 //            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
-            flash.read(addr, &mut buf).map_err(drop).unwrap(); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
+            //TODO(quasisec): We should handle the errors back from read, ignore for now.
+            let _ = flash.read(addr, &mut buf); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
 //            hasher.update(&buf); // extend hash a sector at a time..
-            led.toggle().map_err(drop).unwrap();
+            let _ = led.toggle();
         }
     });
 //    let rom_sha = hasher.finalize();
