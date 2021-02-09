@@ -137,8 +137,6 @@ fn main() -> ! {
         writeln!(usart, "FPGA wait\r").unwrap();
     }
 
-    loader(&mut usart);
-
     led.set_high().unwrap();
     writeln!(usart, "continue? [Y]\r").unwrap();
     loop {
@@ -155,6 +153,8 @@ fn main() -> ! {
         }
     }
     led.set_low().unwrap();
+
+    loader(&mut usart);
 
     // start FPGA running..
     fpga_prog.set_high().unwrap(); // SW1 (released).
