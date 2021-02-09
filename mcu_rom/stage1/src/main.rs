@@ -166,7 +166,10 @@ fn inner_main() -> Result<(), ()> {
 //    let rom_sha = hasher.finalize();
 //    writeln!(usart, "Time elapsed {}us", elapsed_us.0).map_err(drop)?;
 
-    loop {}
+    loop {
+        led.toggle().map_err(drop)?;
+        delay.delay(700.ms());
+    }
 }
 
 #[alloc_error_handler]
