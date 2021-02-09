@@ -25,7 +25,7 @@ use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::{pre_init, entry, exception, ExceptionFrame};
 use cortex_m_semihosting::*;//hio;
 
-use hal::{delay::Delay, prelude::*, stm32};
+use hal::{prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
 use hal::serial::BasicConfig;
 use hal::i2c::Config;
@@ -98,7 +98,6 @@ fn loader() {
 #[entry]
 fn main() -> ! {
     let p = stm32::Peripherals::take().expect("No peripherals");
-    let cp = Peripherals::take().expect("No peripherals");
 
     // Leave clocks as defaults and let stage 1 configure them.
     let mut rcc = p.RCC.constrain();
@@ -119,7 +118,6 @@ fn main() -> ! {
     // the art of implementing a stm32 bootloader in rust.
     hprintln!("{}\n", banner()).unwrap();
 
-    let mut delay = Delay::syst(cp.SYST, &rcc);
     let mut usart = p
         .USART2
         .usart(
@@ -145,8 +143,6 @@ fn main() -> ! {
 
     loader();
 
-    let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
-
     led.set_high().unwrap();
     writeln!(usart, "continue? [Y]\r").unwrap();
     loop {
@@ -167,7 +163,7 @@ fn main() -> ! {
     // start FPGA running..
     fpga_prog.set_high().unwrap(); // SW1 (released).
     fpga_pw_gate.set_low().unwrap();
-    delay.delay(200.ms()); // wait for FPGA to quiesce.
+//    delay.delay(200.ms()); // wait for FPGA to quiesce.
     if fpga_done.is_high().unwrap() {
         writeln!(usart, "FPGA done\r").unwrap();
     } else {
