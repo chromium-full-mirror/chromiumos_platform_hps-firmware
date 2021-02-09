@@ -161,10 +161,8 @@ fn inner_main() -> Result<(), ()> {
     }
 
     let _ = led.set_high();
-    let _ = uwriteln!(usart, "{:#?} {:#?} {:#?}\r",
-        stage1_digest()[0],
-        stage1_digest()[1],
-        stage1_digest()[2]);
+    let stage1_digest = stage1_digest();
+    uwriteln!(usart, "{:?}\r", stage1_digest).map_err(drop)?;
     let _ = led.set_low();
 
     let _ = led.set_high();
