@@ -18,7 +18,6 @@ extern crate stm32g0xx_hal as hal;
 use cortex_m::{asm};
 use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::{entry};
-use cortex_m_semihosting::*;
 
 use hal::{delay::Delay, prelude::*, stm32};
 use hal::spi;
@@ -107,7 +106,6 @@ fn inner_main() -> Result<(), ()> {
         1.mhz(),
         &mut rcc,
     );
-//    hprintln!("SPI up!, attempt to init SPI rom..").map_err(drop)?;
 
     let mut usart = p
         .USART2
@@ -125,12 +123,11 @@ fn inner_main() -> Result<(), ()> {
     delay.delay(20.ms()); // wait for SPI to quiesce.
 
     let mut flash = Flash::init(spi, spi_cs).map_err(drop)?;//.expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
-    //hprintln!("attempt to query SPI rom..").map_err(drop)?;
     let jedec_id = flash.read_jedec_id(); // expect Identification([c8, 60, 18])
     match jedec_id {
         Ok(id) => {
             if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
-                hprintln!("Found GigaDevice GD25LQ128C/D !\r").ok();
+                writeln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
             }
         },
         Err(..) => {},
@@ -150,9 +147,8 @@ fn inner_main() -> Result<(), ()> {
             led.toggle().map_err(drop).unwrap();
         }
     });
-//    hprintln!("spi rom@..={:02X?}\r", buf).map_err(drop)?;
 //    let rom_sha = hasher.finalize();
-//    hprintln!("Time elapsed {}us", elapsed_us.0).map_err(drop)?;
+//    writeln!(usart, "Time elapsed {}us", elapsed_us.0).map_err(drop)?;
 
     loop {}
 }
