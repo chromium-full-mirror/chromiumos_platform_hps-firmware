@@ -127,7 +127,7 @@ fn inner_main() -> Result<(), ()> {
         )
         .map_err(drop)?;
     let mut usart = Usart { serial: raw_usart };
-    uwriteln!(usart, "booting stage1 {}", build_hash()).map_err(drop)?;
+    uwriteln!(usart, "booting stage1 {}\r", build_hash()).map_err(drop)?;
 
     let cp = Peripherals::take().ok_or(())?;
     let mut delay = Delay::syst(cp.SYST, &rcc);
@@ -161,7 +161,7 @@ fn inner_main() -> Result<(), ()> {
         }
     });
     let rom_sha = hasher.finalize();
-    uwriteln!(usart, "Time elapsed {}us", elapsed_us.0).map_err(drop)?;
+    uwriteln!(usart, "Time elapsed {}us\r", elapsed_us.0).map_err(drop)?;
 
     loop {
         led.toggle().map_err(drop)?;
