@@ -10,8 +10,6 @@ use alloc_cortex_m::CortexMHeap;
 use core::alloc::Layout;
 use self::alloc::vec;
 
-use core::fmt::Write; // needed for usart TODO(dml): replace with ufmt-write
-
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
@@ -22,12 +20,14 @@ use cortex_m_rt::{entry};
 use hal::{delay::Delay, prelude::*, stm32};
 use hal::spi;
 use hal::rcc::{self, PllConfig};
-use hal::serial::BasicConfig;
+use hal::serial::{BasicConfig, Serial};
 
 use spi_memory::{prelude::*, series25::Flash};
 use hmac_sha256::*;
 
 use git_version::git_version;
+
+use ufmt::uwriteln;
 
 #[repr(C, packed(4))]
 pub struct ImageHeader {
@@ -58,6 +58,20 @@ static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 const HEAP_SIZE: usize = 2048; // in bytes
 
+struct Usart {
+    serial: Serial<hal::stm32::USART2, BasicConfig>,
+}
+
+impl ufmt_write::uWrite for Usart {
+    type Error = ();
+
+    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+        for byte in s.as_bytes() {
+            self.serial.write(*byte).map_err(drop)?;
+        }
+        Ok(())
+    }
+}
 
 #[entry]
 fn main() -> ! {
@@ -107,7 +121,7 @@ fn inner_main() -> Result<(), ()> {
         &mut rcc,
     );
 
-    let mut usart = p
+    let raw_usart = p
         .USART2
         .usart(
             gpioa.pa2, // rx
@@ -116,7 +130,8 @@ fn inner_main() -> Result<(), ()> {
             &mut rcc,
         )
         .map_err(drop)?;
-    writeln!(usart, "booting stage1 {:?}", build_hash()).map_err(drop)?;
+    let mut usart = Usart { serial: raw_usart };
+    uwriteln!(usart, "booting stage1 {}", build_hash()).map_err(drop)?;
 
     let cp = Peripherals::take().ok_or(())?;
     let mut delay = Delay::syst(cp.SYST, &rcc);
@@ -127,7 +142,7 @@ fn inner_main() -> Result<(), ()> {
     match jedec_id {
         Ok(id) => {
             if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
-                writeln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
+                uwriteln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
             }
         },
         Err(..) => {},
