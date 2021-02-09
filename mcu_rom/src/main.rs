@@ -164,14 +164,6 @@ fn main() -> ! {
     }
     led.set_low().unwrap();
 
-//    spi_cs.set_low().unwrap();
-//    let mut data :[u8; 4] = [0x9f, 0x00, 0x00, 0x00]; // JEDEC_RDID
-//    //let mut data :[u8; 4] = [0xd7, 0x00, 0x00, 0x00]; // JEDEC_RDSR
-//    spi.transfer(&mut data).expect("spi xfer complete");
-//    writeln!(usart, "JEDEC_RDID res={:02X?}\r", data).unwrap();
-//    spi_cs.set_high().unwrap();
-//    spi.release();
-
     // start FPGA running..
     fpga_prog.set_high().unwrap(); // SW1 (released).
     fpga_pw_gate.set_low().unwrap();
