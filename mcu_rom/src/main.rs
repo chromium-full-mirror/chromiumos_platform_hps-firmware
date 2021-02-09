@@ -119,8 +119,6 @@ fn main() -> ! {
     // the art of implementing a stm32 bootloader in rust.
     hprintln!("{}\n", banner()).unwrap();
 
-    loader();
-
     let mut delay = Delay::syst(cp.SYST, &rcc);
     let mut usart = p
         .USART2
@@ -145,6 +143,7 @@ fn main() -> ! {
         writeln!(usart, "FPGA wait\r").unwrap();
     }
 
+    loader();
 
     let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
 
