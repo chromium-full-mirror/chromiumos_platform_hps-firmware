@@ -3,7 +3,7 @@
 
 #![feature(maybe_uninit_ref)]
 
-use core::fmt::Write;
+use ufmt::uwriteln;
 
 // pick a panicking behavior
 #[allow(unused)]
@@ -60,6 +60,19 @@ unsafe fn init_boot0_state() {
     BOOT0STATE.assume_init_mut().count = BOOT0STATE.assume_init_ref().count + 1;
 }
 
+struct Usart {
+    serial: Serial<hal::stm32::USART2, BasicConfig>,
+}
+
+impl ufmt_write::uWrite for Usart {
+    type Error = ();
+
+    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+        use core::fmt::Write;
+        self.serial.write_str(s).map_err(drop)
+    }
+}
+
 #[repr(C,packed(4))]
 pub struct ImageHeader {
     magic: u32,
@@ -74,20 +87,20 @@ extern "C" {
     pub static _slot_start: ImageHeader;
 }
 
-fn loader(usart: &mut Serial<hal::stm32::USART2, BasicConfig>) {
+fn loader(usart: &mut Usart) {
     let magic = unsafe{ _slot_start.magic };
     if magic == 0xC03FEFE {
-        writeln!(usart, "Found stage 1\r").unwrap();
+        uwriteln!(usart, "Found stage 1\r").unwrap();
         unsafe{
-        writeln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).unwrap();
-        writeln!(usart, " [[stage 1]] >> should I jmp to vector=0x{:08X?}\r", _slot_start.vector_addr).unwrap();
-        writeln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).unwrap();
-        writeln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).unwrap();
+        uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).unwrap();
+        uwriteln!(usart, " [[stage 1]] >> should I jmp to vector={:#?}\r", _slot_start.vector_addr).unwrap();
+        uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).unwrap();
+        uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).unwrap();
         let sp: *const u32 = ((_slot_start.vector_addr as u32)-4) as *const u32;
         cortex_m::asm::bootload(sp);
         }
     } else {
-        writeln!(usart, "Could not find stage 1").unwrap();
+        uwriteln!(usart, "Could not find stage 1").unwrap();
     }
 }
 
@@ -111,42 +124,43 @@ fn main() -> ! {
     // configure PC15 as o/p
     let mut fpga_prog = gpioc.pc15.into_open_drain_output();
 
-    let mut usart = p
+    let raw_usart = p
         .USART2
         .usart(
             gpioa.pa2, // rx
             gpioa.pa3, // tx
-            BasicConfig::default().baudrate(115200.bps()),
+            BasicConfig::default().baudrate(115_200.bps()),
             &mut rcc,
         )
-        .unwrap();
-    writeln!(usart, "booting..\r").unwrap();
+        .map_err(drop).unwrap();
+    let mut usart = Usart { serial: raw_usart };
+    uwriteln!(usart, "booting..\r").unwrap();
 
     // the art of implementing a stm32 bootloader in rust.
     hprintln!("{}\n", banner()).unwrap();
 
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
-    writeln!(usart, "boot count = {}\r", boot_count).unwrap();
+    uwriteln!(usart, "boot count = {}\r", boot_count).unwrap();
 
     // stop FPGA running and taking SPI flash from us.
     fpga_prog.set_low().unwrap(); // SW1 (pressed)?
     fpga_pw_gate.set_low().unwrap(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {
-        writeln!(usart, "FPGA done\r").unwrap();
+        uwriteln!(usart, "FPGA done\r").unwrap();
     } else {
-        writeln!(usart, "FPGA wait\r").unwrap();
+        uwriteln!(usart, "FPGA wait\r").unwrap();
     }
 
     led.set_high().unwrap();
-    writeln!(usart, "continue? [Y]\r").unwrap();
+    uwriteln!(usart, "continue? [Y]\r").unwrap();
     loop {
-        match usart.read(){
+        match usart.serial.read(){
             Ok(b) => {
                 if b == b'Y' {
-                    writeln!(usart, " **starting..\r").unwrap();
+                    uwriteln!(usart, " **starting..\r").unwrap();
                     break;
                 } else {
-                    writeln!(usart, " try again.. [Y]\r").unwrap();
+                    uwriteln!(usart, " try again.. [Y]\r").unwrap();
                 }
             },
             Err(_) => {},
@@ -161,9 +175,9 @@ fn main() -> ! {
     fpga_pw_gate.set_low().unwrap();
 //    delay.delay(200.ms()); // wait for FPGA to quiesce.
     if fpga_done.is_high().unwrap() {
-        writeln!(usart, "FPGA done\r").unwrap();
+        uwriteln!(usart, "FPGA done\r").unwrap();
     } else {
-        writeln!(usart, "FPGA wait\r").unwrap();
+        uwriteln!(usart, "FPGA wait\r").unwrap();
     }
 
 // MCU_I2C_CAM_xxx
@@ -177,14 +191,15 @@ fn main() -> ! {
     loop {}
 }
 
-#[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
-    if let Ok(mut hstdout) = hio::hstdout() {
-        writeln!(hstdout, "{:#?}", ef).ok();
-    }
-
-    loop {}
-}
+//TODO(dml,quasisec): Implement uDebug for ExceptionFrame
+//#[exception]
+//fn HardFault(ef: &ExceptionFrame) -> ! {
+//    if let Ok(mut hstdout) = hio::hstdout() {
+//        uwriteln!(hstdout, "{:#?}", ef).ok();
+//    }
+//
+//    loop {}
+//}
 
 fn banner() -> &'static str {
     r#"

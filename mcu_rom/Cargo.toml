@@ -14,6 +14,8 @@ panic-halt = "0.2.0"
 panic-abort = "0.3.2"
 stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
 bitflags = "1.2.1"
+ufmt-write = "0.1.0"
+ufmt = "0.1.0"
 
 # Optimize all dependencies
 [profile.dev.package."*"]
