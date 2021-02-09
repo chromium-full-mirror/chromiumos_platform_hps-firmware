@@ -26,6 +26,7 @@ use hal::rcc::{self, PllConfig};
 use hal::serial::{Serial, BasicConfig};
 use hal::i2c::Config;
 
+use hmac_sha256::Hash;
 
 use core::mem::MaybeUninit;
 
@@ -85,6 +86,7 @@ pub struct ImageHeader {
 extern "C" {
     #[no_mangle]
     pub static _slot_start: ImageHeader;
+    pub static _slot_end: *const u32;
 }
 
 fn loader(usart: &mut Usart) -> Result<(), ()> {
@@ -159,6 +161,13 @@ fn inner_main() -> Result<(), ()> {
     }
 
     let _ = led.set_high();
+    let _ = uwriteln!(usart, "{:#?} {:#?} {:#?}\r",
+        stage1_digest()[0],
+        stage1_digest()[1],
+        stage1_digest()[2]);
+    let _ = led.set_low();
+
+    let _ = led.set_high();
     uwriteln!(usart, "continue? [Y]\r").map_err(drop)?;
     loop {
         match usart.serial.read(){
@@ -218,4 +227,18 @@ fn banner() -> &'static str {
   \/\  ####  /\/
        `##'
 quasisec~."#
+}
+
+fn stage1_digest() -> [u8; 32] {
+    use core::mem;
+    let hdr_offset: usize = mem::size_of::<ImageHeader>();
+    let start: usize = 0x08002000 + hdr_offset;//(&_slot_start as *const usize) as u32;
+    let   end: usize = 0x08004000;//unsafe{ _slot_end as u32 };
+    const PAGE_SZ: usize = 4 * 256 * 2;
+    let mut hasher = Hash::new();
+    for offset in ((0)..(end-start)).step_by(PAGE_SZ) { // page flash by 2K steps.
+        let region = (start + offset) as *const [u8; PAGE_SZ];
+        unsafe{ hasher.update(*region) }; // extend hash a sector at a time..
+    }
+    hasher.finalize()
 }
