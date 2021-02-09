@@ -10,7 +10,7 @@ edition = "2018"
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
-panic-abort = "0.3.2"
+panic-reset = "0.1.0"
 git-version = "0.3.4"
 alloc-cortex-m = "0.4.1"
 spi-memory = "0.2.0"

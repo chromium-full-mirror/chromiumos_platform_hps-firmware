@@ -10,7 +10,7 @@ use alloc_cortex_m::CortexMHeap;
 use core::alloc::Layout;
 use self::alloc::vec;
 
-use panic_abort as _;
+use panic_reset as _;
 
 extern crate stm32g0xx_hal as hal;
 use cortex_m::{asm};
