@@ -87,26 +87,33 @@ extern "C" {
     pub static _slot_start: ImageHeader;
 }
 
-fn loader(usart: &mut Usart) {
+fn loader(usart: &mut Usart) -> Result<(), ()> {
     let magic = unsafe{ _slot_start.magic };
     if magic == 0xC03FEFE {
-        uwriteln!(usart, "Found stage 1\r").unwrap();
+        uwriteln!(usart, "Found stage 1\r").map_err(drop)?;
         unsafe{
-        uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).unwrap();
-        uwriteln!(usart, " [[stage 1]] >> should I jmp to vector={:#?}\r", _slot_start.vector_addr).unwrap();
-        uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).unwrap();
-        uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).unwrap();
+        uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).map_err(drop)?;
+        uwriteln!(usart, " [[stage 1]] >> should I jmp to vector={:#?}\r", _slot_start.vector_addr).map_err(drop)?;
+        uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).map_err(drop)?;
+        uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
         let sp: *const u32 = ((_slot_start.vector_addr as u32)-4) as *const u32;
         cortex_m::asm::bootload(sp);
         }
-    } else {
-        uwriteln!(usart, "Could not find stage 1").unwrap();
     }
+    uwriteln!(usart, "Could not find stage 1").map_err(drop)
 }
 
 #[entry]
 fn main() -> ! {
-    let p = stm32::Peripherals::take().expect("No peripherals");
+    match inner_main() {
+        Ok(()) => cortex_m::peripheral::SCB::sys_reset(),
+        //Err(e) => panic!(e),
+        Err(_) => loop {},
+    }
+}
+
+fn inner_main() -> Result<(), ()> {
+    let p = stm32::Peripherals::take().ok_or(())?;
 
     // Leave clocks as defaults and let stage 1 configure them.
     let mut rcc = p.RCC.constrain();
@@ -132,52 +139,52 @@ fn main() -> ! {
             BasicConfig::default().baudrate(115_200.bps()),
             &mut rcc,
         )
-        .map_err(drop).unwrap();
+        .map_err(drop)?;
     let mut usart = Usart { serial: raw_usart };
-    uwriteln!(usart, "booting..\r").unwrap();
+    uwriteln!(usart, "booting..\r").map_err(drop)?;
 
     // the art of implementing a stm32 bootloader in rust.
-    hprintln!("{}\n", banner()).unwrap();
+    hprintln!("{}\n", banner()).map_err(drop)?;
 
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
-    uwriteln!(usart, "boot count = {}\r", boot_count).unwrap();
+    uwriteln!(usart, "boot count = {}\r", boot_count).map_err(drop)?;
 
     // stop FPGA running and taking SPI flash from us.
-    fpga_prog.set_low().unwrap(); // SW1 (pressed)?
-    fpga_pw_gate.set_low().unwrap(); // also gates power to SPI flash!!!
+    let _ = fpga_prog.set_low(); // SW1 (pressed)?
+    let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {
-        uwriteln!(usart, "FPGA done\r").unwrap();
+        uwriteln!(usart, "FPGA done\r").map_err(drop)?;
     } else {
-        uwriteln!(usart, "FPGA wait\r").unwrap();
+        uwriteln!(usart, "FPGA wait\r").map_err(drop)?;
     }
 
-    led.set_high().unwrap();
-    uwriteln!(usart, "continue? [Y]\r").unwrap();
+    let _ = led.set_high();
+    uwriteln!(usart, "continue? [Y]\r").map_err(drop)?;
     loop {
         match usart.serial.read(){
             Ok(b) => {
                 if b == b'Y' {
-                    uwriteln!(usart, " **starting..\r").unwrap();
+                    uwriteln!(usart, " **starting..\r").map_err(drop)?;
                     break;
                 } else {
-                    uwriteln!(usart, " try again.. [Y]\r").unwrap();
+                    uwriteln!(usart, " try again.. [Y]\r").map_err(drop)?;
                 }
             },
             Err(_) => {},
         }
     }
-    led.set_low().unwrap();
+    let _ = led.set_low();
 
-    loader(&mut usart);
+    loader(&mut usart).map_err(drop)?;
 
     // start FPGA running..
-    fpga_prog.set_high().unwrap(); // SW1 (released).
-    fpga_pw_gate.set_low().unwrap();
+    let _ = fpga_prog.set_high(); // SW1 (released).
+    let _ = fpga_pw_gate.set_low();
 //    delay.delay(200.ms()); // wait for FPGA to quiesce.
     if fpga_done.is_high().unwrap() {
-        uwriteln!(usart, "FPGA done\r").unwrap();
+        uwriteln!(usart, "FPGA done\r").map_err(drop)?;
     } else {
-        uwriteln!(usart, "FPGA wait\r").unwrap();
+        uwriteln!(usart, "FPGA wait\r").map_err(drop)?;
     }
 
 // MCU_I2C_CAM_xxx
