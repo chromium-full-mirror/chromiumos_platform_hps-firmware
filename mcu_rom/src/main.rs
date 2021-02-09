@@ -122,7 +122,6 @@ fn main() -> ! {
     loader();
 
     let mut delay = Delay::syst(cp.SYST, &rcc);
-    hprintln!("init USART..").unwrap();
     let mut usart = p
         .USART2
         .usart(
@@ -133,7 +132,7 @@ fn main() -> ! {
         )
         .unwrap();
     writeln!(usart, "booting..\r").unwrap();
-    hprintln!("USART up!").unwrap();
+
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
     writeln!(usart, "boot count = {}\r", boot_count).unwrap();
 
