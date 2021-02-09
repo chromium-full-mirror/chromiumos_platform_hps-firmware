@@ -66,10 +66,8 @@ impl ufmt_write::uWrite for Usart {
     type Error = ();
 
     fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
-        for byte in s.as_bytes() {
-            self.serial.write(*byte).map_err(drop)?;
-        }
-        Ok(())
+        use core::fmt::Write;
+        self.serial.write_str(s).map_err(drop)
     }
 }
 
