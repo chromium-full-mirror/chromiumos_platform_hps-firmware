@@ -159,12 +159,12 @@ fn inner_main() -> Result<(), ()> {
 //            writeln!(usart, "spi rom@{:04X?}\r", addr).unwrap();
             //TODO(quasisec): We should handle the errors back from read, ignore for now.
             let _ = flash.read(addr, &mut buf); // first sector 0x0-0x000FFF[4095=(16 * 256 - 1)]
-//            hasher.update(&buf); // extend hash a sector at a time..
+            hasher.update(&buf); // extend hash a sector at a time..
             let _ = led.toggle();
         }
     });
-//    let rom_sha = hasher.finalize();
-//    writeln!(usart, "Time elapsed {}us", elapsed_us.0).map_err(drop)?;
+    let rom_sha = hasher.finalize();
+    uwriteln!(usart, "Time elapsed {}us", elapsed_us.0).map_err(drop)?;
 
     loop {
         led.toggle().map_err(drop)?;
