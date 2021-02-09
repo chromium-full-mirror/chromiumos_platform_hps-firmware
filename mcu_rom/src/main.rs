@@ -191,10 +191,7 @@ fn main() -> ! {
 //        &mut rcc
 //    );
 
-    loop {
-        led.toggle().unwrap();
-        delay.delay(700.ms());
-    }
+    loop {}
 }
 
 #[exception]
