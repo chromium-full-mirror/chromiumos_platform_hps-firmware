@@ -12,7 +12,6 @@ cortex-m-rt = "0.6.13"
 cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
 panic-halt = "0.2.0"
 panic-abort = "0.3.2"
-#panic-semihosting = "0.5.6"
 stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
 bitflags = "1.2.1"
 

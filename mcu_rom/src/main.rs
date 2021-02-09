@@ -15,19 +15,15 @@ use panic_halt as _;
 #[cfg(not(debug_assertions))]
 use panic_abort as _;
 
-// Reports panic messages to the host stderr using semihosting; requires a debugger
-// NOTE to use this you need to uncomment the `panic-semihosting` dependency in Cargo.toml
-// use panic_semihosting as _;
-
 extern crate stm32g0xx_hal as hal;
 use cortex_m::{asm, interrupt};
 use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::{pre_init, entry, exception, ExceptionFrame};
-use cortex_m_semihosting::*;//hio;
+use cortex_m_semihosting::{hio, hprintln};
 
 use hal::{prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
-use hal::serial::BasicConfig;
+use hal::serial::{Serial, BasicConfig};
 use hal::i2c::Config;
 
 
@@ -78,20 +74,20 @@ extern "C" {
     pub static _slot_start: ImageHeader;
 }
 
-fn loader() {
+fn loader(usart: &mut Serial<hal::stm32::USART2, BasicConfig>) {
     let magic = unsafe{ _slot_start.magic };
     if magic == 0xC03FEFE {
-        hprintln!("Found stage 1").unwrap();
+        writeln!(usart, "Found stage 1\r").unwrap();
         unsafe{
-        hprintln!(" [[stage 1]] >> version={}", _slot_start.version).unwrap();
-        hprintln!(" [[stage 1]] >> should I jmp to vector=0x{:08X?}", _slot_start.vector_addr).unwrap();
-        hprintln!(" [[stage 1]] >> git hash build={}?", _slot_start.git_hash).unwrap();
-        hprintln!(" [[stage 1]] >> sig[0]={}", _slot_start.sig[0]).unwrap();
+        writeln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).unwrap();
+        writeln!(usart, " [[stage 1]] >> should I jmp to vector=0x{:08X?}\r", _slot_start.vector_addr).unwrap();
+        writeln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).unwrap();
+        writeln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).unwrap();
         let sp: *const u32 = ((_slot_start.vector_addr as u32)-4) as *const u32;
         cortex_m::asm::bootload(sp);
         }
     } else {
-        hprintln!("Could not find stage 1").unwrap();
+        writeln!(usart, "Could not find stage 1").unwrap();
     }
 }
 
@@ -115,9 +111,6 @@ fn main() -> ! {
     // configure PC15 as o/p
     let mut fpga_prog = gpioc.pc15.into_open_drain_output();
 
-    // the art of implementing a stm32 bootloader in rust.
-    hprintln!("{}\n", banner()).unwrap();
-
     let mut usart = p
         .USART2
         .usart(
@@ -128,6 +121,9 @@ fn main() -> ! {
         )
         .unwrap();
     writeln!(usart, "booting..\r").unwrap();
+
+    // the art of implementing a stm32 bootloader in rust.
+    hprintln!("{}\n", banner()).unwrap();
 
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
     writeln!(usart, "boot count = {}\r", boot_count).unwrap();
@@ -141,7 +137,7 @@ fn main() -> ! {
         writeln!(usart, "FPGA wait\r").unwrap();
     }
 
-    loader();
+    loader(&mut usart);
 
     led.set_high().unwrap();
     writeln!(usart, "continue? [Y]\r").unwrap();
