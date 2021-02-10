@@ -145,7 +145,10 @@ fn inner_main() -> Result<(), ()> {
     uwriteln!(usart, "booting..\r").map_err(drop)?;
 
     // the art of implementing a stm32 bootloader in rust.
+    #[cfg(jtag)]
+    {
     hprintln!("{}\n", banner()).map_err(drop)?;
+    }
 
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
     uwriteln!(usart, "boot count = {}\r", boot_count).map_err(drop)?;
