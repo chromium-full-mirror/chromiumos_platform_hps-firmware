@@ -163,6 +163,20 @@ fn inner_main() -> Result<(), ()> {
     let rom_sha = hasher.finalize();
     uwriteln!(usart, "Time elapsed {}us\r", elapsed_us.0).map_err(drop)?;
 
+    // configure PB4 as o/p
+    let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
+    let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
+    // configure PC14 as i/p
+    let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
+    let fpga_done = gpioc.pc14.into_floating_input();
+    // configure PC15 as o/p
+    let mut fpga_prog = gpioc.pc15.into_open_drain_output();
+
+    // start FPGA running..
+    fpga_prog.set_high().map_err(drop)?; // SW1 (released).
+    fpga_pw_gate.set_low().map_err(drop)?;
+    delay.delay(200.ms()); // wait for FPGA to quiesce.
+
     loop {
         led.toggle().map_err(drop)?;
         delay.delay(700.ms());

@@ -184,16 +184,6 @@ fn inner_main() -> Result<(), ()> {
 
     loader(&mut usart).map_err(drop)?;
 
-    // start FPGA running..
-    let _ = fpga_prog.set_high(); // SW1 (released).
-    let _ = fpga_pw_gate.set_low();
-//    delay.delay(200.ms()); // wait for FPGA to quiesce.
-    if fpga_done.is_high().unwrap() {
-        uwriteln!(usart, "FPGA done\r").map_err(drop)?;
-    } else {
-        uwriteln!(usart, "FPGA wait\r").map_err(drop)?;
-    }
-
 // MCU_I2C_CAM_xxx
 //    let mut i2c = p.I2C1.i2c(
 //        gpiob.pb7.into_open_drain_output(), // sda
