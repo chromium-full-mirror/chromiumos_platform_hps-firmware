@@ -24,7 +24,6 @@ use cortex_m_semihosting::{hio, hprintln};
 use hal::{prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
 use hal::serial::{Serial, BasicConfig};
-use hal::i2c::Config;
 
 use hmac_sha256::Hash;
 
@@ -183,14 +182,6 @@ fn inner_main() -> Result<(), ()> {
     let _ = led.set_low();
 
     loader(&mut usart).map_err(drop)?;
-
-// MCU_I2C_CAM_xxx
-//    let mut i2c = p.I2C1.i2c(
-//        gpiob.pb7.into_open_drain_output(), // sda
-//        gpiob.pb6.into_open_drain_output(), // scl
-//        Config::new(1.mhz()),
-//        &mut rcc
-//    );
 
     loop {}
 }
