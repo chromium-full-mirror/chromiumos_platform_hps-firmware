@@ -1,13 +1,11 @@
 #![no_main]
 #![no_std]
-
 #![feature(maybe_uninit_ref)]
 
 use ufmt::uwriteln;
 
 // pick a panicking behavior
 #[allow(unused)]
-
 // dev profile: easier to debug panics; can put a breakpoint on `rust_begin_unwind`
 #[cfg(debug_assertions)]
 use panic_halt as _;
@@ -16,14 +14,14 @@ use panic_halt as _;
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
-use cortex_m::{asm, interrupt};
 use cortex_m::peripheral::Peripherals;
-use cortex_m_rt::{pre_init, entry, exception, ExceptionFrame};
+use cortex_m::{asm, interrupt};
+use cortex_m_rt::{entry, exception, pre_init, ExceptionFrame};
 use cortex_m_semihosting::{hio, hprintln};
 
-use hal::{prelude::*, stm32};
 use hal::rcc::{self, PllConfig};
-use hal::serial::{Serial, BasicConfig};
+use hal::serial::{BasicConfig, Serial};
+use hal::{prelude::*, stm32};
 
 use hmac_sha256::Hash;
 
@@ -73,7 +71,7 @@ impl ufmt_write::uWrite for Usart {
     }
 }
 
-#[repr(C,packed(4))]
+#[repr(C, packed(4))]
 pub struct ImageHeader {
     magic: u32,
     version: u16,
@@ -89,16 +87,22 @@ extern "C" {
 }
 
 fn loader(usart: &mut Usart) -> Result<(), ()> {
-    let magic = unsafe{ _slot_start.magic };
+    let magic = unsafe { _slot_start.magic };
     if magic == 0xC03FEFE {
         uwriteln!(usart, "Found stage 1\r").map_err(drop)?;
-        unsafe{
-        uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).map_err(drop)?;
-        uwriteln!(usart, " [[stage 1]] >> should I jmp to vector={:#?}\r", _slot_start.vector_addr).map_err(drop)?;
-        uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash).map_err(drop)?;
-        uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
-        let sp: *const u32 = ((_slot_start.vector_addr as u32)-4) as *const u32;
-        cortex_m::asm::bootload(sp);
+        unsafe {
+            uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).map_err(drop)?;
+            uwriteln!(
+                usart,
+                " [[stage 1]] >> should I jmp to vector={:#?}\r",
+                _slot_start.vector_addr
+            )
+            .map_err(drop)?;
+            uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash)
+                .map_err(drop)?;
+            uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
+            let sp: *const u32 = ((_slot_start.vector_addr as u32) - 4) as *const u32;
+            cortex_m::asm::bootload(sp);
         }
     }
     uwriteln!(usart, "Could not find stage 1").map_err(drop)
@@ -147,7 +151,7 @@ fn inner_main() -> Result<(), ()> {
     // the art of implementing a stm32 bootloader in rust.
     #[cfg(jtag)]
     {
-    hprintln!("{}\n", banner()).map_err(drop)?;
+        hprintln!("{}\n", banner()).map_err(drop)?;
     }
 
     let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
@@ -170,7 +174,7 @@ fn inner_main() -> Result<(), ()> {
     let _ = led.set_high();
     uwriteln!(usart, "continue? [Y]\r").map_err(drop)?;
     loop {
-        match usart.serial.read(){
+        match usart.serial.read() {
             Ok(b) => {
                 if b == b'Y' {
                     uwriteln!(usart, " **starting..\r").map_err(drop)?;
@@ -178,8 +182,8 @@ fn inner_main() -> Result<(), ()> {
                 } else {
                     uwriteln!(usart, " try again.. [Y]\r").map_err(drop)?;
                 }
-            },
-            Err(_) => {},
+            }
+            Err(_) => {}
         }
     }
     let _ = led.set_low();
@@ -214,13 +218,14 @@ quasisec~."#
 fn stage1_digest() -> [u8; 32] {
     use core::mem;
     let hdr_offset: usize = mem::size_of::<ImageHeader>();
-    let start: usize = 0x08002000 + hdr_offset;//(&_slot_start as *const usize) as u32;
-    let   end: usize = 0x08004000;//unsafe{ _slot_end as u32 };
+    let start: usize = 0x08002000 + hdr_offset; //(&_slot_start as *const usize) as u32;
+    let end: usize = 0x08004000; //unsafe{ _slot_end as u32 };
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hash::new();
-    for offset in ((0)..(end-start)).step_by(PAGE_SZ) { // page flash by 2K steps.
+    for offset in ((0)..(end - start)).step_by(PAGE_SZ) {
+        // page flash by 2K steps.
         let region = (start + offset) as *const [u8; PAGE_SZ];
-        unsafe{ hasher.update(*region) }; // extend hash a sector at a time..
+        unsafe { hasher.update(*region) }; // extend hash a sector at a time..
     }
     hasher.finalize()
 }
