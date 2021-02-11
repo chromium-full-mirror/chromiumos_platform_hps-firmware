@@ -14,12 +14,10 @@ use panic_halt as _;
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
-use cortex_m::peripheral::Peripherals;
 use cortex_m::{asm, interrupt};
 use cortex_m_rt::{entry, exception, pre_init, ExceptionFrame};
 use cortex_m_semihosting::{hio, hprintln};
 
-use hal::rcc::{self, PllConfig};
 use hal::serial::{BasicConfig, Serial};
 use hal::{prelude::*, stm32};
 
@@ -81,7 +79,6 @@ pub struct ImageHeader {
 }
 
 extern "C" {
-    #[no_mangle]
     pub static _slot_start: ImageHeader;
     pub static _slot_end: *const u32;
 }
