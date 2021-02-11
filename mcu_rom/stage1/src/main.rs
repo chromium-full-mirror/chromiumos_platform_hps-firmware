@@ -170,7 +170,7 @@ fn inner_main() -> Result<(), ()> {
     let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
     let fpga_done = gpioc.pc14.into_floating_input();
     // configure PC15 as o/p
-    let mut fpga_prog = gpioc.pc15.into_open_drain_output();
+    let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
     // start FPGA running..
     fpga_prog.set_high().map_err(drop)?; // SW1 (released).
