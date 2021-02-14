@@ -80,7 +80,7 @@ pub struct ImageHeader {
 
 extern "C" {
     pub static _slot_start: ImageHeader;
-    pub static _slot_end: *const u32;
+    pub static _slot_end: u32;
 }
 
 fn loader(usart: &mut Usart) -> Result<(), ()> {
@@ -213,10 +213,8 @@ quasisec~."#
 }
 
 fn stage1_digest() -> [u8; 32] {
-    use core::mem;
-    let hdr_offset: usize = mem::size_of::<ImageHeader>();
-    let start: usize = 0x08002000 + hdr_offset; //(&_slot_start as *const usize) as u32;
-    let end: usize = 0x08004000; //unsafe{ _slot_end as u32 };
+    let start: usize = unsafe{ (&_slot_start as *const _) as usize };
+    let end: usize = unsafe{ (&_slot_end as *const u32) as usize };
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hash::new();
     for offset in ((0)..(end - start)).step_by(PAGE_SZ) {

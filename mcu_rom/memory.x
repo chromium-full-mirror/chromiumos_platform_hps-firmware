@@ -7,4 +7,4 @@ MEMORY
 }
 
 PROVIDE(_slot_start = ORIGIN(SLOT));
-PROVIDE(_slot_end   = LENGTH(SLOT));
+PROVIDE(_slot_end   = ORIGIN(SLOT) + LENGTH(SLOT));
