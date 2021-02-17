@@ -14,9 +14,7 @@ use panic_halt as _;
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
-use cortex_m::{asm, interrupt};
-use cortex_m_rt::{entry, exception, pre_init, ExceptionFrame};
-use cortex_m_semihosting::{hio, hprintln};
+use cortex_m_rt::{entry, pre_init};
 
 use hal::serial::{BasicConfig, Serial};
 use hal::{prelude::*, stm32};
@@ -38,6 +36,8 @@ bitflags! {
 pub struct TransientNVMem {
     magic: u32,
     count: u8,
+    // TODO: Use this field
+    #[allow(unused)]
     flags: TransientNVMemFlags,
 }
 
@@ -148,6 +148,7 @@ fn inner_main() -> Result<(), ()> {
     // the art of implementing a stm32 bootloader in rust.
     #[cfg(jtag)]
     {
+        use cortex_m_semihosting::hprintln;
         hprintln!("{}\n", banner()).map_err(drop)?;
     }
 
@@ -192,14 +193,15 @@ fn inner_main() -> Result<(), ()> {
 
 //TODO(dml,quasisec): Implement uDebug for ExceptionFrame
 //#[exception]
-//fn HardFault(ef: &ExceptionFrame) -> ! {
-//    if let Ok(mut hstdout) = hio::hstdout() {
+//fn HardFault(ef: &cortex_m_rt::ExceptionFrame) -> ! {
+//    if let Ok(mut hstdout) = cortex_m_semihosting::hio::hstdout() {
 //        uwriteln!(hstdout, "{:#?}", ef).ok();
 //    }
 //
 //    loop {}
 //}
 
+#[cfg(jtag)]
 fn banner() -> &'static str {
     r#"
  C
