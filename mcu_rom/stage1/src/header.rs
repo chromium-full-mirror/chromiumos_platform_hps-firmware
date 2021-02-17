@@ -8,6 +8,7 @@ extern "C" {
 
 #[link_section = ".image_hdr"]
 #[no_mangle]
+#[used]
 pub static __IMAGE_HDR: ImageHeader = ImageHeader {
     magic: 0xC03FEFE,
     version: 1,
