@@ -22,6 +22,7 @@ use hal::{prelude::*, stm32};
 use hmac_sha256::Hash;
 
 use core::mem::MaybeUninit;
+use hps_mcu_common::ImageHeader;
 
 #[macro_use]
 extern crate bitflags;
@@ -67,15 +68,6 @@ impl ufmt_write::uWrite for Usart {
         use core::fmt::Write;
         self.serial.write_str(s).map_err(drop)
     }
-}
-
-#[repr(C, packed(4))]
-pub struct ImageHeader {
-    magic: u32,
-    version: u16,
-    vector_addr: &'static u32,
-    git_hash: &'static str,
-    sig: [u8; 64],
 }
 
 extern "C" {
@@ -215,8 +207,8 @@ quasisec~."#
 }
 
 fn stage1_digest() -> [u8; 32] {
-    let start: usize = unsafe{ (&_slot_start as *const _) as usize };
-    let end: usize = unsafe{ (&_slot_end as *const u32) as usize };
+    let start: usize = unsafe { (&_slot_start as *const _) as usize };
+    let end: usize = unsafe { (&_slot_end as *const u32) as usize };
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hash::new();
     for offset in ((0)..(end - start)).step_by(PAGE_SZ) {

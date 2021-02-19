@@ -22,20 +22,12 @@ use hal::spi;
 use hal::{delay::Delay, prelude::*, stm32};
 
 use hmac_sha256::Hash;
+use hps_mcu_common::ImageHeader;
 use spi_memory::{prelude::*, series25::Flash};
 
 use git_version::git_version;
 
 use ufmt::uwriteln;
-
-#[repr(C, packed(4))]
-pub struct ImageHeader {
-    magic: u32,
-    version: u16,
-    vector_addr: &'static u32,
-    git_hash: &'static str,
-    sig: [u8; 64],
-}
 
 extern "C" {
     pub static __RESET_VECTOR: u32;
