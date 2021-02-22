@@ -90,8 +90,7 @@ fn loader(usart: &mut Usart) -> Result<(), ()> {
             uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash)
                 .map_err(drop)?;
             uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
-            let sp: *const u32 = ((_slot_start.vector_addr as *const u32 as u32) - 4) as *const u32;
-            cortex_m::asm::bootload(sp);
+            cortex_m::asm::bootload(_slot_start.vector_addr);
         }
     }
     uwriteln!(usart, "Could not find stage 1").map_err(drop)

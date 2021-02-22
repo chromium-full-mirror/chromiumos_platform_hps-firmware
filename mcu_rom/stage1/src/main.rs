@@ -30,7 +30,7 @@ use git_version::git_version;
 use ufmt::uwriteln;
 
 extern "C" {
-    pub static __RESET_VECTOR: u32;
+    pub static VECTOR_TABLE: u32;
 }
 
 #[link_section = ".image_hdr"]
@@ -38,7 +38,7 @@ extern "C" {
 pub static __IMAGE_HDR: ImageHeader = ImageHeader {
     magic: 0xC03FEFE,
     version: 1,
-    vector_addr: unsafe { &__RESET_VECTOR },
+    vector_addr: unsafe { &VECTOR_TABLE },
     git_hash: git_version!(),
     sig: [0; 64], // constructed with padded zeros for unsigned image.
 };
