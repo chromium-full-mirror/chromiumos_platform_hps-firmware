@@ -39,7 +39,8 @@ pub static __IMAGE_HDR: ImageHeader = ImageHeader {
     magic: 0xC03FEFE,
     version: 1,
     vector_addr: unsafe { &VECTOR_TABLE },
-    git_hash: git_version!(),
+    git_hash_ptr: &build_hash().as_bytes()[0],
+    git_hash_length: build_hash().len(),
     sig: [0; 64], // constructed with padded zeros for unsigned image.
 };
 
@@ -70,8 +71,8 @@ fn main() -> ! {
     }
 }
 
-fn build_hash() -> &'static str {
-    __IMAGE_HDR.git_hash
+const fn build_hash() -> &'static str {
+    git_version!()
 }
 
 fn inner_main() -> Result<(), ()> {

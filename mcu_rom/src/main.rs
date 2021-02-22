@@ -79,6 +79,14 @@ fn loader(usart: &mut Usart) -> Result<(), ()> {
     let magic = unsafe { _slot_start.magic };
     if magic == 0xC03FEFE {
         uwriteln!(usart, "Found stage 1\r").map_err(drop)?;
+        // The following is safe provided stage1 sets git_hash_ptr and
+        // git_hash_length to refer to valid UTF-8.
+        let git_hash = unsafe {
+            core::str::from_utf8_unchecked(core::slice::from_raw_parts(
+                _slot_start.git_hash_ptr,
+                _slot_start.git_hash_length,
+            ))
+        };
         unsafe {
             uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).map_err(drop)?;
             uwriteln!(
@@ -87,8 +95,7 @@ fn loader(usart: &mut Usart) -> Result<(), ()> {
                 _slot_start.vector_addr as *const u32
             )
             .map_err(drop)?;
-            uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", _slot_start.git_hash)
-                .map_err(drop)?;
+            uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", git_hash).map_err(drop)?;
             uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
             cortex_m::asm::bootload(_slot_start.vector_addr);
         }
