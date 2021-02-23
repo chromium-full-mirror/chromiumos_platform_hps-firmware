@@ -95,8 +95,8 @@ fn loader(usart: &mut Usart) -> Result<(), ()> {
                 _slot_start.vector_addr as *const u32
             )
             .map_err(drop)?;
-            uwriteln!(usart, " [[stage 1]] >> git hash build={}?\r", git_hash).map_err(drop)?;
-            uwriteln!(usart, " [[stage 1]] >> sig[0]={}\r", _slot_start.sig[0]).map_err(drop)?;
+            uwriteln!(usart, " [[stage 1]] >> git hash build={}\r", git_hash).map_err(drop)?;
+            uwriteln!(usart, " [[stage 1]] >> sig[0]={}\n\r", _slot_start.sig[0]).map_err(drop)?;
             cortex_m::asm::bootload(_slot_start.vector_addr);
         }
     }
