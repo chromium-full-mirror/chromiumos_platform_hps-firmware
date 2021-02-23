@@ -17,7 +17,7 @@ bitflags = "1.2.1"
 ufmt-write = "0.1.0"
 ufmt = "0.1.0"
 hmac-sha256 = "0.1.6"
-hps_mcu_common = { path = "hps_mcu_common" }
+hps_mcu_common = { path = "../hps_mcu_common" }
 
 # Optimize all dependencies
 [profile.dev.package."*"]
