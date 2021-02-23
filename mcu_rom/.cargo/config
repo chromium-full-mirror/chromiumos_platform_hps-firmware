@@ -8,7 +8,7 @@ rustflags = [
   # will result in mysteriously broken binaries and you will be sad.
   "-C", "link-arg=-Tlink.x",
   # An additional linker script for any HPS-specific linker directives.
-  "-C", "link-arg=-Thps-link.x",
+  "-C", "link-arg=-T../hps-common-link.x",
 ]
 
 [build]
