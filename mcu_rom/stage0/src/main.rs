@@ -2,6 +2,12 @@
 #![no_std]
 #![feature(maybe_uninit_ref)]
 
+mod common;
+use crate::common::*;
+
+mod loader;
+use crate::loader::*;
+
 use ufmt::uwriteln;
 
 // pick a panicking behavior
@@ -16,13 +22,10 @@ use panic_abort as _;
 extern crate stm32g0xx_hal as hal;
 use cortex_m_rt::{entry, pre_init};
 
-use hal::serial::{BasicConfig, Serial};
+use hal::serial::BasicConfig;
 use hal::{prelude::*, stm32};
 
-use hmac_sha256::Hash;
-
 use core::mem::MaybeUninit;
-use hps_mcu_common::ImageHeader;
 
 #[macro_use]
 extern crate bitflags;
@@ -55,52 +58,6 @@ unsafe fn init_boot0_state() {
         BOOT0STATE.assume_init_mut().magic = 0xC0FFEE;
     }
     BOOT0STATE.assume_init_mut().count = BOOT0STATE.assume_init_ref().count + 1;
-}
-
-struct Usart {
-    serial: Serial<hal::stm32::USART2, BasicConfig>,
-}
-
-impl ufmt_write::uWrite for Usart {
-    type Error = ();
-
-    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
-        use core::fmt::Write;
-        self.serial.write_str(s).map_err(drop)
-    }
-}
-
-extern "C" {
-    pub static _slot_start: ImageHeader;
-    pub static _slot_end: u32;
-}
-
-fn loader(usart: &mut Usart) -> Result<(), ()> {
-    let magic = unsafe { _slot_start.magic };
-    if magic == 0xC03FEFE {
-        uwriteln!(usart, "Found stage 1\r").map_err(drop)?;
-        // The following is safe provided stage1 sets git_hash_ptr and
-        // git_hash_length to refer to valid UTF-8.
-        let git_hash = unsafe {
-            core::str::from_utf8_unchecked(core::slice::from_raw_parts(
-                _slot_start.git_hash_ptr,
-                _slot_start.git_hash_length,
-            ))
-        };
-        unsafe {
-            uwriteln!(usart, " [[stage 1]] >> version={}\r", _slot_start.version).map_err(drop)?;
-            uwriteln!(
-                usart,
-                " [[stage 1]] >> should I jmp to vector={:#?}\r",
-                _slot_start.vector_addr as *const u32
-            )
-            .map_err(drop)?;
-            uwriteln!(usart, " [[stage 1]] >> git hash build={}\r", git_hash).map_err(drop)?;
-            uwriteln!(usart, " [[stage 1]] >> sig[0]={}\n\r", _slot_start.sig[0]).map_err(drop)?;
-            cortex_m::asm::bootload(_slot_start.vector_addr);
-        }
-    }
-    uwriteln!(usart, "Could not find stage 1").map_err(drop)
 }
 
 #[entry]
@@ -210,17 +167,4 @@ fn banner() -> &'static str {
   \/\  ####  /\/
        `##'
 quasisec~."#
-}
-
-fn stage1_digest() -> [u8; 32] {
-    let start: usize = unsafe { (&_slot_start as *const _) as usize };
-    let end: usize = unsafe { (&_slot_end as *const u32) as usize };
-    const PAGE_SZ: usize = 4 * 256 * 2;
-    let mut hasher = Hash::new();
-    for offset in ((0)..(end - start)).step_by(PAGE_SZ) {
-        // page flash by 2K steps.
-        let region = (start + offset) as *const [u8; PAGE_SZ];
-        unsafe { hasher.update(*region) }; // extend hash a sector at a time..
-    }
-    hasher.finalize()
 }
