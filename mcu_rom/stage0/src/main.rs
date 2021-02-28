@@ -26,6 +26,8 @@ use panic_halt as _;
 #[cfg(not(debug_assertions))]
 use panic_abort as _;
 
+use defmt_rtt as _; // global logger
+
 extern crate stm32g0xx_hal as hal;
 use cortex_m_rt::entry;
 
@@ -73,30 +75,26 @@ fn inner_main() -> Result<(), ()> {
         )
         .map_err(drop)?;
     let mut usart = Usart { serial: raw_usart };
-    uwriteln!(usart, "booting..\r").map_err(drop)?;
+    defmt::info!("booting..\r");
 
     // the art of implementing a stm32 bootloader in rust.
-    #[cfg(jtag)]
-    {
-        use cortex_m_semihosting::hprintln;
-        hprintln!("{}\n", banner()).map_err(drop)?;
-    }
+    defmt::info!("{}\n", banner());
 
     let boot_count = boot_count();
-    uwriteln!(usart, "boot count = {}\r", boot_count).map_err(drop)?;
+    defmt::info!("boot count = {}\r", boot_count);
 
     // stop FPGA running and taking SPI flash from us.
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {
-        uwriteln!(usart, "FPGA done\r").map_err(drop)?;
+        defmt::info!("FPGA done\r");
     } else {
-        uwriteln!(usart, "FPGA wait\r").map_err(drop)?;
+        defmt::info!("FPGA wait\r");
     }
 
     let _ = led.set_high();
     let stage1_digest = stage1_digest();
-    uwriteln!(usart, "{:?}\r", stage1_digest).map_err(drop)?;
+    defmt::info!("{:x}\r", stage1_digest);
     let _ = led.set_low();
 
     let _ = led.set_high();
@@ -116,22 +114,9 @@ fn inner_main() -> Result<(), ()> {
     }
     let _ = led.set_low();
 
-    loader(&mut usart).map_err(drop)?;
-
-    loop {}
+    loader().map_err(drop)
 }
 
-//TODO(dml,quasisec): Implement uDebug for ExceptionFrame
-//#[exception]
-//fn HardFault(ef: &cortex_m_rt::ExceptionFrame) -> ! {
-//    if let Ok(mut hstdout) = cortex_m_semihosting::hio::hstdout() {
-//        uwriteln!(hstdout, "{:#?}", ef).ok();
-//    }
-//
-//    loop {}
-//}
-
-#[cfg(jtag)]
 fn banner() -> &'static str {
     r#"
  C

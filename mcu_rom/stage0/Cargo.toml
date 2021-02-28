@@ -11,14 +11,28 @@ license = "BSD-3-Clause"
 mcu_common = { path = "../mcu_common" }
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
-cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
 panic-halt = "0.2.0"
 panic-abort = "0.3.2"
 stm32g0xx-hal =  { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
 bitflags = "1.2.1"
 ufmt-write = "0.1.0"
 ufmt = "0.1.0"
+defmt = "0.2.0"
+defmt-rtt = "0.2.0"
 hmac-sha256 = "0.1.6"
+
+[features]
+# set logging levels here
+default = [
+  "defmt-default",
+]
+# do NOT modify these features
+defmt-default = []
+defmt-trace = []
+defmt-debug = []
+defmt-info = []
+defmt-warn = []
+defmt-error = []
 
 # Optimize all dependencies
 [profile.dev.package."*"]
