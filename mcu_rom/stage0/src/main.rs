@@ -5,6 +5,9 @@
 mod common;
 use crate::common::*;
 
+mod premain;
+use crate::premain::*;
+
 mod loader;
 use crate::loader::*;
 
@@ -20,45 +23,13 @@ use panic_halt as _;
 use panic_abort as _;
 
 extern crate stm32g0xx_hal as hal;
-use cortex_m_rt::{entry, pre_init};
+use cortex_m_rt::entry;
 
 use hal::serial::BasicConfig;
 use hal::{prelude::*, stm32};
 
-use core::mem::MaybeUninit;
-
 #[macro_use]
 extern crate bitflags;
-
-bitflags! {
-    struct TransientNVMemFlags: u32 {
-        const DFU = 0b00000001;
-        const SLOT_A = 0b00000010;
-        const SLOT_B = 0b00000100;
-    }
-}
-pub struct TransientNVMem {
-    magic: u32,
-    count: u8,
-    // TODO: Use this field
-    #[allow(unused)]
-    flags: TransientNVMemFlags,
-}
-
-#[link_section = ".uninit.BOOT0STATE"]
-static mut BOOT0STATE: MaybeUninit<TransientNVMem> = MaybeUninit::uninit();
-
-// summon the C devil, open a portal to Jekkad
-#[pre_init]
-unsafe fn init_boot0_state() {
-    // cold on, previous state unknown!
-    let magic = BOOT0STATE.assume_init_ref().magic;
-    if magic != 0xC0FFEE {
-        BOOT0STATE = MaybeUninit::zeroed();
-        BOOT0STATE.assume_init_mut().magic = 0xC0FFEE;
-    }
-    BOOT0STATE.assume_init_mut().count = BOOT0STATE.assume_init_ref().count + 1;
-}
 
 #[entry]
 fn main() -> ! {
@@ -107,7 +78,7 @@ fn inner_main() -> Result<(), ()> {
         hprintln!("{}\n", banner()).map_err(drop)?;
     }
 
-    let boot_count = unsafe { BOOT0STATE.assume_init_ref().count };
+    let boot_count = boot_count();
     uwriteln!(usart, "boot count = {}\r", boot_count).map_err(drop)?;
 
     // stop FPGA running and taking SPI flash from us.
