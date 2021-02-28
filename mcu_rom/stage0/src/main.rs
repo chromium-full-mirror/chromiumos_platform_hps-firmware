@@ -6,16 +6,11 @@
 #![no_std]
 #![feature(maybe_uninit_ref)]
 
-mod common;
-use crate::common::*;
-
 mod premain;
 use crate::premain::*;
 
 mod loader;
 use crate::loader::*;
-
-use ufmt::uwriteln;
 
 // pick a panicking behavior
 #[allow(unused)]
@@ -31,7 +26,6 @@ use defmt_rtt as _; // global logger
 extern crate stm32g0xx_hal as hal;
 use cortex_m_rt::entry;
 
-use hal::serial::FullConfig;
 use hal::{prelude::*, stm32};
 
 #[macro_use]
@@ -65,7 +59,9 @@ fn inner_main() -> Result<(), ()> {
     // configure PC15 as o/p
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
-    let raw_usart = p
+    // Keep the USART pins in a known state early on.
+    use hal::serial::{FullConfig};
+    let _raw_usart = p
         .USART2
         .usart(
             gpioa.pa2, // rx
@@ -74,7 +70,6 @@ fn inner_main() -> Result<(), ()> {
             &mut rcc,
         )
         .map_err(drop)?;
-    let mut usart = Usart { serial: raw_usart };
     defmt::info!("booting..\r");
 
     // the art of implementing a stm32 bootloader in rust.
@@ -95,23 +90,6 @@ fn inner_main() -> Result<(), ()> {
     let _ = led.set_high();
     let stage1_digest = stage1_digest();
     defmt::info!("{:x}\r", stage1_digest);
-    let _ = led.set_low();
-
-    let _ = led.set_high();
-    uwriteln!(usart, "continue? [Y]\r").map_err(drop)?;
-    loop {
-        match usart.serial.read() {
-            Ok(b) => {
-                if b == b'Y' {
-                    uwriteln!(usart, " **starting..\r").map_err(drop)?;
-                    break;
-                } else {
-                    uwriteln!(usart, " try again.. [Y]\r").map_err(drop)?;
-                }
-            }
-            Err(_) => {}
-        }
-    }
     let _ = led.set_low();
 
     loader().map_err(drop)
