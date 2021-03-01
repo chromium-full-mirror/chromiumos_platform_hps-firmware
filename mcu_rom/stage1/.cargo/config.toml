@@ -7,6 +7,7 @@ rustflags = [
   # that will include 'memory.x' in the src root. Changing this
   # will result in mysteriously broken binaries and you will be sad.
   "-C", "link-arg=-Tlink.x",
+  "-C", "link-arg=-Tdefmt.x",
   # An additional linker script for any HPS-specific linker directives.
   "-C", "link-arg=-T../hps-common-link.x",
   # Linker optimizations that help binary size, especially when mixing C and Rust.

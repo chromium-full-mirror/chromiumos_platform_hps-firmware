@@ -20,10 +20,7 @@ use hal::{delay::Delay, prelude::*, stm32};
 use hmac_sha256::Hash;
 use spi_memory::{prelude::*, series25::Flash};
 
-use ufmt::uwriteln;
-
-mod usart;
-use crate::usart::*;
+use defmt_rtt as _; // global logger
 
 mod header;
 use crate::header::*;
@@ -74,17 +71,7 @@ fn inner_main() -> Result<(), ()> {
         &mut rcc,
     );
 
-    let raw_usart = p
-        .USART2
-        .usart(
-            gpioa.pa2, // rx
-            gpioa.pa3, // tx
-            FullConfig::default().baudrate(115_200.bps()),
-            &mut rcc,
-        )
-        .map_err(drop)?;
-    let mut usart = Usart { serial: raw_usart };
-    uwriteln!(usart, "booting stage1 {}\r", build_hash()).map_err(drop)?;
+    defmt::info!("booting stage1 {}\r", build_hash());
 
     let cp = Peripherals::take().ok_or(())?;
     let mut delay = Delay::syst(cp.SYST, &rcc);
@@ -95,7 +82,7 @@ fn inner_main() -> Result<(), ()> {
     match jedec_id {
         Ok(id) => {
             if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
-                uwriteln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
+                defmt::info!("Found GigaDevice GD25LQ128C/D !\r");
             }
         }
         Err(..) => {}
@@ -119,7 +106,7 @@ fn inner_main() -> Result<(), ()> {
     });
     // TODO: Make use of rom_sha
     let _rom_sha = hasher.finalize();
-    uwriteln!(usart, "Time elapsed {}us\r", elapsed_us.0).map_err(drop)?;
+    defmt::info!("Time elapsed {}us\r", elapsed_us.0);
 
     // configure PB4 as o/p
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
