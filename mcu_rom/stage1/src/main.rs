@@ -17,7 +17,7 @@ use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::entry;
 
 use hal::rcc::{self, PllConfig};
-use hal::serial::{BasicConfig, Serial};
+use hal::serial::BasicConfig;
 use hal::spi;
 use hal::{delay::Delay, prelude::*, stm32};
 
@@ -28,6 +28,9 @@ use spi_memory::{prelude::*, series25::Flash};
 use git_version::git_version;
 
 use ufmt::uwriteln;
+
+mod usart;
+use crate::usart::*;
 
 extern "C" {
     pub static VECTOR_TABLE: u32;
@@ -48,19 +51,6 @@ pub static __IMAGE_HDR: ImageHeader = ImageHeader {
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 const HEAP_SIZE: usize = 2048; // in bytes
-
-struct Usart {
-    serial: Serial<hal::stm32::USART2, BasicConfig>,
-}
-
-impl ufmt_write::uWrite for Usart {
-    type Error = ();
-
-    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
-        use core::fmt::Write;
-        self.serial.write_str(s).map_err(drop)
-    }
-}
 
 #[entry]
 fn main() -> ! {
