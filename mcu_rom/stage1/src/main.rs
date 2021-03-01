@@ -2,17 +2,9 @@
 #![no_std]
 #![feature(alloc_error_handler)]
 
-#[macro_use]
-extern crate alloc;
-
-use self::alloc::vec;
-use alloc_cortex_m::CortexMHeap;
-use core::alloc::Layout;
-
 use panic_reset as _;
 
 extern crate stm32g0xx_hal as hal;
-use cortex_m::asm;
 use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::entry;
 
@@ -32,10 +24,8 @@ use crate::usart::*;
 mod header;
 use crate::header::*;
 
-#[global_allocator]
-static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
-
-const HEAP_SIZE: usize = 2048; // in bytes
+mod heap;
+use crate::heap::*;
 
 #[entry]
 fn main() -> ! {
@@ -48,8 +38,7 @@ fn main() -> ! {
 
 fn inner_main() -> Result<(), ()> {
     // Initialize the allocator BEFORE you use it
-    let start = cortex_m_rt::heap_start() as usize;
-    unsafe { ALLOCATOR.init(start, HEAP_SIZE) }
+    init_heap();
 
     let p = stm32::Peripherals::take().ok_or(())?;
 
@@ -145,10 +134,4 @@ fn inner_main() -> Result<(), ()> {
         led.toggle().map_err(drop)?;
         delay.delay(700.ms());
     }
-}
-
-#[alloc_error_handler]
-fn oom(_: Layout) -> ! {
-    asm::bkpt();
-    loop {}
 }
