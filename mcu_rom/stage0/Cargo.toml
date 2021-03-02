@@ -1,5 +1,5 @@
 [package]
-name = "mcu_rom"
+name = "stage0"
 version = "0.1.0"
 authors = ["Edward O'Callaghan <quasisec@google.com>"]
 edition = "2018"
