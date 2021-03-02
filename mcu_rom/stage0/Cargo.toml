@@ -12,7 +12,7 @@ cortex-m-rt = "0.6.13"
 cortex-m-semihosting = { version = "0.3.7", features = ["jlink-quirks"]}
 panic-halt = "0.2.0"
 panic-abort = "0.3.2"
-stm32g0xx-hal =  { version = "0.0.9", features = ["rt", "stm32g031"]}
+stm32g0xx-hal =  { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g031"]}
 bitflags = "1.2.1"
 ufmt-write = "0.1.0"
 ufmt = "0.1.0"
