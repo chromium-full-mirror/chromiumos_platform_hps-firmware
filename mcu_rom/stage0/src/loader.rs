@@ -7,7 +7,7 @@ use crate::common::Usart;
 use ufmt::uwriteln;
 use hmac_sha256::Hash;
 
-use hps_mcu_common::ImageHeader;
+use mcu_common::ImageHeader;
 
 extern "C" {
     pub static _slot_start: ImageHeader;
