@@ -58,11 +58,11 @@ fn inner_main() -> Result<(), ()> {
     //        cs.set_low().unwrap(); // select
     //        cs
     //    };
-    let mut spi_cs = gpioa.pa4.into_push_pull_output();
+    let spi_cs = gpioa.pa4.into_push_pull_output();
 
     led.set_high().map_err(drop)?;
 
-    let mut spi = p.SPI1.spi(
+    let spi = p.SPI1.spi(
         (gpioa.pa5, gpioa.pa6, gpioa.pa7), // (SCK, MISO, MOSI)
         //        spi::MODE_0, // CPOL = 0, CPHA = 0
         spi::MODE_3, // Mode 3: CPOL = 1, (SCK=1 in idle), CPHA = 1
@@ -97,7 +97,7 @@ fn inner_main() -> Result<(), ()> {
         Err(..) => {}
     }
 
-    let mut stopwatch = p.TIM2.stopwatch(&mut rcc);
+    let stopwatch = p.TIM2.stopwatch(&mut rcc);
 
     let mut hasher = Hash::new();
     //    let mut buf = vec![0; 16*256];
@@ -113,7 +113,8 @@ fn inner_main() -> Result<(), ()> {
             let _ = led.toggle();
         }
     });
-    let rom_sha = hasher.finalize();
+    // TODO: Make use of rom_sha
+    let _rom_sha = hasher.finalize();
     uwriteln!(usart, "Time elapsed {}us\r", elapsed_us.0).map_err(drop)?;
 
     // configure PB4 as o/p
@@ -121,7 +122,8 @@ fn inner_main() -> Result<(), ()> {
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
     // configure PC14 as i/p
     let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
-    let fpga_done = gpioc.pc14.into_floating_input();
+    // TODO: Make use of fpga_done.
+    let _fpga_done = gpioc.pc14.into_floating_input();
     // configure PC15 as o/p
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
