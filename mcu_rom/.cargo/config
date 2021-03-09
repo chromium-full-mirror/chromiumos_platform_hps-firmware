@@ -16,5 +16,5 @@ rustflags = [
   "-C", "link-arg=--target=thumbv6m-none-eabi",
 ]
 
-[build]
-target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
+# Target architecture is specified on a per-crate basis so that library crates
+# can run tests on the host.
