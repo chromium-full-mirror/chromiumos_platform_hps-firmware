@@ -5,6 +5,7 @@
 use git_version::git_version;
 
 use mcu_common::ImageHeader;
+use mcu_common::Signature;
 
 extern "C" {
     pub static VECTOR_TABLE: u32;
@@ -19,7 +20,7 @@ pub static __IMAGE_HDR: ImageHeader = ImageHeader {
     vector_addr: unsafe { &VECTOR_TABLE },
     git_hash_ptr: &build_hash().as_bytes()[0],
     git_hash_length: build_hash().len(),
-    sig: [0; 64], // constructed with padded zeros for unsigned image.
+    sig: Signature::empty(), // constructed with padded zeros for unsigned image.
 };
 
 pub const fn build_hash() -> &'static str {
