@@ -1,5 +1,5 @@
 [package]
-name = "mcu_common"
+name = "hps_mcu_common"
 version = "0.1.0"
 authors = ["Google"]
 edition = "2018"

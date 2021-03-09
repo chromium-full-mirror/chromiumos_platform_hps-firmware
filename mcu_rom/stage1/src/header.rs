@@ -4,7 +4,7 @@
 
 use git_version::git_version;
 
-use mcu_common::ImageHeader;
+use hps_mcu_common::ImageHeader;
 
 extern "C" {
     pub static VECTOR_TABLE: u32;
