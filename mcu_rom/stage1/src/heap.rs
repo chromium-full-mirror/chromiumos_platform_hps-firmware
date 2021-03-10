@@ -4,8 +4,8 @@
 
 use core::alloc::Layout;
 
-use cortex_m::asm;
 use alloc_cortex_m::CortexMHeap;
+use cortex_m::asm;
 
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();

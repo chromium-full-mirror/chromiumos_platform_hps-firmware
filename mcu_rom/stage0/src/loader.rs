@@ -4,8 +4,8 @@
 
 use crate::common::Usart;
 
-use ufmt::uwriteln;
 use hmac_sha256::Hash;
+use ufmt::uwriteln;
 
 use mcu_common::ImageHeader;
 

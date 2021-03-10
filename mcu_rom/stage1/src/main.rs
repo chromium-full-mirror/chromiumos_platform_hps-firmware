@@ -126,6 +126,7 @@ fn inner_main() -> Result<(), ()> {
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
     // configure PC14 as i/p
     let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
+
     // TODO: Make use of fpga_done.
     let _fpga_done = gpioc.pc14.into_floating_input();
     // configure PC15 as o/p
