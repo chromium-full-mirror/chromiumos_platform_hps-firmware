@@ -1,0 +1,39 @@
+[package]
+name = "stage1"
+version = "0.1.0"
+authors = ["Edward O'Callaghan <quasisec@google.com>"]
+edition = "2018"
+license = "BSD-3-Clause"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mcu_common = { path = "../mcu_common" }
+cortex-m = "0.7.1"
+cortex-m-rt = "0.6.13"
+stm32g0xx-hal = { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g031"] }
+panic-reset = "0.1.0"
+git-version = "0.3.4"
+alloc-cortex-m = "0.4.1"
+spi-memory = "0.2.0"
+hmac-sha256 = "0.1.6"
+ufmt-write = "0.1.0"
+ufmt = "0.1.0"
+
+# Optimize all dependencies
+[profile.dev.package."*"]
+opt-level = "z"
+
+[profile.release.package."*"]
+opt-level = "z"
+
+[profile.dev]
+lto = true
+opt-level = "z"
+panic = "abort"
+
+[profile.release]
+debug = true
+lto = true
+opt-level = "z"
+panic = "abort"

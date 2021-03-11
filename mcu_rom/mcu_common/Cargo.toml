@@ -1,0 +1,10 @@
+[package]
+name = "mcu_common"
+version = "0.1.0"
+authors = ["Google"]
+edition = "2018"
+description = "Definitions shared between stage0 and stage1"
+license = "BSD-3-Clause"
+
+[dependencies]
+sodalite = "0.4.0"
