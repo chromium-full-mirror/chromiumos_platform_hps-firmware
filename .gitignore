@@ -1,0 +1,8 @@
+__pycache__
+build
+*.a
+*.o
+*.bin
+*.elf
+target
+Cargo.lock

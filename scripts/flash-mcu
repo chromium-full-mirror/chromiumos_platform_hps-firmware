@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+function print_usage {
+	echo "Usage:"
+	echo "$0 [-os] <ELF of fw image file>"
+}
+
+PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
+
+# Returns the address that a binary produced from the supplied ELF file needs to
+# be written. This is the lowest logical memory address of any section in the
+# ELF file. This corresponds to how objdump produces binary files from ELF
+# files. See the manpage for objdump for details.
+function get_flash_base_address {
+	local ELF="$1"
+	# List the LMA (logical memory address) of each section in the ELF file.
+	# Ignore those that are 0, since they aren't loaded, then sort and pick the
+	# lowest value.
+	arm-none-eabi-objdump -h "$ELF" \
+		| cut -c39- \
+		| cut -d' ' -f1 \
+		| grep ^0 \
+		| grep -v 00000000 \
+		| sort \
+		| head -1
+}
+
+use_ocd=0
+
+while getopts "hos" OPTION; do
+	case $OPTION in
+		o)
+			use_ocd=1
+			;;
+		*)
+			print_usage
+			exit 1
+			;;
+	esac
+done
+
+shift $[ $OPTIND - 1 ]
+
+if [ $# -ne 1 ]; then
+	print_usage
+	exit 1
+fi
+
+file="$1"
+
+if [ ! -f "$file" ]; then
+	echo "File \"$file\" not found" >&2
+	exit 1
+fi
+
+file=$(realpath "$file")
+
+if [ $use_ocd -eq 1 ]; then
+	openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/stm32g03_proto.cfg" \
+		-c "program $file verify reset exit"
+else
+	# st-flash doesn't handle conversion from ELF, convert to a BIN file.
+	arm-none-eabi-objcopy -O binary "${file}" "${file}.bin"
+	# If our program contains an image header, then sign it.
+	if arm-none-eabi-objdump -h "$file" | grep image_hdr >/dev/null; then
+		(
+			cd $PROJECT_ROOT/utils/sign-rom
+			cargo run --release \
+				-- \
+				--input "${file}.bin" \
+				--output "${file}.bin"
+		) || exit 1
+	fi
+	write_address=$(get_flash_base_address "$file")
+	if [[ $write_address =~ /08/ ]]; then
+		echo "Failed to determine write address for file. Got '${write_address}'" >&2
+		exit 1
+	fi
+	st-flash --connect-under-reset \
+		write \
+		"${file}.bin" \
+		"0x${write_address}"
+fi

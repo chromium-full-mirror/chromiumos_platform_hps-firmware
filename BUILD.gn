@@ -1,0 +1,27 @@
+group("default") {
+  deps = [
+    "//soc_rom",
+  ]
+}
+
+# Flags that are used for compiling and linking regardless of target
+# architecture.
+common_compile_and_link_flags = [
+  "-Werror=implicit-function-declaration",
+  "-Wsign-compare",
+  "-Wdouble-promotion",
+  "-Wshadow",
+  "-Wunused-variable",
+  "-Wmissing-field-initializers",
+  "-Wunused-function",
+  "-Wswitch",
+  "-Wvla",
+]
+
+config("compiler_defaults") {
+  cflags = common_compile_and_link_flags + [
+             "-Wall",
+             "-Wextra",
+           ]
+  ldflags = common_compile_and_link_flags + []
+}

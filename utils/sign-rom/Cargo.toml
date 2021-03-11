@@ -1,0 +1,10 @@
+[package]
+name = "sign-rom"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+argh = "0.1.4"
+anyhow = "1.0.38"
+mcu_common = { path = "../../mcu_rom/mcu_common" }

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Pushes a change to Gerrit for review
+
+RED='\033[0;31m'
+NO_COLOR='\033[0m'
+
+set -e
+git fetch origin
+if [ $(git log HEAD..origin/main | wc -l) -ne 0 ]; then
+  echo -e "${RED}Please rebase your changes first. origin/main has extra commits.${NO_COLOR}" >&2
+  exit 1
+fi
+git push sso://team/chromeos-platform-hps-repo/chromiumos-hps-proto HEAD:refs/for/main
+

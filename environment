@@ -1,0 +1,51 @@
+#!/bin/bash
+
+if [ "${BASH_SOURCE-}" = "$0" ]; then
+    echo -e "This script should be sourced, not run:\nsource $0" >&2
+    exit 1
+fi
+
+# Exports environment variables needed by parts of this project.
+
+# The following environment variables should already be set to appropriate
+# values:
+#   RADIANT_DIR (e.g. $HOME/lscc/radiant/2.2/bin/lin64)
+#
+# If RADIANT_DIR isn't set, then only simulation can be used.
+
+HPS_ROOT=$(dirname $(realpath ${BASH_SOURCE[0]}))
+
+RUSTC="$(which rustc)"
+# handle the case where rustc is not yet installed
+if [ -z "$RUSTC" ]; then
+  echo "rustc not found"
+  RUST_DIR=""
+else
+  RUST_DIR=$(dirname "${RUSTC}")
+fi
+
+
+# We completely overwrite any existing PATH. This ensures that we're not getting
+# things from unexpected places.
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin:$HPS_ROOT/third_party/gn/out:$RUST_DIR
+
+if [ -a "$RADIANT_DIR" ]; then
+    export PATH=$PATH:$RADIANT_DIR
+fi
+
+# This speeds up recompilation of verilator generated code quit a bit.
+export OBJCACHE=ccache
+export CC="ccache gcc"
+
+# We deliberately clear anything that may have already been in PYTHONPATH to
+# prevent accidentally pulling in anything outside this project.
+PYTHONPATH="${HPS_ROOT}/python"
+for i in "${HPS_ROOT}/third_party/python"/*; do
+    PYTHONPATH="${PYTHONPATH}:${i}"
+done
+export PYTHONPATH
+
+# Explicitly set the RISCV toolchain path.
+export USER_BIN_DIR=$(realpath ~)/bin
+export RISCV_DIR=${USER_BIN_DIR}/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14/bin
+export PATH=${RISCV_DIR}:$PATH

@@ -1,0 +1,73 @@
+group("soc_rom") {
+  deps = [
+    ":rom.bin(//toolchain:riscv-gcc)"
+  ]
+}
+
+riscv_shared_flags = [
+  "-march=rv32im",
+  "-mabi=ilp32",
+  "-ffunction-sections",
+  "-fdata-sections",
+  "-fno-common",
+  "-fomit-frame-pointer",
+  "-O2",
+]
+
+declare_args() {
+  litex_out_dir = ""
+}
+
+litex_repo = rebase_path("third_party/python/litex", "", "..")
+assert(litex_out_dir != "", "--args=litex_out_dir=... is required")
+third_party = rebase_path("third_party", "", "..")
+tflm_path = rebase_path("third_party/tflm_gen", "", "..")
+
+config("riscv_rom") {
+  cflags = riscv_shared_flags + [
+             "-fno-builtin",
+             "-nostdinc",
+             "-DNDEBUG",
+             "-D__vexriscv__",
+           ]
+  cflags_c = [
+    "-std=gnu11",
+  ]
+  include_dirs = [
+    "${litex_repo}/litex/soc/software/include/base",
+    "${litex_repo}/litex/soc/cores/cpu/vexriscv",
+    "${litex_repo}/litex/soc/software/include",
+    "${litex_out_dir}/software/include",
+    "${third_party}",
+    "${third_party}/litex_i2c",
+    "${tflm_path}",
+  ]
+  ldflags = riscv_shared_flags + [
+              "-nostartfiles",
+              "-Wl,--gc-sections",
+              "-Wl,--no-warn-mismatch",
+              "-Wl,--build-id=none",
+              "-L${litex_out_dir}/software/include",
+              "-L${litex_out_dir}/software/libbase",
+              "-L${litex_out_dir}/software/libcompiler_rt",
+              "-L${tflm_path}",
+            ]
+  libs = [
+    "base-nofloat",
+    "compiler_rt",
+    "tensorflow-microlite",
+    "m",
+    "stdc++",
+  ]
+}
+
+executable("rom.bin") {
+  sources = [
+    "../third_party/python/litex/litex/soc/cores/cpu/vexriscv/crt0.S",
+    "main2.c",
+    "cpp_support.c",
+    "hm01b0_litex.c",
+    "../third_party/litex_i2c/hps_i2c.c",
+  ]
+  configs += [ ":riscv_rom" ]
+}

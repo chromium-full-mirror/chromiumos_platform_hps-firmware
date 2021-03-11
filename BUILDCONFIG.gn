@@ -1,0 +1,7 @@
+# Only the default because we don't have any other toolchains at this stage.
+# Eventually we probably want the default to be the target ChromiumOS platform.
+set_default_toolchain("//toolchain:dummy")
+
+set_defaults("executable") {
+  configs = ["//:compiler_defaults"]
+}

@@ -1,0 +1,126 @@
+#!/bin/bash
+HPS_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
+source "${HPS_ROOT}/environment"
+
+set -e
+git submodule update --init
+
+# Verify dependencies that can be installed with apt (if available)
+missing=()
+
+if ! which arm-none-eabi-gcc >/dev/null; then
+    missing+=(gcc-arm-none-eabi)
+fi
+
+if ! which gdb-multiarch >/dev/null; then
+    missing+=(gdb-multiarch)
+fi
+
+if ! which verilator >/dev/null; then
+    missing+=(verilator)
+fi
+
+if ! which ccache >/dev/null; then
+    missing+=(ccache)
+fi
+
+if ! which clang++ >/dev/null; then
+    missing+=(clang)
+fi
+
+if ! which autopep8 >/dev/null; then
+    missing+=(python3-autopep8)
+fi
+
+if [ ! -f /usr/bin/clang-format ]; then
+    missing+=(clang-format)
+fi
+
+if [ ! -d /usr/include/json-c ]; then
+    missing+=(libjson-c-dev)
+fi
+
+if [ ! -d /usr/include/event2 ]; then
+    missing+=(libevent-dev)
+fi
+
+if ! which ninja >/dev/null; then
+    missing+=(ninja-build)
+fi
+
+if ! which openocd >/dev/null; then
+    missing+=(openocd)
+fi
+
+if ! which st-util >/dev/null; then
+    missing+=(stlink-tools)
+fi
+
+if ! which pygmentize >/dev/null; then
+    missing+=(python3-pygments)
+fi
+
+if ! which lld >/dev/null; then
+    missing+=(lld)
+fi
+
+if [ ! -f /usr/include/libusb-1.0/libusb.h ]; then
+    missing+=(libusb-1.0-0-dev)
+fi
+
+if [ ${#missing[@]} -gt 0 ]; then
+    echo "Missing packages: ${missing[@]}" >&2
+    if which apt >/dev/null; then
+        echo -n "Install [y]/n? " >&2
+        read answer
+        if [ "$answer" == "y" -o -z "$answer" ]; then
+            sudo apt install -y "${missing[@]}"
+        fi
+    else
+        exit 1
+    fi
+fi
+
+# Ensure specific RISCV compiler installed
+if [ ! -d $RISCV_DIR ]; then
+    echo "Did not find a RISCV toolchain at ${RISCV_DIR}" >&2
+    echo -n "Download and install 290MB [y]/n? " >&2
+    read answer
+    if [ "$answer" == "y" -o -z "$answer" ]; then
+        (
+            PKG_URL=https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14.tar.gz
+            mkdir -p ~/Downloads
+            mkdir -p ${USER_BIN_DIR}
+            curl ${PKG_URL} -o ~/Downloads/riscv64.tar.gz
+            tar -C ${USER_BIN_DIR} -xvz -f ~/Downloads/riscv64.tar.gz
+        )
+    fi
+fi
+
+if ! which rustc >/dev/null; then
+    echo -n "Install Rust [y]/n?" >&2
+    read answer
+    if [ "$answer" == "y" -o -z "$answer" ]; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    fi
+fi
+
+# Warn about different versions
+if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
+    echo "Possibly unsupported version of arm-none-eabi-gcc. 8.3.1 works." >&2
+fi
+
+# Build gn if it hasn't already been built
+GN="$HPS_ROOT/third_party/gn"
+if [ ! -f "$GN/out/gn" ]; then
+    cd $GN
+    python3 build/gen.py
+    ninja -C out
+fi
+
+# Build flashrom
+echo "BUILDING FLASHROM"
+(
+    cd $HPS_ROOT/third_party/flashrom
+    make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no
+)
