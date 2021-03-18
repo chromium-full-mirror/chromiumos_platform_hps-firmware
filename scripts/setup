@@ -111,6 +111,12 @@ fi
 
 rustup +$RUST_VERSION target add thumbv6m-none-eabi
 
+for i in flip-link probe-run; do
+    if [ ! -f "$HOME/.cargo/bin/$i" ]; then
+        cargo install "$i"
+    fi
+done
+
 # Warn about different versions
 if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
     echo "Possibly unsupported version of arm-none-eabi-gcc. 8.3.1 works." >&2
