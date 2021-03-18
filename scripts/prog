@@ -35,7 +35,7 @@ if [ ! -r "${FILE}" ]; then
   echo "${FILE} is not readable"
   exit 3
 fi
-FILESIZE="$(stat -c %s "${FILE}")"
+FILESIZE="$(stat -L -c %s "${FILE}")"
 
 
 # Use AREA to find start location in ROM
