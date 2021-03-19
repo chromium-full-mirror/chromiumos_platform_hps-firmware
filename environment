@@ -24,6 +24,10 @@ else
   RUST_DIR=$(dirname "${RUSTC}")
 fi
 
+# Note, LLVM-12 was merged into rust on 2021-03-04. Debian doesn't yet have
+# lld-12, so while we're using lld to link, we need to stick to rustc versions
+# that use LLVM-11
+RUST_VERSION=nightly-2021-03-03
 
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
