@@ -60,6 +60,10 @@ if ! which pygmentize >/dev/null; then
     missing+=(python3-pygments)
 fi
 
+if ! python3 -c 'import serial' > /dev/null; then
+    missing+=(python3-serial)
+fi
+
 if ! which lld >/dev/null; then
     missing+=(lld)
 fi
