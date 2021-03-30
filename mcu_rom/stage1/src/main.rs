@@ -13,7 +13,7 @@ use cortex_m::peripheral::Peripherals;
 use cortex_m_rt::entry;
 
 use hal::rcc::{self, PllConfig};
-use hal::serial::BasicConfig;
+use hal::serial::FullConfig;
 use hal::spi;
 use hal::{delay::Delay, prelude::*, stm32};
 
@@ -79,7 +79,7 @@ fn inner_main() -> Result<(), ()> {
         .usart(
             gpioa.pa2, // rx
             gpioa.pa3, // tx
-            BasicConfig::default().baudrate(115_200.bps()),
+            FullConfig::default().baudrate(115_200.bps()),
             &mut rcc,
         )
         .map_err(drop)?;

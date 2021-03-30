@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use hal::serial::{BasicConfig, Serial};
+use hal::serial::{FullConfig, Serial};
 
 pub struct Usart {
-    pub serial: Serial<hal::stm32::USART2, BasicConfig>,
+    pub serial: Serial<hal::stm32::USART2, FullConfig>,
 }
 
 impl ufmt_write::uWrite for Usart {

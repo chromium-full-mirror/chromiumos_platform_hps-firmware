@@ -29,7 +29,7 @@ use panic_abort as _;
 extern crate stm32g0xx_hal as hal;
 use cortex_m_rt::entry;
 
-use hal::serial::BasicConfig;
+use hal::serial::FullConfig;
 use hal::{prelude::*, stm32};
 
 #[macro_use]
@@ -68,7 +68,7 @@ fn inner_main() -> Result<(), ()> {
         .usart(
             gpioa.pa2, // rx
             gpioa.pa3, // tx
-            BasicConfig::default().baudrate(115_200.bps()),
+            FullConfig::default().baudrate(115_200.bps()),
             &mut rcc,
         )
         .map_err(drop)?;
