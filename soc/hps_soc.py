@@ -13,6 +13,8 @@ from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
 from litex.soc.cores.bitbang import I2CMaster
 
+from litex.build.lattice.radiant import radiant_build_args, radiant_build_argdict
+
 from patch import Patch
 from cam_control import CameraControl
 
@@ -160,6 +162,7 @@ class HpsSoC(LiteXSoC):
 
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
+    radiant_build_args(parser)
 
 
 def create_builder(soc, args):
@@ -182,11 +185,14 @@ def main():
                         help="Enable debug mode")
     parser.add_argument("--build", action="store_true",
                         help="Whether to do a full build, including the bitstream")
+    parser.add_argument("--toolchain", default="radiant",
+                        help="Which toolchain to use, radiant (default) or oxide")
     args = parser.parse_args()
 
-    soc = HpsSoC(Platform(), debug=args.debug)
+    soc = HpsSoC(Platform(args.toolchain), debug=args.debug)
     builder = create_builder(soc, args)
-    vns = builder.build(run=args.build)
+    builder_kwargs = radiant_build_argdict(args) if args.toolchain == "radiant" else {}
+    vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 
     if not args.build:

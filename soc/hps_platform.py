@@ -132,14 +132,14 @@ class Platform(LatticePlatform):
     clk_divisor = 4
     sys_clk_freq = int(450e6 / clk_divisor)
 
-    def __init__(self):
+    def __init__(self, toolchain="radiant"):
         LatticePlatform.__init__(self,
                                  # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't
                                  # seem to be available in Radiant 2.2, at least on Linux.
                                  device="LIFCL-17-8UWG72C",
                                  io=hps_io + hps_nx17_io + hps_nx17_debug_io + hps_debug_common,
                                  connectors=[],
-                                 toolchain="radiant")
+                                 toolchain=toolchain)
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
