@@ -183,13 +183,6 @@ if [ ! -f "${GN}/out/gn" ]; then
     ninja -C out
 fi
 
-# Build flashrom
-echo "BUILDING FLASHROM"
-(
-    cd "${PROJECT_ROOT}/third_party/flashrom"
-    make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no
-)
-
 # Build yosys
 echo "BUILDING YOSYS"
 (

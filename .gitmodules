@@ -34,9 +34,6 @@
 [submodule "third_party/SparkFun_HM01B0_Camera_ArduinoLibrary"]
 	path = third_party/SparkFun_HM01B0_Camera_ArduinoLibrary
 	url = https://github.com/sparkfun/SparkFun_HM01B0_Camera_ArduinoLibrary.git
-[submodule "third_party/flashrom"]
-	path = third_party/flashrom
-	url = https://chromium.googlesource.com/external/coreboot.org/flashrom
 [submodule "third_party/scripts/gdb-dashboard"]
 	path = third_party/scripts/gdb-dashboard
 	url = https://github.com/cyrus-and/gdb-dashboard.git
