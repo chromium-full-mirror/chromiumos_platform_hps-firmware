@@ -5,9 +5,6 @@
 To build both stage0 (RO) and stage1 (RW):
 ```bash
 cd ~/src/hps-firmware/mcu_rom/stage0 && cargo build --release
-```
-
-```bash
 cd ~/src/hps-firmware/mcu_rom/stage1 && cargo build --release
 ```
 
@@ -15,13 +12,14 @@ Now connect the STM32G071 Nucleo-64 board to your host system and flash the
 MCU with the above staged firmware in the following way:
 
 ```bash
-./scripts/flash-mcu mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0
+cd ~/src/hps-firmware/
 
+./scripts/flash-mcu mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0
 ./scripts/flash-mcu mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1
 ```
 
 Finally, to see log messages run:
 
 ```bash
- cargo run
+cd ~/src/hps-firmware/mcu_rom/stage0 && cargo run
 ```
