@@ -28,9 +28,6 @@
 [submodule "third_party/python/pythondata-misc-tapcfg"]
 	path = third_party/python/pythondata-misc-tapcfg
 	url = https://github.com/litex-hub/pythondata-misc-tapcfg.git
-[submodule "third_party/gn"]
-	path = third_party/gn
-	url = https://gn.googlesource.com/gn
 [submodule "third_party/SparkFun_HM01B0_Camera_ArduinoLibrary"]
 	path = third_party/SparkFun_HM01B0_Camera_ArduinoLibrary
 	url = https://github.com/sparkfun/SparkFun_HM01B0_Camera_ArduinoLibrary.git

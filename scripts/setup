@@ -175,14 +175,6 @@ if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
     echo "Possibly unsupported version of arm-none-eabi-gcc. 8.3.1 works." >&2
 fi
 
-# Build gn if it hasn't already been built
-GN="${PROJECT_ROOT}/third_party/gn"
-if [ ! -f "${GN}/out/gn" ]; then
-    cd "${GN}" || exit
-    python3 build/gen.py
-    ninja -C out
-fi
-
 # Build yosys
 echo "BUILDING YOSYS"
 (
