@@ -1,5 +1,5 @@
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
-runner = 'probe-run --probe 0483:3748 --chip stm32g031'
+runner = 'probe-run --probe 0483:374b --chip stm32g071'
 
 rustflags = [
   # !!CAREFUL!! link.x is an internally generated linker script
