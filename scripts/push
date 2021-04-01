@@ -10,5 +10,5 @@ if [ $(git log HEAD..origin/main | wc -l) -ne 0 ]; then
   echo -e "${RED}Please rebase your changes first. origin/main has extra commits.${NO_COLOR}" >&2
   exit 1
 fi
-git push sso://chrome-internal/hps-firmware HEAD:refs/for/main
+git push $(git remote get-url origin) HEAD:refs/for/main
 
