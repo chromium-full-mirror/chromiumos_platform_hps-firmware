@@ -40,8 +40,9 @@ impl<'a> HpsInterface<'a> {
     fn new(ftdi: &'a Ft2232hHal<Initialized>) -> Result<Self> {
         let i2c = ftdi.i2c()?;
         let mut hps = Self { i2c };
-        if hps.read_register(1)? != 42 {
-            bail!("HPS not detected");
+        let magic = hps.read_register(0)?;
+        if magic != mcu_common::hps_magic_code() {
+            bail!("HPS not detected (read {})", magic);
         }
         Ok(hps)
     }

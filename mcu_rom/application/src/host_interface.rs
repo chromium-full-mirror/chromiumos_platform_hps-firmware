@@ -36,8 +36,9 @@ impl RegisterData {
 fn read_register(register: u8, cs: &CriticalSection) -> u16 {
     let register_data = REGISTER_DATA.borrow(cs).borrow();
     match register {
-        1 => 42,
-        2 => 255,
+        0 => mcu_common::hps_magic_code(),
+        // Register 9 is a RW register that's included for now for testing
+        // purposes.
         9 => register_data.reg9,
         _ => 0,
     }

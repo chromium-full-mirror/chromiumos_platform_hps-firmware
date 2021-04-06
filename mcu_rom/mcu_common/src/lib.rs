@@ -56,6 +56,15 @@ pub fn hash_and_sign(data: &[u8], private_key: &PrivateKey) -> Signature {
     sign_hash(&hasher.finalize(), private_key)
 }
 
+/// Returns a magic number that a functioning HPS will always return from
+/// register 0. This is used to confirm that a particular device on the I2C bus
+/// is actually a HPS.
+pub const fn hps_magic_code() -> u16 {
+    let code = b"HPS";
+    (((((code[0] - b'A') as u16) << 5) | ((code[1] - b'A') as u16)) << 5)
+        | ((code[2] - b'A') as u16) | (1 << 15)
+}
+
 struct Hash(pub [u8; HASH_LEN]);
 
 struct Hasher {
