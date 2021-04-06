@@ -15,9 +15,8 @@ mod host_interface;
 
 #[entry]
 fn main() -> ! {
-    match inner_main() {
-        Ok(()) => defmt::info!("inner_main ran successfully"),
-        Err(()) => defmt::info!("inner_main got an error"),
+    if let Err(()) = inner_main() {
+        defmt::info!("inner_main got an error");
     }
     loop {}
 }
@@ -32,12 +31,17 @@ fn inner_main() -> Result<(), ()> {
 
     let gpiob = p.GPIOB.split(&mut rcc);
 
-    host_interface::initialize(
+    let _i2c_peripheral = host_interface::initialize(
         p.I2C1,
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
     );
 
-    Ok(())
+    defmt::info!("MCU application started");
+
+    // Loop while we wait for interrupts.
+    loop {
+        // TODO: Enter some idle state while we're waiting for interrupts.
+    }
 }

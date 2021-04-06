@@ -8,6 +8,7 @@ use cortex_m::interrupt::Mutex;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::rcc::Rcc;
+use i2c_peripheral::I2cPeripheral;
 use panic_probe as _;
 use stm32g0::stm32g071::I2C1;
 
@@ -17,8 +18,8 @@ pub(crate) fn initialize(
     rcc: &mut Rcc,
     sda: impl SDAPin<I2C1>,
     scl: impl SCLPin<I2C1>,
-) {
-    i2c_peripheral::initialize(i2c1, rcc, sda, scl, &read_register, &write_register);
+) -> I2cPeripheral {
+    I2cPeripheral::new(i2c1, rcc, sda, scl, &read_register, &write_register)
 }
 
 static REGISTER_DATA: Mutex<RefCell<RegisterData>> = Mutex::new(RefCell::new(RegisterData::new()));

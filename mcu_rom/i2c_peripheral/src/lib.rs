@@ -27,60 +27,79 @@ use stm32g0::stm32g071::I2C1;
 
 const I2C_PERIPHERAL_ADDRESS: u8 = 0x5d;
 
-/// Initializes the I2C interface with the host (I2C1).
-pub fn initialize(
-    i2c1: I2C1,
-    rcc: &mut Rcc,
-    sda: impl SDAPin<I2C1>,
-    scl: impl SCLPin<I2C1>,
-    read_register_callback: &'static ReadRegisterCallback,
-    write_register_callback: &'static WriteRegisterCallback,
-) {
-    let i2c = i2c1.i2c(sda, scl, Config::new(400.khz()), rcc);
+#[non_exhaustive]
+pub struct I2cPeripheral {}
 
-    // un-own p.I2C1 block to tap registers
-    let (ii2c, _, _) = i2c.release();
+impl I2cPeripheral {
+    /// Initializes the I2C interface with the host (I2C1).
+    pub fn new(
+        i2c1: I2C1,
+        rcc: &mut Rcc,
+        sda: impl SDAPin<I2C1>,
+        scl: impl SCLPin<I2C1>,
+        read_register_callback: &'static ReadRegisterCallback,
+        write_register_callback: &'static WriteRegisterCallback,
+    ) -> I2cPeripheral {
+        let i2c = i2c1.i2c(sda, scl, Config::new(400.khz()), rcc);
 
-    // The I2C unit needs to be disabled while we configure it
-    ii2c.cr1.modify(|_, w| w.pe().clear_bit());
-    // Enable the kinds of I2C interrupts that we want to handle
-    ii2c.cr1.modify(|_, w| w.addrie().set_bit());
-    ii2c.cr1.modify(|_, w| w.rxie().set_bit());
-    ii2c.cr1.modify(|_, w| w.txie().set_bit());
-    // Enable the I2C unit
-    ii2c.cr1.modify(|_, w| w.pe().set_bit());
+        // un-own p.I2C1 block to tap registers
+        let (ii2c, _, _) = i2c.release();
 
-    // Set our I2C address. oa1en need to be clear while we set the address.
-    ii2c.oar1.modify(|_, w| w.oa1en().clear_bit());
-    ii2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
-    ii2c.oar1
-        .modify(|_, w| unsafe { w.oa1_7_1().bits(I2C_PERIPHERAL_ADDRESS) });
-    // Enable automatic ACK of our address.
-    ii2c.oar1.modify(|_, w| w.oa1en().set_bit());
+        // The I2C unit needs to be disabled while we configure it
+        ii2c.cr1.modify(|_, w| w.pe().clear_bit());
+        // Enable the kinds of I2C interrupts that we want to handle
+        ii2c.cr1.modify(|_, w| w.addrie().set_bit());
+        ii2c.cr1.modify(|_, w| w.rxie().set_bit());
+        ii2c.cr1.modify(|_, w| w.txie().set_bit());
+        // Enable the I2C unit
+        ii2c.cr1.modify(|_, w| w.pe().set_bit());
 
-    cortex_m::interrupt::free(|cs| {
-        I2C_PERIPHERAL
-            .borrow(cs)
-            .borrow_mut()
-            .replace(I2cPeripheral {
-                ii2c,
-                read_register_callback,
-                write_register_callback,
-                register: None,
-                data: [0u8; 2],
-                position: 0,
-            });
-    });
+        // Set our I2C address. oa1en need to be clear while we set the address.
+        ii2c.oar1.modify(|_, w| w.oa1en().clear_bit());
+        ii2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
+        ii2c.oar1
+            .modify(|_, w| unsafe { w.oa1_7_1().bits(I2C_PERIPHERAL_ADDRESS) });
+        // Enable automatic ACK of our address.
+        ii2c.oar1.modify(|_, w| w.oa1en().set_bit());
 
-    // Enable I2C interrupts
-    stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
-    unsafe { stm32::NVIC::unmask(hal::stm32::Interrupt::I2C1) };
+        cortex_m::interrupt::free(|cs| {
+            I2C_PERIPHERAL_STATE
+                .borrow(cs)
+                .borrow_mut()
+                .replace(I2cPeripheralState {
+                    ii2c,
+                    read_register_callback,
+                    write_register_callback,
+                    register: None,
+                    data: [0u8; 2],
+                    position: 0,
+                });
+        });
+
+        // Enable I2C interrupts
+        stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
+        unsafe { stm32::NVIC::unmask(hal::stm32::Interrupt::I2C1) };
+
+        I2cPeripheral {}
+    }
+}
+
+impl Drop for I2cPeripheral {
+    fn drop(&mut self) {
+        stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
+        stm32::NVIC::mask(hal::stm32::Interrupt::I2C1);
+        cortex_m::interrupt::free(|cs| {
+            if let Some(i2c) = I2C_PERIPHERAL_STATE.borrow(cs).borrow_mut().take() {
+                i2c.ii2c.cr1.modify(|_, w| w.pe().clear_bit());
+            }
+        });
+    }
 }
 
 type ReadRegisterCallback = dyn Sync + Fn(u8, &CriticalSection) -> u16;
 type WriteRegisterCallback = dyn Sync + Fn(u8, u16, &CriticalSection);
 
-struct I2cPeripheral {
+struct I2cPeripheralState {
     ii2c: hal::stm32::I2C1,
     read_register_callback: &'static ReadRegisterCallback,
     write_register_callback: &'static WriteRegisterCallback,
@@ -90,9 +109,10 @@ struct I2cPeripheral {
     position: usize,
 }
 
-static I2C_PERIPHERAL: Mutex<RefCell<Option<I2cPeripheral>>> = Mutex::new(RefCell::new(None));
+static I2C_PERIPHERAL_STATE: Mutex<RefCell<Option<I2cPeripheralState>>> =
+    Mutex::new(RefCell::new(None));
 
-impl I2cPeripheral {
+impl I2cPeripheralState {
     fn handle_interrupt(&mut self, cs: &CriticalSection) {
         let isr = self.ii2c.isr.read();
         if isr.txis().bit_is_set() {
@@ -162,7 +182,7 @@ fn I2C1() {
     // interrupts, so there should never be contention. This requires an
     // additional unsafe, so is left for a subsequent CL.
     cortex_m::interrupt::free(|cs| {
-        if let Some(peripheral) = I2C_PERIPHERAL.borrow(cs).borrow_mut().as_mut() {
+        if let Some(peripheral) = I2C_PERIPHERAL_STATE.borrow(cs).borrow_mut().as_mut() {
             peripheral.handle_interrupt(cs);
         }
     });
