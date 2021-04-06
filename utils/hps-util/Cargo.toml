@@ -1,0 +1,10 @@
+[package]
+name = "hps-util"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.38"
+argh = "0.1.4"
+embedded-hal = "0.2.4"
+ftd2xx-embedded-hal = { git = "https://github.com/davidlattimore/ftd2xx-embedded-hal.git", branch = "ft2232h", revision = "17ddcfb8b7b37fc3ae322570dda98466de2d18d7" }

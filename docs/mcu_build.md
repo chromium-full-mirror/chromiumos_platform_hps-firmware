@@ -23,3 +23,17 @@ Finally, to see log messages run:
 ```bash
 cd ~/src/hps-firmware/mcu_rom/stage0 && cargo run
 ```
+
+## MCU application
+
+To run the MCU application and see output:
+
+```bash
+cd ~/src/hps-firmware/mcu_rom/application && cargo run
+```
+
+To verify the I2C connection to the HPS board, run:
+
+```bash
+cd ~/src/hps-firmware/utils/hps-util && cargo run
+```
