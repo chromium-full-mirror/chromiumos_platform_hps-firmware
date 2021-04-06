@@ -25,7 +25,9 @@ pub struct Signature {
 
 impl Signature {
     pub const fn empty() -> Signature {
-        Signature { raw_bytes: [0; SIGN_LEN] }
+        Signature {
+            raw_bytes: [0; SIGN_LEN],
+        }
     }
 
     pub fn copy_from(&mut self, other: &Self) {
@@ -62,7 +64,8 @@ pub fn hash_and_sign(data: &[u8], private_key: &PrivateKey) -> Signature {
 pub const fn hps_magic_code() -> u16 {
     let code = b"HPS";
     (((((code[0] - b'A') as u16) << 5) | ((code[1] - b'A') as u16)) << 5)
-        | ((code[2] - b'A') as u16) | (1 << 15)
+        | ((code[2] - b'A') as u16)
+        | (1 << 15)
 }
 
 struct Hash(pub [u8; HASH_LEN]);
@@ -75,7 +78,9 @@ const BLOCK_SIZE: usize = 256;
 
 impl Hasher {
     fn new() -> Hasher {
-        Hasher { hash: Hash([0u8; 64]) }
+        Hasher {
+            hash: Hash([0u8; 64]),
+        }
     }
 
     fn add_block(&mut self, data: &[u8]) {
@@ -95,7 +100,9 @@ impl Hasher {
 fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
     let mut out = [0u8; SIGN_LEN + HASH_LEN];
     sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
-    let mut signature = Signature { raw_bytes: [0u8; SIGN_LEN] };
+    let mut signature = Signature {
+        raw_bytes: [0u8; SIGN_LEN],
+    };
     signature.raw_bytes.clone_from_slice(&out[..SIGN_LEN]);
     signature
 }

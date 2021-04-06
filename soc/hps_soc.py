@@ -191,7 +191,8 @@ def main():
 
     soc = HpsSoC(Platform(args.toolchain), debug=args.debug)
     builder = create_builder(soc, args)
-    builder_kwargs = radiant_build_argdict(args) if args.toolchain == "radiant" else {}
+    builder_kwargs = radiant_build_argdict(
+        args) if args.toolchain == "radiant" else {}
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 

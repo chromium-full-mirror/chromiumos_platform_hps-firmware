@@ -25,11 +25,15 @@ pub fn loader() -> Result<(), &'static str> {
         };
         unsafe {
             defmt::info!(" [[stage 1]] >> version={}\r", _slot_start.version);
-            defmt::debug!(" [[stage 1]] >> should I jmp to vector={:x}\r",
+            defmt::debug!(
+                " [[stage 1]] >> should I jmp to vector={:x}\r",
                 (_slot_start.vector_addr as *const u32) as u32
             );
             defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
-            defmt::info!(" [[stage 1]] >> sig={:x}\n\r", _slot_start.sig.raw_bytes()[0]);
+            defmt::info!(
+                " [[stage 1]] >> sig={:x}\n\r",
+                _slot_start.sig.raw_bytes()[0]
+            );
             cortex_m::asm::bootload(_slot_start.vector_addr);
         }
     }

@@ -63,7 +63,10 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     // for an ImageHader, but again we don't use any fields that have alignment
     // more than 1.
     let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut ImageHeader) };
-    Ok((&mut header.sig, &file_bytes[std::mem::size_of::<ImageHeader>()..]))
+    Ok((
+        &mut header.sig,
+        &file_bytes[std::mem::size_of::<ImageHeader>()..],
+    ))
 }
 
 #[cfg(test)]

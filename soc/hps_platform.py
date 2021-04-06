@@ -19,7 +19,7 @@ hps_io = [
         Subsignal("mclk", Pins("G6")),
         Subsignal("pclk", Pins("G5")),
         Subsignal("trig", Pins("G4")),
-        #Subsignal("int",  Pins("E2")),  # Shared with serial rx
+        # Subsignal("int",  Pins("E2")),  # Shared with serial rx
         IOStandard("LVCMOS18H")
      ),
     # Connection to motherboard

@@ -60,7 +60,7 @@ fn inner_main() -> Result<(), ()> {
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
     // Keep the USART pins in a known state early on.
-    use hal::serial::{FullConfig};
+    use hal::serial::FullConfig;
     let _raw_usart = p
         .USART2
         .usart(
