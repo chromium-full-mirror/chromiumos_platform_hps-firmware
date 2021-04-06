@@ -53,3 +53,13 @@ export PYTHONPATH
 export USER_BIN_DIR=$(realpath ~)/bin
 export RISCV_DIR=${USER_BIN_DIR}/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14/bin
 export PATH=${RISCV_DIR}:$PATH
+
+HPS_RUST_DIRS=(
+    mcu_rom/application
+    mcu_rom/i2c_peripheral
+    mcu_rom/mcu_common
+    mcu_rom/stage0
+    mcu_rom/stage1
+    utils/hps-util
+    utils/sign-rom
+)
