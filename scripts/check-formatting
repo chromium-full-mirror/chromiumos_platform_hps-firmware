@@ -1,0 +1,21 @@
+#!/bin/bash
+# Checks formatting of files.
+
+PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
+source "$PROJECT_ROOT/environment"
+
+reformat=()
+
+for d in "${HPS_RUST_DIRS[@]}"; do
+    reformat+=($(
+        cd "${PROJECT_ROOT}/${d}"
+        cargo fmt -- --check -l
+    ))
+done
+
+if [ ${#reformat[@]} -gt 0 ]; then
+    echo "The following files need reformatting. Please run scripts/format"
+    for f in "${reformat[@]}"; do
+        echo "$f"
+    done
+fi
