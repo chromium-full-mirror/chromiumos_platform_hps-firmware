@@ -18,4 +18,5 @@ if [ ${#reformat[@]} -gt 0 ]; then
     for f in "${reformat[@]}"; do
         echo "$f"
     done
+    exit 1
 fi
