@@ -68,22 +68,23 @@ pub const fn hps_magic_code() -> u16 {
         | (1 << 15)
 }
 
-struct Hash(pub [u8; HASH_LEN]);
+#[derive(Debug)]
+pub struct Hash(pub [u8; HASH_LEN]);
 
-struct Hasher {
+pub struct Hasher {
     hash: Hash,
 }
 
 const BLOCK_SIZE: usize = 256;
 
 impl Hasher {
-    fn new() -> Hasher {
+    pub fn new() -> Hasher {
         Hasher {
             hash: Hash([0u8; 64]),
         }
     }
 
-    fn add_block(&mut self, data: &[u8]) {
+    pub fn add_block(&mut self, data: &[u8]) {
         let mut hash = [0u8; HASH_LEN];
         sodalite::hash(&mut hash, data);
         let mut hashes = [0u8; HASH_LEN * 2];
@@ -92,12 +93,12 @@ impl Hasher {
         sodalite::hash(&mut self.hash.0, &hashes);
     }
 
-    fn finalize(self) -> Hash {
+    pub fn finalize(self) -> Hash {
         self.hash
     }
 }
 
-fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
+pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
     let mut out = [0u8; SIGN_LEN + HASH_LEN];
     sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
     let mut signature = Signature {
