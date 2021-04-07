@@ -14,7 +14,7 @@ use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
 
-const HPS_ADDRESS: u8 = 0x5d;
+const HPS_ADDRESS: u8 = 0x30;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.

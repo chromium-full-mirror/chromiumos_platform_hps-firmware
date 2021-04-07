@@ -25,7 +25,7 @@ use hal::rcc::Rcc;
 use hal::stm32;
 use stm32g0::stm32g071::I2C1;
 
-const I2C_PERIPHERAL_ADDRESS: u8 = 0x5d;
+const I2C_PERIPHERAL_ADDRESS: u8 = 0x30;
 
 #[non_exhaustive]
 pub struct I2cPeripheral {}
