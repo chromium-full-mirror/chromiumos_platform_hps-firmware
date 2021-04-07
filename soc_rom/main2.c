@@ -169,8 +169,8 @@ void raw() {
   puts("--- base64 ---");
 }
 
-void raw_10() {
-  for (int i = 0; i < 10; i++) {
+void raw_3() {
+  for (int i = 0; i < 3; i++) {
     capture();
     raw();
     leds_out_write(~i);
@@ -240,7 +240,7 @@ int main(void) {
     puts("4. Capture and classify");
     printf("9. Toggle Fudge (now %d)\n", x_fudge);
     puts("0. Raw data");
-    puts("-. Ten raw frames");
+    puts("-. Capture three raw frames");
     puts("> ");
 
     int c = readchar();
@@ -270,7 +270,7 @@ int main(void) {
         raw();
         break;
       case '-':
-        raw_10();
+        raw_3();
         break;
       default:
         puts("???\n");
