@@ -5,7 +5,8 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use mcu_common::hash_and_sign;
+use mcu_common::BLOCK_SIZE;
+use mcu_common::{Hasher, sign_hash};
 use mcu_common::ImageHeader;
 use mcu_common::PrivateKey;
 use mcu_common::Signature;
@@ -62,7 +63,15 @@ fn run(config: &Config) -> Result<()> {
 /// `file_bytes`
 fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
-    let signature = hash_and_sign(payload, &SECRET_KEY);
+
+    let mut hasher = Hasher::new();
+    for block in payload.chunks(BLOCK_SIZE) {
+        hasher.add_block(block);
+    }
+    let hash = hasher.finalize();
+    println!("signing with digest = {:#02X?}", hash);
+    let signature = sign_hash(&hash, &SECRET_KEY);
+
     signature_out.copy_from(&signature);
     Ok(())
 }

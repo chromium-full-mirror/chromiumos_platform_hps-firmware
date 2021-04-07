@@ -8,6 +8,8 @@ use sodalite::HASH_LEN;
 pub use sodalite::SIGN_LEN;
 pub use sodalite::SIGN_SECRET_KEY_LEN;
 
+pub const BLOCK_SIZE: usize = 256;
+
 #[repr(C, packed(4))]
 pub struct ImageHeader {
     pub magic: u32,
@@ -49,15 +51,6 @@ impl PrivateKey {
     }
 }
 
-/// Returns a signature for `data`, signed with `private_key`.
-pub fn hash_and_sign(data: &[u8], private_key: &PrivateKey) -> Signature {
-    let mut hasher = Hasher::new();
-    for block in data.chunks(BLOCK_SIZE) {
-        hasher.add_block(block);
-    }
-    sign_hash(&hasher.finalize(), private_key)
-}
-
 /// Returns a magic number that a functioning HPS will always return from
 /// register 0. This is used to confirm that a particular device on the I2C bus
 /// is actually a HPS.
@@ -74,8 +67,6 @@ pub struct Hash(pub [u8; HASH_LEN]);
 pub struct Hasher {
     hash: Hash,
 }
-
-const BLOCK_SIZE: usize = 256;
 
 impl Hasher {
     pub fn new() -> Hasher {
@@ -113,7 +104,16 @@ mod tests {
     #[test]
     fn test_signing() {
         let private_key = super::PrivateKey::from_bytes([42u8; crate::SIGN_SECRET_KEY_LEN]);
-        let signature = crate::hash_and_sign(&[1, 2, 3], &private_key);
+
+        let data = [1, 2, 3];
+
+        let mut hasher = Hasher::new();
+        for block in data.chunks(BLOCK_SIZE) {
+            hasher.add_block(block);
+        }
+        let hash = hasher.finalize();
+
+        let signature = sign_hash(&hash, private_key);
         assert_eq!(
             &signature.raw_bytes[..],
             &[
