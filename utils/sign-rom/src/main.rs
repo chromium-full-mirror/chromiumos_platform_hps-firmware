@@ -47,8 +47,8 @@ fn run(config: &Config) -> Result<()> {
             seed_bytes[i] = part.parse::<u8>()?;
         }
         sodalite::sign_keypair_seed(&mut pk, &mut sk, &seed_bytes);
-        println!("Secret key: {:?}", sk);
-        println!("Public key: {:?}", pk);
+        println!("Secret key: {:#02X?}", sk);
+        println!("Public key: {:#02X?}", pk);
         return Ok(());
     }
     let mut file_bytes = std::fs::read(&config.input)?;
