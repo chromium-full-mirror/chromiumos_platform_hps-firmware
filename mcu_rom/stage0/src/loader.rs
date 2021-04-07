@@ -45,8 +45,7 @@ pub fn detect_stage1() -> Result<(), &'static str> {
 }
 
 pub fn stage1_digest() -> [u8; 32] {
-    let start: usize = unsafe { (&_slot_start as *const _) as usize };
-    let end: usize = unsafe { (&_slot_end as *const u32) as usize };
+    let (start, end): (usize, usize) = get_stage_slot_se();
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hash::new();
     for offset in ((0)..(end - start)).step_by(PAGE_SZ) {
@@ -55,4 +54,10 @@ pub fn stage1_digest() -> [u8; 32] {
         unsafe { hasher.update(*region) }; // extend hash a sector at a time..
     }
     hasher.finalize()
+}
+
+fn get_stage_slot_se() -> (usize, usize) {
+    let start: usize = unsafe { (&_slot_start as *const _) as usize };
+    let end: usize = unsafe { (&_slot_end as *const u32) as usize };
+    (start, end)
 }
