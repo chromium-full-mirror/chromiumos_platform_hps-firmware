@@ -41,22 +41,36 @@ impl<'a> HpsInterface<'a> {
         let i2c = ftdi.i2c()?;
         let mut hps = Self { i2c };
         let magic = hps.read_register(0)?;
-        if magic != mcu_common::hps_magic_code() {
-            bail!("HPS not detected (read {})", magic);
+        let expected = mcu_common::hps_magic_code();
+        if magic != expected {
+            bail!(
+                "HPS not detected (expected {:x}, read {:x})",
+                expected,
+                magic
+            );
         }
         Ok(hps)
     }
 
     fn read_register(&mut self, reg: u8) -> Result<u16> {
         let mut buffer = [0u8; 2];
-        self.i2c.write_read(HPS_ADDRESS, &[reg], &mut buffer)?;
+        self.i2c
+            .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
         Ok(((buffer[0] as u16) << 8) | (buffer[1] as u16))
     }
 
     fn write_register(&mut self, reg: u8, value: u16) -> Result<()> {
-        let buffer = [reg, (value >> 8) as u8, (value & 0xff) as u8];
+        let buffer = [
+            register_access_command(reg),
+            (value >> 8) as u8,
+            (value & 0xff) as u8,
+        ];
         Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
     }
+}
+
+fn register_access_command(reg: u8) -> u8 {
+    reg | 0x80
 }
 
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {

@@ -150,10 +150,16 @@ impl I2cPeripheralState {
     fn next_to_send(&mut self, cs: &CriticalSection) -> u8 {
         if self.tx_offset == self.tx_buffer.len() {
             let register = self.register_number();
-            let value = (self.read_register_callback)(register, cs);
+            let value;
+            if self.is_register_access() {
+                value = (self.read_register_callback)(register, cs);
+            } else {
+                // Reads that aren't register access just return 0.
+                value = 0;
+            }
             self.tx_buffer[0] = (value >> 8) as u8;
             self.tx_buffer[1] = (value & 0xff) as u8;
-            self.set_register_number(register + 1);
+            self.set_register_number((register + 1) & 0x7f);
             self.tx_offset = 0;
         }
         let value = self.tx_buffer[self.tx_offset];
@@ -161,20 +167,26 @@ impl I2cPeripheralState {
         value
     }
 
+    fn is_register_access(&self) -> bool {
+        (self.rx_buffer[0] & 0x80) != 0
+    }
+
     fn register_number(&self) -> u8 {
-        self.rx_buffer[0]
+        self.rx_buffer[0] & 0x7f
     }
 
     fn set_register_number(&mut self, register: u8) {
-        self.rx_buffer[0] = register;
+        self.rx_buffer[0] = 0x80 | register;
     }
 
     fn byte_received(&mut self, byte: u8, cs: &CriticalSection) {
         self.rx_buffer[self.rx_offset] = byte;
         self.rx_offset += 1;
         if self.rx_offset == 3 {
-            let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
-            (self.write_register_callback)(self.register_number(), value, cs);
+            if self.is_register_access() {
+                let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
+                (self.write_register_callback)(self.register_number(), value, cs);
+            }
             self.rx_offset = 1;
         }
     }
