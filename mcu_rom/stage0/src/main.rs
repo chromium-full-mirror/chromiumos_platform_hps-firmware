@@ -9,6 +9,7 @@
 mod premain;
 use crate::premain::*;
 
+mod host_interface;
 mod loader;
 use crate::loader::*;
 
@@ -86,6 +87,13 @@ fn inner_main() -> Result<(), ()> {
     } else {
         defmt::info!("FPGA wait\r");
     }
+
+    host_interface::service_host_i2c(
+        p.I2C1,
+        &mut rcc,
+        gpiob.pb9.into_open_drain_output(),
+        gpiob.pb8.into_open_drain_output(),
+    );
 
     let _ = led.set_high();
     let stage1_digest = stage1_digest();
