@@ -27,9 +27,18 @@ struct Flags {
     /// list FTDI devices
     list_devices: bool,
 
+    #[argh(option)]
+    /// write memory bank
+    write_bank: Option<u8>,
+
+    #[argh(option)]
+    /// write memory at the specified address
+    write_address: Option<u32>,
+
     #[argh(positional)]
-    /// registers to read (reg) or write (reg=value)
-    registers: Vec<String>,
+    /// registers to read (reg) or write (reg=value), or values to write to
+    /// memory
+    values: Vec<String>,
 }
 
 struct HpsInterface<'a> {
@@ -65,6 +74,17 @@ impl<'a> HpsInterface<'a> {
             (value >> 8) as u8,
             (value & 0xff) as u8,
         ];
+        Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
+    }
+
+    fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()> {
+        if bank >= 64 {
+            bail!("Invalid memory bank {}", bank);
+        }
+        let mut buffer = Vec::with_capacity(1 + std::mem::size_of::<u32>() + values.len());
+        buffer.push(bank);
+        buffer.extend_from_slice(&address.to_be_bytes());
+        buffer.extend_from_slice(values);
         Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
     }
 }
@@ -111,7 +131,14 @@ fn main() -> Result<()> {
     let ftdi = open_ftdi(&flags)?;
     let mut hps = HpsInterface::new(&ftdi)?;
     println!("HPS detected");
-    for reg in flags.registers {
+    if let (Some(bank), Some(write_address)) = (&flags.write_bank, &flags.write_address) {
+        let mut values = Vec::new();
+        for value in &flags.values {
+            values.push(value.parse::<u8>()?);
+        }
+        return hps.write_memory(*bank, *write_address, &values);
+    }
+    for reg in flags.values {
         let mut parts = reg.split('=');
         match (
             parts.next().map(|part| part.parse::<u8>()),

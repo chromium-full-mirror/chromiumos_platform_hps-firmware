@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use core::cell::Cell;
+use cortex_m::interrupt::CriticalSection;
 use cortex_m::interrupt::Mutex;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
@@ -41,6 +42,7 @@ pub(crate) fn service_host_i2c(
             },
             _ => defmt::info!("Write to unsupported register {}", reg),
         },
+        &write_memory,
     );
     // Wait until we're told to launch, at which point we'll drop the i2c
     // interface and continue execution.
@@ -50,4 +52,9 @@ pub(crate) fn service_host_i2c(
             done = READY_TO_LAUNCH.borrow(cs).get();
         });
     }
+}
+
+fn write_memory(bank: u8, address: u32, data: &[u8], _cs: &CriticalSection) {
+    // TODO: Implement a bank for writing to the RW portion of the MCU flash.
+    defmt::info!("Write memory bank {} @{}: {:?}", bank, address, data);
 }

@@ -19,7 +19,15 @@ pub(crate) fn initialize(
     sda: impl SDAPin<I2C1>,
     scl: impl SCLPin<I2C1>,
 ) -> I2cPeripheral {
-    I2cPeripheral::new(i2c1, rcc, sda, scl, &read_register, &write_register)
+    I2cPeripheral::new(
+        i2c1,
+        rcc,
+        sda,
+        scl,
+        &read_register,
+        &write_register,
+        &write_memory,
+    )
 }
 
 static REGISTER_DATA: Mutex<RefCell<RegisterData>> = Mutex::new(RefCell::new(RegisterData::new()));
@@ -52,4 +60,9 @@ fn write_register(register: u8, value: u16, cs: &CriticalSection) {
         9 => register_data.reg9 = value,
         _ => (),
     }
+}
+
+fn write_memory(bank: u8, address: u32, data: &[u8], _cs: &CriticalSection) {
+    // The MCU application doesn't support any writable memory banks.
+    defmt::info!("Write memory bank {} @{}: {:?}", bank, address, data);
 }

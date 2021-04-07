@@ -39,6 +39,7 @@ impl I2cPeripheral {
         scl: impl SCLPin<I2C1>,
         read_register_callback: &'static ReadRegisterCallback,
         write_register_callback: &'static WriteRegisterCallback,
+        write_memory_callback: &'static WriteMemoryCallback,
     ) -> I2cPeripheral {
         let i2c = i2c1.i2c(sda, scl, Config::new(400.khz()), rcc);
 
@@ -51,6 +52,7 @@ impl I2cPeripheral {
         ii2c.cr1.modify(|_, w| w.addrie().set_bit());
         ii2c.cr1.modify(|_, w| w.rxie().set_bit());
         ii2c.cr1.modify(|_, w| w.txie().set_bit());
+        ii2c.cr1.modify(|_, w| w.stopie().set_bit());
         // Enable the I2C unit
         ii2c.cr1.modify(|_, w| w.pe().set_bit());
 
@@ -70,10 +72,13 @@ impl I2cPeripheral {
                     ii2c,
                     read_register_callback,
                     write_register_callback,
-                    rx_buffer: [0u8; 3],
+                    write_memory_callback,
+                    rx_buffer: [0u8; 5],
                     rx_offset: 0,
                     tx_buffer: [0u8; 2],
                     tx_offset: 2,
+                    memory_buffer: [0u8; 256],
+                    memory_offset: 0,
                 });
         });
 
@@ -99,16 +104,20 @@ impl Drop for I2cPeripheral {
 
 type ReadRegisterCallback = dyn Sync + Fn(u8, &CriticalSection) -> u16;
 type WriteRegisterCallback = dyn Sync + Fn(u8, u16, &CriticalSection);
+type WriteMemoryCallback = dyn Sync + Fn(u8, u32, &[u8], &CriticalSection);
 
 struct I2cPeripheralState {
     ii2c: hal::stm32::I2C1,
     read_register_callback: &'static ReadRegisterCallback,
     write_register_callback: &'static WriteRegisterCallback,
+    write_memory_callback: &'static WriteMemoryCallback,
 
-    rx_buffer: [u8; 3],
+    rx_buffer: [u8; 5],
     rx_offset: usize,
     tx_buffer: [u8; 2],
     tx_offset: usize,
+    memory_buffer: [u8; 256],
+    memory_offset: usize,
 }
 
 static I2C_PERIPHERAL_STATE: Mutex<RefCell<Option<I2cPeripheralState>>> =
@@ -132,6 +141,10 @@ impl I2cPeripheralState {
                 self.start_write();
             }
         }
+        if isr.stopf().bit_is_set() {
+            self.ii2c.icr.write(|w| w.stopcf().set_bit());
+            self.stop(cs);
+        }
     }
 
     fn start_read(&mut self) {
@@ -145,6 +158,7 @@ impl I2cPeripheralState {
 
     fn start_write(&mut self) {
         self.rx_offset = 0;
+        self.memory_offset = 0;
     }
 
     fn next_to_send(&mut self, cs: &CriticalSection) -> u8 {
@@ -167,6 +181,19 @@ impl I2cPeripheralState {
         value
     }
 
+    fn stop(&mut self, cs: &CriticalSection) {
+        if self.rx_offset == 5 {
+            let bank = self.rx_buffer[0];
+            let address = self.memory_address();
+            (self.write_memory_callback)(
+                bank,
+                address,
+                &self.memory_buffer[0..self.memory_offset],
+                cs,
+            );
+        }
+    }
+
     fn is_register_access(&self) -> bool {
         (self.rx_buffer[0] & 0x80) != 0
     }
@@ -175,19 +202,32 @@ impl I2cPeripheralState {
         self.rx_buffer[0] & 0x7f
     }
 
+    fn memory_address(&self) -> u32 {
+        let mut tmp = [0u8; 4];
+        tmp.clone_from_slice(&self.rx_buffer[1..5]);
+        u32::from_be_bytes(tmp)
+    }
+
     fn set_register_number(&mut self, register: u8) {
         self.rx_buffer[0] = 0x80 | register;
     }
 
     fn byte_received(&mut self, byte: u8, cs: &CriticalSection) {
+        if self.rx_offset == 5 {
+            if self.memory_offset < self.memory_buffer.len() {
+                self.memory_buffer[self.memory_offset] = byte;
+                self.memory_offset += 1;
+            }
+            return;
+        }
         self.rx_buffer[self.rx_offset] = byte;
         self.rx_offset += 1;
-        if self.rx_offset == 3 {
-            if self.is_register_access() {
+        if self.is_register_access() {
+            if self.rx_offset == 3 {
                 let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
                 (self.write_register_callback)(self.register_number(), value, cs);
+                self.rx_offset = 1;
             }
-            self.rx_offset = 1;
         }
     }
 }
