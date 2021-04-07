@@ -70,9 +70,10 @@ impl I2cPeripheral {
                     ii2c,
                     read_register_callback,
                     write_register_callback,
-                    register: None,
-                    data: [0u8; 2],
-                    position: 0,
+                    rx_buffer: [0u8; 3],
+                    rx_offset: 0,
+                    tx_buffer: [0u8; 2],
+                    tx_offset: 2,
                 });
         });
 
@@ -104,9 +105,10 @@ struct I2cPeripheralState {
     read_register_callback: &'static ReadRegisterCallback,
     write_register_callback: &'static WriteRegisterCallback,
 
-    register: Option<u8>,
-    data: [u8; 2],
-    position: usize,
+    rx_buffer: [u8; 3],
+    rx_offset: usize,
+    tx_buffer: [u8; 2],
+    tx_offset: usize,
 }
 
 static I2C_PERIPHERAL_STATE: Mutex<RefCell<Option<I2cPeripheralState>>> =
@@ -133,7 +135,8 @@ impl I2cPeripheralState {
     }
 
     fn start_read(&mut self) {
-        self.position = 2;
+        self.tx_offset = self.tx_buffer.len();
+        self.rx_offset = 0;
         // Setting txe will clear any existing byte already stored into
         // txrd. This is important if the previous read was terminated
         // early by the controller.
@@ -141,35 +144,38 @@ impl I2cPeripheralState {
     }
 
     fn start_write(&mut self) {
-        self.register = None;
-        self.position = 0;
+        self.rx_offset = 0;
     }
 
     fn next_to_send(&mut self, cs: &CriticalSection) -> u8 {
-        if self.position == self.data.len() {
-            if let Some(register) = self.register {
-                let value = (self.read_register_callback)(register, cs);
-                self.data = [(value >> 8) as u8, (value & 0xff) as u8];
-                self.register = Some(register + 1);
-            }
-            self.position = 0;
+        if self.tx_offset == self.tx_buffer.len() {
+            let register = self.register_number();
+            let value = (self.read_register_callback)(register, cs);
+            self.tx_buffer[0] = (value >> 8) as u8;
+            self.tx_buffer[1] = (value & 0xff) as u8;
+            self.set_register_number(register + 1);
+            self.tx_offset = 0;
         }
-        let value = self.data[self.position];
-        self.position += 1;
+        let value = self.tx_buffer[self.tx_offset];
+        self.tx_offset += 1;
         value
     }
 
+    fn register_number(&self) -> u8 {
+        self.rx_buffer[0]
+    }
+
+    fn set_register_number(&mut self, register: u8) {
+        self.rx_buffer[0] = register;
+    }
+
     fn byte_received(&mut self, byte: u8, cs: &CriticalSection) {
-        if let Some(register) = self.register {
-            self.data[self.position] = byte;
-            self.position += 1;
-            if self.position == self.data.len() {
-                let value = (self.data[0] as u16) << 8 | (self.data[1] as u16);
-                (self.write_register_callback)(register, value, cs);
-                self.position = 0;
-            }
-        } else {
-            self.register = Some(byte);
+        self.rx_buffer[self.rx_offset] = byte;
+        self.rx_offset += 1;
+        if self.rx_offset == 3 {
+            let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
+            (self.write_register_callback)(self.register_number(), value, cs);
+            self.rx_offset = 1;
         }
     }
 }
