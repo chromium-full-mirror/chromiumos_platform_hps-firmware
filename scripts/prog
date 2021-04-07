@@ -4,17 +4,17 @@ FLASHROM=${PROJECT_ROOT}/third_party/flashrom/flashrom
 
 usage() {
 cat << EOF
-usage: $0 filename area
+usage: $0 area filename
 
 This script programs the SPI flash on the protoboard using flashrom.
 
 Arguments:
-    filename  The name of a file to be written to the ROM
     area      The area to write to.
+    filename  The name of a file to be written to the ROM
 
 Valid areas are:
     bitstream - at location 0
-    program   - at location 2M
+    rom       - at location 2M
 EOF
 }
 
@@ -25,7 +25,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 # Ensure file exists and is readable
-FILE="$1"
+FILE="$2"
 if [ ! -f "${FILE}" ]; then
   echo "${FILE} is not a file"
   exit 2
@@ -39,12 +39,12 @@ FILESIZE="$(stat -L -c %s "${FILE}")"
 
 
 # Use AREA to find start location in ROM
-AREA="$2"
+AREA="$1"
 case "${AREA}" in
   "bitstream")
     START=0
     ;;
-  "program")
+  "rom")
     START=2
     SEEK=0
     ;;
