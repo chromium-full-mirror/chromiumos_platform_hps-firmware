@@ -101,7 +101,7 @@ fn inner_main() -> Result<(), ()> {
     }
 
     let _ = led.set_high();
-    let stage1_digest = stage1_digest();
+    let stage1_digest = stage1_digest().raw_bytes();
     defmt::info!("{:x}\r", stage1_digest);
     let _ = led.set_low();
 

@@ -64,6 +64,12 @@ pub const fn hps_magic_code() -> u16 {
 #[derive(Debug)]
 pub struct Hash(pub [u8; HASH_LEN]);
 
+impl Hash {
+    pub fn raw_bytes(&self) -> [u8; HASH_LEN] {
+        self.0
+    }
+}
+
 pub struct Hasher {
     hash: Hash,
 }

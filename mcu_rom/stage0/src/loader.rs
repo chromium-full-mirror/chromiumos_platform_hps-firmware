@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use hmac_sha256::Hash;
-
 use mcu_common::ImageHeader;
+use mcu_common::{Hash, Hasher};
 
 extern "C" {
     pub static _slot_start: ImageHeader;
@@ -44,14 +43,14 @@ pub fn detect_stage1() -> Result<(), &'static str> {
     Err("Could not find stage 1")
 }
 
-pub fn stage1_digest() -> [u8; 32] {
+pub fn stage1_digest() -> Hash {
     let (start, end): (usize, usize) = get_stage_slot_se();
     const PAGE_SZ: usize = 4 * 256 * 2;
-    let mut hasher = Hash::new();
+    let mut hasher = Hasher::new();
     for offset in ((0)..(end - start)).step_by(PAGE_SZ) {
         // page flash by 2K steps.
-        let region = (start + offset) as *const [u8; PAGE_SZ];
-        unsafe { hasher.update(*region) }; // extend hash a sector at a time..
+        let region = unsafe { *((start + offset) as *const [u8; PAGE_SZ]) };
+        hasher.add_block(&region); // extend hash a sector at a time.
     }
     hasher.finalize()
 }
