@@ -23,6 +23,11 @@ struct Config {
     #[argh(option)]
     /// output filename
     output: PathBuf,
+
+    #[argh(option)]
+    /// if set, generates and prints a keypair using the supplied seed, which is
+    /// a comma-separated list of u8 of length up to 32
+    generate_keypair_seed: Option<String>,
 }
 
 // Note, this key is for development purposes only. It isn't and won't be used
@@ -34,6 +39,18 @@ fn main() -> Result<()> {
 }
 
 fn run(config: &Config) -> Result<()> {
+    if let Some(seed) = &config.generate_keypair_seed {
+        let mut sk = [0u8; sodalite::SIGN_SECRET_KEY_LEN];
+        let mut pk = [0u8; sodalite::SIGN_PUBLIC_KEY_LEN];
+        let mut seed_bytes = [0u8; 32];
+        for (i, part) in seed.split(',').enumerate() {
+            seed_bytes[i] = part.parse::<u8>()?;
+        }
+        sodalite::sign_keypair_seed(&mut pk, &mut sk, &seed_bytes);
+        println!("Secret key: {:?}", sk);
+        println!("Public key: {:?}", pk);
+        return Ok(());
+    }
     let mut file_bytes = std::fs::read(&config.input)?;
     sign_file_bytes(&mut file_bytes)?;
     std::fs::write(&config.output, file_bytes)?;

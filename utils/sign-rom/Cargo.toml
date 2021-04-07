@@ -8,3 +8,4 @@ license = "BSD-3-Clause"
 argh = "0.1.4"
 anyhow = "1.0.38"
 mcu_common = { path = "../../mcu_rom/mcu_common" }
+sodalite = "0.4.0"
