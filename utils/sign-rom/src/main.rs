@@ -5,12 +5,12 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use mcu_common::BLOCK_SIZE;
-use mcu_common::{Hasher, sign_hash};
 use mcu_common::ImageHeader;
 use mcu_common::PrivateKey;
 use mcu_common::Signature;
+use mcu_common::BLOCK_SIZE;
 use mcu_common::SIGN_SECRET_KEY_LEN;
+use mcu_common::{sign_hash, Hasher};
 use std::path::PathBuf;
 
 #[derive(FromArgs)]
