@@ -14,25 +14,15 @@ testing many kinds of code changes.
 
 ## Running On Device
 
-To build the bitstream and program:
+To build the bitstream and software, then program the device:
 ```bash
-./scripts/pyrun soc/hps_soc.py --build
-```
-
-`--build` is only needed to rebuild of the bitstream. If the bitstream has not
-changed, omit it for a faster build.
-
-Now connect the proto0 board to the SPI and flash it with the bitstream and program:
-
-```bash
-./scripts/prog build/hps_platform/gateware/hps_platform.bit bitstream
-
-./scripts/prog build/hps_platform/software/bios/bios.bin program
+./scripts/soc-load --build
 ```
 
 Finally, connect a UART and communicate with the running program:
 
 ```bash
-./scripts/pyrun third_party/python/litex/litex/tools/litex_term.py /dev/ttyUSB1
+./scripts/pyrun third_party/python/litex/litex/tools/litex_term.py /dev/ttyUSB0
 ```
+(replace `/dev/ttyUSB0` with the appropriate device name)
 
