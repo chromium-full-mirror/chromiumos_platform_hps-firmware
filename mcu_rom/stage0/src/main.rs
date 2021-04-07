@@ -95,12 +95,17 @@ fn inner_main() -> Result<(), ()> {
         gpiob.pb8.into_open_drain_output(),
     );
 
+    if let Err(e) = detect_stage1() {
+        defmt::info!("{}\r", e);
+        return Err(());
+    }
+
     let _ = led.set_high();
     let stage1_digest = stage1_digest();
     defmt::info!("{:x}\r", stage1_digest);
     let _ = led.set_low();
 
-    loader().map_err(drop)
+    load_stage1().map_err(drop)
 }
 
 fn banner() -> &'static str {
