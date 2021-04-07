@@ -33,7 +33,8 @@ pub(crate) fn service_host_i2c(
         },
         &|reg, value, cs| match reg {
             3 => match value {
-                1 => {
+                1 => cortex_m::peripheral::SCB::sys_reset(),
+                2 => {
                     READY_TO_LAUNCH.borrow(cs).set(true);
                 }
                 _ => defmt::info!("Unknown command {}", value),
