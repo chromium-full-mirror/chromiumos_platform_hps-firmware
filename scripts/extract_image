@@ -63,12 +63,16 @@ def main():
 
     parser.add_argument('--rgb', action='store_true',
                         help='Make an RGB image')
+    parser.add_argument('--raw', action='store_true',
+                        help='Dump raw data')
 
     args = parser.parse_args()
 
     images_data = read_file(args.input, args.offset)
     for i, image_data in enumerate(images_data):
-        if args.rgb:
+        if args.raw:
+            image_data.tofile(make_filename(args.output, i))
+        elif args.rgb:
             a = np.zeros((HEIGHT // 2, WIDTH // 2, 3), dtype=np.uint8)
             for y in range(HEIGHT // 2):
                 for x in range(WIDTH // 2):
