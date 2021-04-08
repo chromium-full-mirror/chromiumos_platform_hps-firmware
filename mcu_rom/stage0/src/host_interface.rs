@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 use core::cell::Cell;
-use core::cell::RefCell;
 use core::ops::Range;
-use cortex_m::interrupt::CriticalSection;
 use cortex_m::interrupt::Mutex;
 use hal::flash;
 use hal::flash::FlashExt;
@@ -24,8 +22,7 @@ const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 static READY_TO_LAUNCH: Mutex<Cell<bool>> = Mutex::new(Cell::new(false));
 
-static FLASH_STATE: Mutex<RefCell<FlashWriteState>> =
-    Mutex::new(RefCell::new(FlashWriteState::new()));
+static mut FLASH_STATE: FlashWriteState = FlashWriteState::new();
 
 pub(crate) fn service_host_i2c(
     i2c1: I2C1,
@@ -35,26 +32,29 @@ pub(crate) fn service_host_i2c(
     flash: FLASH,
     slot: Range<usize>,
 ) {
-    cortex_m::interrupt::free(|cs| {
-        let mut state = FLASH_STATE.borrow(cs).borrow_mut();
-        state.flash = Some(flash);
-        state.slot = slot;
-    });
+    // We access FLASH_STATE here during initialization and then again in I2C
+    // callbacks. The two cannot happen concurrently because we only enable I2C
+    // callbacks after we're done initializing it here.
+    let mut state = unsafe { &mut FLASH_STATE };
+    state.flash = Some(flash);
+    state.slot = slot;
     let _host_i2c = I2cPeripheral::new(
         i2c1,
         rcc,
         sda,
         scl,
-        &|reg, _cs| match reg {
+        &|reg| match reg {
             0 => mcu_common::hps_magic_code(),
             1 => (HARDWARE_VERSION << 8) | RO_VERSION,
             _ => 0,
         },
-        &|reg, value, cs| match reg {
+        &|reg, value| match reg {
             3 => match value {
                 1 => cortex_m::peripheral::SCB::sys_reset(),
                 2 => {
-                    READY_TO_LAUNCH.borrow(cs).set(true);
+                    cortex_m::interrupt::free(|cs| {
+                        READY_TO_LAUNCH.borrow(cs).set(true);
+                    });
                 }
                 _ => defmt::info!("Unknown command {}", value),
             },
@@ -82,16 +82,16 @@ fn flash_error_string(error: flash::Error) -> &'static str {
     }
 }
 
-fn write_memory(bank: u8, address: u32, data: &[u8], cs: &CriticalSection) {
+fn write_memory(bank: u8, address: u32, data: &[u8]) {
     match bank {
         0 => {
-            if let Err(error) = FLASH_STATE.borrow(cs).borrow_mut().write(address, data) {
+            if let Err(error) = unsafe { &mut FLASH_STATE }.write(address, data) {
                 defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
                 // TODO: Report error somewhere
             }
             return;
         }
-        x=> {
+        x => {
             defmt::warn!("Attempt to write to unsupported memory bank {}", x);
         }
     }

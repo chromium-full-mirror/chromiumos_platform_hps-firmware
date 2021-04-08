@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::cell::RefCell;
-use cortex_m::interrupt::CriticalSection;
-use cortex_m::interrupt::Mutex;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::rcc::Rcc;
@@ -30,7 +27,7 @@ pub(crate) fn initialize(
     )
 }
 
-static REGISTER_DATA: Mutex<RefCell<RegisterData>> = Mutex::new(RefCell::new(RegisterData::new()));
+static mut REGISTER_DATA: RegisterData = RegisterData::new();
 
 struct RegisterData {
     reg9: u16,
@@ -42,8 +39,10 @@ impl RegisterData {
     }
 }
 
-fn read_register(register: u8, cs: &CriticalSection) -> u16 {
-    let register_data = REGISTER_DATA.borrow(cs).borrow();
+fn read_register(register: u8) -> u16 {
+    // We only access REGISTER_DATA from i2c callbacks, which are only called
+    // from the i2c interrupt handler, so cannot be run concurrently.
+    let register_data = unsafe { &mut REGISTER_DATA };
     match register {
         0 => mcu_common::hps_magic_code(),
         // Register 9 is a RW register that's included for now for testing
@@ -53,8 +52,8 @@ fn read_register(register: u8, cs: &CriticalSection) -> u16 {
     }
 }
 
-fn write_register(register: u8, value: u16, cs: &CriticalSection) {
-    let mut register_data = REGISTER_DATA.borrow(cs).borrow_mut();
+fn write_register(register: u8, value: u16) {
+    let mut register_data = unsafe { &mut REGISTER_DATA };
     defmt::info!("write register {}: {}", register, value);
     match register {
         9 => register_data.reg9 = value,
@@ -62,7 +61,7 @@ fn write_register(register: u8, value: u16, cs: &CriticalSection) {
     }
 }
 
-fn write_memory(bank: u8, address: u32, data: &[u8], _cs: &CriticalSection) {
+fn write_memory(bank: u8, address: u32, data: &[u8]) {
     // The MCU application doesn't support any writable memory banks.
     defmt::info!("Write memory bank {} @{}: {:?}", bank, address, data);
 }

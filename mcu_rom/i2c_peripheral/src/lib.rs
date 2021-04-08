@@ -13,9 +13,6 @@
 //!
 //! It's also very not generic with the interface it provides.
 
-use core::cell::RefCell;
-use cortex_m::interrupt::CriticalSection;
-use cortex_m::interrupt::Mutex;
 use hal::i2c::Config;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
@@ -64,22 +61,17 @@ impl I2cPeripheral {
         // Enable automatic ACK of our address.
         ii2c.oar1.modify(|_, w| w.oa1en().set_bit());
 
-        cortex_m::interrupt::free(|cs| {
-            I2C_PERIPHERAL_STATE
-                .borrow(cs)
-                .borrow_mut()
-                .replace(I2cPeripheralState {
-                    ii2c,
-                    read_register_callback,
-                    write_register_callback,
-                    write_memory_callback,
-                    rx_buffer: [0u8; 5],
-                    rx_offset: 0,
-                    tx_buffer: [0u8; 2],
-                    tx_offset: 2,
-                    memory_buffer: [0u8; 256],
-                    memory_offset: 0,
-                });
+        unsafe { &mut I2C_PERIPHERAL_STATE }.replace(I2cPeripheralState {
+            ii2c,
+            read_register_callback,
+            write_register_callback,
+            write_memory_callback,
+            rx_buffer: [0u8; 5],
+            rx_offset: 0,
+            tx_buffer: [0u8; 2],
+            tx_offset: 2,
+            memory_buffer: [0u8; 256],
+            memory_offset: 0,
         });
 
         // Enable I2C interrupts
@@ -94,17 +86,15 @@ impl Drop for I2cPeripheral {
     fn drop(&mut self) {
         stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
         stm32::NVIC::mask(hal::stm32::Interrupt::I2C1);
-        cortex_m::interrupt::free(|cs| {
-            if let Some(i2c) = I2C_PERIPHERAL_STATE.borrow(cs).borrow_mut().take() {
-                i2c.ii2c.cr1.modify(|_, w| w.pe().clear_bit());
-            }
-        });
+        if let Some(i2c) = unsafe { &mut I2C_PERIPHERAL_STATE }.take() {
+            i2c.ii2c.cr1.modify(|_, w| w.pe().clear_bit());
+        }
     }
 }
 
-type ReadRegisterCallback = dyn Sync + Fn(u8, &CriticalSection) -> u16;
-type WriteRegisterCallback = dyn Sync + Fn(u8, u16, &CriticalSection);
-type WriteMemoryCallback = dyn Sync + Fn(u8, u32, &[u8], &CriticalSection);
+type ReadRegisterCallback = dyn Sync + Fn(u8) -> u16;
+type WriteRegisterCallback = dyn Sync + Fn(u8, u16);
+type WriteMemoryCallback = dyn Sync + Fn(u8, u32, &[u8]);
 
 struct I2cPeripheralState {
     ii2c: hal::stm32::I2C1,
@@ -120,18 +110,17 @@ struct I2cPeripheralState {
     memory_offset: usize,
 }
 
-static I2C_PERIPHERAL_STATE: Mutex<RefCell<Option<I2cPeripheralState>>> =
-    Mutex::new(RefCell::new(None));
+static mut I2C_PERIPHERAL_STATE: Option<I2cPeripheralState> = None;
 
 impl I2cPeripheralState {
-    fn handle_interrupt(&mut self, cs: &CriticalSection) {
+    fn handle_interrupt(&mut self) {
         let isr = self.ii2c.isr.read();
         if isr.txis().bit_is_set() {
-            let byte = self.next_to_send(cs);
+            let byte = self.next_to_send();
             self.ii2c.txdr.write(|w| unsafe { w.txdata().bits(byte) });
         }
         if isr.rxne().bit_is_set() {
-            self.byte_received(self.ii2c.rxdr.read().bits() as u8, cs);
+            self.byte_received(self.ii2c.rxdr.read().bits() as u8);
         }
         if isr.addr().bit_is_set() {
             self.ii2c.icr.write(|w| w.addrcf().set_bit());
@@ -143,7 +132,7 @@ impl I2cPeripheralState {
         }
         if isr.stopf().bit_is_set() {
             self.ii2c.icr.write(|w| w.stopcf().set_bit());
-            self.stop(cs);
+            self.stop();
         }
     }
 
@@ -161,12 +150,12 @@ impl I2cPeripheralState {
         self.memory_offset = 0;
     }
 
-    fn next_to_send(&mut self, cs: &CriticalSection) -> u8 {
+    fn next_to_send(&mut self) -> u8 {
         if self.tx_offset == self.tx_buffer.len() {
             let register = self.register_number();
             let value;
             if self.is_register_access() {
-                value = (self.read_register_callback)(register, cs);
+                value = (self.read_register_callback)(register);
             } else {
                 // Reads that aren't register access just return 0.
                 value = 0;
@@ -181,16 +170,11 @@ impl I2cPeripheralState {
         value
     }
 
-    fn stop(&mut self, cs: &CriticalSection) {
+    fn stop(&mut self) {
         if self.rx_offset == 5 {
             let bank = self.rx_buffer[0];
             let address = self.memory_address();
-            (self.write_memory_callback)(
-                bank,
-                address,
-                &self.memory_buffer[0..self.memory_offset],
-                cs,
-            );
+            (self.write_memory_callback)(bank, address, &self.memory_buffer[0..self.memory_offset]);
         }
     }
 
@@ -212,7 +196,7 @@ impl I2cPeripheralState {
         self.rx_buffer[0] = 0x80 | register;
     }
 
-    fn byte_received(&mut self, byte: u8, cs: &CriticalSection) {
+    fn byte_received(&mut self, byte: u8) {
         if self.rx_offset == 5 {
             if self.memory_offset < self.memory_buffer.len() {
                 self.memory_buffer[self.memory_offset] = byte;
@@ -225,7 +209,7 @@ impl I2cPeripheralState {
         if self.is_register_access() {
             if self.rx_offset == 3 {
                 let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
-                (self.write_register_callback)(self.register_number(), value, cs);
+                (self.write_register_callback)(self.register_number(), value);
                 self.rx_offset = 1;
             }
         }
@@ -234,14 +218,9 @@ impl I2cPeripheralState {
 
 #[interrupt]
 fn I2C1() {
-    // If the only places that we access I2C_PERIPHERAL is during initialization
-    // and then here in the interrupt handler, we should be able to avoid a
-    // critical section. The initialization function writes before it enables
-    // interrupts, so there should never be contention. This requires an
-    // additional unsafe, so is left for a subsequent CL.
-    cortex_m::interrupt::free(|cs| {
-        if let Some(peripheral) = I2C_PERIPHERAL_STATE.borrow(cs).borrow_mut().as_mut() {
-            peripheral.handle_interrupt(cs);
-        }
-    });
+    // We only access I2C_PERIPHERAL_STATE here and prior to enabling I2C
+    // interrupts, so there shouldn't be any possibility of concurrent access.
+    if let Some(peripheral) = unsafe { &mut I2C_PERIPHERAL_STATE }.as_mut() {
+        peripheral.handle_interrupt();
+    }
 }
