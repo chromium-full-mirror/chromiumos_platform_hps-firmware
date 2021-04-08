@@ -105,6 +105,16 @@ pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
     signature
 }
 
+pub mod status {
+    pub const OK: u16 = 1 << 0;
+    pub const FAULT: u16 = 1 << 1;
+    pub const AVERIFY: u16 = 1 << 2;
+    pub const ANONVER: u16 = 1 << 3;
+    pub const WPON: u16 = 1 << 4;
+    pub const WPOFF: u16 = 1 << 5;
+    pub const APPLRUN: u16 = 1 << 8;
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

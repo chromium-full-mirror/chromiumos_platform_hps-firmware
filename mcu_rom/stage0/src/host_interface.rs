@@ -15,6 +15,7 @@ use hal::rcc::Rcc;
 use hal::stm32::FLASH;
 use hal::stm32::I2C1;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::status;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
@@ -46,6 +47,10 @@ pub(crate) fn service_host_i2c(
         &|reg| match reg {
             0 => mcu_common::hps_magic_code(),
             1 => (HARDWARE_VERSION << 8) | RO_VERSION,
+            2 => {
+                // Common system status
+                status::OK
+            }
             _ => 0,
         },
         &|reg, value| match reg {
