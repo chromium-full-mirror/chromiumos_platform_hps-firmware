@@ -1,13 +1,13 @@
 group("default") {
   deps = [
     "//soc_rom",
+    "//host:hps(toolchain:host-gcc)",
   ]
 }
 
 # Flags that are used for compiling and linking regardless of target
 # architecture.
 common_compile_and_link_flags = [
-  "-Werror=implicit-function-declaration",
   "-Wsign-compare",
   "-Wdouble-promotion",
   "-Wshadow",
@@ -23,5 +23,11 @@ config("compiler_defaults") {
              "-Wall",
              "-Wextra",
            ]
+  cflags_c = [
+    "-Werror=implicit-function-declaration",
+  ]
   ldflags = common_compile_and_link_flags + []
+  if (target_cpu == "x64") {
+    cflags += "-fPIC"
+  }
 }

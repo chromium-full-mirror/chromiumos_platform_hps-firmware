@@ -1,0 +1,18 @@
+# Build file for HPS host
+#group("hosthps") {
+#  deps = [
+#    ":hps(//toolchain:host-gcc)",
+#  ]
+#}
+
+executable("hps") {
+  sources = [
+    "main.cpp",
+    "cmd.cpp",
+    "status.cpp",
+  ]
+
+  deps = [
+    "//host/lib:hpslib",
+  ]
+}

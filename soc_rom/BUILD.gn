@@ -15,7 +15,7 @@ riscv_shared_flags = [
 ]
 
 declare_args() {
-  litex_out_dir = ""
+  litex_out_dir = "${root_out_dir}/litex_out"
 }
 
 litex_repo = rebase_path("third_party/python/litex", "", "..")

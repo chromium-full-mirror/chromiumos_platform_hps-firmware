@@ -1,0 +1,12 @@
+# Build file for HPS host library.
+
+static_library("hpslib") {
+  sources = [
+    "dev.h",
+    "ftdi.h",
+    "hps.cpp",
+    "hps.h",
+    "i2c.cpp",
+    "i2c.h",
+  ]
+}

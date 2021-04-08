@@ -109,3 +109,70 @@ toolchain("arm-none-eabi-gcc") {
     description = "STAMP {{output}}"
   }
 }
+
+toolchain("host-gcc") {
+  tool("cc") {
+    depfile = "{{output}}.d"
+    command = "gcc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+    depsformat = "gcc"
+    description = "CC {{output}}"
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+  }
+
+  tool("cxx") {
+    depfile = "{{output}}.d"
+    command = "g++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    depsformat = "gcc"
+    description = "CXX {{output}}"
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+  }
+
+  tool("asm") {
+    command = "gcc -x assembler-with-cpp -c {{source}} {{cflags}} -o {{output}} -MMD"
+    description = "ASM {{output}}"
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+  }
+
+  tool("alink") {
+      rspfile = "{{output}}.rsp"
+      command = "rm -f {{output}} && ar rcs {{output}} @$rspfile"
+      description = "AR {{target_output_name}}{{output_extension}}"
+      rspfile_content = "{{inputs}}"
+      outputs = [
+        "{{target_out_dir}}/{{target_output_name}}{{output_extension}}",
+      ]
+      default_output_extension = ".a"
+      output_prefix = "lib"
+    }
+
+  tool("solink") {
+    soname = "{{target_output_name}}{{output_extension}}"
+    rpath = "-Wl,-soname,$soname"
+    rspfile = "{{output}}.rsp"
+    rspfile_content = "{{inputs}}"
+    _start_group = "-Wl,--start-group"
+    _end_group = "-Wl,--end-group"
+    command = "gcc -shared {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} $rpath -o {{output}}"
+    description = "link {{output}}"
+    outputs = [ "{{root_out_dir}}/$soname" ]
+    output_prefix = "lib"
+    default_output_extension = ".so"
+  }
+
+  tool("link") {
+    output = "{{target_output_name}}{{output_extension}}"
+    command = "g++ {{ldflags}} -o $output {{inputs}} {{solibs}} {{libs}}"
+    description = "Linking $output"
+    outputs = [
+      output,
+    ]
+  }
+
+  tool("stamp") {
+    command = "touch {{output}}"
+    description = "STAMP {{output}}"
+  }
+}

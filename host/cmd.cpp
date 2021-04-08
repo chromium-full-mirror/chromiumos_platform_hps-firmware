@@ -1,0 +1,33 @@
+/*
+ * Command handler.
+ */
+
+#include <cstdio>
+#include <string.h>
+
+#include "lib/hps.h"
+
+int command(HPS *hps, int argc, char *argv[]) {
+	int cmd;
+
+	if (argc == 0) {
+		printf("Missing command ('reset' or 'launch' expected)\n");
+		return 1;
+	}
+	if (strcmp(argv[1], "reset") == 0) {
+		cmd = 1;
+	} else if (strcmp(argv[1], "launch") == 0) {
+		cmd = 2;
+	} else {
+		printf("%s: Unknown command (%s)\n", argv[0], argv[1]);
+		return 1;
+	}
+
+	auto dev = hps->Device();
+	for (int i = 0; i < 5; i++) {
+		printf("reg %d = %04x\n", i, dev->readReg(i));
+	}
+	printf("Sending cmd 0x%04x to register 3\n", cmd);
+	dev->writeReg(3, cmd);
+	return 0;
+}
