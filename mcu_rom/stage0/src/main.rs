@@ -93,6 +93,8 @@ fn inner_main() -> Result<(), ()> {
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
+        p.FLASH,
+        loader::get_stage_slot_se(),
     );
 
     if let Err(e) = detect_stage1() {

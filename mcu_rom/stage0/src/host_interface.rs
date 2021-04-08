@@ -3,25 +3,43 @@
 // found in the LICENSE file.
 
 use core::cell::Cell;
+use core::cell::RefCell;
+use core::ops::Range;
 use cortex_m::interrupt::CriticalSection;
 use cortex_m::interrupt::Mutex;
+use hal::flash;
+use hal::flash::FlashExt;
+use hal::flash::FlashPage;
+use hal::flash::WriteErase;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::rcc::Rcc;
+use hal::stm32::FLASH;
 use hal::stm32::I2C1;
 use i2c_peripheral::I2cPeripheral;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
+const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 static READY_TO_LAUNCH: Mutex<Cell<bool>> = Mutex::new(Cell::new(false));
+
+static FLASH_STATE: Mutex<RefCell<FlashWriteState>> =
+    Mutex::new(RefCell::new(FlashWriteState::new()));
 
 pub(crate) fn service_host_i2c(
     i2c1: I2C1,
     rcc: &mut Rcc,
     sda: impl SDAPin<I2C1>,
     scl: impl SCLPin<I2C1>,
+    flash: FLASH,
+    slot: Range<usize>,
 ) {
+    cortex_m::interrupt::free(|cs| {
+        let mut state = FLASH_STATE.borrow(cs).borrow_mut();
+        state.flash = Some(flash);
+        state.slot = slot;
+    });
     let _host_i2c = I2cPeripheral::new(
         i2c1,
         rcc,
@@ -54,7 +72,75 @@ pub(crate) fn service_host_i2c(
     }
 }
 
-fn write_memory(bank: u8, address: u32, data: &[u8], _cs: &CriticalSection) {
-    // TODO: Implement a bank for writing to the RW portion of the MCU flash.
-    defmt::info!("Write memory bank {} @{}: {:?}", bank, address, data);
+fn flash_error_string(error: flash::Error) -> &'static str {
+    match error {
+        flash::Error::Busy => "busy",
+        flash::Error::Illegal => "illegal",
+        flash::Error::EccError => "ecc error",
+        flash::Error::PageOutOfRange => "page out of range",
+        flash::Error::Failure => "failure",
+    }
+}
+
+fn write_memory(bank: u8, address: u32, data: &[u8], cs: &CriticalSection) {
+    match bank {
+        0 => {
+            if let Err(error) = FLASH_STATE.borrow(cs).borrow_mut().write(address, data) {
+                defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
+                // TODO: Report error somewhere
+            }
+            return;
+        }
+        x=> {
+            defmt::warn!("Attempt to write to unsupported memory bank {}", x);
+        }
+    }
+}
+
+struct FlashWriteState {
+    flash: Option<FLASH>,
+    slot: Range<usize>,
+}
+
+impl FlashWriteState {
+    const fn new() -> FlashWriteState {
+        FlashWriteState {
+            flash: None,
+            slot: 0..0,
+        }
+    }
+
+    fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
+        // Note, we deliberately shadow to ensure that we don't accidentally use
+        // the relative address.
+        let address = self.slot.start + address as usize;
+        if address + data.len() > self.slot.end {
+            return Err(flash::Error::PageOutOfRange);
+        }
+        if let Some(flash) = self.flash.take() {
+            match flash.unlock() {
+                Ok(mut unlocked_flash) => {
+                    let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
+                    // Erase only when we are at the start of our page. This
+                    // imposes the constraint on our interface that writes must
+                    // always start from the start of a page.
+                    if page.to_address() == address {
+                        unlocked_flash.erase_page(page)?
+                    }
+                    unlocked_flash.write(address as usize, data)?;
+                    self.flash = Some(unlocked_flash.lock());
+                }
+                Err(flash) => {
+                    self.flash = Some(flash);
+                    return Err(flash::Error::Failure);
+                }
+            }
+        }
+        defmt::info!(
+            "Successfully wrote {} bytes to MCU flash at address {:x}",
+            data.len(),
+            address
+        );
+        Ok(())
+    }
 }
