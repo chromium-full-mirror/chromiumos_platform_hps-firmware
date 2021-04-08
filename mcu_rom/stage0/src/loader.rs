@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use core::ops::Range;
+
 use mcu_common::ImageHeader;
 use mcu_common::{Hash, Hasher};
 
@@ -44,7 +46,7 @@ pub fn detect_stage1() -> Result<(), &'static str> {
 }
 
 pub fn stage1_digest() -> Hash {
-    let (origin, end): (usize, usize) = get_stage_slot_se();
+    let slot = get_stage_slot_se();
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hasher::new();
 
@@ -52,13 +54,13 @@ pub fn stage1_digest() -> Hash {
     let adv_past = 0x80; // adv past HDR - std::mem::size_of::<ImageHeader>()
 
     // access page 0 from flash and extend hash..
-    let region = unsafe { *((origin + adv_past) as *const [u8; PAGE_SZ]) };
+    let region = unsafe { *((slot.start + adv_past) as *const [u8; PAGE_SZ]) };
     hasher.add_block(&region); // extend hash a sector at a time.
 
     //defmt::debug!("{:X} : {:X}", (origin + adv_past), region);
-    let start = origin + PAGE_SZ; // step one page forwards.
+    let start = slot.start + PAGE_SZ; // step one page forwards.
 
-    for offset in ((0)..(end - start)).step_by(PAGE_SZ) {
+    for offset in ((0)..slot.count()).step_by(PAGE_SZ) {
         // page flash by 2K steps.
         let region = unsafe { *((start + offset) as *const [u8; PAGE_SZ]) };
         hasher.add_block(&region); // extend hash a sector at a time.
@@ -68,8 +70,8 @@ pub fn stage1_digest() -> Hash {
     hasher.finalize()
 }
 
-fn get_stage_slot_se() -> (usize, usize) {
+pub(crate) fn get_stage_slot_se() -> Range<usize> {
     let start: usize = unsafe { (&_slot_start as *const _) as usize };
     let end: usize = unsafe { (&_slot_end as *const u32) as usize };
-    (start, end)
+    start..end
 }
