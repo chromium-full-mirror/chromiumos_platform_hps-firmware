@@ -22,8 +22,10 @@ static hm01b0_status_e init(hm01b0_cfg_t* psCfg, void* arg) {
   return HM01B0_ERR_OK;
 }
 
-static hm01b0_status_e write(hm01b0_cfg_t* psCfg, uint16_t ui16Reg,
-                             uint8_t* pui8Value, uint32_t ui32NumBytes,
+static hm01b0_status_e write(hm01b0_cfg_t* psCfg,
+                             uint16_t ui16Reg,
+                             uint8_t* pui8Value,
+                             uint32_t ui32NumBytes,
                              void* arg) {
   UNUSED(psCfg);
   UNUSED(arg);
@@ -32,8 +34,10 @@ static hm01b0_status_e write(hm01b0_cfg_t* psCfg, uint16_t ui16Reg,
   return ok ? HM01B0_ERR_OK : HM01B0_ERR_I2C;
 }
 
-static hm01b0_status_e read(hm01b0_cfg_t* psCfg, uint16_t ui16Reg,
-                            uint8_t* pui8Value, uint32_t ui32NumBytes,
+static hm01b0_status_e read(hm01b0_cfg_t* psCfg,
+                            uint16_t ui16Reg,
+                            uint8_t* pui8Value,
+                            uint32_t ui32NumBytes,
                             void* arg) {
   UNUSED(psCfg);
   UNUSED(arg);

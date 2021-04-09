@@ -70,7 +70,7 @@ void calibrate() {
 // Load image from frame buffer into tflite input
 void load_from_camera() {
   printf("start\n");
-  int8_t *input = tflite_get_input();
+  int8_t* input = tflite_get_input();
 
   // Resize to 96x96 by copying a 192*192 square from the middle
   for (size_t in_y = 0; in_y < 96; in_y++) {
@@ -109,7 +109,7 @@ void capture() {
 }
 
 void show_input() {
-  int8_t *input = tflite_get_input();
+  int8_t* input = tflite_get_input();
   for (size_t in_y = 0; in_y < 96; in_y++) {
     char line[97];
     line[96] = 0;
@@ -143,9 +143,11 @@ void dump() {
 }
 
 // Outputs data as 244 lines of 324 base64 encoded bytes
-static const char *b64_table =
+static const char* b64_table =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static inline char b64_lookup(uint8_t n) { return b64_table[0x3f & n]; }
+static inline char b64_lookup(uint8_t n) {
+  return b64_table[0x3f & n];
+}
 #define b64_line_len (HM01B0_PIXEL_X_NUM / 3 * 4 + 1)
 static char b64_buf[b64_line_len + 1];
 
@@ -209,17 +211,18 @@ int main(void) {
   CAM_CHECK(status, "init");
 
   // Auto exposure struct
-  memset((void *)&aecfg, 0x00, sizeof(hm01b0_ae_cfg_t));
+  memset((void*)&aecfg, 0x00, sizeof(hm01b0_ae_cfg_t));
 
   // Check model ID
   uint16_t modelid;
   status = hm01b0_get_modelid(&hm01b0_cfg, &modelid);
   CAM_CHECK(status, "get_modelid");
-  if (!status) printf("model id = %04x\n", modelid);
+  if (!status)
+    printf("model id = %04x\n", modelid);
 
   // Load up init script
   puts("hm01b10_init_system()");
-  hm01b0_init_system(&hm01b0_cfg, (hm_script_t *)sHM01B0InitScript,
+  hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
 
   // Initialize TFLite
