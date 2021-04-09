@@ -30,12 +30,8 @@ void isr(void) {
 #define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
 uint8_t frame[FB_SIZE];
 
-size_t x_fudge = 0;
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = HM01B0_PIXEL_X_NUM * y + x;
-  if (index >= x_fudge) {
-    index -= x_fudge;
-  }
   return frame[index];
 }
 
@@ -122,7 +118,7 @@ void show_input() {
   }
 }
 
-void dump() {
+void show_low_res() {
   putchar('\n');
   putchar('\n');
 
@@ -151,31 +147,27 @@ static inline char b64_lookup(uint8_t n) {
 #define b64_line_len (HM01B0_PIXEL_X_NUM / 3 * 4 + 1)
 static char b64_buf[b64_line_len + 1];
 
-void raw() {
-  puts("+++ base64 +++");
-
-  b64_buf[b64_line_len] = 0;
-  for (size_t y = 0; y < HM01B0_PIXEL_Y_NUM; y++) {
-    size_t i = 0;
-    for (size_t x = 0; x < HM01B0_PIXEL_X_NUM; x += 3) {
-      uint8_t p0 = get_pixel(x + 0, y);
-      uint8_t p1 = get_pixel(x + 1, y);
-      uint8_t p2 = get_pixel(x + 2, y);
-      b64_buf[i++] = b64_lookup(p0 >> 2);
-      b64_buf[i++] = b64_lookup((p0 << 6) | (0xf & (p1 >> 4)));
-      b64_buf[i++] = b64_lookup((p1 << 4) | (0x3 & (p2 >> 6)));
-      b64_buf[i++] = b64_lookup(p2);
-    }
-    puts(b64_buf);
-  }
-  puts("--- base64 ---");
-}
-
-void raw_3() {
-  for (int i = 0; i < 3; i++) {
+void capture_raw_frames(int n) {
+  for (int i = 0; i < n; i++) {
+    printf("Capturing image %d of %d\n", i + 1, n);
     capture();
-    raw();
-    leds_out_write(~i);
+    puts("+++ base64 +++");
+
+    b64_buf[b64_line_len] = 0;
+    for (size_t y = 0; y < HM01B0_PIXEL_Y_NUM; y++) {
+      size_t j = 0;
+      for (size_t x = 0; x < HM01B0_PIXEL_X_NUM; x += 3) {
+        uint8_t p0 = get_pixel(x + 0, y);
+        uint8_t p1 = get_pixel(x + 1, y);
+        uint8_t p2 = get_pixel(x + 2, y);
+        b64_buf[j++] = b64_lookup(p0 >> 2);
+        b64_buf[j++] = b64_lookup((p0 << 6) | (0xf & (p1 >> 4)));
+        b64_buf[j++] = b64_lookup((p1 << 4) | (0x3 & (p2 >> 6)));
+        b64_buf[j++] = b64_lookup(p2);
+      }
+      puts(b64_buf);
+    }
+    puts("--- base64 ---");
   }
 }
 
@@ -193,6 +185,23 @@ void classify_demo() {
   tflite_load_no_person();
   puts("Loaded image without person");
   run_classify();
+}
+
+void camera_init() {
+  while (1) {
+    puts("Camera: Enter 'n' for normal model or '1' for walking 1's");
+    int c = readchar();
+    if (c == 'n') {
+      puts("Camera: Normal mode init");
+      hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
+                         sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
+      return;
+    } else if (c == '1') {
+      puts("Camera: Walking 1's init");
+      hm01b0_test_walking1s(&hm01b0_cfg);
+      return;
+    }
+  }
 }
 
 int main(void) {
@@ -221,9 +230,7 @@ int main(void) {
     printf("model id = %04x\n", modelid);
 
   // Load up init script
-  puts("hm01b10_init_system()");
-  hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
-                     sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
+  camera_init();
 
   // Initialize TFLite
   tflite_init();
@@ -238,12 +245,10 @@ int main(void) {
     puts("\n\nMenu");
     puts("----");
     puts("1. Calibrate Auto Exposure");
-    puts("2. Capture & Show");
-    puts("3. TfLM demo");
-    puts("4. Capture and classify");
-    printf("9. Toggle Fudge (now %d)\n", x_fudge);
-    puts("0. Raw data");
-    puts("-. Capture three raw frames");
+    puts("2. Capture raw frame");
+    puts("3. Capture three raw frames");
+    puts("c. TfLM canned image demo");
+    puts("p. Presence detection");
     puts("> ");
 
     int c = readchar();
@@ -255,25 +260,18 @@ int main(void) {
         calibrate();
         break;
       case '2':
-        capture();
-        dump();
+        capture_raw_frames(1);
         break;
       case '3':
+        capture_raw_frames(3);
+        break;
+      case 'c':
         classify_demo();
         break;
-      case '4':
+      case 'p':
         capture();
-        dump();
+        show_low_res();
         run_classify();
-        break;
-      case '9':
-        x_fudge = 100 - x_fudge;
-        break;
-      case '0':
-        raw();
-        break;
-      case '-':
-        raw_3();
         break;
       default:
         puts("???\n");
