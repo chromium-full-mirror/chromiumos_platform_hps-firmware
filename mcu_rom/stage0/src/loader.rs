@@ -50,19 +50,9 @@ pub fn stage1_digest() -> Hash {
     const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hasher::new();
 
-    // treat the first page with care as we need to adv past the HDR.
-    let adv_past = 0x80; // adv past HDR - std::mem::size_of::<ImageHeader>()
-
-    // access page 0 from flash and extend hash..
-    let region = unsafe { *((slot.start + adv_past) as *const [u8; PAGE_SZ]) };
-    hasher.add_block(&region); // extend hash a sector at a time.
-
-    //defmt::debug!("{:X} : {:X}", (origin + adv_past), region);
-    let start = slot.start + PAGE_SZ; // step one page forwards.
-
-    for offset in ((0)..slot.count()).step_by(PAGE_SZ) {
+    for offset in ((0)..(slot.end - slot.start)).step_by(PAGE_SZ) {
         // page flash by 2K steps.
-        let region = unsafe { *((start + offset) as *const [u8; PAGE_SZ]) };
+        let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SZ]) };
         hasher.add_block(&region); // extend hash a sector at a time.
 
         //defmt::debug!("{:X} : {:X}", (start + offset), region);
