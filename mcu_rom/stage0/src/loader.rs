@@ -8,7 +8,8 @@ use mcu_common::ImageHeader;
 use mcu_common::{Hash, Hasher};
 
 extern "C" {
-    pub static _slot_start: ImageHeader;
+    pub static _hdr: ImageHeader;
+    pub static _slot_start: u32;
     pub static _slot_end: u32;
 }
 
@@ -17,27 +18,24 @@ pub fn load_stage1() -> Result<(), &'static str> {
     // git_hash_length to refer to valid UTF-8.
     let git_hash = unsafe {
         core::str::from_utf8_unchecked(core::slice::from_raw_parts(
-            _slot_start.git_hash_ptr,
-            _slot_start.git_hash_length,
+            _hdr.git_hash_ptr,
+            _hdr.git_hash_length,
         ))
     };
     unsafe {
-        defmt::info!(" [[stage 1]] >> version={}\r", _slot_start.version);
+        defmt::info!(" [[stage 1]] >> version={}\r", _hdr.version);
         defmt::debug!(
             " [[stage 1]] >> should I jmp to vector={:x}\r",
-            (_slot_start.vector_addr as *const u32) as u32
+            (_hdr.vector_addr as *const u32) as u32
         );
         defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
-        defmt::info!(
-            " [[stage 1]] >> sig={:x}\n\r",
-            _slot_start.sig.raw_bytes()[0]
-        );
-        cortex_m::asm::bootload(_slot_start.vector_addr);
+        defmt::info!(" [[stage 1]] >> sig={:x}\n\r", _hdr.sig.raw_bytes()[0]);
+        cortex_m::asm::bootload(_hdr.vector_addr);
     }
 }
 
 pub fn detect_stage1() -> Result<(), &'static str> {
-    let magic = unsafe { _slot_start.magic };
+    let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
         defmt::info!("Found stage 1\r");
         return Ok(());
