@@ -7,6 +7,8 @@ use core::ops::Range;
 use mcu_common::ImageHeader;
 use mcu_common::{Hash, Hasher};
 
+const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
+
 extern "C" {
     pub static _hdr: ImageHeader;
     pub static _slot_start: u32;
@@ -45,12 +47,11 @@ pub fn detect_stage1() -> Result<(), &'static str> {
 
 pub fn stage1_digest() -> Hash {
     let slot = get_stage_slot_se();
-    const PAGE_SZ: usize = 4 * 256 * 2;
     let mut hasher = Hasher::new();
 
-    for offset in ((0)..(slot.end - slot.start)).step_by(PAGE_SZ) {
+    for offset in ((0)..(slot.end - slot.start)).step_by(PAGE_SIZE) {
         // page flash by 2K steps.
-        let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SZ]) };
+        let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SIZE]) };
         hasher.add_block(&region); // extend hash a sector at a time.
 
         //defmt::debug!("{:X} : {:X}", (start + offset), region);

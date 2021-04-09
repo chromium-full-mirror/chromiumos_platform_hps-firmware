@@ -8,7 +8,7 @@ use sodalite::HASH_LEN;
 pub use sodalite::SIGN_LEN;
 pub use sodalite::SIGN_SECRET_KEY_LEN;
 
-pub const BLOCK_SIZE: usize = 256;
+pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
 #[repr(C, packed(4))]
 pub struct ImageHeader {
@@ -124,7 +124,7 @@ mod tests {
         let data = [1, 2, 3];
 
         let mut hasher = Hasher::new();
-        for block in data.chunks(BLOCK_SIZE) {
+        for block in data.chunks(FLASH_PAGE_SZ) {
             hasher.add_block(block);
         }
         let hash = hasher.finalize();

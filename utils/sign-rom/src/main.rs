@@ -8,7 +8,7 @@ use argh::FromArgs;
 use mcu_common::ImageHeader;
 use mcu_common::PrivateKey;
 use mcu_common::Signature;
-use mcu_common::BLOCK_SIZE;
+use mcu_common::FLASH_PAGE_SZ;
 use mcu_common::SIGN_SECRET_KEY_LEN;
 use mcu_common::{sign_hash, Hasher};
 use std::path::PathBuf;
@@ -65,7 +65,7 @@ fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
 
     let mut hasher = Hasher::new();
-    for block in payload.chunks(BLOCK_SIZE) {
+    for block in payload.chunks(FLASH_PAGE_SZ) {
         hasher.add_block(block);
     }
     let hash = hasher.finalize();
