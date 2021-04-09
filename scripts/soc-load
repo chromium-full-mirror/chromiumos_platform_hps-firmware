@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -o errexit
 
 PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
 BUILD=${PROJECT_ROOT}/build/hps_platform
