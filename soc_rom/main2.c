@@ -94,13 +94,26 @@ void capture() {
   status = hm01b0_cmd_update(&hm01b0_cfg);
   CAM_CHECK(status, "status");
 
+#if CSR_CAM_CONTROL_DMA_BASE_ADDR
+  // Set up DMA
+  cam_control_dma_base_write(frame);
+  cam_control_dma_length_write(sizeof(frame));
+  cam_control_dma_enable_write(1);
+#endif
+  // Command camera to take a frame
   status =
       hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
   CAM_CHECK(status, "set_mode");
 
+#if CSR_CAM_CONTROL_DMA_BASE_ADDR
+  // Read with DMA
+  while (!cam_control_dma_done_read())
+    /* wait */;
+  cam_control_dma_enable_write(0);
+#else
   status = hm01b0_blocking_read_oneframe(&hm01b0_cfg, frame, sizeof(frame));
   CAM_CHECK(status, "blocking_read_oneframe");
-
+#endif
 }
 
 void show_input() {

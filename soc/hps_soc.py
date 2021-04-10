@@ -9,6 +9,7 @@ from litex.soc.integration.soc import SoCRegion
 from litex.soc.integration.soc_sdram import SoCSDRAM
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
+from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
 from litex.soc.cores.bitbang import I2CMaster
@@ -16,7 +17,7 @@ from litex.soc.cores.bitbang import I2CMaster
 from litex.build.lattice.radiant import radiant_build_args, radiant_build_argdict
 
 from patch import Patch
-from cam_control import CameraControl
+from cam_control import CameraControl, CameraControlDMA
 
 import argparse
 import os
@@ -57,7 +58,8 @@ class HpsSoC(LiteXSoC):
 
     cpu_type = "vexriscv"
 
-    def __init__(self, platform, debug):
+    def __init__(self, *, platform, debug,
+                 use_camera_dma=False):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
@@ -105,10 +107,7 @@ class HpsSoC(LiteXSoC):
         self.timer0.add_uptime()
 
         # Camera
-        self.submodules.cam_control = CameraControl(
-            pads=self.platform.request("cam_control"),
-            sys_clk_freq=platform.sys_clk_freq)
-        self.csr.add("cam_control")
+        self.setup_camera(use_camera_dma)
 
         # i2c1 (Camera + MCU)
         self.submodules.i2c = self.create_i2c_controller(
@@ -129,6 +128,22 @@ class HpsSoC(LiteXSoC):
 
     def add_serial(self):
         self.add_uart("serial", baudrate=UART_SPEED)
+
+    def setup_camera(self, use_dma):
+        if use_dma:
+            bus = wishbone.Interface(
+                data_width=self.bus.data_width,
+                adr_width=self.bus.address_width)
+            self.submodules.cam_control = CameraControlDMA(
+                bus=bus,
+                pads=self.platform.request("cam_control"),
+                sys_clk_freq=self.platform.sys_clk_freq)
+            self.bus.add_master("cam_control", master=bus)
+        else:
+            self.submodules.cam_control = CameraControl(
+                pads=self.platform.request("cam_control"),
+                sys_clk_freq=self.platform.sys_clk_freq)
+        self.csr.add("cam_control")
 
     def create_i2c_controller(self, pads):
         return I2CMaster(pads)
@@ -183,13 +198,18 @@ def main():
     hps_soc_args(parser)
     parser.add_argument("--debug", action="store_true",
                         help="Enable debug mode")
+    parser.add_argument("--use-camera-dma", action="store_true",
+                        help="Generate DMA writer interface for camera")
     parser.add_argument("--build", action="store_true",
                         help="Whether to do a full build, including the bitstream")
     parser.add_argument("--toolchain", default="radiant",
                         help="Which toolchain to use, radiant (default) or oxide")
     args = parser.parse_args()
 
-    soc = HpsSoC(Platform(args.toolchain), debug=args.debug)
+    soc = HpsSoC(
+        platform=Platform(args.toolchain),
+        debug=args.debug,
+        use_camera_dma=args.use_camera_dma)
     builder = create_builder(soc, args)
     builder_kwargs = radiant_build_argdict(
         args) if args.toolchain == "radiant" else {}
