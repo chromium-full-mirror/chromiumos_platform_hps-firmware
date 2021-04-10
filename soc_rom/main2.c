@@ -161,8 +161,8 @@ void capture_raw_frames(int n) {
         uint8_t p1 = get_pixel(x + 1, y);
         uint8_t p2 = get_pixel(x + 2, y);
         b64_buf[j++] = b64_lookup(p0 >> 2);
-        b64_buf[j++] = b64_lookup((p0 << 6) | (0xf & (p1 >> 4)));
-        b64_buf[j++] = b64_lookup((p1 << 4) | (0x3 & (p2 >> 6)));
+        b64_buf[j++] = b64_lookup((p0 << 4) | (0xf & (p1 >> 4)));
+        b64_buf[j++] = b64_lookup((p1 << 2) | (0x3 & (p2 >> 6)));
         b64_buf[j++] = b64_lookup(p2);
       }
       puts(b64_buf);
