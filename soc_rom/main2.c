@@ -101,7 +101,6 @@ void capture() {
   status = hm01b0_blocking_read_oneframe(&hm01b0_cfg, frame, sizeof(frame));
   CAM_CHECK(status, "blocking_read_oneframe");
 
-  load_from_camera();
 }
 
 void show_input() {
@@ -270,6 +269,7 @@ int main(void) {
         break;
       case 'p':
         capture();
+        load_from_camera();
         show_low_res();
         run_classify();
         break;
