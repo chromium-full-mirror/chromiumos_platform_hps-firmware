@@ -24,11 +24,11 @@ _sim_io = [
     ("serial", 0,
         Subsignal("source_valid", Pins(1)),
         Subsignal("source_ready", Pins(1)),
-        Subsignal("source_data",  Pins(8)),
+        Subsignal("source_data", Pins(8)),
 
-        Subsignal("sink_valid",   Pins(1)),
-        Subsignal("sink_ready",   Pins(1)),
-        Subsignal("sink_data",    Pins(8)),
+        Subsignal("sink_valid", Pins(1)),
+        Subsignal("sink_ready", Pins(1)),
+        Subsignal("sink_data", Pins(8)),
      ),
     # Connection to Camera. This differs from the nx17 version in that sda is
     # split into `in` and `out` subsignals in order to avoid a tristate.
@@ -76,7 +76,7 @@ def main():
     parser = argparse.ArgumentParser(description="HPS SoC simulation")
     hps_soc_args(parser)
     soc_sdram_args(parser)
-    parser.add_argument("--trace",  action="store_true",
+    parser.add_argument("--trace", action="store_true",
                         help="Whether to enable tracing of simulation")
     args = parser.parse_args()
 

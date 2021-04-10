@@ -43,12 +43,12 @@ class CameraControl(Module, AutoCSR):
         # TODO: Use a PLL to generate clock
         # Divide sys_clk by constant to get master clock of ~10MHz
         div = int(self.sys_clk_freq / 10e6 / 2)
-        count = Signal((div-1).bit_length())
+        count = Signal((div - 1).bit_length())
         self.sync += If(count == 0,
                         clk.eq(~clk),
-                        count.eq(div-1)
+                        count.eq(div - 1)
                         ).Else(
-            count.eq(count-1)
+            count.eq(count - 1)
         )
         # output clock only when enabled.
         self.sync += pads.mclk.eq(enabled & clk)

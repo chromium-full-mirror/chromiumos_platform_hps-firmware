@@ -33,10 +33,10 @@ SOC_DIR = os.path.dirname(os.path.realpath(__file__))
 class HpsSoC(LiteXSoC):
     # Memory layout
     csr_origin = 0xf0000000
-    spiflash_region = SoCRegion(0x20000000, 16*MB, cached=True)
+    spiflash_region = SoCRegion(0x20000000, 16 * MB, cached=True)
     # The start of the SPI Flash contains the FPGA gateware. Our ROM is after
     # that.
-    rom_offset = 2*MB
+    rom_offset = 2 * MB
     rom_origin = spiflash_region.origin + rom_offset
     rom_region = SoCRegion(rom_origin, spiflash_region.size - rom_offset,
                            cached=True, linker=True)
@@ -50,9 +50,9 @@ class HpsSoC(LiteXSoC):
     integrated_rom_size = rom_region.size
 
     mem_map = {
-        "rom":  rom_offset,
+        "rom": rom_offset,
         "sram": sram_origin,
-        "csr":  csr_origin,
+        "csr": csr_origin,
     }
 
     cpu_type = "vexriscv"

@@ -42,10 +42,10 @@ hps_io = [
     # SPI flash, defined two ways
     ("spiflash", 0,
         Subsignal("cs_n", Pins("A3")),
-        Subsignal("clk",  Pins("B4")),
+        Subsignal("clk", Pins("B4")),
         Subsignal("mosi", Pins("B5")),
         Subsignal("miso", Pins("C4")),
-        Subsignal("wp",   Pins("B3")),
+        Subsignal("wp", Pins("B3")),
         Subsignal("hold", Pins("B2")),
         IOStandard("LVCMOS18")
      ),
@@ -100,9 +100,9 @@ hps_nx17_debug_io = [
 # Debug IO that is common to both simulation and hardware.
 hps_debug_common = [
     # Single LED on JTAG pin - J8 pin 6
-    ("user_led", 0, Pins("D2"),  IOStandard("LVCMOS18")),
+    ("user_led", 0, Pins("D2"), IOStandard("LVCMOS18")),
     # Provides  mcu_reset_l on JTAG pin - J8 pin 8
-    ("mcu_reset_pin", 0, Pins("B1"),  IOStandard("LVCMOS18")),
+    ("mcu_reset_pin", 0, Pins("B1"), IOStandard("LVCMOS18")),
 ]
 
 
@@ -116,11 +116,11 @@ class _CRG(Module):
         # Clock from HFOSC
         self.submodules.sys_clk = sys_osc = NXOSCA()
         sys_osc.create_hf_clk(self.cd_sys, sys_clk_freq)
-        platform.add_period_constraint(self.cd_sys.clk, 1e9/sys_clk_freq)
+        platform.add_period_constraint(self.cd_sys.clk, 1e9 / sys_clk_freq)
 
         # Power On Reset
         por_cycles = 4096
-        por_counter = Signal(log2_int(por_cycles), reset=por_cycles-1)
+        por_counter = Signal(log2_int(por_cycles), reset=por_cycles - 1)
         self.comb += self.cd_por.clk.eq(self.cd_sys.clk)
         self.sync.por += If(por_counter != 0, por_counter.eq(por_counter - 1))
         self.specials += AsyncResetSynchronizer(
@@ -128,14 +128,16 @@ class _CRG(Module):
 
 
 class Platform(LatticePlatform):
-    # The NX-17 has a 450 MHz clock. Our system clock should be a divisor of that.
+    # The NX-17 has a 450 MHz clock. Our system clock should be a divisor of
+    # that.
     clk_divisor = 4
     sys_clk_freq = int(450e6 / clk_divisor)
 
     def __init__(self, toolchain="radiant"):
         LatticePlatform.__init__(self,
                                  # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't
-                                 # seem to be available in Radiant 2.2, at least on Linux.
+                                 # seem to be available in Radiant 2.2, at
+                                 # least on Linux.
                                  device="LIFCL-17-8UWG72C",
                                  io=hps_io + hps_nx17_io + hps_nx17_debug_io + hps_debug_common,
                                  connectors=[],
