@@ -27,7 +27,7 @@ def get_base64_data(lines):
     return result
 
 
-def read_file(infile, offset):
+def read_file(infile):
     """Extract raw bytes of image data from last image in infile"""
     reading_data = False
     result = []
@@ -35,9 +35,8 @@ def read_file(infile, offset):
     while lines:
         if lines[0] == '+++ base64 +++\n':
             print('Found image')
-            data = get_base64_data(lines)
-            data = data[offset:] + data[:offset] + (
-                [0] * (HEIGHT * WIDTH - len(data)))
+            data = get_base64_data(lines[1:])
+            data = data + ([0] * (HEIGHT * WIDTH - len(data)))
             image = np.array(data[:(HEIGHT * WIDTH)], dtype=np.uint8)
             image.resize((HEIGHT, WIDTH))
             result.append(image)
@@ -58,9 +57,6 @@ def main():
                         help='Console output to read.')
     parser.add_argument('output', type=str,
                         help='Bitmap file to write')
-    parser.add_argument('--offset', type=int, default=0,
-                        help='Number of pixels to ignore at start of file')
-
     parser.add_argument('--rgb', action='store_true',
                         help='Make an RGB image')
     parser.add_argument('--raw', action='store_true',
@@ -68,7 +64,7 @@ def main():
 
     args = parser.parse_args()
 
-    images_data = read_file(args.input, args.offset)
+    images_data = read_file(args.input)
     for i, image_data in enumerate(images_data):
         if args.raw:
             image_data.tofile(make_filename(args.output, i))
