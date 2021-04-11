@@ -64,8 +64,17 @@ fn run(config: &Config) -> Result<()> {
 fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
 
+    let mut v = Vec::new();
+    v.extend_from_slice(&payload);
+    if v.len() / FLASH_PAGE_SZ != 0 {
+        let rem = v.len() % (FLASH_PAGE_SZ / 256);
+        v.resize(v.len() + rem, 0x00);
+    }
+    let len = 0x1C000; // FLASH (rx) : ORIGIN = 0x08004080, LENGTH = 112K /* - LENGTH(HDR) */
+    v.resize(len, 0xFF);
+
     let mut hasher = Hasher::new();
-    for block in payload.chunks(FLASH_PAGE_SZ) {
+    for block in v.chunks(FLASH_PAGE_SZ) {
         hasher.add_block(block);
     }
     let hash = hasher.finalize();
@@ -89,10 +98,7 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     // for an ImageHader, but again we don't use any fields that have alignment
     // more than 1.
     let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut ImageHeader) };
-    Ok((
-        &mut header.sig,
-        &file_bytes[std::mem::size_of::<ImageHeader>()..],
-    ))
+    Ok((&mut header.sig, &file_bytes[..]))
 }
 
 #[cfg(test)]
