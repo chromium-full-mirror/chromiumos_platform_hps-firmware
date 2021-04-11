@@ -7,6 +7,8 @@ use core::ops::Range;
 use mcu_common::ImageHeader;
 use mcu_common::{Hash, Hasher};
 
+use sodalite::{HASH_LEN, SIGN_LEN};
+
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 extern "C" {
@@ -49,12 +51,30 @@ pub fn stage1_digest() -> Hash {
     let slot = get_stage_slot_se();
     let mut hasher = Hasher::new();
 
-    for offset in ((0)..(slot.end - slot.start)).step_by(PAGE_SIZE) {
+    const flash_end: usize = hal::flash::FLASH_END as usize;
+    if slot.end > flash_end {
+        defmt::debug!("invalid slot.end = {:X}", slot.end);
+    }
+
+    // Although we hash the header as well we must treat it a little
+    // differently because the signature is a variable position that
+    // is obviously inserted after signining. Specifically, we pad out
+    // the signature with 0x00 so that it is constant for the purpose
+    // of validation.
+    let mut region = unsafe { *((slot.start + 0) as *const [u8; PAGE_SIZE]) };
+    let sig_offset = unsafe { &_hdr.sig as *const _ as usize - &_hdr as *const _ as usize };
+    let pad_value = 0x00;
+    let padding: [u8; SIGN_LEN] = [pad_value; SIGN_LEN];
+    // clobber signature with padding bytes during verification.
+    for idx in 0..SIGN_LEN {
+        region[sig_offset + 12 + idx] = padding[idx];
+    }
+    hasher.add_block(&region);
+
+    for offset in ((PAGE_SIZE)..(slot.end - slot.start)).step_by(PAGE_SIZE) {
         // page flash by 2K steps.
         let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SIZE]) };
         hasher.add_block(&region); // extend hash a sector at a time.
-
-        //defmt::debug!("{:X} : {:X}", (start + offset), region);
     }
     hasher.finalize()
 }
