@@ -4,8 +4,8 @@
 
 use core::ops::Range;
 
+use mcu_common::Hash;
 use mcu_common::ImageHeader;
-use mcu_common::{Hash, Hasher};
 
 use sodalite::{HASH_LEN, SIGN_LEN};
 
@@ -49,7 +49,7 @@ pub fn detect_stage1() -> Result<(), &'static str> {
 
 pub fn stage1_digest() -> Hash {
     let slot = get_stage_slot_se();
-    let mut hasher = Hasher::new();
+    let mut hasher = Hash::new();
 
     const flash_end: usize = hal::flash::FLASH_END as usize;
     if slot.end > flash_end {
@@ -69,12 +69,12 @@ pub fn stage1_digest() -> Hash {
     for idx in 0..SIGN_LEN {
         region[sig_offset + 12 + idx] = padding[idx];
     }
-    hasher.add_block(&region);
+    hasher.update(&region);
 
     for offset in ((PAGE_SIZE)..(slot.end - slot.start)).step_by(PAGE_SIZE) {
         // page flash by 2K steps.
         let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SIZE]) };
-        hasher.add_block(&region); // extend hash a sector at a time.
+        hasher.update(&region); // extend hash a sector at a time.
     }
     hasher.finalize()
 }

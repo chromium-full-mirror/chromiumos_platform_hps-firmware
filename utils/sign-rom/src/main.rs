@@ -10,7 +10,7 @@ use mcu_common::PrivateKey;
 use mcu_common::Signature;
 use mcu_common::FLASH_PAGE_SZ;
 use mcu_common::SIGN_SECRET_KEY_LEN;
-use mcu_common::{sign_hash, Hasher};
+use mcu_common::{sign_hash, Hash};
 use std::path::PathBuf;
 
 #[derive(FromArgs)]
@@ -73,9 +73,9 @@ fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let len = 0x1C000; // FLASH (rx) : ORIGIN = 0x08004080, LENGTH = 112K /* - LENGTH(HDR) */
     v.resize(len, 0xFF);
 
-    let mut hasher = Hasher::new();
+    let mut hasher = Hash::new();
     for block in v.chunks(FLASH_PAGE_SZ) {
-        hasher.add_block(block);
+        hasher.update(block);
     }
     let hash = hasher.finalize();
     println!("signing with digest = {:#02X?}", hash);

@@ -65,34 +65,25 @@ pub const fn hps_magic_code() -> u16 {
 pub struct Hash(pub [u8; HASH_LEN]);
 
 impl Hash {
-    pub fn raw_bytes(&self) -> [u8; HASH_LEN] {
-        self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct Hasher {
-    pub hash: Hash,
-}
-
-impl Hasher {
-    pub fn new() -> Hasher {
-        Hasher {
-            hash: Hash([0u8; 64]),
-        }
+    pub fn new() -> Hash {
+        Hash([0u8; 64])
     }
 
-    pub fn add_block(&mut self, data: &[u8]) {
+    pub fn update(&mut self, data: &[u8]) {
         let mut hash = [0u8; HASH_LEN];
         sodalite::hash(&mut hash, data);
         let mut hashes = [0u8; HASH_LEN * 2];
-        hashes[..HASH_LEN].clone_from_slice(&self.hash.0);
+        hashes[..HASH_LEN].clone_from_slice(&self.0);
         hashes[HASH_LEN..].clone_from_slice(&hash);
-        sodalite::hash(&mut self.hash.0, &hashes);
+        sodalite::hash(&mut self.0, &hashes);
     }
 
     pub fn finalize(self) -> Hash {
-        self.hash
+        self
+    }
+
+    pub fn as_bytes(&self) -> [u8; HASH_LEN] {
+        self.0
     }
 }
 
