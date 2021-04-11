@@ -70,8 +70,9 @@ impl Hash {
     }
 }
 
+#[derive(Debug)]
 pub struct Hasher {
-    hash: Hash,
+    pub hash: Hash,
 }
 
 impl Hasher {
