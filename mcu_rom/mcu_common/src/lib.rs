@@ -8,6 +8,10 @@ use sodalite::HASH_LEN;
 pub use sodalite::SIGN_LEN;
 pub use sodalite::SIGN_SECRET_KEY_LEN;
 
+pub mod commands;
+pub mod memory_banks;
+pub mod registers;
+
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
 #[repr(C, packed(4))]

@@ -15,6 +15,9 @@ use hal::rcc::Rcc;
 use hal::stm32::FLASH;
 use hal::stm32::I2C1;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::commands;
+use mcu_common::memory_banks;
+use mcu_common::registers;
 use mcu_common::status;
 
 const HARDWARE_VERSION: u16 = 1;
@@ -45,18 +48,18 @@ pub(crate) fn service_host_i2c(
         sda,
         scl,
         &|reg| match reg {
-            0 => mcu_common::hps_magic_code(),
-            1 => (HARDWARE_VERSION << 8) | RO_VERSION,
-            2 => {
+            registers::MAGIC => mcu_common::hps_magic_code(),
+            registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
+            registers::SYSTEM_STATUS => {
                 // Common system status
                 status::OK
             }
             _ => 0,
         },
         &|reg, value| match reg {
-            3 => match value {
-                1 => cortex_m::peripheral::SCB::sys_reset(),
-                2 => {
+            registers::COMMAND => match value {
+                commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
+                commands::LAUNCH => {
                     cortex_m::interrupt::free(|cs| {
                         READY_TO_LAUNCH.borrow(cs).set(true);
                     });
@@ -89,7 +92,7 @@ fn flash_error_string(error: flash::Error) -> &'static str {
 
 fn write_memory(bank: u8, address: u32, data: &[u8]) {
     match bank {
-        0 => {
+        memory_banks::MCU_RW => {
             if let Err(error) = unsafe { &mut FLASH_STATE }.write(address, data) {
                 defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
                 // TODO: Report error somewhere

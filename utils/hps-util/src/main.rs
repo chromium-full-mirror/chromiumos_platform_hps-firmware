@@ -13,6 +13,7 @@ use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
+use mcu_common::registers;
 
 const HPS_ADDRESS: u8 = 0x30;
 
@@ -49,7 +50,7 @@ impl<'a> HpsInterface<'a> {
     fn new(ftdi: &'a Ft2232hHal<Initialized>) -> Result<Self> {
         let i2c = ftdi.i2c()?;
         let mut hps = Self { i2c };
-        let magic = hps.read_register(0)?;
+        let magic = hps.read_register(registers::MAGIC)?;
         let expected = mcu_common::hps_magic_code();
         if magic != expected {
             bail!(

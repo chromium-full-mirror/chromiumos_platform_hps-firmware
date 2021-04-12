@@ -6,6 +6,7 @@ use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::rcc::Rcc;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::registers;
 use mcu_common::status;
 use panic_probe as _;
 use stm32g0::stm32g071::I2C1;
@@ -45,8 +46,8 @@ fn read_register(register: u8) -> u16 {
     // from the i2c interrupt handler, so cannot be run concurrently.
     let register_data = unsafe { &mut REGISTER_DATA };
     match register {
-        0 => mcu_common::hps_magic_code(),
-        2 => {
+        registers::MAGIC => mcu_common::hps_magic_code(),
+        registers::SYSTEM_STATUS => {
             // Common system status
             status::OK
         }
