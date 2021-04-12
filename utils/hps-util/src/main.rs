@@ -39,6 +39,7 @@ enum SubCommand {
     ListDevices(ListDevices),
     FlashMcu(FlashMcu),
     Launch(Launch),
+    Reset(Reset),
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
 }
@@ -70,6 +71,11 @@ struct AccessRegisters {
     /// registers to read (reg) or write (reg=value)
     values: Vec<String>,
 }
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Reset MCU
+#[argh(subcommand, name = "reset")]
+struct Reset {}
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// Write some values to an arbitrary memory bank
@@ -216,6 +222,7 @@ fn main() -> Result<()> {
     match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => hps.write_firmware(&file),
         SubCommand::Launch(_) => hps.perform_command(commands::LAUNCH),
+        SubCommand::Reset(_) => hps.perform_command(commands::RESET),
         SubCommand::AccessRegisters(config) => access_registers(&mut hps, &config),
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)
