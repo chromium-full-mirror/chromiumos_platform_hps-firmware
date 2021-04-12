@@ -6,11 +6,11 @@ PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
 source "$PROJECT_ROOT/environment"
 
 # Format Python code.
-autopep8 -i "${PROJECT_ROOT}/soc"/*.py
+autopep8 -i --aggressive "${PROJECT_ROOT}/soc"/*.py
 
-# Format C code. We use an absoute path to avoid using the the depot_tools
+# Format C code. We use an absolute path to avoid using the the depot_tools
 # binary, if that's on our path, since it doesn't work.
-/usr/bin/clang-format -i --style=Google "${PROJECT_ROOT}/soc_rom"/*.{c,h}
+/usr/bin/clang-format -i --style=file "${PROJECT_ROOT}/soc_rom"/*.{c,h}
 
 for d in "${HPS_RUST_DIRS[@]}"; do
     (
