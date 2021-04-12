@@ -25,34 +25,67 @@ const HPS_ADDRESS: u8 = 0x30;
 #[derive(FromArgs)]
 /// Communicates with the HPS.
 struct Flags {
+    #[argh(subcommand)]
+    sub_command: SubCommand,
+
     #[argh(option)]
     /// ftdi device serial number
     device: Option<String>,
+}
 
-    #[argh(switch)]
-    /// list FTDI devices
-    list_devices: bool,
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand)]
+enum SubCommand {
+    ListDevices(ListDevices),
+    FlashMcu(FlashMcu),
+    Launch(Launch),
+    AccessRegisters(AccessRegisters),
+    WriteMemoryBank(WriteMemoryBank),
+}
 
-    #[argh(option)]
-    /// write memory bank
-    write_bank: Option<u8>,
+#[derive(FromArgs, PartialEq, Debug)]
+/// List FTDI devices
+#[argh(subcommand, name = "list_devices")]
+struct ListDevices {}
 
-    #[argh(option)]
-    /// write memory at the specified address
-    write_address: Option<u32>,
-
-    #[argh(switch)]
-    /// whether to instruct the HPS to launch
-    launch: bool,
-
+#[derive(FromArgs, PartialEq, Debug)]
+/// Flash MCU application
+#[argh(subcommand, name = "flash_mcu")]
+struct FlashMcu {
     #[argh(option)]
     /// file from which to read MCU firmware
-    mcu_firmware: Option<PathBuf>,
+    file: PathBuf,
+}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Launch MCU application
+#[argh(subcommand, name = "launch")]
+struct Launch {}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Launch MCU application
+#[argh(subcommand, name = "reg")]
+struct AccessRegisters {
+    #[argh(positional)]
+    /// registers to read (reg) or write (reg=value)
+    values: Vec<String>,
+}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Write some values to an arbitrary memory bank
+#[argh(subcommand, name = "write_memory_bank")]
+struct WriteMemoryBank {
+    #[argh(option)]
+    /// memory bank to write
+    bank: u8,
+
+    #[argh(option)]
+    /// address within the bank to start writing at
+    address: u32,
 
     #[argh(positional)]
-    /// registers to read (reg) or write (reg=value), or values to write to
-    /// memory
-    values: Vec<String>,
+    /// values to write to the memory bank
+    values: Vec<u8>,
 }
 
 struct HpsInterface<'a> {
@@ -152,25 +185,8 @@ fn print_device_list() -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
-    let flags: Flags = argh::from_env();
-    if flags.list_devices {
-        return print_device_list();
-    }
-    let ftdi = open_ftdi(&flags)?;
-    let mut hps = HpsInterface::new(&ftdi)?;
-    println!("HPS detected");
-    if let Some(file) = &flags.mcu_firmware {
-        return hps.write_firmware(file);
-    }
-    if let (Some(bank), Some(write_address)) = (&flags.write_bank, &flags.write_address) {
-        let mut values = Vec::new();
-        for value in &flags.values {
-            values.push(value.parse::<u8>()?);
-        }
-        return hps.write_memory(*bank, *write_address, &values);
-    }
-    for reg in flags.values {
+fn access_registers(hps: &mut HpsInterface, flags: &AccessRegisters) -> Result<()> {
+    for reg in &flags.values {
         let mut parts = reg.split('=');
         match (
             parts.next().map(|part| part.parse::<u8>()),
@@ -186,8 +202,24 @@ fn main() -> Result<()> {
             }
         }
     }
-    if flags.launch {
-        hps.perform_command(commands::LAUNCH)?;
-    }
     Ok(())
+}
+
+fn main() -> Result<()> {
+    let flags: Flags = argh::from_env();
+    if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
+        return print_device_list();
+    }
+    let ftdi = open_ftdi(&flags)?;
+    let mut hps = HpsInterface::new(&ftdi)?;
+    println!("HPS detected");
+    match flags.sub_command {
+        SubCommand::FlashMcu(FlashMcu { file }) => hps.write_firmware(&file),
+        SubCommand::Launch(_) => hps.perform_command(commands::LAUNCH),
+        SubCommand::AccessRegisters(config) => access_registers(&mut hps, &config),
+        SubCommand::WriteMemoryBank(config) => {
+            hps.write_memory(config.bank, config.address, &config.values)
+        }
+        SubCommand::ListDevices(_) => unreachable!(),
+    }
 }
