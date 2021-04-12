@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use std::path::Path;
+use std::path::PathBuf;
+
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
@@ -13,6 +16,7 @@ use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
+use mcu_common::memory_banks;
 use mcu_common::registers;
 
 const HPS_ADDRESS: u8 = 0x30;
@@ -35,6 +39,10 @@ struct Flags {
     #[argh(option)]
     /// write memory at the specified address
     write_address: Option<u32>,
+
+    #[argh(option)]
+    /// file from which to read MCU firmware
+    mcu_firmware: Option<PathBuf>,
 
     #[argh(positional)]
     /// registers to read (reg) or write (reg=value), or values to write to
@@ -88,6 +96,17 @@ impl<'a> HpsInterface<'a> {
         buffer.extend_from_slice(values);
         Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
     }
+
+    fn write_firmware(&mut self, input_filename: &Path) -> Result<()> {
+        let bytes = std::fs::read(input_filename)?;
+        let mut address = 0;
+        for chunk in bytes.chunks(128) {
+            self.write_memory(memory_banks::MCU_RW, address, chunk)?;
+            address += chunk.len() as u32;
+        }
+        println!("Sucessfully wrote {} bytes of firmware", bytes.len());
+        Ok(())
+    }
 }
 
 fn register_access_command(reg: u8) -> u8 {
@@ -132,6 +151,9 @@ fn main() -> Result<()> {
     let ftdi = open_ftdi(&flags)?;
     let mut hps = HpsInterface::new(&ftdi)?;
     println!("HPS detected");
+    if let Some(file) = &flags.mcu_firmware {
+        return hps.write_firmware(file);
+    }
     if let (Some(bank), Some(write_address)) = (&flags.write_bank, &flags.write_address) {
         let mut values = Vec::new();
         for value in &flags.values {
