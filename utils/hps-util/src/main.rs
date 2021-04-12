@@ -16,6 +16,7 @@ use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
+use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 
@@ -39,6 +40,10 @@ struct Flags {
     #[argh(option)]
     /// write memory at the specified address
     write_address: Option<u32>,
+
+    #[argh(switch)]
+    /// whether to instruct the HPS to launch
+    launch: bool,
 
     #[argh(option)]
     /// file from which to read MCU firmware
@@ -84,6 +89,10 @@ impl<'a> HpsInterface<'a> {
             (value & 0xff) as u8,
         ];
         Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
+    }
+
+    fn perform_command(&mut self, command: u16) -> Result<()> {
+        self.write_register(registers::COMMAND, command)
     }
 
     fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()> {
@@ -176,6 +185,9 @@ fn main() -> Result<()> {
                 bail!("Expected u8 or u8=16, but found `{}`", reg)
             }
         }
+    }
+    if flags.launch {
+        hps.perform_command(commands::LAUNCH)?;
     }
     Ok(())
 }
