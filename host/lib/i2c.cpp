@@ -1,3 +1,7 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
  * I2C device handler.
  */
@@ -10,7 +14,7 @@
 
 I2CDev::I2CDev(int i2c_bus, int addr) :
 		bus(i2c_bus), address(addr), fd(-1) {
-		this->name = "/dev/i2c-" + std::to_string(bus);
+	this->name = "/dev/i2c-" + std::to_string(bus);
 }
 
 int I2CDev::Open() {

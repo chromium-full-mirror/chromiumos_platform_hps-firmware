@@ -164,7 +164,7 @@ toolchain("host-gcc") {
 
   tool("link") {
     output = "{{target_output_name}}{{output_extension}}"
-    command = "g++ {{ldflags}} -o $output {{inputs}} {{solibs}} {{libs}}"
+    command = "g++ {{ldflags}} -o $output {{inputs}} {{solibs}} {{libs}} -pthread"
     description = "Linking $output"
     outputs = [
       output,

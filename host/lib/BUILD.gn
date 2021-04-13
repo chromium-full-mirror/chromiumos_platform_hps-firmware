@@ -4,9 +4,13 @@ static_library("hpslib") {
   sources = [
     "dev.h",
     "ftdi.h",
+    "ftdi.cpp",
     "hps.cpp",
     "hps.h",
     "i2c.cpp",
     "i2c.h",
+  ]
+  deps = [
+    "//third_party/ftd2xx:libftd2xx",
   ]
 }

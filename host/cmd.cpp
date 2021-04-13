@@ -1,3 +1,7 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
  * Command handler.
  */
@@ -7,7 +11,7 @@
 
 #include "lib/hps.h"
 
-int command(HPS *hps, int argc, char *argv[]) {
+int command(HPS &hps, int argc, char *argv[]) {
 	int cmd;
 
 	if (argc == 0) {
@@ -23,11 +27,10 @@ int command(HPS *hps, int argc, char *argv[]) {
 		return 1;
 	}
 
-	auto dev = hps->Device();
-	for (int i = 0; i < 5; i++) {
-		printf("reg %d = %04x\n", i, dev->readReg(i));
+	for (auto i = 0; i < 5; i++) {
+		printf("reg %d = %04x\n", i, hps.Device().readReg(i));
 	}
 	printf("Sending cmd 0x%04x to register 3\n", cmd);
-	dev->writeReg(3, cmd);
+	hps.Device().writeReg(3, cmd);
 	return 0;
 }

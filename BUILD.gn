@@ -27,7 +27,4 @@ config("compiler_defaults") {
     "-Werror=implicit-function-declaration",
   ]
   ldflags = common_compile_and_link_flags + []
-  if (target_cpu == "x64") {
-    cflags += "-fPIC"
-  }
 }
