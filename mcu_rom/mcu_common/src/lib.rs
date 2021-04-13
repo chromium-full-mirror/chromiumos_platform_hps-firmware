@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 use sodalite::HASH_LEN;
 pub use sodalite::SIGN_LEN;
@@ -119,13 +119,13 @@ mod tests {
 
         let data = [1, 2, 3];
 
-        let mut hasher = Hasher::new();
-        for block in data.chunks(FLASH_PAGE_SZ) {
-            hasher.add_block(block);
+        let mut hasher = super::Hash::new();
+        for block in data.chunks(super::FLASH_PAGE_SZ) {
+            hasher.update(block);
         }
         let hash = hasher.finalize();
 
-        let signature = sign_hash(&hash, private_key);
+        let signature = super::sign_hash(&hash, &private_key);
         assert_eq!(
             &signature.raw_bytes[..],
             &[
