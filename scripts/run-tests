@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs tests that can be run without hardware.
+
+set -e
+PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
+
+cd "${PROJECT_ROOT}/mcu_rom/mcu_common"
+cargo test
+
+cd "${PROJECT_ROOT}/mcu_rom/stage0"
+cargo build
+
+cd "${PROJECT_ROOT}/mcu_rom/stage1"
+cargo build
+
+cd "${PROJECT_ROOT}/mcu_rom/application"
+cargo build
+
+cd "${PROJECT_ROOT}/utils/hps-util"
+cargo build
+
+cd "${PROJECT_ROOT}/utils/sign-rom"
+cargo build
