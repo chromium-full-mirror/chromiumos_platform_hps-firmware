@@ -1,12 +1,8 @@
-# Build file for HPS host library.
+# Build file for FTDI headers and library.
 
-static_library("libftd2xx") {
+source_set("ftd2xx") {
   sources = [
     "ftd2xx.h",
     "WinTypes.h",
-  ]
-
-  libs = [
-    ":libftd2xx.a",
   ]
 }

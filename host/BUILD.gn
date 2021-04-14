@@ -1,9 +1,4 @@
-# Build file for HPS host
-#group("hosthps") {
-#  deps = [
-#    ":hps(//toolchain:host-gcc)",
-#  ]
-#}
+# Build file for HPS host utilities
 
 executable("hps") {
   sources = [
@@ -16,5 +11,10 @@ executable("hps") {
 
   deps = [
     "//host/lib:hpslib",
+    "//third_party/ftd2xx:ftd2xx"
+  ]
+
+  libs = [
+    "//third_party/ftd2xx/libftd2xx.a",
   ]
 }
