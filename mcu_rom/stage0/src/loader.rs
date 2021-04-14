@@ -7,8 +7,6 @@ use core::ops::Range;
 use mcu_common::Hash;
 use mcu_common::ImageHeader;
 
-use sodalite::SIGN_LEN;
-
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 extern "C" {
@@ -64,9 +62,9 @@ pub fn stage1_digest() -> Hash {
     let mut region = unsafe { *((slot.start + 0) as *const [u8; PAGE_SIZE]) };
     let sig_offset = unsafe { &_hdr.sig as *const _ as usize - &_hdr as *const _ as usize };
     let pad_value = 0x00;
-    let padding: [u8; SIGN_LEN] = [pad_value; SIGN_LEN];
+    let padding: [u8; 64] = [pad_value; 64];
     // clobber signature with padding bytes during verification.
-    for idx in 0..SIGN_LEN {
+    for idx in 0..64 {
         region[sig_offset + 12 + idx] = padding[idx];
     }
     hasher.update(&region);

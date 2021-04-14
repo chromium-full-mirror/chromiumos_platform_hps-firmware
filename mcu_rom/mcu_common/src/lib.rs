@@ -5,7 +5,6 @@
 #![cfg_attr(not(test), no_std)]
 
 use sodalite::HASH_LEN;
-pub use sodalite::SIGN_LEN;
 pub use sodalite::SIGN_SECRET_KEY_LEN;
 
 pub mod commands;
@@ -37,14 +36,12 @@ pub struct ImageHeader {
 
 #[repr(C)]
 pub struct Signature {
-    raw_bytes: [u8; SIGN_LEN],
+    raw_bytes: [u8; 64],
 }
 
 impl Signature {
     pub const fn empty() -> Signature {
-        Signature {
-            raw_bytes: [0; SIGN_LEN],
-        }
+        Signature { raw_bytes: [0; 64] }
     }
 
     pub fn copy_from(&mut self, other: &Self) {
@@ -57,12 +54,15 @@ impl Signature {
 }
 
 pub struct PrivateKey {
-    raw_bytes: [u8; SIGN_SECRET_KEY_LEN],
+    raw_bytes: [u8; 64],
 }
 
 impl PrivateKey {
-    pub const fn from_bytes(raw_bytes: [u8; SIGN_SECRET_KEY_LEN]) -> PrivateKey {
+    pub const fn from_bytes(raw_bytes: [u8; 64]) -> PrivateKey {
         PrivateKey { raw_bytes }
+    }
+    pub fn as_bytes(&self) -> [u8; 64] {
+        self.raw_bytes
     }
 }
 
@@ -103,12 +103,12 @@ impl Hash {
 }
 
 pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
-    let mut out = [0u8; SIGN_LEN + HASH_LEN];
+    let mut out = [0u8; 64 + HASH_LEN]; /* sign_len=64 */
     sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
     let mut signature = Signature {
-        raw_bytes: [0u8; SIGN_LEN],
+        raw_bytes: [0u8; 64],
     };
-    signature.raw_bytes.clone_from_slice(&out[..SIGN_LEN]);
+    signature.raw_bytes.clone_from_slice(&out[..64]);
     signature
 }
 

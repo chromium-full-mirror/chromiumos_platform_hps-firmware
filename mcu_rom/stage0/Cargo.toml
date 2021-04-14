@@ -17,7 +17,6 @@ defmt-rtt = "0.2.0"
 i2c_protocol = { path = "../i2c_protocol" }
 mcu_common = { path = "../mcu_common" }
 panic-halt = "0.2.0"
-sodalite = "0.4.0"
 i2c_peripheral = { path = "../i2c_peripheral" }
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral" }
 hal =  { package = "stm32g0xx-hal", git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
