@@ -4,6 +4,7 @@ executable("hps") {
   sources = [
     "main.cpp",
     "cmd.cpp",
+    "download.cpp",
     "status.cpp",
   ]
 

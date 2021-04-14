@@ -160,20 +160,29 @@ bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
 
 bool Ftdi::write(uint8_t cmd, std::vector<uint8_t> &data) {
     std::vector<uint8_t> b;
+    this->ft_get(b);
+    b.clear();
     i2c_start(b);
     if (!this->ft_sendbyte(this->address, b)) {
         this->i2c_reset();
         return false;
     }
+    b.clear();
     if (!this->ft_sendbyte(cmd, b)) {
         this->i2c_reset();
         return false;
     }
     for (auto it = data.begin(); it != data.end(); ++it) {
+        b.clear();
         if (!this->ft_sendbyte(*it, b)) {
             this->i2c_reset();
             return false;
         }
+    }
+    b.clear();
+    i2c_stop(b);
+    if (this->ft_put(b) != b.size()) {
+        return false;
     }
     usleep(kInterMessageDelay*1000);
     return true;

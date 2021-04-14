@@ -16,7 +16,16 @@
 
 class DevInterface {
   public:
+    /*
+     * The size of the vector indicates the amount of data
+     * to read.
+     * Returns true on successful read, false on error.
+     */
     virtual bool read(uint8_t cmd, std::vector<uint8_t> &data) = 0;
+    /*
+     * Write the data in the vector to the device.
+     * Returns true on successful write, false on error.
+     */
     virtual bool write(uint8_t cmd, std::vector<uint8_t> &data) = 0;
     /*
      * Read 1 register.

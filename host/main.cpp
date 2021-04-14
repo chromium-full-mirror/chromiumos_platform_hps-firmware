@@ -16,8 +16,10 @@
 #include "lib/hps.h"
 #include "lib/i2c.h"
 
+// TODO: Refactor to allow sub-commands to add themselves.
 int status(HPS &, int, char *argv[]);
 int command(HPS &, int, char *argv[]);
+int download(HPS &, int, char *argv[]);
 
 static struct {
     const char *cmd;
@@ -25,7 +27,8 @@ static struct {
     const char *desc;
 } commands[] = {
 {    "status", status, "Dump status registers" },
-{    "cmd", command, "Send command to HPS" },
+{    "cmd", command, "Send command to HPS (hps cmd <value>)" },
+{    "dl", download, "Download file to HPS (hps dl <bank-id> <file>)" },
 };
 
 int main(int argc, char *argv[]) {
@@ -88,7 +91,11 @@ int main(int argc, char *argv[]) {
     auto hps = new HPS(*dev);
     for (uint i = 0; i < sizeof(commands)/sizeof(commands[0]); i++) {
         if (strcmp(argv[optind], commands[i].cmd)==0) {
-            return commands[i].func(*hps, argc - optind + 1, &argv[optind]);
+            // Pass new argc/argv to the command for any following arguments.
+            // argv[0] is command name.
+            int cmd_argc = argc - optind;
+            char **cmd_argv = &argv[optind];
+            return commands[i].func(*hps, cmd_argc, cmd_argv);
         }
     }
     printf("%s: Unknown command (%s)\n", argv[0], argv[optind]);

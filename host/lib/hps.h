@@ -8,6 +8,9 @@
 #ifndef __HPS_H__
 #define __HPS_H__
 
+#include <iostream>
+#include <fstream>
+
 #include "dev.h"
 
 class HPS {
@@ -18,6 +21,13 @@ class HPS {
         { }
     void Init();
     DevInterface &Device() { return this->device; }
+    /*
+     * Per the HPS/Host I2C Interface, the bank
+     * must be between 0-63 inclusive.
+     * The length of data written is returned, or -1
+     * in the case of an error.
+     */
+    int Download(int bank, uint32_t address, std::ifstream &source);
   protected:
     enum State {
         init,
