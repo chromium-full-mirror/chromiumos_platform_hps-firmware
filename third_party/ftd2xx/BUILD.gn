@@ -5,6 +5,7 @@ static_library("libftd2xx") {
     "ftd2xx.h",
     "WinTypes.h",
   ]
+
   libs = [
     ":libftd2xx.a",
   ]

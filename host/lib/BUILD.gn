@@ -10,6 +10,9 @@ static_library("hpslib") {
     "i2c.cpp",
     "i2c.h",
   ]
+
+  include_dirs = [ "//third_party/ftd2xx" ]
+
   deps = [
     "//third_party/ftd2xx:libftd2xx",
   ]
