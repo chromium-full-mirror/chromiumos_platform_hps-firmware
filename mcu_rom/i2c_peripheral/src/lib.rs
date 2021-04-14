@@ -13,6 +13,7 @@ pub trait I2cPeripheral {
     fn write_byte(&mut self, byte: u8);
 }
 
+#[derive(Eq, PartialEq, Debug)]
 #[non_exhaustive]
 pub enum I2cEvent {
     None,

@@ -1,0 +1,139 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+use embedded_hal::blocking::i2c::WriteRead;
+use i2c_peripheral::I2cEvent;
+use i2c_peripheral::I2cPeripheral;
+use std::sync::mpsc;
+use std::thread::JoinHandle;
+
+#[derive(Debug)]
+pub enum Error {
+    Disconnected,
+}
+
+/// A fake I2C bus as seen from the peripheral side.
+pub struct FakeI2cPeripheral {
+    events_from_host: mpsc::Receiver<I2cEvent>,
+    bytes_to_host: mpsc::Sender<u8>,
+    // This is optional so that we can release ownership when we join in drop.
+    host_thread: Option<JoinHandle<()>>,
+}
+
+/// A fake I2C bus as seen from the controller side.
+pub struct FakeI2cController {
+    events_to_device: mpsc::Sender<I2cEvent>,
+    bytes_from_device: mpsc::Receiver<u8>,
+}
+
+impl FakeI2cPeripheral {
+    /// Runs `host_code` in a new thread, passing it a fake I2C controller.
+    /// Returns a fake I2C peripheral which represents the other end of the
+    /// connection.
+    pub fn new(host_code: impl FnOnce(FakeI2cController) + Send + 'static) -> FakeI2cPeripheral {
+        let (events_to_device, events_from_host) = mpsc::channel();
+        let (bytes_to_host, bytes_from_device) = mpsc::channel();
+        let host = FakeI2cController {
+            events_to_device,
+            bytes_from_device,
+        };
+        let host_thread = std::thread::spawn(move || host_code(host));
+        FakeI2cPeripheral {
+            events_from_host,
+            bytes_to_host,
+            host_thread: Some(host_thread),
+        }
+    }
+}
+
+impl Drop for FakeI2cPeripheral {
+    fn drop(&mut self) {
+        self.host_thread
+            .take()
+            .unwrap()
+            .join()
+            .expect("Host I2C thread failed");
+    }
+}
+
+impl WriteRead for FakeI2cController {
+    type Error = Error;
+
+    fn write_read(
+        &mut self,
+        _address: u8,
+        bytes_to_write: &[u8],
+        bytes_to_read: &mut [u8],
+    ) -> Result<(), Error> {
+        self.events_to_device.send(I2cEvent::StartWrite)?;
+        for byte in bytes_to_write {
+            self.events_to_device.send(I2cEvent::ByteReceived(*byte))?;
+        }
+        if bytes_to_read.len() > 0 {
+            self.events_to_device.send(I2cEvent::StartRead)?;
+            for out in bytes_to_read {
+                self.events_to_device.send(I2cEvent::NeedByte)?;
+                *out = self.bytes_from_device.recv()?;
+            }
+        }
+        self.events_to_device.send(I2cEvent::Stop)?;
+        Ok(())
+    }
+}
+
+impl I2cPeripheral for FakeI2cPeripheral {
+    fn next_event(&mut self) -> I2cEvent {
+        self.events_from_host.recv().unwrap_or(I2cEvent::None)
+    }
+
+    fn write_byte(&mut self, byte: u8) {
+        let _ = self.bytes_to_host.send(byte);
+    }
+}
+
+impl From<mpsc::RecvError> for Error {
+    fn from(_: mpsc::RecvError) -> Self {
+        Error::Disconnected
+    }
+}
+
+impl<T> From<mpsc::SendError<T>> for Error {
+    fn from(_: mpsc::SendError<T>) -> Self {
+        Error::Disconnected
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_write() {
+        let mut peripheral =
+            FakeI2cPeripheral::new(|mut device| device.write_read(1, &[7, 8], &mut []).unwrap());
+        assert_eq!(peripheral.next_event(), I2cEvent::StartWrite);
+        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(7));
+        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(8));
+        assert_eq!(peripheral.next_event(), I2cEvent::Stop);
+        assert_eq!(peripheral.next_event(), I2cEvent::None);
+    }
+
+    #[test]
+    fn test_write_read() {
+        let mut peripheral = FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            device.write_read(1, &[10], &mut out).unwrap();
+            assert_eq!(out, [14, 15]);
+        });
+        assert_eq!(peripheral.next_event(), I2cEvent::StartWrite);
+        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(10));
+        assert_eq!(peripheral.next_event(), I2cEvent::StartRead);
+        assert_eq!(peripheral.next_event(), I2cEvent::NeedByte);
+        peripheral.write_byte(14);
+        assert_eq!(peripheral.next_event(), I2cEvent::NeedByte);
+        peripheral.write_byte(15);
+        assert_eq!(peripheral.next_event(), I2cEvent::Stop);
+        assert_eq!(peripheral.next_event(), I2cEvent::None);
+    }
+}

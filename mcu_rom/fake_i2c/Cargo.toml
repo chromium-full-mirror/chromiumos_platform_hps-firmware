@@ -1,0 +1,8 @@
+[package]
+name = "fake_i2c"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+i2c_peripheral = { path = "../i2c_peripheral" }
+embedded-hal = "0.2.4"

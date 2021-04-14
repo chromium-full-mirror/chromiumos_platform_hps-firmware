@@ -57,6 +57,7 @@ export PATH=${RISCV_DIR}:$PATH
 
 HPS_RUST_DIRS=(
     mcu_rom/application
+    mcu_rom/fake_i2c
     mcu_rom/i2c_peripheral
     mcu_rom/i2c_protocol
     mcu_rom/mcu_common
