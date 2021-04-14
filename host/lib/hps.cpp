@@ -9,5 +9,5 @@
 #include "hps.h"
 
 void HPS::Init() {
-	this->state = State::init;
+    this->state = State::init;
 }

@@ -10,14 +10,14 @@
 #include "lib/hps.h"
 
 int status(HPS &hps, int argc, char *argv[]) {
-	for (auto i = 0; i < 5; i++) {
-		printf("reg %d = ", i);
+    for (auto i = 0; i < 5; i++) {
+        printf("reg %d = ", i);
         auto result = hps.Device().readReg(i);
         if (result < 0) {
             printf("Error!\n");
         } else {
-		    printf("%04x\n", result);
+            printf("%04x\n", result);
         }
-	}
-	return 0;
+    }
+    return 0;
 }

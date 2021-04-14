@@ -11,43 +11,43 @@
 #include <stdint.h>
 #include <vector>
 
-#define REG_ACCESS	0x80
-#define RETRIES     5
+#define REG_ACCESS      0x80
+#define RETRIES         5
 
 class DevInterface {
   public:
-	virtual bool read(uint8_t cmd, std::vector<uint8_t> &data) = 0;
-	virtual bool write(uint8_t cmd, std::vector<uint8_t> &data) = 0;
-	/*
-	 * Read 1 register.
-	 */
-	int readReg(int r) {
-		std::vector<uint8_t> res(2);
+    virtual bool read(uint8_t cmd, std::vector<uint8_t> &data) = 0;
+    virtual bool write(uint8_t cmd, std::vector<uint8_t> &data) = 0;
+    /*
+     * Read 1 register.
+     */
+    int readReg(int r) {
+        std::vector<uint8_t> res(2);
 
         auto cmd = REG_ACCESS | (r & 0x7F);
         for (int i = 0; i < RETRIES; i++) {
-		    if (this->read(cmd, res)) {
-		        return (int(res[0]) << 8) | int(res[1]);
+            if (this->read(cmd, res)) {
+                return (int(res[0]) << 8) | int(res[1]);
             }
-		}
-		return -1;
-	}
-	/*
-	 * Write 1 register.
-	 */
-	bool writeReg(int r, uint16_t data) {
-		std::vector<uint8_t> buf(2);
+        }
+        return -1;
+    }
+    /*
+     * Write 1 register.
+     */
+    bool writeReg(int r, uint16_t data) {
+        std::vector<uint8_t> buf(2);
 
-		buf[0] = data >> 8;
-		buf[1] = data & 0xFF;
+        buf[0] = data >> 8;
+        buf[1] = data & 0xFF;
         auto cmd = REG_ACCESS | (r & 0x7F);
         for (int i = 0; i < RETRIES; i++) {
-		    if (this->write(cmd, buf)) {
+            if (this->write(cmd, buf)) {
                 return true;
             }
-		}
-		return false;
-	}
+        }
+        return false;
+    }
 };
 
 #endif // __DEV_H__
