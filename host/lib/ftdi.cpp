@@ -33,6 +33,7 @@ enum {
 enum {
     SCK = 1,
     SDATA = 2,
+    GPIO = 8,   // For debugging.
 };
 
 static void i2c_start(std::vector<uint8_t> &);
@@ -312,7 +313,7 @@ void Ftdi::i2c_reset() {
 static void i2c_pins(std::vector<uint8_t> &b, uint8_t val, uint8_t dir) {
     b.push_back(SET_PINS);
     b.push_back(val);
-    b.push_back(dir);
+    b.push_back(dir|GPIO);
 }
 
 // Add a Start sequence to the buffer.

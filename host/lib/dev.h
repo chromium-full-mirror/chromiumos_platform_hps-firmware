@@ -12,6 +12,7 @@
 #include <vector>
 
 #define REG_ACCESS	0x80
+#define RETRIES     5
 
 class DevInterface {
   public:
@@ -23,20 +24,29 @@ class DevInterface {
 	int readReg(int r) {
 		std::vector<uint8_t> res(2);
 
-		if (!this->read(REG_ACCESS | (r & 0x7F), res)) {
-			return -1;
+        auto cmd = REG_ACCESS | (r & 0x7F);
+        for (int i = 0; i < RETRIES; i++) {
+		    if (this->read(cmd, res)) {
+		        return (int(res[0]) << 8) | int(res[1]);
+            }
 		}
-		return (int(res[0]) << 8) | int(res[1]);
+		return -1;
 	}
 	/*
 	 * Write 1 register.
 	 */
 	bool writeReg(int r, uint16_t data) {
-		std::vector<uint8_t> res(2);
+		std::vector<uint8_t> buf(2);
 
-		res[0] = data >> 8;
-		res[1] = data & 0xFF;
-		return this->write(REG_ACCESS | (r & 0x7F), res);
+		buf[0] = data >> 8;
+		buf[1] = data & 0xFF;
+        auto cmd = REG_ACCESS | (r & 0x7F);
+        for (int i = 0; i < RETRIES; i++) {
+		    if (this->write(cmd, buf)) {
+                return true;
+            }
+		}
+		return false;
 	}
 };
 
