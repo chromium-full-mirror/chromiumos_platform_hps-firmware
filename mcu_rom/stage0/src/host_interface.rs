@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::cell::Cell;
 use core::ops::Range;
-use cortex_m::interrupt::Mutex;
 use hal::flash;
 use hal::flash::FlashExt;
 use hal::flash::FlashPage;
@@ -14,19 +12,16 @@ use hal::i2c::SDAPin;
 use hal::rcc::Rcc;
 use hal::stm32::FLASH;
 use hal::stm32::I2C1;
-use i2c_peripheral::I2cPeripheral;
+use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
+use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
-
-static READY_TO_LAUNCH: Mutex<Cell<bool>> = Mutex::new(Cell::new(false));
-
-static mut FLASH_STATE: FlashWriteState = FlashWriteState::new();
 
 pub(crate) fn service_host_i2c(
     i2c1: I2C1,
@@ -36,47 +31,57 @@ pub(crate) fn service_host_i2c(
     flash: FLASH,
     slot: Range<usize>,
 ) {
-    // We access FLASH_STATE here during initialization and then again in I2C
-    // callbacks. The two cannot happen concurrently because we only enable I2C
-    // callbacks after we're done initializing it here.
-    let mut state = unsafe { &mut FLASH_STATE };
-    state.flash = Some(flash);
-    state.slot = slot;
-    let _host_i2c = I2cPeripheral::new(
-        i2c1,
-        rcc,
-        sda,
-        scl,
-        &|reg| match reg {
-            registers::MAGIC => mcu_common::hps_magic_code(),
-            registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
-            registers::SYSTEM_STATUS => {
-                // Common system status
-                status::OK
-            }
-            _ => 0,
-        },
-        &|reg, value| match reg {
-            registers::COMMAND => match value {
-                commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
-                commands::LAUNCH => {
-                    cortex_m::interrupt::free(|cs| {
-                        READY_TO_LAUNCH.borrow(cs).set(true);
-                    });
-                }
-                _ => defmt::info!("Unknown command {}", value),
-            },
-            _ => defmt::info!("Write to unsupported register {}", reg),
-        },
-        &write_memory,
-    );
+    let mut flash_write_state = FlashWriteState {
+        flash: Some(flash),
+        slot,
+    };
+    let mut host_i2c = I2cProtocolHandler::new(Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl));
     // Wait until we're told to launch, at which point we'll drop the i2c
     // interface and continue execution.
     let mut done = false;
     while !done {
-        cortex_m::interrupt::free(|cs| {
-            done = READY_TO_LAUNCH.borrow(cs).get();
-        });
+        match host_i2c.next_event() {
+            i2c_protocol::Event::ReadRegister(event) => {
+                let result = match event.register {
+                    registers::MAGIC => mcu_common::hps_magic_code(),
+                    registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
+                    registers::SYSTEM_STATUS => {
+                        // Common system status
+                        status::OK
+                    }
+                    _ => 0,
+                };
+                event.respond(result, &mut host_i2c);
+            }
+            i2c_protocol::Event::WriteRegister(event) => match event.register {
+                registers::COMMAND => match event.value {
+                    commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
+                    commands::LAUNCH => {
+                        done = true;
+                    }
+                    _ => defmt::info!("Unknown command {}", event.value),
+                },
+                _ => defmt::info!("Write to unsupported register {}", event.register),
+            },
+            i2c_protocol::Event::WriteMemory(event) => {
+                match event.bank {
+                    memory_banks::MCU_RW => {
+                        if let Err(error) = flash_write_state.write(event.address, event.data) {
+                            defmt::error!(
+                                "Failed to write MCU flash: {}",
+                                flash_error_string(error)
+                            );
+                            // TODO: Report error somewhere
+                        }
+                        return;
+                    }
+                    x => {
+                        defmt::warn!("Attempt to write to unsupported memory bank {}", x);
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 }
 
@@ -90,34 +95,12 @@ fn flash_error_string(error: flash::Error) -> &'static str {
     }
 }
 
-fn write_memory(bank: u8, address: u32, data: &[u8]) {
-    match bank {
-        memory_banks::MCU_RW => {
-            if let Err(error) = unsafe { &mut FLASH_STATE }.write(address, data) {
-                defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
-                // TODO: Report error somewhere
-            }
-            return;
-        }
-        x => {
-            defmt::warn!("Attempt to write to unsupported memory bank {}", x);
-        }
-    }
-}
-
 struct FlashWriteState {
     flash: Option<FLASH>,
     slot: Range<usize>,
 }
 
 impl FlashWriteState {
-    const fn new() -> FlashWriteState {
-        FlashWriteState {
-            flash: None,
-            slot: 0..0,
-        }
-    }
-
     fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.

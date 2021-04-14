@@ -2,72 +2,70 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use hal::i2c::SCLPin;
-use hal::i2c::SDAPin;
-use hal::rcc::Rcc;
 use i2c_peripheral::I2cPeripheral;
+use i2c_protocol::I2cProtocolHandler;
 use mcu_common::registers;
 use mcu_common::status;
 use panic_probe as _;
-use stm32g0::stm32g071::I2C1;
 
-/// Initializes the interface with the host.
-pub(crate) fn initialize(
-    i2c1: I2C1,
-    rcc: &mut Rcc,
-    sda: impl SDAPin<I2C1>,
-    scl: impl SCLPin<I2C1>,
-) -> I2cPeripheral {
-    I2cPeripheral::new(
-        i2c1,
-        rcc,
-        sda,
-        scl,
-        &read_register,
-        &write_register,
-        &write_memory,
-    )
-}
-
-static mut REGISTER_DATA: RegisterData = RegisterData::new();
-
-struct RegisterData {
+pub(crate) struct HostInterface<I: I2cPeripheral> {
+    protocol_handler: I2cProtocolHandler<I>,
     reg9: u16,
 }
 
-impl RegisterData {
-    const fn new() -> RegisterData {
-        RegisterData { reg9: 9 }
-    }
-}
-
-fn read_register(register: u8) -> u16 {
-    // We only access REGISTER_DATA from i2c callbacks, which are only called
-    // from the i2c interrupt handler, so cannot be run concurrently.
-    let register_data = unsafe { &mut REGISTER_DATA };
-    match register {
-        registers::MAGIC => mcu_common::hps_magic_code(),
-        registers::SYSTEM_STATUS => {
-            // Common system status
-            status::OK
+impl<I: I2cPeripheral> HostInterface<I> {
+    pub(crate) fn new(i2c: I) -> Self {
+        Self {
+            protocol_handler: I2cProtocolHandler::new(i2c),
+            reg9: 9,
         }
-        // Register 9 is a RW register that's included for now for testing
-        // purposes.
-        9 => register_data.reg9,
-        _ => 0,
     }
-}
 
-fn write_register(register: u8, value: u16) {
-    let mut register_data = unsafe { &mut REGISTER_DATA };
-    defmt::info!("write register {}: {}", register, value);
-    match register {
-        9 => register_data.reg9 = value,
-        _ => (),
+    pub(crate) fn i2c(&mut self) -> &mut I {
+        self.protocol_handler.i2c_mut()
     }
-}
 
-fn write_memory(bank: u8, address: u32, data: &[u8]) {
-    // The MCU application doesn't support any writable memory banks.
-    defmt::info!("Write memory bank {} @{}: {:?}", bank, address, data);
+    pub(crate) fn handle_interrupt(&mut self) {
+        match self.protocol_handler.next_event() {
+            i2c_protocol::Event::ReadRegister(event) => {
+                let value = self.read_register(event.register);
+                event.respond(value, &mut self.protocol_handler)
+            }
+            i2c_protocol::Event::WriteRegister(event) => {
+                self.write_register(event.register, event.value)
+            }
+            i2c_protocol::Event::WriteMemory(event) => {
+                // The MCU application doesn't support any writable memory banks.
+                defmt::info!(
+                    "Write memory bank {} @{}: {:?}",
+                    event.bank,
+                    event.address,
+                    event.data
+                );
+            }
+            _ => {}
+        }
+    }
+
+    fn read_register(&self, register: u8) -> u16 {
+        match register {
+            registers::MAGIC => mcu_common::hps_magic_code(),
+            registers::SYSTEM_STATUS => {
+                // Common system status
+                status::OK
+            }
+            // Register 9 is a RW register that's included for now for testing
+            // purposes.
+            9 => self.reg9,
+            _ => 0,
+        }
+    }
+
+    fn write_register(&mut self, register: u8, value: u16) {
+        defmt::info!("write register {}: {}", register, value);
+        match register {
+            9 => self.reg9 = value,
+            _ => (),
+        }
+    }
 }

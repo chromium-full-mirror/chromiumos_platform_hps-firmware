@@ -7,11 +7,16 @@
 
 use cortex_m_rt::entry;
 use defmt_rtt as _;
+use hal::interrupt;
 use hal::prelude::*;
 use hal::stm32;
+use host_interface::HostInterface;
 use panic_probe as _;
 use panic_probe as _;
+use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 mod host_interface;
+
+static mut I2C_HOST_INTERFACE: Option<HostInterface<Stm32g0I2cPeripheral>> = None;
 
 #[entry]
 fn main() -> ! {
@@ -31,17 +36,32 @@ fn inner_main() -> Result<(), ()> {
 
     let gpiob = p.GPIOB.split(&mut rcc);
 
-    let _i2c_peripheral = host_interface::initialize(
+    let host_interface = HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
-    );
+    ));
+    unsafe {
+        I2C_HOST_INTERFACE = Some(host_interface);
+        I2C_HOST_INTERFACE
+            .as_mut()
+            .unwrap()
+            .i2c()
+            .enable_interupts();
+    }
 
     defmt::info!("MCU application started");
 
     // Loop while we wait for interrupts.
     loop {
         // TODO: Enter some idle state while we're waiting for interrupts.
+    }
+}
+
+#[interrupt]
+fn I2C1() {
+    if let Some(interface) = unsafe { &mut I2C_HOST_INTERFACE }.as_mut() {
+        interface.handle_interrupt();
     }
 }
