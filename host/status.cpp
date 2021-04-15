@@ -14,9 +14,41 @@
 
 namespace {
 
+// No arguments, registers 0 - 4 are dumped
+// N - dump register N
+// N - M Dump registers between N and M inclusive
 int status(HPS &hps, int argc, char *argv[]) {
-    for (auto i = 0; i < 5; i++) {
-        std::cout << "reg " << i << " = ";
+    int start, end;
+    switch (argc) {
+    case 1:
+        start = 0;
+        end = 4;
+        break;
+
+    case 2:
+        start = atoi(argv[1]);
+        if (start < 0 || start > 127) {
+            std::cerr << argv[1] << ": illegal register" << std::endl;
+            return 1;
+        }
+        end = start;
+        break;
+
+    case 3:
+        start = atoi(argv[1]);
+        end = atoi(argv[2]);
+        if (start < 0 || start > 127 || end < 0 || end > 127 || start > end) {
+            std::cerr << "status: illegal start/end values" << std::endl;
+            return 1;
+        }
+        break;
+
+    default:
+        std::cerr << "status: arg error" << std::endl;
+        return 1;
+    }
+    for (auto i = start; i <= end; i++) {
+        std::cout << "reg " << std::dec << i << " = ";
         auto result = hps.Device().readReg(i);
         if (result < 0) {
             std::cout << "Error!" << std::endl;
