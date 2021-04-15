@@ -29,6 +29,7 @@ class DevInterface {
     virtual bool write(uint8_t cmd, std::vector<uint8_t> &data) = 0;
     /*
      * Read 1 register.
+     * Returns value read, or -1 for error.
      */
     int readReg(int r) {
         std::vector<uint8_t> res(2);
@@ -43,6 +44,7 @@ class DevInterface {
     }
     /*
      * Write 1 register.
+     * Returns false on failure.
      */
     bool writeReg(int r, uint16_t data) {
         std::vector<uint8_t> buf(2);

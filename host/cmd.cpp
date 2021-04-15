@@ -6,7 +6,8 @@
  * Command handler.
  */
 
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 #include <string.h>
 
 #include "command.h"
@@ -17,8 +18,8 @@ namespace {
 int sendcmd(HPS &hps, int argc, char *argv[]) {
     int cmd;
 
-    if (argc == 0) {
-        printf("Missing command ('reset' or 'launch' expected)\n");
+    if (argc <= 1) {
+        std::cerr << "Missing command ('reset' or 'launch' expected)" << std::endl;
         return 1;
     }
     if (strcmp(argv[1], "reset") == 0) {
@@ -26,15 +27,23 @@ int sendcmd(HPS &hps, int argc, char *argv[]) {
     } else if (strcmp(argv[1], "launch") == 0) {
         cmd = 2;
     } else {
-        printf("%s: Unknown command (%s)\n", argv[0], argv[1]);
+        std::cerr << argv[0] << ": Unknown command (" << argv[1] << ")" << std::endl;
         return 1;
     }
 
     for (auto i = 0; i < 5; i++) {
-        printf("reg %d = %04x\n", i, hps.Device().readReg(i));
+        std::cout << "reg " << i << " = ";
+        std::cout << std::hex << std::setfill('0') << std::setw(4) << hps.Device().readReg(i);
+        std::cout << std::endl;
     }
-    printf("Sending cmd 0x%04x to register 3\n", cmd);
-    hps.Device().writeReg(3, cmd);
+    std::cout << "Sending cmd value ";
+    std::cout << std::hex << std::setfill('0') << std::setw(4) << cmd;
+    std::cout << " to register 3" << std::endl;
+    if (hps.Device().writeReg(3, cmd)) {
+        std::cout << "Success!" << std::endl;
+    } else {
+        std::cout << "Write failed!" << std::endl;
+    }
     return 0;
 }
 

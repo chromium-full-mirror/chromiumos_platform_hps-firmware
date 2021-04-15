@@ -6,7 +6,7 @@
  * Main command program.
  */
 
-#include <cstdio>
+#include <iostream>
 #include <memory>
 #include <getopt.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (optind >= argc) {
-        printf("Missing command!\n");
+        std::cerr << "Missing command!" << std::endl;
         return 1;
     }
     std::unique_ptr<DevInterface> dev;

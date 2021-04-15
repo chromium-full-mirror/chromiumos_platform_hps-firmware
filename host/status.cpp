@@ -6,7 +6,8 @@
  * Read status registers.
  */
 
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 
 #include "command.h"
 #include "lib/hps.h"
@@ -15,12 +16,12 @@ namespace {
 
 int status(HPS &hps, int argc, char *argv[]) {
     for (auto i = 0; i < 5; i++) {
-        printf("reg %d = ", i);
+        std::cout << "reg " << i << " = ";
         auto result = hps.Device().readReg(i);
         if (result < 0) {
-            printf("Error!\n");
+            std::cout << "Error!" << std::endl;
         } else {
-            printf("%04x\n", result);
+            std::cout << std::hex << std::setfill('0') << std::setw(4) << result << std::endl;
         }
     }
     return 0;

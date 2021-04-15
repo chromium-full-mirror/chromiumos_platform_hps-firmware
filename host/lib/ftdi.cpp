@@ -6,7 +6,8 @@
  * FTDI device interface layer.
  * FTDI APP note AN_255 used as reference.
  */
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 #include <unistd.h>
 
 #include "ftdi.h"
@@ -48,25 +49,25 @@ bool Ftdi::Init() {
 
     ftStatus = FT_ListDevices(0, buf, FT_LIST_BY_INDEX|FT_OPEN_BY_SERIAL_NUMBER);
     if (ftStatus != FT_OK) {
-        printf("List Status = %d\n", ftStatus);
         return false;
     }
-    printf("Serial number: %s\n", buf);
+    std::cout << "FTDT Serial number: " << buf << std::endl;
     ftStatus = FT_Open(0, &this->ftHandle);
     if (ftStatus != FT_OK) {
-        printf("Open status = %d\n", ftStatus);
+        std::cerr << "FTDI open error: " << ftStatus << std::endl;
         return false;
     }
     ftStatus = FT_GetDeviceInfo(this->ftHandle, &ftDevice, NULL, NULL, NULL, NULL);
     if (ftStatus != FT_OK) {
-        printf("GetDevice Status = %d\n", ftStatus);
+        std::cerr << "FTDI GetDevice error: " << ftStatus << std::endl;
         return false;
     }
     /*
      * Confirm it is the correct device type.
      */
     if (FT_DEVICE_2232H != ftDevice) {
-        printf("Unknown device type (expected %d, got %d)\n", FT_DEVICE_2232H, (int)ftDevice);
+        std::cerr << "FTDI unknown device type (expected " << FT_DEVICE_2232H;
+        std::cerr << ", got " << ftDevice << ")" << std::endl;
         return false;
     }
     ftStatus = FT_ResetDevice(ftHandle);
@@ -80,7 +81,7 @@ bool Ftdi::Init() {
         FT_SetLatencyTimer(ftHandle, 16) != FT_OK ||
         FT_SetBitMode(ftHandle, 0x0, 0x00) != FT_OK ||
         FT_SetBitMode(ftHandle, 0x0, 0x02) != FT_OK) {
-        printf("Init error\n");
+        std::cerr << "FTDI: init error" << std::endl;
         return false;
     }
     usleep(50*1000);
@@ -89,11 +90,11 @@ bool Ftdi::Init() {
     std::vector<uint8_t> tx(1);
     tx[0] = 0xAA;
     if (this->ft_put(tx) != tx.size()) {
-        printf("Verify write error\n");
+        std::cerr << "FTDI: verify write error" << std::endl;
         return false;
     }
     if (!this->ft_read(2, rdq) || rdq[0] != 0xFA || rdq[1] != 0xAA) {
-        printf("Verify read error, data %02x %02x\n", rdq[0], rdq[1]);
+        std::cerr << "FTDI: verify read error" << std::endl;
         return false;
     }
     tx.clear();
@@ -102,7 +103,7 @@ bool Ftdi::Init() {
     tx.push_back(0x97);     // Disable adaptive clocking
     tx.push_back(0x8C);     // Enable 3 phase clocking
     if (this->ft_put(tx) != tx.size()) {
-        printf("MPSEE setting error\n");
+        std::cerr << "FTDI: MPSEE setting error" << std::endl;
         return false;
     }
     tx.clear();
@@ -111,14 +112,14 @@ bool Ftdi::Init() {
     tx.push_back(kClockDivisor & 0xFF);
     tx.push_back(kClockDivisor >> 8);
     if (this->ft_put(tx) != tx.size()) {
-        printf("MPSEE setting error #2\n");
+        std::cerr << "FTDI: MPSEE clock setting error" << std::endl;
         return false;
     }
     usleep(20*1000);
     tx.clear();
     tx.push_back(0x85);     // Turn off loopback.
     if (this->ft_put(tx) != tx.size()) {
-        printf("Turn off loopback error\n");
+        std::cerr << "FTDI: loopback disable error" << std::endl;
         return false;
     }
     usleep(20*1000);
