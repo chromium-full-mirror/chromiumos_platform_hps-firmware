@@ -9,8 +9,27 @@
 set -e
 PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
 
+# Crates that can be tested without hardware.
+
 cd "${PROJECT_ROOT}/mcu_rom/mcu_common"
-cargo test
+cargo +stable test
+
+cd "${PROJECT_ROOT}/utils/hps-util"
+cargo +stable test
+
+cd "${PROJECT_ROOT}/utils/sign-rom"
+cargo +stable test
+
+cd "${PROJECT_ROOT}/mcu_rom/i2c_protocol"
+cargo +stable test
+
+cd "${PROJECT_ROOT}/mcu_rom/fake_i2c"
+cargo +stable test
+
+cd "${PROJECT_ROOT}/mcu_rom/i2c_peripheral"
+cargo +stable test
+
+# Harware-specific crates. Just build these.
 
 cd "${PROJECT_ROOT}/mcu_rom/stage0"
 cargo build
@@ -19,10 +38,7 @@ cd "${PROJECT_ROOT}/mcu_rom/stage1"
 cargo build
 
 cd "${PROJECT_ROOT}/mcu_rom/application"
-cargo build
+cargo +stable build
 
-cd "${PROJECT_ROOT}/utils/hps-util"
-cargo build
-
-cd "${PROJECT_ROOT}/utils/sign-rom"
-cargo build
+cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
+cargo +stable build
