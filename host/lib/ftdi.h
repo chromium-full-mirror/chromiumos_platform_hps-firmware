@@ -9,7 +9,7 @@
 #define __FTDI_H__
 
 #include "dev.h"
-#include "ftd2xx.h"
+#include "third_party/ftd2xx/ftd2xx.h"
 
 class Ftdi : public DevInterface {
   public:

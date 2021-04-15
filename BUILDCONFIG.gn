@@ -5,3 +5,7 @@ set_default_toolchain("//toolchain:dummy")
 set_defaults("executable") {
   configs = ["//:compiler_defaults"]
 }
+
+set_defaults("static_library") {
+  configs = ["//:compiler_defaults"]
+}

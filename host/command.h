@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string.h>
 
-#include "lib/hps.h"
+#include "host/lib/hps.h"
 
 class Command {
   public:

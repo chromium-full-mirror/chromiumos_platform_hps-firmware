@@ -23,6 +23,9 @@ config("compiler_defaults") {
              "-Wall",
              "-Wextra",
            ]
+
+  include_dirs = [ "//" ]
+
   cflags_c = [
     "-Werror=implicit-function-declaration",
   ]

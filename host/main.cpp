@@ -13,9 +13,9 @@
 #include <string.h>
 
 #include "command.h"
-#include "lib/ftdi.h"
-#include "lib/hps.h"
-#include "lib/i2c.h"
+#include "host/lib/ftdi.h"
+#include "host/lib/hps.h"
+#include "host/lib/i2c.h"
 
 // Static allocation of global command list head.
 Command * Command::list_;

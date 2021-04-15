@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "command.h"
-#include "lib/hps.h"
+#include "host/lib/hps.h"
 
 namespace {
 

@@ -8,8 +8,6 @@ executable("hps") {
     "status.cpp",
   ]
 
-  include_dirs = [ "//third_party/ftd2xx" ]
-
   deps = [
     "//host/lib:hpslib",
     "//third_party/ftd2xx:ftd2xx"
