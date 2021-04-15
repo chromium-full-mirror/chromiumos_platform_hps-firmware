@@ -66,65 +66,68 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     /// Returns the next event that needs to be handled, consuming that event in
     /// the process.
     pub fn next_event(&mut self) -> Event {
-        match self.i2c.next_event() {
-            I2cEvent::StartRead => {
-                self.tx_offset = self.tx_buffer.len();
-                self.rx_offset = 0;
-            }
-            I2cEvent::StartWrite => {
-                self.rx_offset = 0;
-                self.memory_offset = 0;
-            }
-            I2cEvent::Stop => {
-                if self.rx_offset == 5 {
-                    let bank = self.rx_buffer[0];
-                    let address = self.memory_address();
-                    return Event::WriteMemory(WriteMemoryEvent {
-                        bank,
-                        address,
-                        data: &self.memory_buffer[0..self.memory_offset],
-                    });
+        loop {
+            match self.i2c.next_event() {
+                I2cEvent::StartRead => {
+                    self.tx_offset = self.tx_buffer.len();
+                    self.rx_offset = 0;
                 }
-            }
-            I2cEvent::NeedByte => {
-                if self.tx_offset == self.tx_buffer.len() {
-                    if self.is_register_access() {
-                        let register = self.register_number();
-                        self.set_register_number((register + 1) & 0x7f);
-                        return Event::ReadRegister(ReadRegisterEvent { register });
-                    } else {
-                        // Reads that aren't register access just return 0.
-                        self.i2c.write_byte(0);
-                        return Event::None;
-                    }
+                I2cEvent::StartWrite => {
+                    self.rx_offset = 0;
+                    self.memory_offset = 0;
                 }
-                self.send_next_byte();
-            }
-            I2cEvent::ByteReceived(byte) => {
-                if self.rx_offset == 5 {
-                    if self.memory_offset < self.memory_buffer.len() {
-                        self.memory_buffer[self.memory_offset] = byte;
-                        self.memory_offset += 1;
-                    }
-                    return Event::None;
-                }
-                self.rx_buffer[self.rx_offset] = byte;
-                self.rx_offset += 1;
-                if self.is_register_access() {
-                    if self.rx_offset == 3 {
-                        // TODO: Extract out code for dealing with byte ordering.
-                        let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
-                        self.rx_offset = 1;
-                        return Event::WriteRegister(WriteRegisterEvent {
-                            register: self.register_number(),
-                            value,
+                I2cEvent::Stop => {
+                    if self.rx_offset == 5 {
+                        let bank = self.rx_buffer[0];
+                        let address = self.memory_address();
+                        return Event::WriteMemory(WriteMemoryEvent {
+                            bank,
+                            address,
+                            data: &self.memory_buffer[0..self.memory_offset],
                         });
                     }
                 }
+                I2cEvent::NeedByte => {
+                    if self.tx_offset == self.tx_buffer.len() {
+                        if self.is_register_access() {
+                            let register = self.register_number();
+                            self.set_register_number((register + 1) & 0x7f);
+                            return Event::ReadRegister(ReadRegisterEvent { register });
+                        } else {
+                            // Reads that aren't register access just return 0.
+                            self.i2c.write_byte(0);
+                            continue;
+                        }
+                    }
+                    self.send_next_byte();
+                }
+                I2cEvent::ByteReceived(byte) => {
+                    if self.rx_offset == 5 {
+                        if self.memory_offset < self.memory_buffer.len() {
+                            self.memory_buffer[self.memory_offset] = byte;
+                            self.memory_offset += 1;
+                        }
+                        continue;
+                    }
+                    self.rx_buffer[self.rx_offset] = byte;
+                    self.rx_offset += 1;
+                    if self.is_register_access() {
+                        if self.rx_offset == 3 {
+                            // TODO: Extract out code for dealing with byte ordering.
+                            let value =
+                                (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
+                            self.rx_offset = 1;
+                            return Event::WriteRegister(WriteRegisterEvent {
+                                register: self.register_number(),
+                                value,
+                            });
+                        }
+                    }
+                }
+                I2cEvent::None => return Event::None,
+                _ => {}
             }
-            _ => {}
         }
-        Event::None
     }
 
     fn write_u16(&mut self, value: u16) {
