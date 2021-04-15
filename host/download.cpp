@@ -10,7 +10,10 @@
 #include <fstream>
 #include <string>
 
+#include "command.h"
 #include "lib/hps.h"
+
+namespace {
 
 int download(HPS &hps, int argc, char *argv[]) {
     if (argc != 3) {
@@ -43,3 +46,7 @@ int download(HPS &hps, int argc, char *argv[]) {
     std::cout << "Successful download" << std::endl;
     return 0;
 }
+
+Command dl("dl", "Download file to HPS (hps dl <bank-id> <file>)", download);
+
+}  // namespace

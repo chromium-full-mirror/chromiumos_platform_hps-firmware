@@ -9,9 +9,12 @@
 #include <cstdio>
 #include <string.h>
 
+#include "command.h"
 #include "lib/hps.h"
 
-int command(HPS &hps, int argc, char *argv[]) {
+namespace {
+
+int sendcmd(HPS &hps, int argc, char *argv[]) {
     int cmd;
 
     if (argc == 0) {
@@ -34,3 +37,7 @@ int command(HPS &hps, int argc, char *argv[]) {
     hps.Device().writeReg(3, cmd);
     return 0;
 }
+
+Command cmd("cmd", "Send command (hps cmd <cmd>)", sendcmd);
+
+}  // namespace

@@ -7,7 +7,11 @@
  */
 
 #include <cstdio>
+
+#include "command.h"
 #include "lib/hps.h"
+
+namespace {
 
 int status(HPS &hps, int argc, char *argv[]) {
     for (auto i = 0; i < 5; i++) {
@@ -21,3 +25,7 @@ int status(HPS &hps, int argc, char *argv[]) {
     }
     return 0;
 }
+
+Command cmd("status", "Dump common status registers", status);
+
+}  // namespace

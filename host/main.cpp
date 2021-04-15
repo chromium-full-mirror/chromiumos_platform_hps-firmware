@@ -12,24 +12,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "command.h"
 #include "lib/ftdi.h"
 #include "lib/hps.h"
 #include "lib/i2c.h"
 
-// TODO: Refactor to allow sub-commands to add themselves.
-int status(HPS &, int, char *argv[]);
-int command(HPS &, int, char *argv[]);
-int download(HPS &, int, char *argv[]);
-
-static struct {
-    const char *cmd;
-    int (*func)(HPS &, int, char *[]);
-    const char *desc;
-} commands[] = {
-{    "status", status, "Dump status registers" },
-{    "cmd", command, "Send command to HPS (hps cmd <value>)" },
-{    "dl", download, "Download file to HPS (hps dl <bank-id> <file>)" },
-};
+// Static allocation of global command list head.
+Command * Command::list_;
 
 int main(int argc, char *argv[]) {
     int c;
@@ -68,10 +57,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (optind >= argc) {
-        printf("Missing command - valid commands are:\n");
-        for (uint i = 0; i < sizeof(commands)/sizeof(commands[0]); i++) {
-            printf(" %s - %s\n", commands[i].cmd, commands[i].desc);
-        }
+        printf("Missing command!\n");
         return 1;
     }
     std::unique_ptr<DevInterface> dev;
@@ -89,15 +75,9 @@ int main(int argc, char *argv[]) {
         dev.reset(i2c);
     }
     auto hps = new HPS(*dev);
-    for (uint i = 0; i < sizeof(commands)/sizeof(commands[0]); i++) {
-        if (strcmp(argv[optind], commands[i].cmd)==0) {
-            // Pass new argc/argv to the command for any following arguments.
-            // argv[0] is command name.
-            int cmd_argc = argc - optind;
-            char **cmd_argv = &argv[optind];
-            return commands[i].func(*hps, cmd_argc, cmd_argv);
-        }
-    }
-    printf("%s: Unknown command (%s)\n", argv[0], argv[optind]);
-    return 1;
+    // Pass new argc/argv to the command for any following arguments.
+    // argv[0] is command name.
+    int cmd_argc = argc - optind;
+    char **cmd_argv = &argv[optind];
+    return Command::Execute(cmd_argv[0], *hps, cmd_argc, cmd_argv);
 }
