@@ -12,9 +12,11 @@
 
 #include "ftdi.h"
 
-static const int kTimeoutMS = 500;               // MS timeout
-static const int kInterMessageDelay = 2;         // MS delay between messages.
-static const uint16_t kClockDivisor = (300/2-1); // Clock divisor (100KHz)
+namespace {
+
+const int kTimeoutMS = 500;               // MS timeout
+const int kInterMessageDelay = 2;         // MS delay between messages.
+const uint16_t kClockDivisor = (300/2-1); // Clock divisor (100KHz)
 
 // Commands to FTDI module.
 enum {
@@ -37,9 +39,42 @@ enum {
     GPIO = 8,   // For debugging.
 };
 
-static void i2c_start(std::vector<uint8_t> &);
-static void i2c_stop(std::vector<uint8_t> &);
-static void i2c_pins(std::vector<uint8_t> &b, uint8_t val, uint8_t dir);
+
+// Set the state of the I/O pins.
+void i2c_pins(std::vector<uint8_t> &b, uint8_t val, uint8_t dir) {
+    b.push_back(SET_PINS);
+    b.push_back(val);
+    b.push_back(dir|GPIO);
+}
+
+// Add a Start sequence to the buffer.
+void i2c_start(std::vector<uint8_t> &b) {
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, SCK|SDATA, SCK|SDATA);    // Let line be pulled up.
+    }
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, SCK, SCK|SDATA);
+    }
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, 0, SCK|SDATA);
+    }
+}
+
+// Add a Stop sequence to the buffer.
+void i2c_stop(std::vector<uint8_t> &b) {
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, 0, SCK|SDATA);
+    }
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, SCK, SCK|SDATA);
+    }
+    for (auto i = 0; i < 10; i++) {
+        i2c_pins(b, SCK|SDATA, SCK|SDATA);
+    }
+    i2c_pins(b, SCK|SDATA, 0);
+}
+
+}  // namespace
 
 bool Ftdi::Init() {
     FT_STATUS   ftStatus;
@@ -159,7 +194,7 @@ bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
     return true;
 }
 
-bool Ftdi::write(uint8_t cmd, std::vector<uint8_t> &data) {
+bool Ftdi::write(uint8_t cmd, const std::vector<uint8_t> &data) {
     std::vector<uint8_t> b;
     this->ft_get(b);
     b.clear();
@@ -305,9 +340,9 @@ bool Ftdi::ft_get(std::vector<uint8_t> &get) {
 }
 
 // Write the data to the module..
-int Ftdi::ft_put(std::vector<uint8_t> &output) {
+int Ftdi::ft_put(const std::vector<uint8_t> &output) {
     DWORD actual = 0;
-    FT_Write(this->ftHandle, &output[0], output.size(), &actual);
+    FT_Write(this->ftHandle, const_cast<uint8_t *>(&output[0]), output.size(), &actual);
     return int(actual);
 }
 
@@ -317,38 +352,4 @@ void Ftdi::i2c_reset() {
     i2c_stop(b);
     this->ft_put(b);
     usleep(kInterMessageDelay*1000);
-}
-
-// Set the state of the I/O pins.
-static void i2c_pins(std::vector<uint8_t> &b, uint8_t val, uint8_t dir) {
-    b.push_back(SET_PINS);
-    b.push_back(val);
-    b.push_back(dir|GPIO);
-}
-
-// Add a Start sequence to the buffer.
-static void i2c_start(std::vector<uint8_t> &b) {
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, SCK|SDATA, SCK|SDATA);    // Let line be pulled up.
-    }
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, SCK, SCK|SDATA);
-    }
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, 0, SCK|SDATA);
-    }
-}
-
-// Add a Stop sequence to the buffer.
-static void i2c_stop(std::vector<uint8_t> &b) {
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, 0, SCK|SDATA);
-    }
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, SCK, SCK|SDATA);
-    }
-    for (auto i = 0; i < 10; i++) {
-        i2c_pins(b, SCK|SDATA, SCK|SDATA);
-    }
-    i2c_pins(b, SCK|SDATA, 0);
 }

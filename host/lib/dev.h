@@ -26,7 +26,7 @@ class DevInterface {
      * Write the data in the vector to the device.
      * Returns true on successful write, false on error.
      */
-    virtual bool write(uint8_t cmd, std::vector<uint8_t> &data) = 0;
+    virtual bool write(uint8_t cmd, const std::vector<uint8_t> &data) = 0;
     /*
      * Read 1 register.
      * Returns value read, or -1 for error.

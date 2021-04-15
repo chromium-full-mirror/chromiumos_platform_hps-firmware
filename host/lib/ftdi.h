@@ -16,7 +16,7 @@ class Ftdi : public DevInterface {
     Ftdi(uint8_t addr) : address(addr << 1) { }
     bool Init();
     virtual bool read(uint8_t cmd, std::vector<uint8_t> &data);
-    virtual bool write(uint8_t cmd, std::vector<uint8_t> &data);
+    virtual bool write(uint8_t cmd, const std::vector<uint8_t> &data);
   protected:
     void i2c_reset();
     bool i2c_read(std::vector<uint8_t> &data);
@@ -24,7 +24,7 @@ class Ftdi : public DevInterface {
     bool ft_sendbyte(uint8_t data, std::vector<uint8_t> &b);
     bool ft_readbyte(uint8_t *result, bool nak);
     bool ft_get(std::vector<uint8_t> &get);
-    int ft_put(std::vector<uint8_t> &output);
+    int ft_put(const std::vector<uint8_t> &output);
     uint8_t address;
     FT_HANDLE ftHandle;
 };

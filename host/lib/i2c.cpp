@@ -5,6 +5,7 @@
 /*
  * I2C device handler.
  */
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
@@ -39,7 +40,7 @@ bool I2CDev::read(uint8_t cmd, std::vector<uint8_t> &data) {
     return this->ioc(m, sizeof(m)/sizeof(m[0]));
 }
 
-bool I2CDev::write(uint8_t cmd, std::vector<uint8_t> &data) {
+bool I2CDev::write(uint8_t cmd, const std::vector<uint8_t> &data) {
     struct i2c_msg m[2];
 
     m[0].addr = this->address;
@@ -49,7 +50,7 @@ bool I2CDev::write(uint8_t cmd, std::vector<uint8_t> &data) {
     m[1].addr = this->address;
     m[1].flags = 0;
     m[1].len = data.size();
-    m[1].buf = &data[0];
+    m[1].buf = const_cast<uint8_t *>(&data[0]);
     return this->ioc(m, sizeof(m)/sizeof(m[0]));
 }
 
