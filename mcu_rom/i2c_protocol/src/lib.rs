@@ -98,9 +98,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         return Event::None;
                     }
                 }
-                let value = self.tx_buffer[self.tx_offset];
-                self.tx_offset += 1;
-                self.i2c.write_byte(value);
+                self.send_next_byte();
             }
             I2cEvent::ByteReceived(byte) => return self.byte_received(byte),
             _ => {}
@@ -113,13 +111,19 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         self.tx_buffer[0] = (value >> 8) as u8;
         self.tx_buffer[1] = (value & 0xff) as u8;
         self.tx_offset = 0;
-        // We could consider writing the first byte to the device, or we can
-        // just leave it and rely on another NeedsByte event occurring. For now,
-        // we do the latter.
+        self.send_next_byte();
     }
 
     pub fn i2c_mut(&mut self) -> &mut I {
         &mut self.i2c
+    }
+
+    /// Sends the next byte from the buffer. Should only be called when our
+    /// transfer buffer is known to already contain data.
+    fn send_next_byte(&mut self) {
+        let value = self.tx_buffer[self.tx_offset];
+        self.tx_offset += 1;
+        self.i2c.write_byte(value);
     }
 
     fn is_register_access(&self) -> bool {
