@@ -75,6 +75,12 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                 I2cEvent::StartRead => {
                     self.tx_offset = self.tx_buffer.len();
                     self.rx_offset = 0;
+
+                    if self.is_register_access() {
+                        return Event::ReadRegister(ReadRegisterEvent {
+                            register: self.register_number(),
+                        });
+                    }
                 }
                 I2cEvent::StartWrite => {
                     self.rx_offset = 0;
@@ -92,6 +98,9 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                 }
                 I2cEvent::NeedByte => {
+                    // TODO: Consider deleting the following code and just
+                    // calling `send_next_byte`. This would have the effect of
+                    // removing register auto-increment.
                     if self.tx_offset == self.tx_buffer.len() {
                         if self.is_register_access() {
                             let register = self.register_number();
