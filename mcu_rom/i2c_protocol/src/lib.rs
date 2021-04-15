@@ -7,6 +7,7 @@
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum Event<'a> {
     None,
     ReadRegister(ReadRegisterEvent),
@@ -14,15 +15,18 @@ pub enum Event<'a> {
     WriteMemory(WriteMemoryEvent<'a>),
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct ReadRegisterEvent {
     pub register: u8,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct WriteRegisterEvent {
     pub register: u8,
     pub value: u16,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct WriteMemoryEvent<'a> {
     pub bank: u8,
     pub address: u32,
@@ -166,5 +170,63 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
 
     fn set_register_number(&mut self, register: u8) {
         self.rx_buffer[0] = 0x80 | register;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use embedded_hal::blocking::i2c::WriteRead;
+    use fake_i2c::FakeI2cPeripheral;
+
+    #[test]
+    fn test_write_register() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            device.write_read(1, &[0x89, 0x05, 0xab], &mut []).unwrap()
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert_eq!(
+            protocol_handler.next_event(),
+            Event::WriteRegister(WriteRegisterEvent {
+                register: 0x9,
+                value: 0x5ab,
+            })
+        );
+    }
+
+    #[test]
+    fn test_read_register() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            device.write_read(1, &[0x89], &mut out).unwrap();
+            assert_eq!(out, [0x12, 0x34])
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        match protocol_handler.next_event() {
+            Event::ReadRegister(event) => {
+                assert_eq!(event.register, 0x9);
+                event.respond(0x1234, &mut protocol_handler);
+            }
+            x => panic!("Unexpected event {:?}", x),
+        }
+        assert_eq!(protocol_handler.next_event(), Event::None);
+    }
+
+    #[test]
+    fn test_write_memory_bank() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            device
+                .write_read(1, &[1, 0x12, 0x34, 0x56, 0x78, 10, 11, 12], &mut [])
+                .unwrap()
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert_eq!(
+            protocol_handler.next_event(),
+            Event::WriteMemory(WriteMemoryEvent {
+                bank: 1,
+                address: 0x12345678,
+                data: &[10, 11, 12],
+            })
+        );
     }
 }
