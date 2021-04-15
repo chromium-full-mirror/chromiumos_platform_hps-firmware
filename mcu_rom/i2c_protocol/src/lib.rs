@@ -63,7 +63,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         }
     }
 
-    /// Returns the next event that needs to be handled, consuming that even in
+    /// Returns the next event that needs to be handled, consuming that event in
     /// the process.
     pub fn next_event(&mut self) -> Event {
         match self.i2c.next_event() {
@@ -100,7 +100,28 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                 }
                 self.send_next_byte();
             }
-            I2cEvent::ByteReceived(byte) => return self.byte_received(byte),
+            I2cEvent::ByteReceived(byte) => {
+                if self.rx_offset == 5 {
+                    if self.memory_offset < self.memory_buffer.len() {
+                        self.memory_buffer[self.memory_offset] = byte;
+                        self.memory_offset += 1;
+                    }
+                    return Event::None;
+                }
+                self.rx_buffer[self.rx_offset] = byte;
+                self.rx_offset += 1;
+                if self.is_register_access() {
+                    if self.rx_offset == 3 {
+                        // TODO: Extract out code for dealing with byte ordering.
+                        let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
+                        self.rx_offset = 1;
+                        return Event::WriteRegister(WriteRegisterEvent {
+                            register: self.register_number(),
+                            value,
+                        });
+                    }
+                }
+            }
             _ => {}
         }
         Event::None
@@ -142,29 +163,5 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
 
     fn set_register_number(&mut self, register: u8) {
         self.rx_buffer[0] = 0x80 | register;
-    }
-
-    fn byte_received(&mut self, byte: u8) -> Event {
-        if self.rx_offset == 5 {
-            if self.memory_offset < self.memory_buffer.len() {
-                self.memory_buffer[self.memory_offset] = byte;
-                self.memory_offset += 1;
-            }
-            return Event::None;
-        }
-        self.rx_buffer[self.rx_offset] = byte;
-        self.rx_offset += 1;
-        if self.is_register_access() {
-            if self.rx_offset == 3 {
-                // TODO: Extract out code for dealing with byte ordering.
-                let value = (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
-                self.rx_offset = 1;
-                return Event::WriteRegister(WriteRegisterEvent {
-                    register: self.register_number(),
-                    value,
-                });
-            }
-        }
-        Event::None
     }
 }
