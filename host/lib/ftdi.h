@@ -20,11 +20,11 @@ class Ftdi : public DevInterface {
   protected:
     void i2c_reset();
     bool i2c_read(std::vector<uint8_t> &data);
-    bool ft_read(int count, std::vector<uint8_t> &input);
+    bool ft_read(size_t count, std::vector<uint8_t> &input);
     bool ft_sendbyte(uint8_t data, std::vector<uint8_t> &b);
     bool ft_readbyte(uint8_t *result, bool nak);
     bool ft_get(std::vector<uint8_t> &get);
-    int ft_put(const std::vector<uint8_t> &output);
+    size_t ft_put(const std::vector<uint8_t> &output);
     uint8_t address;
     FT_HANDLE ftHandle;
 };

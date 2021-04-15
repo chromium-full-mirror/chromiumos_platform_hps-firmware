@@ -79,7 +79,6 @@ void i2c_stop(std::vector<uint8_t> &b) {
 bool Ftdi::Init() {
     FT_STATUS   ftStatus;
     FT_DEVICE    ftDevice;
-    DWORD dwNumInputBuffer;
     char buf[64];
 
     ftStatus = FT_ListDevices(0, buf, FT_LIST_BY_INDEX|FT_OPEN_BY_SERIAL_NUMBER);
@@ -184,7 +183,7 @@ bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
         this->i2c_reset();
         return false;
     }
-    for (auto i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         if (!this->ft_readbyte(&data[i], i == (data.size() - 1))) {
             this->i2c_reset();
             return false;
@@ -226,7 +225,7 @@ bool Ftdi::write(uint8_t cmd, const std::vector<uint8_t> &data) {
 
 // Read a block of data from the FTDI chip.
 // A timeout is used in case it hangs.
-bool Ftdi::ft_read(int count, std::vector<uint8_t> &input) {
+bool Ftdi::ft_read(size_t count, std::vector<uint8_t> &input) {
     input.clear();
     std::vector<uint8_t> buf;
     int timeout = kTimeoutMS;
@@ -340,10 +339,10 @@ bool Ftdi::ft_get(std::vector<uint8_t> &get) {
 }
 
 // Write the data to the module..
-int Ftdi::ft_put(const std::vector<uint8_t> &output) {
+size_t Ftdi::ft_put(const std::vector<uint8_t> &output) {
     DWORD actual = 0;
     FT_Write(this->ftHandle, const_cast<uint8_t *>(&output[0]), output.size(), &actual);
-    return int(actual);
+    return size_t(actual);
 }
 
 // Reset the state of the bus to idle.
