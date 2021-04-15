@@ -42,6 +42,7 @@ enum SubCommand {
     Reset(Reset),
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
+    StressTest(StressTest),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -94,6 +95,15 @@ struct WriteMemoryBank {
     values: Vec<u8>,
 }
 
+#[derive(FromArgs, PartialEq, Debug)]
+/// Stress test communication with the HPS
+#[argh(subcommand, name = "stress_test")]
+struct StressTest {
+    #[argh(option)]
+    /// number of iterations
+    iterations: u32,
+}
+
 struct HpsInterface<'a> {
     i2c: I2c<'a, Ft2232h>,
 }
@@ -102,7 +112,15 @@ impl<'a> HpsInterface<'a> {
     fn new(ftdi: &'a Ft2232hHal<Initialized>) -> Result<Self> {
         let i2c = ftdi.i2c()?;
         let mut hps = Self { i2c };
-        let magic = hps.read_register(registers::MAGIC)?;
+        hps.check_magic()?;
+        Ok(hps)
+    }
+
+    /// Reads the "magic" register which always contains a particular value if
+    /// the device is a HPS. Returns an error on communication failure or if the
+    /// returned value isn't what's expected.
+    fn check_magic(&mut self) -> Result<()> {
+        let magic = self.read_register(registers::MAGIC)?;
         let expected = mcu_common::hps_magic_code();
         if magic != expected {
             bail!(
@@ -111,7 +129,7 @@ impl<'a> HpsInterface<'a> {
                 magic
             );
         }
-        Ok(hps)
+        Ok(())
     }
 
     fn read_register(&mut self, reg: u8) -> Result<u16> {
@@ -211,6 +229,20 @@ fn access_registers(hps: &mut HpsInterface, flags: &AccessRegisters) -> Result<(
     Ok(())
 }
 
+fn stress_test(hps: &mut HpsInterface, config: &StressTest) -> Result<()> {
+    let mut errors = 0;
+    for _ in 0..config.iterations {
+        if hps.check_magic().is_err() {
+            errors += 1;
+        }
+    }
+    println!(
+        "Got errors on {} out of {} reads",
+        errors, config.iterations
+    );
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
@@ -228,5 +260,6 @@ fn main() -> Result<()> {
             hps.write_memory(config.bank, config.address, &config.values)
         }
         SubCommand::ListDevices(_) => unreachable!(),
+        SubCommand::StressTest(config) => stress_test(&mut hps, &config),
     }
 }
