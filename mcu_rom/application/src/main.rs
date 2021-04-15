@@ -51,7 +51,10 @@ fn inner_main() -> Result<(), ()> {
             .enable_interupts();
     }
 
-    defmt::info!("MCU application started");
+    defmt::info!(
+        "MCU application started. CPU is running at {}Mhz",
+        rcc.clocks.sys_clk.0 / 1000000
+    );
 
     // Loop while we wait for interrupts.
     loop {
