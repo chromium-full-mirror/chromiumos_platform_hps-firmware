@@ -35,4 +35,5 @@ The following commands are supported:
 hps -f status   # Read the common status registers and display them
 hps -f cmd <value> # Send a command to the module.
 hps -f dl <bank> file # Download the file to the bank selected
+hps -f readtest [iterations] # Read all of the registers and verify their value
 ```

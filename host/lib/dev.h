@@ -17,9 +17,10 @@
 class DevInterface {
   public:
     /*
-     * The size of the vector indicates the amount of data
-     * to read.
-     * Returns true on successful read, false on error.
+     * The size of the vector indicates the amount of data to read.
+     * Returns true on successful read, false on error. The
+     * size of the vector remains unchanged. In the event of an error,
+     * the contents may have been modified.
      */
     virtual bool read(uint8_t cmd, std::vector<uint8_t> &data) = 0;
     /*

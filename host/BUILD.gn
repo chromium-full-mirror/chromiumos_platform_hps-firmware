@@ -6,6 +6,7 @@ executable("hps") {
     "cmd.cpp",
     "download.cpp",
     "status.cpp",
+    "readtest.cpp",
   ]
 
   deps = [
