@@ -15,7 +15,7 @@
 namespace {
 
 const int kTimeoutMS = 500;               // MS timeout
-const int kInterMessageDelay = 2;         // MS delay between messages.
+const int kResetDelay = 10;               // MS delay after reset.
 const uint16_t kClockDivisor = (300/2-1); // Clock divisor (100KHz)
 
 // Commands to FTDI module.
@@ -189,7 +189,6 @@ bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
             return false;
         }
     }
-    usleep(kInterMessageDelay*1000);
     return true;
 }
 
@@ -219,7 +218,6 @@ bool Ftdi::write(uint8_t cmd, const std::vector<uint8_t> &data) {
     if (this->ft_put(b) != b.size()) {
         return false;
     }
-    usleep(kInterMessageDelay*1000);
     return true;
 }
 
@@ -350,5 +348,5 @@ void Ftdi::i2c_reset() {
     std::vector<uint8_t> b;
     i2c_stop(b);
     this->ft_put(b);
-    usleep(kInterMessageDelay*1000);
+    usleep(kResetDelay*1000);
 }
