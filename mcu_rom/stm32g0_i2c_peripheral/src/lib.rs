@@ -88,10 +88,6 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
         if isr.addr().bit_is_set() {
             self.i2c1.icr.write(|w| w.addrcf().set_bit());
             if isr.dir().bit_is_set() {
-                // Setting txe will clear any existing byte already stored into
-                // txrd. This is important if the previous read was terminated
-                // early by the controller.
-                self.i2c1.isr.write(|w| w.txe().set_bit());
                 return I2cEvent::StartRead;
             } else {
                 return I2cEvent::StartWrite;
@@ -99,6 +95,10 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
         }
         if isr.stopf().bit_is_set() {
             self.i2c1.icr.write(|w| w.stopcf().set_bit());
+            // Setting txe will clear any existing byte already stored into
+            // txrd. This is important if the previous read was terminated early
+            // by the controller.
+            self.i2c1.isr.write(|w| w.txe().set_bit());
             return I2cEvent::Stop;
         }
         if isr.ovr().bit_is_set() {
