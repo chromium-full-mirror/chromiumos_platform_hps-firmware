@@ -46,26 +46,58 @@ impl ReadRegisterEvent {
 /// bus events into higher level register / memory events.
 pub struct I2cProtocolHandler<I: I2cPeripheral> {
     i2c: I,
-    // TODO: See if using an enum to model our different states would result in
-    // cleaner code.
-    rx_buffer: [u8; 5],
-    rx_offset: usize,
-    tx_buffer: [u8; 2],
-    tx_offset: usize,
+    state: State,
     memory_buffer: [u8; 256],
-    memory_offset: usize,
+}
+
+enum State {
+    /// Our initial, default state before we receive any bytes.
+    Initial,
+    /// In this state, we've received a register number. We don't yet know if
+    /// we'll be reading or writing the register.
+    AccessingRegister(u8),
+    /// Registers are two bytes. We send the first byte as soon as we get the
+    /// register value, so we only need to store the second byte here.
+    SendByteQueued(u8),
+    WritingRegister(WriteRegisterState),
+    /// We enter this state when we have receive a memory bank number and remain
+    /// in this state until we've receive the full address.
+    MemoryBankAccess(MemoryBankAccessState),
+    /// We enter this state once we've receive the address and are receiving
+    /// bytes to store into the memory bank.
+    MemoryBankWrite(MemoryBankWriteState),
+    /// Once we've finished sending or writing the value of a register, or if we
+    /// get some invalid access, such as an attempt to read from a memory bank,
+    /// we enter this state and just send zeros, while ignoring everything sent
+    /// to us.
+    Done,
+}
+
+struct MemoryBankAccessState {
+    bank: u8,
+    address_bytes: [u8; 4],
+    address_bytes_received: u8,
+}
+
+struct MemoryBankWriteState {
+    bank: u8,
+    address: u32,
+    buffer_bytes_received: u8,
+}
+
+struct WriteRegisterState {
+    register: u8,
+    /// The first byte of the value. Once we get the second byte, we're done, so
+    /// exit this state.
+    first_value_byte: u8,
 }
 
 impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     pub fn new(i2c: I) -> Self {
         Self {
             i2c,
-            rx_buffer: [0u8; 5],
-            rx_offset: 0,
-            tx_buffer: [0u8; 2],
-            tx_offset: 2,
+            state: State::Initial,
             memory_buffer: [0u8; 256],
-            memory_offset: 0,
         }
     }
 
@@ -75,56 +107,83 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         loop {
             match self.i2c.next_event() {
                 I2cEvent::StartRead => {
-                    self.tx_offset = self.tx_buffer.len();
-                    self.rx_offset = 0;
-
-                    if self.is_register_access() {
-                        return Event::ReadRegister(ReadRegisterEvent {
-                            register: self.register_number(),
-                        });
+                    if let State::AccessingRegister(register) = self.state {
+                        return Event::ReadRegister(ReadRegisterEvent { register });
                     }
                 }
                 I2cEvent::StartWrite => {
-                    self.rx_offset = 0;
-                    self.memory_offset = 0;
+                    self.state = State::Initial;
                 }
                 I2cEvent::Stop => {
-                    if self.rx_offset == 5 {
-                        let bank = self.rx_buffer[0];
-                        let address = self.memory_address();
+                    if let State::MemoryBankWrite(state) = &self.state {
                         return Event::WriteMemory(WriteMemoryEvent {
-                            bank,
-                            address,
-                            data: &self.memory_buffer[0..self.memory_offset],
+                            bank: state.bank,
+                            address: state.address,
+                            data: &self.memory_buffer[0..state.buffer_bytes_received as usize],
                         });
                     }
                 }
-                I2cEvent::NeedByte => {
-                    self.send_next_byte();
-                }
-                I2cEvent::ByteReceived(byte) => {
-                    if self.rx_offset == 5 {
-                        if self.memory_offset < self.memory_buffer.len() {
-                            self.memory_buffer[self.memory_offset] = byte;
-                            self.memory_offset += 1;
+                I2cEvent::NeedByte => match self.state {
+                    State::SendByteQueued(byte) => self.i2c.write_byte(byte),
+                    _ => self.i2c.write_byte(0),
+                },
+                I2cEvent::ByteReceived(byte) => match &mut self.state {
+                    State::Initial => {
+                        // We've received our first byte. Determine if it's a
+                        // register access or a memory bank access.
+                        if let Some(register) = register_from_byte(byte) {
+                            self.state = State::AccessingRegister(register);
+                        } else {
+                            self.state = State::MemoryBankAccess(MemoryBankAccessState {
+                                bank: byte,
+                                address_bytes: [0u8; 4],
+                                address_bytes_received: 0,
+                            })
                         }
-                        continue;
                     }
-                    self.rx_buffer[self.rx_offset] = byte;
-                    self.rx_offset += 1;
-                    if self.is_register_access() {
-                        if self.rx_offset == 3 {
-                            // TODO: Extract out code for dealing with byte ordering.
-                            let value =
-                                (self.rx_buffer[1] as u16) << 8 | (self.rx_buffer[2] as u16);
-                            self.rx_offset = 1;
-                            return Event::WriteRegister(WriteRegisterEvent {
-                                register: self.register_number(),
-                                value,
+                    State::AccessingRegister(register) => {
+                        // We've already received a register number and now
+                        // there's another byte, that makes this a register
+                        // write.
+                        self.state = State::WritingRegister(WriteRegisterState {
+                            register: *register,
+                            first_value_byte: byte,
+                        });
+                    }
+                    State::WritingRegister(state) => {
+                        // We already know which register we're writing and have
+                        // the first byte. Compute the value and write the
+                        // register.
+                        let value_bytes = [state.first_value_byte, byte];
+                        let event = Event::WriteRegister(WriteRegisterEvent {
+                            register: state.register,
+                            value: u16::from_be_bytes(value_bytes),
+                        });
+                        self.state = State::Done;
+                        return event;
+                    }
+                    State::MemoryBankAccess(state) => {
+                        // We know which memory bank we're accessing. The byte
+                        // is part of the address.
+                        state.address_bytes[state.address_bytes_received as usize] = byte;
+                        state.address_bytes_received += 1;
+                        if state.address_bytes_received as usize == state.address_bytes.len() {
+                            self.state = State::MemoryBankWrite(MemoryBankWriteState {
+                                bank: state.bank,
+                                address: u32::from_be_bytes(state.address_bytes),
+                                buffer_bytes_received: 0,
                             });
                         }
                     }
-                }
+                    State::MemoryBankWrite(state) => {
+                        let pos = state.buffer_bytes_received as usize;
+                        if pos < self.memory_buffer.len() {
+                            self.memory_buffer[pos] = byte;
+                            state.buffer_bytes_received += 1;
+                        }
+                    }
+                    _ => {}
+                },
                 I2cEvent::None => return Event::None,
                 I2cEvent::Error(error) => return Event::Error(error),
                 _ => {}
@@ -133,42 +192,23 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     }
 
     fn write_u16(&mut self, value: u16) {
-        // TODO: Extract out code for dealing with byte ordering.
-        self.tx_buffer[0] = (value >> 8) as u8;
-        self.tx_buffer[1] = (value & 0xff) as u8;
-        self.tx_offset = 0;
-        self.send_next_byte();
+        let bytes = value.to_be_bytes();
+        self.i2c.write_byte(bytes[0]);
+        self.state = State::SendByteQueued(bytes[1]);
     }
 
     pub fn i2c_mut(&mut self) -> &mut I {
         &mut self.i2c
     }
+}
 
-    /// Sends the next byte from the buffer. Should only be called when our
-    /// transfer buffer is known to already contain data.
-    fn send_next_byte(&mut self) {
-        let value;
-        if self.tx_offset == self.tx_buffer.len() {
-            value = 0;
-        } else {
-            value = self.tx_buffer[self.tx_offset];
-            self.tx_offset += 1;
-        }
-        self.i2c.write_byte(value);
-    }
-
-    fn is_register_access(&self) -> bool {
-        (self.rx_buffer[0] & 0x80) != 0
-    }
-
-    fn register_number(&self) -> u8 {
-        self.rx_buffer[0] & 0x7f
-    }
-
-    fn memory_address(&self) -> u32 {
-        let mut tmp = [0u8; 4];
-        tmp.clone_from_slice(&self.rx_buffer[1..5]);
-        u32::from_be_bytes(tmp)
+/// Returns the register number represented by `byte` or None if the byte does
+/// not represent a register number.
+fn register_from_byte(byte: u8) -> Option<u8> {
+    if (byte & 0x80) != 0 {
+        Some(byte & 0x7f)
+    } else {
+        None
     }
 }
 
@@ -181,7 +221,11 @@ mod tests {
     #[test]
     fn test_write_register() {
         let i2c = FakeI2cPeripheral::new(|mut device| {
-            device.write_read(1, &[0x89, 0x05, 0xab], &mut []).unwrap()
+            // The two extra bytes at the end (0x50) are there to make sure we
+            // ignore writes beyond the end of a register.
+            device
+                .write_read(1, &[0x89, 0x05, 0xab, 0x50, 0x50], &mut [])
+                .unwrap()
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         assert_eq!(
@@ -191,19 +235,20 @@ mod tests {
                 value: 0x5ab,
             })
         );
+        assert_eq!(protocol_handler.next_event(), Event::None);
     }
 
     #[test]
     fn test_read_register() {
         let i2c = FakeI2cPeripheral::new(|mut device| {
             let mut out = [0u8; 2];
-            device.write_read(1, &[0x89], &mut out).unwrap();
+            device.write_read(1, &[0xff], &mut out).unwrap();
             assert_eq!(out, [0x12, 0x34])
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         match protocol_handler.next_event() {
             Event::ReadRegister(event) => {
-                assert_eq!(event.register, 0x9);
+                assert_eq!(event.register, 0x7f);
                 event.respond(0x1234, &mut protocol_handler);
             }
             x => panic!("Unexpected event {:?}", x),
