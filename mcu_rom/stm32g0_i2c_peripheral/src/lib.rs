@@ -40,6 +40,8 @@ impl Stm32g0I2cPeripheral {
         ii2c.cr1.modify(|_, w| w.txie().set_bit());
         ii2c.cr1.modify(|_, w| w.stopie().set_bit());
         ii2c.cr1.modify(|_, w| w.errie().set_bit());
+        // Disable clock stretching.
+        ii2c.cr1.modify(|_, w| w.nostretch().set_bit());
         // Enable the I2C unit
         ii2c.cr1.modify(|_, w| w.pe().set_bit());
 
