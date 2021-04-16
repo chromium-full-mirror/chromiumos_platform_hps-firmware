@@ -10,6 +10,7 @@ use hal::i2c::SDAPin;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::stm32;
+use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 use stm32g0::stm32g071::I2C1;
@@ -38,6 +39,7 @@ impl Stm32g0I2cPeripheral {
         ii2c.cr1.modify(|_, w| w.rxie().set_bit());
         ii2c.cr1.modify(|_, w| w.txie().set_bit());
         ii2c.cr1.modify(|_, w| w.stopie().set_bit());
+        ii2c.cr1.modify(|_, w| w.errie().set_bit());
         // Enable the I2C unit
         ii2c.cr1.modify(|_, w| w.pe().set_bit());
 
@@ -96,6 +98,14 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
         if isr.stopf().bit_is_set() {
             self.i2c1.icr.write(|w| w.stopcf().set_bit());
             return I2cEvent::Stop;
+        }
+        if isr.ovr().bit_is_set() {
+            self.i2c1.icr.write(|w| w.ovrcf().set_bit());
+            return I2cEvent::Error(I2cError::Overrun);
+        }
+        if isr.berr().bit_is_set() {
+            self.i2c1.icr.write(|w| w.berrcf().set_bit());
+            return I2cEvent::Error(I2cError::BusError);
         }
         I2cEvent::None
     }

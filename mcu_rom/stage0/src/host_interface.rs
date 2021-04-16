@@ -80,6 +80,9 @@ pub(crate) fn service_host_i2c(
                     }
                 }
             }
+            i2c_protocol::Event::Error(error) => {
+                defmt::error!("I2C error: {}", error.as_str())
+            }
             _ => {}
         }
     }

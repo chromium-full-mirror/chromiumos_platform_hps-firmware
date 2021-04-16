@@ -31,4 +31,22 @@ pub enum I2cEvent {
 
     /// Emitted when we receive a byte from the I2C controller.
     ByteReceived(u8),
+
+    /// Emitted when an error occurs on the I2C bus.
+    Error(I2cError),
+}
+
+#[derive(Eq, PartialEq, Debug)]
+pub enum I2cError {
+    Overrun,
+    BusError,
+}
+
+impl I2cError {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            I2cError::Overrun => "Overrun/Underrun",
+            I2cError::BusError => "Bus error",
+        }
+    }
 }

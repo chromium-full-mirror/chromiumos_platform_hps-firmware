@@ -43,7 +43,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     event.data
                 );
             }
-            _ => {}
+            i2c_protocol::Event::Error(error) => {
+                defmt::error!("I2C error: {}", error.as_str())
+            }
+            i2c_protocol::Event::None => return,
         }
     }
 

@@ -4,6 +4,7 @@
 
 #![cfg_attr(not(test), no_std)]
 
+use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 
@@ -13,6 +14,7 @@ pub enum Event<'a> {
     ReadRegister(ReadRegisterEvent),
     WriteRegister(WriteRegisterEvent),
     WriteMemory(WriteMemoryEvent<'a>),
+    Error(I2cError),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -138,6 +140,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                 }
                 I2cEvent::None => return Event::None,
+                I2cEvent::Error(error) => return Event::Error(error),
                 _ => {}
             }
         }
