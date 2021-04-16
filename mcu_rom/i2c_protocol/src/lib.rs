@@ -100,20 +100,6 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                 }
                 I2cEvent::NeedByte => {
-                    // TODO: Consider deleting the following code and just
-                    // calling `send_next_byte`. This would have the effect of
-                    // removing register auto-increment.
-                    if self.tx_offset == self.tx_buffer.len() {
-                        if self.is_register_access() {
-                            let register = self.register_number();
-                            self.set_register_number((register + 1) & 0x7f);
-                            return Event::ReadRegister(ReadRegisterEvent { register });
-                        } else {
-                            // Reads that aren't register access just return 0.
-                            self.i2c.write_byte(0);
-                            continue;
-                        }
-                    }
                     self.send_next_byte();
                 }
                 I2cEvent::ByteReceived(byte) => {
@@ -161,8 +147,13 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     /// Sends the next byte from the buffer. Should only be called when our
     /// transfer buffer is known to already contain data.
     fn send_next_byte(&mut self) {
-        let value = self.tx_buffer[self.tx_offset];
-        self.tx_offset += 1;
+        let value;
+        if self.tx_offset == self.tx_buffer.len() {
+            value = 0;
+        } else {
+            value = self.tx_buffer[self.tx_offset];
+            self.tx_offset += 1;
+        }
         self.i2c.write_byte(value);
     }
 
@@ -178,10 +169,6 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         let mut tmp = [0u8; 4];
         tmp.clone_from_slice(&self.rx_buffer[1..5]);
         u32::from_be_bytes(tmp)
-    }
-
-    fn set_register_number(&mut self, register: u8) {
-        self.rx_buffer[0] = 0x80 | register;
     }
 }
 
