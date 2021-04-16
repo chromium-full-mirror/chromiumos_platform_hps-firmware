@@ -2,17 +2,34 @@
 
 static_library("hpslib") {
   sources = [
-    "dev.h",
     "ftdi.h",
     "ftdi.cpp",
     "hps.cpp",
     "hps.h",
-    "hps_reg.h",
     "i2c.cpp",
     "i2c.h",
   ]
 
   deps = [
+    ":dev",
     "//third_party/ftd2xx:ftd2xx",
+  ]
+}
+
+static_library("fakedev") {
+  sources = [
+    "fake_dev.h",
+    "fake_dev.cpp",
+  ]
+
+  deps = [
+    ":dev",
+  ]
+}
+
+source_set("dev") {
+  sources = [
+    "dev.h",
+    "hps_reg.h",
   ]
 }

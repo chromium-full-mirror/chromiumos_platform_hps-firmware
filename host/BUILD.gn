@@ -11,6 +11,7 @@ executable("hps") {
 
   deps = [
     "//host/lib:hpslib",
+    "//host/lib:fakedev",
     "//third_party/ftd2xx:ftd2xx"
   ]
 

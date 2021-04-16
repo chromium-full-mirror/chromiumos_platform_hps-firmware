@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "command.h"
+#include "host/lib/fake_dev.h"
 #include "host/lib/ftdi.h"
 #include "host/lib/hps.h"
 #include "host/lib/i2c.h"
@@ -25,6 +26,7 @@ int main(int argc, char *argv[]) {
     int bus = 2;
     int addr = 0x30;
     bool use_ftdi = false;
+    bool use_fake = false;
 
     while (true) {
         int option_index = 0;
@@ -34,7 +36,7 @@ int main(int argc, char *argv[]) {
             {"ftdi",    no_argument,       0,  'f' },
             {0,         0,                 0,  0 }
         };
-        c = getopt_long(argc, argv, "a:b:f",
+        c = getopt_long(argc, argv, "a:b:ft",
                 long_options, &option_index);
         if (c == -1) {
             break;
@@ -52,6 +54,10 @@ int main(int argc, char *argv[]) {
             use_ftdi = true;
             break;
 
+        case 't':
+            use_fake = true;
+            break;
+
         default:
             return 1;
         }
@@ -67,6 +73,8 @@ int main(int argc, char *argv[]) {
             return 1;
         }
         dev.reset(ftdi);
+    } else if (use_fake) {
+        dev.reset(new FakeDev);
     } else {
         auto i2c = new I2CDev(bus, addr);
         if (i2c->Open() < 0) {
