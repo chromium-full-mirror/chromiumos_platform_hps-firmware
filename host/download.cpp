@@ -21,8 +21,9 @@ int download(HPS &hps, int argc, char *argv[]) {
         return 1;
     }
     int bank = atoi(argv[1]);
-    if (bank < 0 || bank >= 64) {
-        std::cerr << argv[1] << ": Illegal bank (0 - 63)" << std::endl;
+    if (bank < 0 || bank >= kNumBanks) {
+        std::cerr << argv[1] << ": Illegal bank (0 - " << (kNumBanks - 1)
+                  << ")" << std::endl;
         return 1;
     }
     // Open file and seek to the end so that we can get the size.

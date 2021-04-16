@@ -36,7 +36,7 @@ int readtest(HPS &hps, int argc, char *argv[]) {
         return 1;
     }
     for (int i = 0; i < iterations; i++) {
-        for (int reg = 0; reg < 128; reg++) {
+        for (int reg = 0; reg < HpsReg::kNumRegs; reg++) {
             int result = hps.Device().readReg(reg);
             if (result < 0) {
                 std::cout << std::endl << "Error on iteration " << i

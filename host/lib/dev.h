@@ -11,7 +11,8 @@
 #include <stdint.h>
 #include <vector>
 
-#define REG_ACCESS      0x80
+#include "hps_reg.h"
+
 #define RETRIES         5
 
 class DevInterface {
@@ -35,9 +36,8 @@ class DevInterface {
     int readReg(int r) {
         std::vector<uint8_t> res(2);
 
-        auto cmd = REG_ACCESS | (r & 0x7F);
         for (int i = 0; i < RETRIES; i++) {
-            if (this->read(cmd, res)) {
+            if (this->read(I2cReg(r), res)) {
                 return (int(res[0]) << 8) | int(res[1]);
             }
         }
@@ -52,9 +52,8 @@ class DevInterface {
 
         buf[0] = data >> 8;
         buf[1] = data & 0xFF;
-        auto cmd = REG_ACCESS | (r & 0x7F);
         for (int i = 0; i < RETRIES; i++) {
-            if (this->write(cmd, buf)) {
+            if (this->write(I2cReg(r), buf)) {
                 return true;
             }
         }

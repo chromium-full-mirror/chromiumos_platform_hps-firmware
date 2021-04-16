@@ -44,7 +44,7 @@ int HPS::Download(int bank, uint32_t address, std::ifstream &source) {
         rd = source.readsome(reinterpret_cast<char *>(&buf[sizeof(uint32_t)]), kBlock);
         if (rd > 0) {
             buf.resize(rd + sizeof(uint32_t));
-            if (!this->device.write(bank, buf)) {
+            if (!this->device.write(I2cMemWrite(bank), buf)) {
                 break;
             }
             bytes += rd;

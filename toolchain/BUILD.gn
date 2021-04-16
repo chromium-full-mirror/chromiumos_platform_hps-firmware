@@ -122,7 +122,7 @@ toolchain("host-gcc") {
 
   tool("cxx") {
     depfile = "{{output}}.d"
-    command = "g++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    command = "g++ -MMD -MF $depfile {{defines}} {{include_dirs}} -std=c++17 {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CXX {{output}}"
     outputs =

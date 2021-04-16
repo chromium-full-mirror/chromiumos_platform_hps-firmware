@@ -21,13 +21,13 @@ int status(HPS &hps, int argc, char *argv[]) {
     int start, end;
     switch (argc) {
     case 1:
-        start = 0;
-        end = 4;
+        start = HpsReg::kMagic;
+        end = HpsReg::kBankReady;
         break;
 
     case 2:
         start = atoi(argv[1]);
-        if (start < 0 || start > 127) {
+        if (start < 0 || start > HpsReg::kMax) {
             std::cerr << argv[1] << ": illegal register" << std::endl;
             return 1;
         }
@@ -37,7 +37,8 @@ int status(HPS &hps, int argc, char *argv[]) {
     case 3:
         start = atoi(argv[1]);
         end = atoi(argv[2]);
-        if (start < 0 || start > 127 || end < 0 || end > 127 || start > end) {
+        if (start < 0 || start > HpsReg::kMax || end < 0 ||
+            end > HpsReg::kMax || start > end) {
             std::cerr << "status: illegal start/end values" << std::endl;
             return 1;
         }
