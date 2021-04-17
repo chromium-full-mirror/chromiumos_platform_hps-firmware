@@ -13,6 +13,8 @@
 #include "hps_reg.h"
 #include "dev.h"
 
+namespace hps {
+
 class FakeDev : public DevInterface {
   public:
     FakeDev() {
@@ -34,5 +36,8 @@ class FakeDev : public DevInterface {
     std::mutex lock_;
     uint16_t regs[HpsReg::kNumRegs];
 };
+
+}  // namespace hps
+
 
 #endif // __FAKE_DEV_H__

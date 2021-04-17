@@ -15,6 +15,8 @@
 
 #define RETRIES         5
 
+namespace hps {
+
 class DevInterface {
   public:
     /*
@@ -60,5 +62,7 @@ class DevInterface {
         return false;
     }
 };
+
+}  // namespace hps
 
 #endif // __DEV_H__

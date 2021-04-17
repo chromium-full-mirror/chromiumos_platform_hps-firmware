@@ -13,6 +13,8 @@
 
 #include "dev.h"
 
+namespace hps {
+
 class HPS {
   public:
     HPS(DevInterface &dev) :
@@ -37,5 +39,7 @@ class HPS {
     DevInterface &device;
     State state;
 };
+
+}  // namespace hps
 
 #endif // __HPS_H__

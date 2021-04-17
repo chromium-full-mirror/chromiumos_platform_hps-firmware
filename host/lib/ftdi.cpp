@@ -76,6 +76,8 @@ void i2c_stop(std::vector<uint8_t> &b) {
 
 }  // namespace
 
+namespace hps {
+
 bool Ftdi::Init() {
     FT_STATUS   ftStatus;
     FT_DEVICE    ftDevice;
@@ -350,3 +352,5 @@ void Ftdi::i2c_reset() {
     this->ft_put(b);
     usleep(kResetDelay*1000);
 }
+
+}  // namespace hps

@@ -13,7 +13,7 @@
 
 class Command {
   public:
-    Command(const char *name, const char *help, int (*func)(HPS &,int, char **))
+    Command(const char *name, const char *help, int (*func)(hps::HPS &,int, char **))
         : name_(name), help_(help), func_(func), next_(nullptr) {
         // Add myself to the list of commands.
         this->next_ = list_;
@@ -23,7 +23,7 @@ class Command {
      * Match command and run.
      * Returns exit value.
      */
-    static int Execute(const char *cmd, HPS &hps, int argc, char **argv) {
+    static int Execute(const char *cmd, hps::HPS &hps, int argc, char **argv) {
         for (auto el = list_; el != nullptr; el = el->next_) {
             if (strcmp(el->name_, cmd)==0) {
                 return el->func_(hps, argc, argv);
@@ -35,7 +35,7 @@ class Command {
   protected:
     const char *name_;
     const char *help_;
-    int (*func_)(HPS &, int, char **);
+    int (*func_)(hps::HPS &, int, char **);
     Command *next_;
     static Command *list_;      // Global head of command list.
 };

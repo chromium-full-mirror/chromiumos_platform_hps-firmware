@@ -15,7 +15,7 @@
 
 namespace {
 
-int sendcmd(HPS &hps, int argc, char *argv[]) {
+int sendcmd(hps::HPS &hps, int argc, char *argv[]) {
     int cmd;
 
     if (argc <= 1) {
@@ -34,12 +34,12 @@ int sendcmd(HPS &hps, int argc, char *argv[]) {
     for (auto i = 0; i < 5; i++) {
         std::cout << "reg " << i << " = "
                   << std::hex << std::setfill('0') << std::setw(4)
-                  << hps.Device().readReg(I2cReg(i)) << std::endl;
+                  << hps.Device().readReg(hps::I2cReg(i)) << std::endl;
     }
     std::cout << "Sending cmd value "
               << std::hex << std::setfill('0') << std::setw(4) << cmd
               << " to register 3" << std::endl;
-    if (hps.Device().writeReg(HpsReg::kSysCmd, cmd)) {
+    if (hps.Device().writeReg(hps::HpsReg::kSysCmd, cmd)) {
         std::cout << "Success!" << std::endl;
     } else {
         std::cout << "Write failed!" << std::endl;

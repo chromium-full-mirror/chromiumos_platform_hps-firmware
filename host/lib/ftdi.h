@@ -11,6 +11,8 @@
 #include "dev.h"
 #include "third_party/ftd2xx/ftd2xx.h"
 
+namespace hps {
+
 class Ftdi : public DevInterface {
   public:
     Ftdi(uint8_t addr) : address(addr << 1) { }
@@ -28,5 +30,7 @@ class Ftdi : public DevInterface {
     uint8_t address;
     FT_HANDLE ftHandle;
 };
+
+}  // namespace hps
 
 #endif /* __FTDI_H__ */

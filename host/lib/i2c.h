@@ -15,6 +15,8 @@
 
 struct i2c_msg;
 
+namespace hps {
+
 class I2CDev : public DevInterface {
   public:
     I2CDev(int bus, int address);
@@ -28,5 +30,7 @@ class I2CDev : public DevInterface {
     int fd;
     std::string name;
 };
+
+}  // namespace hps
 
 #endif // __I2C_H__

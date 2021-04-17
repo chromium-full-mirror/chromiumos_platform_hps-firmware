@@ -8,6 +8,8 @@
 
 #include "hps.h"
 
+namespace hps {
+
 static const int kBlock = 256;
 
 void HPS::Init() {
@@ -53,3 +55,5 @@ int HPS::Download(int bank, uint32_t address, std::ifstream &source) {
     } while (rd > 0);   // A read returning 0 indicates EOF.
     return bytes;
 }
+
+}  // namespace hps

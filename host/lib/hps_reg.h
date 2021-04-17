@@ -8,6 +8,8 @@
 #ifndef __HPS_REG_H__
 #define __HPS_REG_H__
 
+namespace hps {
+
 enum HpsReg {
     kMagic = 0,
     kHwRev = 1,
@@ -51,5 +53,7 @@ inline uint8_t I2cMemWrite(int bank) {
 inline uint8_t I2cReg(int reg) {
     return (reg % HpsReg::kNumRegs) | 0x80;
 }
+
+}  // namespace hps
 
 #endif // __HPS_REG_H__

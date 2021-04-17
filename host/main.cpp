@@ -66,23 +66,23 @@ int main(int argc, char *argv[]) {
         std::cerr << "Missing command!" << std::endl;
         return 1;
     }
-    std::unique_ptr<DevInterface> dev;
+    std::unique_ptr<hps::DevInterface> dev;
     if (use_ftdi) {
-        auto ftdi = new Ftdi(addr);
+        auto ftdi = new hps::Ftdi(addr);
         if (!ftdi->Init()) {
             return 1;
         }
         dev.reset(ftdi);
     } else if (use_fake) {
-        dev.reset(new FakeDev);
+        dev.reset(new hps::FakeDev);
     } else {
-        auto i2c = new I2CDev(bus, addr);
+        auto i2c = new hps::I2CDev(bus, addr);
         if (i2c->Open() < 0) {
             return 1;
         }
         dev.reset(i2c);
     }
-    auto hps = new HPS(*dev);
+    auto hps = new hps::HPS(*dev);
     // Pass new argc/argv to the command for any following arguments.
     // argv[0] is command name.
     int cmd_argc = argc - optind;

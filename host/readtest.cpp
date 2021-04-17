@@ -16,7 +16,7 @@ namespace {
 
 // No arguments, default to 200.
 // N - Number of iterations.
-int readtest(HPS &hps, int argc, char *argv[]) {
+int readtest(hps::HPS &hps, int argc, char *argv[]) {
     int iterations;
     switch (argc) {
     case 1:
@@ -36,7 +36,7 @@ int readtest(HPS &hps, int argc, char *argv[]) {
         return 1;
     }
     for (int i = 0; i < iterations; i++) {
-        for (int reg = 0; reg < HpsReg::kNumRegs; reg++) {
+        for (int reg = 0; reg < hps::HpsReg::kNumRegs; reg++) {
             int result = hps.Device().readReg(reg);
             if (result < 0) {
                 std::cout << std::endl << "Error on iteration " << i

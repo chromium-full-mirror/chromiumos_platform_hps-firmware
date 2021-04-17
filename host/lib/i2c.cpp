@@ -13,6 +13,8 @@
 
 #include "i2c.h"
 
+namespace hps {
+
 I2CDev::I2CDev(int i2c_bus, int addr) :
         bus(i2c_bus), address(addr), fd(-1) {
     this->name = "/dev/i2c-" + std::to_string(bus);
@@ -65,3 +67,5 @@ bool I2CDev::ioc(struct i2c_msg *msg, uint count) {
     }
     return ret != -1;
 }
+
+}  // namespace hps

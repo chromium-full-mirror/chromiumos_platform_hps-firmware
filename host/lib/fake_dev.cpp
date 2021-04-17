@@ -4,6 +4,8 @@
 
 #include "fake_dev.h"
 
+namespace hps {
+
 /*
  * Read from registers.
  */
@@ -58,3 +60,5 @@ bool FakeDev::write(uint8_t cmd, const std::vector<uint8_t> &data) {
     }
     return true;
 }
+
+}  // namespace hps
