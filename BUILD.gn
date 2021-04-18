@@ -1,7 +1,7 @@
 group("default") {
   deps = [
     "//soc_rom",
-    "//host:hps(toolchain:host-gcc)",
+    "//host/util:hps(toolchain:host-gcc)",
   ]
 }
 
