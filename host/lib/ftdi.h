@@ -21,7 +21,7 @@ class Ftdi : public DevInterface {
     void Close();
     bool read(uint8_t cmd, std::vector<uint8_t> &data) override;
     bool write(uint8_t cmd, const std::vector<uint8_t> &data) override;
-  protected:
+  private:
     bool check(bool cond, const char *tag);
     void i2c_reset();
     bool i2c_read(std::vector<uint8_t> &data);

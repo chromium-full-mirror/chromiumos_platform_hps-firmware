@@ -38,7 +38,7 @@ class Command {
             std::cerr << el->help_ << std::endl;
         }
     }
-  protected:
+  private:
     const char *name_;
     const char *help_;
     int (*func_)(hps::HPS &, int, char **);

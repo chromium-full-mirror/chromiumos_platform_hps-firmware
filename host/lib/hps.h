@@ -30,7 +30,7 @@ class HPS {
      * in the case of an error.
      */
     int Download(int bank, uint32_t address, std::ifstream &source);
-  protected:
+  private:
     enum State {
         init,
         wait_stage0,
