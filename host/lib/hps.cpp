@@ -6,14 +6,18 @@
  * Main HPS class.
  */
 
+#include <unistd.h>
+
 #include "hps.h"
 
 namespace hps {
 
 static const int kBlock = 256;
+static const int kTimeoutMs = 250; // Bank ready timeout
+static const int kPollMs = 5;      // Delay time for poll.
 
 void HPS::Init() {
-    this->state = State::init;
+    this->state_ = State::init;
 }
 
 /*
@@ -25,13 +29,30 @@ void HPS::Init() {
  *    data
  */
 int HPS::Download(int bank, uint32_t address, std::ifstream &source) {
-    if (bank < 0 || bank >= 64) {
+    if (bank < 0 || bank >= kNumBanks) {
         return -1;
     }
     std::vector<uint8_t> buf(kBlock + sizeof(uint32_t));
     int bytes = 0;
     int rd;
     do {
+        // Wait until the bank is ready.
+        int tout = 0;
+        for (;;) {
+            int result = this->device_.readReg(HpsReg::kBankReady);
+            if (result < 0) {
+                return bytes;
+            }
+            if (result & (1 << bank)) {
+                break;
+            }
+            // If timed out, finish the write.
+            if (tout >= kTimeoutMs) {
+                return bytes;
+            }
+            usleep(kPollMs * 1000);
+            tout += kPollMs;
+        }
         /*
          * Leave room for a 32 bit address at the start of the block
          * to be written.
@@ -46,7 +67,7 @@ int HPS::Download(int bank, uint32_t address, std::ifstream &source) {
         rd = source.readsome(reinterpret_cast<char *>(&buf[sizeof(uint32_t)]), kBlock);
         if (rd > 0) {
             buf.resize(rd + sizeof(uint32_t));
-            if (!this->device.write(I2cMemWrite(bank), buf)) {
+            if (!this->device_.write(I2cMemWrite(bank), buf)) {
                 break;
             }
             bytes += rd;

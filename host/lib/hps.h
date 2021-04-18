@@ -18,11 +18,11 @@ namespace hps {
 class HPS {
   public:
     HPS(DevInterface &dev) :
-        device(dev),
-        state(State::init)
+        device_(dev),
+        state_(State::init)
         { }
     void Init();
-    DevInterface &Device() { return this->device; }
+    DevInterface &Device() { return this->device_; }
     /*
      * Per the HPS/Host I2C Interface, the bank
      * must be between 0-63 inclusive.
@@ -36,8 +36,8 @@ class HPS {
         wait_stage0,
         wait_appl,
     };
-    DevInterface &device;
-    State state;
+    DevInterface &device_;
+    State state_;
 };
 
 }  // namespace hps

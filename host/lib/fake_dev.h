@@ -20,10 +20,11 @@ class FakeDev : public DevInterface {
     FakeDev() {
         std::fill(std::begin(this->regs), std::end(this->regs), 0);
         regs[HpsReg::kMagic] = kHpsMagic;
+        regs[HpsReg::kBankReady] = 0x0001;
     }
     // Device interface
-    virtual bool read(uint8_t cmd, std::vector<uint8_t> &data);
-    virtual bool write(uint8_t cmd, const std::vector<uint8_t> &data);
+    bool read(uint8_t cmd, std::vector<uint8_t> &data) override;
+    bool write(uint8_t cmd, const std::vector<uint8_t> &data) override;
     // Control methods for fake.
     void SetReg(int reg, uint16_t value) {
         if (reg < 0 || reg > HpsReg::kMax) {
@@ -32,7 +33,7 @@ class FakeDev : public DevInterface {
         std::lock_guard<std::mutex> l(this->lock_);
         this->regs[reg] = value;
     }
-  protected:
+  private:
     std::mutex lock_;
     uint16_t regs[HpsReg::kNumRegs];
 };
