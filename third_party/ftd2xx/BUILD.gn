@@ -1,8 +1,0 @@
-# Build file for FTDI headers and library.
-
-source_set("ftd2xx") {
-  sources = [
-    "ftd2xx.h",
-    "WinTypes.h",
-  ]
-}

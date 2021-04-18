@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <unistd.h>
+#include <libusb-1.0/libusb.h>
 
 #include "ftdi.h"
 
@@ -17,6 +18,9 @@ namespace {
 const int kTimeoutMS = 500;               // MS timeout
 const int kResetDelay = 10;               // MS delay after reset.
 const uint16_t kClockDivisor = (300/2-1); // Clock divisor (100KHz)
+const int kReadSize = 64;
+const int kStrSize = 64;
+const bool kDebug = false;
 
 // Commands to FTDI module.
 enum {
@@ -79,87 +83,92 @@ void i2c_stop(std::vector<uint8_t> &b) {
 namespace hps {
 
 bool Ftdi::Init() {
-    FT_STATUS   ftStatus;
-    FT_DEVICE    ftDevice;
-    char buf[64];
+    ftdi_init(&this->context_);
+    struct ftdi_device_list *devlist;
 
-    ftStatus = FT_ListDevices(0, buf, FT_LIST_BY_INDEX|FT_OPEN_BY_SERIAL_NUMBER);
-    if (ftStatus != FT_OK) {
+    // Read the list of all FTDI devices.
+    // vid/pid of 0 will search for the default FTDI device types.
+    if (this->check(ftdi_usb_find_all(&this->context_, &devlist, 0, 0) < 0, "find"))
         return false;
-    }
-    std::cout << "FTDT Serial number: " << buf << std::endl;
-    ftStatus = FT_Open(0, &this->ftHandle);
-    if (ftStatus != FT_OK) {
-        std::cerr << "FTDI open error: " << ftStatus << std::endl;
+    // Use the first device found. It's unlikely that multiple FTDI
+    // devices will be attached - if so, some means of selecting the
+    // correct device must be added.
+    if (this->check(devlist == 0, "no device"))
         return false;
-    }
-    ftStatus = FT_GetDeviceInfo(this->ftHandle, &ftDevice, NULL, NULL, NULL, NULL);
-    if (ftStatus != FT_OK) {
-        std::cerr << "FTDI GetDevice error: " << ftStatus << std::endl;
+    uint8_t bus = libusb_get_bus_number(devlist->dev);
+    uint8_t addr = libusb_get_device_address(devlist->dev);
+    char m[kStrSize], d[kStrSize], s[kStrSize];
+    bool chk = this->check(ftdi_usb_get_strings2(&this->context_, devlist->dev,
+                                          m, kStrSize,
+                                          d, kStrSize,
+                                          s, kStrSize) < 0, "get str");
+    // Free the device list after all the data has been extracted from it.
+    ftdi_list_free(&devlist);
+    if (chk)
         return false;
-    }
-    /*
-     * Confirm it is the correct device type.
-     */
-    if (FT_DEVICE_2232H != ftDevice) {
-        std::cerr << "FTDI unknown device type (expected " << FT_DEVICE_2232H;
-        std::cerr << ", got " << ftDevice << ")" << std::endl;
+    this->manuf_ = m;
+    this->descr_ = d;
+    this->serial_ = s;
+
+    if (this->check(ftdi_usb_open_bus_addr(&this->context_, bus, addr) < 0, "open"))
         return false;
-    }
-    ftStatus = FT_ResetDevice(ftHandle);
-    // Flush read queue.
-    std::vector<uint8_t> rdq;
-    this->ft_get(rdq);
-    // Set up parameters of module.
-    if (FT_SetUSBParameters(ftHandle, 65536, 65535) != FT_OK ||
-        FT_SetChars(ftHandle, false, 0, false, 0) != FT_OK ||
-        FT_SetTimeouts(ftHandle, 5000, 5000) != FT_OK ||
-        FT_SetLatencyTimer(ftHandle, 16) != FT_OK ||
-        FT_SetBitMode(ftHandle, 0x0, 0x00) != FT_OK ||
-        FT_SetBitMode(ftHandle, 0x0, 0x02) != FT_OK) {
-        std::cerr << "FTDI: init error" << std::endl;
+    if (this->check(ftdi_set_interface(&this->context_, INTERFACE_A) < 0, "set interface"))
         return false;
-    }
+    if (this->check(ftdi_usb_reset(&this->context_) < 0, "reset"))
+        return false;
+    if (this->check(ftdi_tciflush(&this->context_) < 0, "rx flush"))
+        return false;
+    if (this->check(ftdi_tcoflush(&this->context_) < 0, "tx flush"))
+        return false;
+    if (this->check(ftdi_set_event_char(&this->context_, 0, false) < 0, "ev char"))
+        return false;
+    if (this->check(ftdi_set_error_char(&this->context_, 0, false) < 0, "err char"))
+        return false;
+    if (this->check(ftdi_set_latency_timer(&this->context_, 16) < 0, "set latency"))
+        return false;
+    if (this->check(ftdi_set_bitmode(&this->context_, 0xFF, BITMODE_RESET) < 0, "mode reset"))
+        return false;
+    if (this->check(ftdi_set_bitmode(&this->context_, 0xFF, BITMODE_MPSSE) < 0, "mode MPSSE"))
+        return false;
     usleep(50*1000);
+    std::vector<uint8_t> rdq;
+    // Flush any data in the queue.
     this->ft_get(rdq);
     // Device opened successfully, verify MPSSE mode.
     std::vector<uint8_t> tx(1);
     tx[0] = 0xAA;
-    if (this->ft_put(tx) != tx.size()) {
-        std::cerr << "FTDI: verify write error" << std::endl;
+    if (this->check(this->ft_put(tx) != tx.size(), "verify write"))
         return false;
-    }
-    if (!this->ft_read(2, rdq) || rdq[0] != 0xFA || rdq[1] != 0xAA) {
-        std::cerr << "FTDI: verify read error" << std::endl;
+    rdq.resize(2);
+    if (this->check(!this->ft_read(2, rdq) || rdq[0] != 0xFA || rdq[1] != 0xAA, "verify read"))
         return false;
-    }
     tx.clear();
     // Init MPSSE settings.
     tx.push_back(0x8A);     // Disable divide/5 clock mode
     tx.push_back(0x97);     // Disable adaptive clocking
     tx.push_back(0x8C);     // Enable 3 phase clocking
-    if (this->ft_put(tx) != tx.size()) {
-        std::cerr << "FTDI: MPSEE setting error" << std::endl;
+    if (this->check(this->ft_put(tx) != tx.size(), "MPSEE setting"))
         return false;
-    }
     tx.clear();
     i2c_pins(tx, SCK|SDATA, SCK);
     tx.push_back(0x86);     // Set clock divisor
     tx.push_back(kClockDivisor & 0xFF);
     tx.push_back(kClockDivisor >> 8);
-    if (this->ft_put(tx) != tx.size()) {
-        std::cerr << "FTDI: MPSEE clock setting error" << std::endl;
+    if (this->check(this->ft_put(tx) != tx.size(), "MPSEE clock setting"))
         return false;
-    }
     usleep(20*1000);
     tx.clear();
     tx.push_back(0x85);     // Turn off loopback.
-    if (this->ft_put(tx) != tx.size()) {
-        std::cerr << "FTDI: loopback disable error" << std::endl;
+    if (this->check(this->ft_put(tx) != tx.size(), "loopback disable"))
         return false;
-    }
     usleep(20*1000);
+    if (kDebug)
+        this->dump();
     return true;
+}
+
+void Ftdi::Close() {
+    ftdi_deinit(&this->context_);
 }
 
 bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
@@ -196,6 +205,7 @@ bool Ftdi::read(uint8_t cmd, std::vector<uint8_t> &data) {
 
 bool Ftdi::write(uint8_t cmd, const std::vector<uint8_t> &data) {
     std::vector<uint8_t> b;
+    // Flush read queue.
     this->ft_get(b);
     b.clear();
     i2c_start(b);
@@ -247,6 +257,7 @@ bool Ftdi::ft_read(size_t count, std::vector<uint8_t> &input) {
             // and try again.
             usleep(1000);   // Sleep for 1 ms
             if (--timeout <= 0) {
+                std::cerr << "Rd timeout" << std::endl;
                 return false;
             }
         }
@@ -313,36 +324,22 @@ bool Ftdi::ft_readbyte(uint8_t *result, bool nak) {
 
 // Read from the module whatever data is available.
 bool Ftdi::ft_get(std::vector<uint8_t> &get) {
-    DWORD actual = 0;
-    DWORD in_q = 0;
-    FT_STATUS ftStatus;
-
-    ftStatus = FT_GetQueueStatus(this->ftHandle, &in_q);
-    if (ftStatus != FT_OK) {
-        get.clear();
-        return false;
-    }
+    get.resize(kReadSize);
+    int actual = ftdi_read_data(&this->context_, &get[0], get.size());
     // Nothing to read, return empty vector.
-    if (in_q == 0) {
+    if (actual <= 0) {
         get.clear();
         return true;
     }
-    get.resize(in_q);
-    ftStatus = FT_Read(this->ftHandle, &get[0], in_q, &actual);
-    if (ftStatus == FT_OK) {
-        get.resize(actual);
-        return true;
-    } else {
-        get.clear();
-        return false;
-    }
+    get.resize(actual);
+    return true;
 }
 
 // Write the data to the module..
 size_t Ftdi::ft_put(const std::vector<uint8_t> &output) {
-    DWORD actual = 0;
-    FT_Write(this->ftHandle, const_cast<uint8_t *>(&output[0]), output.size(), &actual);
-    return size_t(actual);
+    return ftdi_write_data(&this->context_,
+                           const_cast<uint8_t *>(&output[0]),
+                           output.size());
 }
 
 // Reset the state of the bus to idle.
@@ -351,6 +348,32 @@ void Ftdi::i2c_reset() {
     i2c_stop(b);
     this->ft_put(b);
     usleep(kResetDelay*1000);
+}
+
+// Check and print error message.
+bool Ftdi::check(bool cond, const char *tag) {
+    if (cond) {
+        std::cerr << "FTDI error: " << tag << ": "
+                  << ftdi_get_error_string(&this->context_)
+                  << std::endl;
+        this->dump();
+        return true;
+    }
+    return false;
+}
+
+void Ftdi::dump() {
+    std::cerr << "Type: " << this->context_.type
+              <<  " Interface: " << this->context_.interface
+              <<  " index: " << this->context_.index
+              <<  " IN_EP: " << this->context_.in_ep
+              <<  " OUT_EP: " << this->context_.out_ep
+              << std::endl;
+    std::cerr << "Manuf: " << this->manuf_
+              << " Descr: " << this->descr_
+              << " Serial: " << this->serial_ << std::endl;
+    struct ftdi_version_info v = ftdi_get_library_version();
+    std::cerr << "Lib version: " << v.version_str << std::endl;
 }
 
 }  // namespace hps

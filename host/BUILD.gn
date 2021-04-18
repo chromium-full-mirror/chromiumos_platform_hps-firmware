@@ -12,10 +12,10 @@ executable("hps") {
   deps = [
     "//host/lib:hpslib",
     "//host/lib:fakedev",
-    "//third_party/ftd2xx:ftd2xx"
   ]
 
   libs = [
-    "//third_party/ftd2xx/libftd2xx.a",
+    "ftdi1",
+    "usb-1.0",
   ]
 }

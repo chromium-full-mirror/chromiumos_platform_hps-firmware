@@ -12,7 +12,6 @@ static_library("hpslib") {
 
   deps = [
     ":dev",
-    "//third_party/ftd2xx:ftd2xx",
   ]
 }
 

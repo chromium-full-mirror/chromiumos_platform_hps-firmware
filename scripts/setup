@@ -72,6 +72,9 @@ if [ ! -f /usr/include/libusb-1.0/libusb.h ]; then
     missing+=(libusb-1.0-0-dev)
 fi
 
+if [ ! -f /usr/include/libftdi1/ftdi.h ]; then
+    missing+=(libftdi1-dev)
+fi
 if [ ${#missing[@]} -gt 0 ]; then
     echo "Missing packages: ${missing[@]}" >&2
     if which apt >/dev/null; then
