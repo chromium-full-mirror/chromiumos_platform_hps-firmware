@@ -59,7 +59,7 @@ int readtest(hps::HPS &hps, int argc, char *argv[]) {
 }
 
 Command cmd("readtest",
-    "Test reading all registers (optional arg # iterations, default 200)",
+    "readtest [ iterations ] - Test reading all registers (default 200 iterations.",
     readtest);
 
 }  // namespace

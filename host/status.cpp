@@ -60,6 +60,6 @@ int status(hps::HPS &hps, int argc, char *argv[]) {
     return 0;
 }
 
-Command cmd("status", "Dump common status registers", status);
+Command cmd("status", "status [ start [ end ] ] - Dump status registers (default 0 5).", status);
 
 }  // namespace

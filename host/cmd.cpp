@@ -47,6 +47,6 @@ int sendcmd(hps::HPS &hps, int argc, char *argv[]) {
     return 0;
 }
 
-Command cmd("cmd", "Send command (hps cmd <cmd>)", sendcmd);
+Command cmd("cmd", "cmd [reset | launch ] - Send command to hps.", sendcmd);
 
 }  // namespace

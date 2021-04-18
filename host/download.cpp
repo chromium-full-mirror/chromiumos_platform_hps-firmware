@@ -48,6 +48,6 @@ int download(hps::HPS &hps, int argc, char *argv[]) {
     return 0;
 }
 
-Command dl("dl", "Download file to HPS (hps dl <bank-id> <file>)", download);
+Command dl("dl", "dl <bank-id> <file> - Download file to hps.", download);
 
 }  // namespace

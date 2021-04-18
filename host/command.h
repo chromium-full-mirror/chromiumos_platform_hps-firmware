@@ -29,8 +29,14 @@ class Command {
                 return el->func_(hps, argc, argv);
             }
         }
-        std::cerr << cmd << ": Unknown command" << std::endl;
+        ShowHelp();
         return 1;
+    }
+    static void ShowHelp() {
+        std::cerr << "Error - commands are:" << std::endl;
+        for (auto el = list_; el != nullptr; el = el->next_) {
+            std::cerr << el->help_ << std::endl;
+        }
     }
   protected:
     const char *name_;

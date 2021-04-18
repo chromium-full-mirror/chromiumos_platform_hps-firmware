@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (optind >= argc) {
-        std::cerr << "Missing command!" << std::endl;
+        Command::ShowHelp();
         return 1;
     }
     std::unique_ptr<hps::DevInterface> dev;
