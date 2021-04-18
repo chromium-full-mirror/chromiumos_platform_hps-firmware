@@ -5,33 +5,40 @@
 #![no_main]
 #![no_std]
 
-use cortex_m_rt::entry;
 use defmt_rtt as _;
-use hal::interrupt;
 use hal::prelude::*;
-use hal::stm32;
 use host_interface::HostInterface;
 use panic_probe as _;
 use panic_probe as _;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 mod host_interface;
+use rtic::app;
 
-static mut I2C_HOST_INTERFACE: Option<HostInterface<Stm32g0I2cPeripheral>> = None;
-
-#[entry]
-fn main() -> ! {
-    if let Err(()) = inner_main() {
-        defmt::info!("inner_main got an error");
+#[app(device = hal::stm32, peripherals = true)]
+const APP: () = {
+    struct Resources {
+        host_interface: HostInterface<Stm32g0I2cPeripheral>,
     }
-    loop {}
-}
+
+    #[init]
+    fn init(ctx: init::Context) -> init::LateResources {
+        init_peripherals(ctx.device)
+    }
+
+    #[task(binds = I2C1, resources = [host_interface])]
+    fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
+        ctx.resources.host_interface.handle_interrupt();
+    }
+};
 
 fn rcc_config() -> hal::rcc::Config {
     hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default())
 }
 
-fn inner_main() -> Result<(), ()> {
-    let p = stm32::Peripherals::take().ok_or(())?;
+fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
+    // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
+    // is still handled when we're idle and the CPU is put to sleep.
+    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
 
     let gpiob = p.GPIOB.split(&mut rcc);
@@ -42,29 +49,10 @@ fn inner_main() -> Result<(), ()> {
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
     ));
-    unsafe {
-        I2C_HOST_INTERFACE = Some(host_interface);
-        I2C_HOST_INTERFACE
-            .as_mut()
-            .unwrap()
-            .i2c()
-            .enable_interupts();
-    }
 
     defmt::info!(
         "MCU application started. CPU is running at {}Mhz",
         rcc.clocks.sys_clk.0 / 1000000
     );
-
-    // Loop while we wait for interrupts.
-    loop {
-        // TODO: Enter some idle state while we're waiting for interrupts.
-    }
-}
-
-#[interrupt]
-fn I2C1() {
-    if let Some(interface) = unsafe { &mut I2C_HOST_INTERFACE }.as_mut() {
-        interface.handle_interrupt();
-    }
+    init::LateResources { host_interface }
 }

@@ -8,7 +8,7 @@ use mcu_common::registers;
 use mcu_common::status;
 use panic_probe as _;
 
-pub(crate) struct HostInterface<I: I2cPeripheral> {
+pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     reg9: u16,
 }
@@ -19,10 +19,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
             protocol_handler: I2cProtocolHandler::new(i2c),
             reg9: 9,
         }
-    }
-
-    pub(crate) fn i2c(&mut self) -> &mut I {
-        self.protocol_handler.i2c_mut()
     }
 
     pub(crate) fn handle_interrupt(&mut self) {
