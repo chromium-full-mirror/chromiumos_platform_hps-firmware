@@ -19,8 +19,8 @@ class Ftdi : public DevInterface {
     Ftdi(uint8_t addr) : address(addr << 1) { }
     bool Init();
     void Close();
-    virtual bool read(uint8_t cmd, std::vector<uint8_t> &data);
-    virtual bool write(uint8_t cmd, const std::vector<uint8_t> &data);
+    bool read(uint8_t cmd, std::vector<uint8_t> &data) override;
+    bool write(uint8_t cmd, const std::vector<uint8_t> &data) override;
   protected:
     bool check(bool cond, const char *tag);
     void i2c_reset();
