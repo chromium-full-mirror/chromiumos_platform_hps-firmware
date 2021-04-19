@@ -11,8 +11,10 @@ use crate::premain::*;
 
 mod host_interface;
 mod loader;
+mod mcu_flash;
 use crate::loader::*;
 
+use mcu_flash::FlashWriter;
 // pick a panicking behavior
 #[allow(unused)]
 // dev profile: easier to debug panics; can put a breakpoint on `rust_begin_unwind`
@@ -96,8 +98,7 @@ fn inner_main() -> Result<(), ()> {
             gpiob.pb9.into_open_drain_output(),
             gpiob.pb8.into_open_drain_output(),
         ),
-        p.FLASH,
-        loader::get_stage_slot_se(),
+        FlashWriter::new(p.FLASH, loader::get_stage_slot_se()),
     );
 
     while !interface.done {

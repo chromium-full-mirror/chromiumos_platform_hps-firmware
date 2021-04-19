@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::ops::Range;
-use hal::flash;
-use hal::flash::FlashExt;
-use hal::flash::FlashPage;
-use hal::flash::WriteErase;
-use hal::stm32::FLASH;
+use crate::mcu_flash::flash_error_string;
+use crate::mcu_flash::FlashWriter;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands;
@@ -17,23 +13,19 @@ use mcu_common::status;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
-const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 pub struct HostInterface<I: I2cPeripheral> {
     i2c: I2cProtocolHandler<I>,
     pub(crate) done: bool,
-    flash_write_state: FlashWriteState,
+    flash_writer: FlashWriter,
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
-    pub(crate) fn new(i2c: I, flash: FLASH, slot: Range<usize>) -> Self {
+    pub(crate) fn new(i2c: I, flash_writer: FlashWriter) -> Self {
         Self {
             i2c: I2cProtocolHandler::new(i2c),
             done: false,
-            flash_write_state: FlashWriteState {
-                flash: Some(flash),
-                slot,
-            },
+            flash_writer,
         }
     }
 
@@ -64,8 +56,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             i2c_protocol::Event::WriteMemory(event) => {
                 match event.bank {
                     memory_banks::MCU_RW => {
-                        if let Err(error) = self.flash_write_state.write(event.address, event.data)
-                        {
+                        if let Err(error) = self.flash_writer.write(event.address, event.data) {
                             defmt::error!(
                                 "Failed to write MCU flash: {}",
                                 flash_error_string(error)
@@ -84,56 +75,5 @@ impl<I: I2cPeripheral> HostInterface<I> {
             }
             _ => {}
         }
-    }
-}
-
-fn flash_error_string(error: flash::Error) -> &'static str {
-    match error {
-        flash::Error::Busy => "busy",
-        flash::Error::Illegal => "illegal",
-        flash::Error::EccError => "ecc error",
-        flash::Error::PageOutOfRange => "page out of range",
-        flash::Error::Failure => "failure",
-    }
-}
-
-struct FlashWriteState {
-    flash: Option<FLASH>,
-    slot: Range<usize>,
-}
-
-impl FlashWriteState {
-    fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
-        // Note, we deliberately shadow to ensure that we don't accidentally use
-        // the relative address.
-        let address = self.slot.start + address as usize;
-        if address + data.len() > self.slot.end {
-            return Err(flash::Error::PageOutOfRange);
-        }
-        if let Some(flash) = self.flash.take() {
-            match flash.unlock() {
-                Ok(mut unlocked_flash) => {
-                    let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
-                    // Erase only when we are at the start of our page. This
-                    // imposes the constraint on our interface that writes must
-                    // always start from the start of a page.
-                    if page.to_address() == address {
-                        unlocked_flash.erase_page(page)?
-                    }
-                    unlocked_flash.write(address as usize, data)?;
-                    self.flash = Some(unlocked_flash.lock());
-                }
-                Err(flash) => {
-                    self.flash = Some(flash);
-                    return Err(flash::Error::Failure);
-                }
-            }
-        }
-        defmt::info!(
-            "Successfully wrote {} bytes to MCU flash at address {:x}",
-            data.len(),
-            address
-        );
-        Ok(())
     }
 }
