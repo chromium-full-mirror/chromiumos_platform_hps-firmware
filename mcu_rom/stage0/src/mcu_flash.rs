@@ -7,7 +7,7 @@ use hal::flash;
 use hal::flash::FlashExt;
 use hal::flash::FlashPage;
 use hal::flash::WriteErase;
-use stm32g0xx_hal::stm32::FLASH;
+use hal::stm32::FLASH;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 

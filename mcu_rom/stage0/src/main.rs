@@ -27,7 +27,6 @@ use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 use defmt_rtt as _; // global logger
 
-extern crate stm32g0xx_hal as hal;
 use cortex_m_rt::entry;
 
 use hal::{prelude::*, stm32};
