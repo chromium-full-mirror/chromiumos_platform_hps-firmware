@@ -7,40 +7,38 @@ use hal::flash;
 use hal::flash::FlashExt;
 use hal::flash::FlashPage;
 use hal::flash::WriteErase;
-use hal::i2c::SCLPin;
-use hal::i2c::SDAPin;
-use hal::rcc::Rcc;
 use hal::stm32::FLASH;
-use hal::stm32::I2C1;
+use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
-use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
-pub(crate) fn service_host_i2c(
-    i2c1: I2C1,
-    rcc: &mut Rcc,
-    sda: impl SDAPin<I2C1>,
-    scl: impl SCLPin<I2C1>,
-    flash: FLASH,
-    slot: Range<usize>,
-) {
-    let mut flash_write_state = FlashWriteState {
-        flash: Some(flash),
-        slot,
-    };
-    let mut host_i2c = I2cProtocolHandler::new(Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl));
-    // Wait until we're told to launch, at which point we'll drop the i2c
-    // interface and continue execution.
-    let mut done = false;
-    while !done {
-        match host_i2c.next_event() {
+pub struct HostInterface<I: I2cPeripheral> {
+    i2c: I2cProtocolHandler<I>,
+    pub(crate) done: bool,
+    flash_write_state: FlashWriteState,
+}
+
+impl<I: I2cPeripheral> HostInterface<I> {
+    pub(crate) fn new(i2c: I, flash: FLASH, slot: Range<usize>) -> Self {
+        Self {
+            i2c: I2cProtocolHandler::new(i2c),
+            done: false,
+            flash_write_state: FlashWriteState {
+                flash: Some(flash),
+                slot,
+            },
+        }
+    }
+
+    pub(crate) fn handle_i2c_events(&mut self) {
+        match self.i2c.next_event() {
             i2c_protocol::Event::ReadRegister(event) => {
                 let result = match event.register {
                     registers::MAGIC => mcu_common::hps_magic_code(),
@@ -51,13 +49,13 @@ pub(crate) fn service_host_i2c(
                     }
                     _ => 0,
                 };
-                event.respond(result, &mut host_i2c);
+                event.respond(result, &mut self.i2c);
             }
             i2c_protocol::Event::WriteRegister(event) => match event.register {
                 registers::COMMAND => match event.value {
                     commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
                     commands::LAUNCH => {
-                        done = true;
+                        self.done = true;
                     }
                     _ => defmt::info!("Unknown command {}", event.value),
                 },
@@ -66,7 +64,8 @@ pub(crate) fn service_host_i2c(
             i2c_protocol::Event::WriteMemory(event) => {
                 match event.bank {
                     memory_banks::MCU_RW => {
-                        if let Err(error) = flash_write_state.write(event.address, event.data) {
+                        if let Err(error) = self.flash_write_state.write(event.address, event.data)
+                        {
                             defmt::error!(
                                 "Failed to write MCU flash: {}",
                                 flash_error_string(error)

@@ -21,6 +21,7 @@ use panic_halt as _;
 // release profile: minimize the binary size of the application (requires nightly?)
 #[cfg(not(debug_assertions))]
 use panic_abort as _;
+use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 use defmt_rtt as _; // global logger
 
@@ -88,14 +89,20 @@ fn inner_main() -> Result<(), ()> {
         defmt::info!("FPGA wait\r");
     }
 
-    host_interface::service_host_i2c(
-        p.I2C1,
-        &mut rcc,
-        gpiob.pb9.into_open_drain_output(),
-        gpiob.pb8.into_open_drain_output(),
+    let mut interface = host_interface::HostInterface::new(
+        Stm32g0I2cPeripheral::new(
+            p.I2C1,
+            &mut rcc,
+            gpiob.pb9.into_open_drain_output(),
+            gpiob.pb8.into_open_drain_output(),
+        ),
         p.FLASH,
         loader::get_stage_slot_se(),
     );
+
+    while !interface.done {
+        interface.handle_i2c_events();
+    }
 
     if let Err(e) = detect_stage1() {
         defmt::info!("{}\r", e);
