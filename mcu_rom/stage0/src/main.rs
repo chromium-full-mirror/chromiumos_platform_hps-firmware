@@ -6,14 +6,15 @@
 #![no_std]
 #![feature(maybe_uninit_ref)]
 
-mod premain;
-use crate::premain::*;
-
 mod host_interface;
 mod loader;
 mod mcu_flash;
-use crate::loader::*;
+mod premain;
 
+use crate::loader::*;
+use crate::premain::*;
+use host_interface::HostEvent;
+use host_interface::HostInterface;
 use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 // pick a panicking behavior
@@ -22,38 +23,82 @@ use mcu_flash::FlashWriter;
 #[cfg(debug_assertions)]
 use panic_halt as _;
 // release profile: minimize the binary size of the application (requires nightly?)
+use defmt_rtt as _; // global logger
+use hal::gpio::gpioa;
+use hal::gpio::Output;
+use hal::gpio::PushPull;
+use hal::prelude::*;
 #[cfg(not(debug_assertions))]
 use panic_abort as _;
+use rtic::app;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
-
-use defmt_rtt as _; // global logger
-
-use cortex_m_rt::entry;
-
-use hal::{prelude::*, stm32};
 
 #[macro_use]
 extern crate bitflags;
 
-#[entry]
-fn main() -> ! {
-    match inner_main() {
-        Ok(()) => cortex_m::peripheral::SCB::sys_reset(),
-        //Err(e) => panic!(e),
-        Err(_) => loop {},
+type Led = gpioa::PA1<Output<PushPull>>;
+
+#[app(device = hal::stm32, peripherals = true)]
+const APP: () = {
+    struct Resources {
+        host_interface: HostInterface<Stm32g0I2cPeripheral>,
+        flash_writer: FlashWriter,
+        led: Led,
     }
-}
 
-fn inner_main() -> Result<(), ()> {
-    let p = stm32::Peripherals::take().ok_or(())?;
+    #[init]
+    fn init(ctx: init::Context) -> init::LateResources {
+        init_peripherals(ctx.device)
+    }
 
+    #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface])]
+    fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
+        if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
+            if ctx.spawn.handle_event(event).is_err() {
+                defmt::error!("Event queue full!");
+            }
+        }
+    }
+
+    #[task(resources = [flash_writer, led], capacity = 10)]
+    fn handle_event(mut ctx: handle_event::Context, event: HostEvent) {
+        match event {
+            HostEvent::LoadApplication => {
+                if load_application(&mut ctx.resources.led).is_err() {
+                    defmt::error!("Failed to launch application");
+                }
+            }
+            HostEvent::WriteFlash(event) => {
+                if let Err(error) = ctx
+                    .resources
+                    .flash_writer
+                    .write(event.address, &*event.data)
+                {
+                    defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
+                    // TODO: Report error somewhere
+                }
+            }
+        }
+    }
+
+    // Interrupts that we're not using that can be used by RTIC for spawning
+    // software tasks.
+    extern "C" {
+        fn TIM17();
+    }
+};
+
+fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
+    // Enable DMA clock so that RTT is still handled when we're idle and the CPU
+    // is put to sleep.
+    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     // Leave clocks as defaults and let stage 1 configure them.
     let mut rcc = p.RCC.constrain();
     rcc.disable_low_power_mode();
 
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
-    let mut led = gpioa.pa1.into_push_pull_output();
+    let led = gpioa.pa1.into_push_pull_output();
     // configure PB4 as o/p
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
@@ -73,7 +118,7 @@ fn inner_main() -> Result<(), ()> {
             FullConfig::default().baudrate(115_200.bps()),
             &mut rcc,
         )
-        .map_err(drop)?;
+        .unwrap();
     defmt::info!("booting..\r");
 
     // the art of implementing a stm32 bootloader in rust.
@@ -91,28 +136,21 @@ fn inner_main() -> Result<(), ()> {
         defmt::info!("FPGA wait\r");
     }
 
-    let mut interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
+    let host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
     ));
-    let mut flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
-
-    loop {
-        if let Some(event) = interface.handle_i2c_events() {
-            match event {
-                host_interface::HostEvent::LoadApplication => break,
-                host_interface::HostEvent::WriteFlash(event) => {
-                    if let Err(error) = flash_writer.write(event.address, &*event.data) {
-                        defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
-                        // TODO: Report error somewhere
-                    }
-                }
-            }
-        }
+    let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
+    init::LateResources {
+        host_interface,
+        flash_writer,
+        led,
     }
+}
 
+fn load_application(led: &mut Led) -> Result<(), ()> {
     if let Err(e) = detect_stage1() {
         defmt::info!("{}\r", e);
         return Err(());

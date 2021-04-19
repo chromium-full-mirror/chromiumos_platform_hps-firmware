@@ -11,7 +11,7 @@ use hal::stm32::FLASH;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
-pub(crate) struct FlashWriter {
+pub struct FlashWriter {
     flash: Option<FLASH>,
     slot: Range<usize>,
 }
