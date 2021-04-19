@@ -36,7 +36,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     "Write memory bank {} @{}: {:?}",
                     event.bank,
                     event.address,
-                    event.data
+                    &*event.data
                 );
             }
             i2c_protocol::Event::Error(error) => {

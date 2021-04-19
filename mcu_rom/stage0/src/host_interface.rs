@@ -56,7 +56,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             i2c_protocol::Event::WriteMemory(event) => {
                 match event.bank {
                     memory_banks::MCU_RW => {
-                        if let Err(error) = self.flash_writer.write(event.address, event.data) {
+                        if let Err(error) = self.flash_writer.write(event.address, &*event.data) {
                             defmt::error!(
                                 "Failed to write MCU flash: {}",
                                 flash_error_string(error)

@@ -4,16 +4,20 @@
 
 #![cfg_attr(not(test), no_std)]
 
+mod buffer;
+
+pub use buffer::Buffer;
+
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Event<'a> {
+pub enum Event {
     None,
     ReadRegister(ReadRegisterEvent),
     WriteRegister(WriteRegisterEvent),
-    WriteMemory(WriteMemoryEvent<'a>),
+    WriteMemory(WriteMemoryEvent),
     Error(I2cError),
 }
 
@@ -29,10 +33,10 @@ pub struct WriteRegisterEvent {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct WriteMemoryEvent<'a> {
+pub struct WriteMemoryEvent {
     pub bank: u8,
     pub address: u32,
-    pub data: &'a [u8],
+    pub data: Buffer,
 }
 
 impl ReadRegisterEvent {
@@ -47,7 +51,6 @@ impl ReadRegisterEvent {
 pub struct I2cProtocolHandler<I: I2cPeripheral> {
     i2c: I,
     state: State,
-    memory_buffer: [u8; 256],
 }
 
 enum State {
@@ -82,7 +85,7 @@ struct MemoryBankAccessState {
 struct MemoryBankWriteState {
     bank: u8,
     address: u32,
-    buffer_bytes_received: u8,
+    buffer: Buffer,
 }
 
 struct WriteRegisterState {
@@ -92,12 +95,17 @@ struct WriteRegisterState {
     first_value_byte: u8,
 }
 
+impl Default for State {
+    fn default() -> Self {
+        State::Initial
+    }
+}
+
 impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     pub fn new(i2c: I) -> Self {
         Self {
             i2c,
             state: State::Initial,
-            memory_buffer: [0u8; 256],
         }
     }
 
@@ -115,11 +123,11 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     self.state = State::Initial;
                 }
                 I2cEvent::Stop => {
-                    if let State::MemoryBankWrite(state) = &self.state {
+                    if let State::MemoryBankWrite(state) = core::mem::take(&mut self.state) {
                         return Event::WriteMemory(WriteMemoryEvent {
                             bank: state.bank,
                             address: state.address,
-                            data: &self.memory_buffer[0..state.buffer_bytes_received as usize],
+                            data: state.buffer,
                         });
                     }
                 }
@@ -168,18 +176,26 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         state.address_bytes[state.address_bytes_received as usize] = byte;
                         state.address_bytes_received += 1;
                         if state.address_bytes_received as usize == state.address_bytes.len() {
-                            self.state = State::MemoryBankWrite(MemoryBankWriteState {
-                                bank: state.bank,
-                                address: u32::from_be_bytes(state.address_bytes),
-                                buffer_bytes_received: 0,
-                            });
+                            if let Some(buffer) = Buffer::new() {
+                                self.state = State::MemoryBankWrite(MemoryBankWriteState {
+                                    bank: state.bank,
+                                    address: u32::from_be_bytes(state.address_bytes),
+                                    buffer,
+                                });
+                            } else {
+                                // Attempt to write to memory buffer when the
+                                // buffer is already in use. Send all bytes to
+                                // /dev/null.
+                                // TODO: Report error
+                                self.state = State::Done;
+                            }
                         }
                     }
                     State::MemoryBankWrite(state) => {
-                        let pos = state.buffer_bytes_received as usize;
-                        if pos < self.memory_buffer.len() {
-                            self.memory_buffer[pos] = byte;
-                            state.buffer_bytes_received += 1;
+                        if state.buffer.push(byte).is_err() {
+                            // Attempt to write beyond end of buffer.
+                            // TODO: Report error
+                            self.state = State::Done;
                         }
                     }
                     _ => {}
@@ -264,13 +280,13 @@ mod tests {
                 .unwrap()
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
-        assert_eq!(
-            protocol_handler.next_event(),
-            Event::WriteMemory(WriteMemoryEvent {
-                bank: 1,
-                address: 0x12345678,
-                data: &[10, 11, 12],
-            })
-        );
+        match protocol_handler.next_event() {
+            Event::WriteMemory(event) => {
+                assert_eq!(event.bank, 1);
+                assert_eq!(event.address, 0x12345678);
+                assert_eq!(*event.data, [10, 11, 12]);
+            }
+            x => panic!("Unexpected event {:?}", x),
+        }
     }
 }
