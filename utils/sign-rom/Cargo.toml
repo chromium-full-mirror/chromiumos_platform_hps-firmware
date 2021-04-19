@@ -5,7 +5,7 @@ edition = "2018"
 license = "BSD-3-Clause"
 
 [dependencies]
-argh = "0.1.4"
 anyhow = "1.0.38"
+argh = "0.1.4"
 mcu_common = { path = "../../mcu_rom/mcu_common" }
 sodalite = "0.4.0"

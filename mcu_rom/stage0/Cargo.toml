@@ -8,18 +8,18 @@ license = "BSD-3-Clause"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-mcu_common = { path = "../mcu_common" }
+bitflags = "1.2.1"
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
-panic-halt = "0.2.0"
-panic-abort = "0.3.2"
-stm32g0xx-hal =  { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
-bitflags = "1.2.1"
 defmt = "0.2.1"
 defmt-rtt = "0.2.0"
+i2c_protocol = { path = "../i2c_protocol" }
+mcu_common = { path = "../mcu_common" }
+panic-abort = "0.3.2"
+panic-halt = "0.2.0"
 sodalite = "0.4.0"
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral" }
-i2c_protocol = { path = "../i2c_protocol" }
+stm32g0xx-hal =  { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
 
 [features]
 # set logging levels here

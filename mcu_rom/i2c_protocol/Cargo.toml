@@ -7,5 +7,5 @@ edition = "2018"
 i2c_peripheral = { path = "../i2c_peripheral" }
 
 [dev-dependencies]
-fake_i2c = { path = "../fake_i2c" }
 embedded-hal = "0.2.4"
+fake_i2c = { path = "../fake_i2c" }
