@@ -14,6 +14,7 @@ mod loader;
 mod mcu_flash;
 use crate::loader::*;
 
+use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 // pick a panicking behavior
 #[allow(unused)]
@@ -90,18 +91,25 @@ fn inner_main() -> Result<(), ()> {
         defmt::info!("FPGA wait\r");
     }
 
-    let mut interface = host_interface::HostInterface::new(
-        Stm32g0I2cPeripheral::new(
-            p.I2C1,
-            &mut rcc,
-            gpiob.pb9.into_open_drain_output(),
-            gpiob.pb8.into_open_drain_output(),
-        ),
-        FlashWriter::new(p.FLASH, loader::get_stage_slot_se()),
-    );
+    let mut interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
+        p.I2C1,
+        &mut rcc,
+        gpiob.pb9.into_open_drain_output(),
+        gpiob.pb8.into_open_drain_output(),
+    ));
+    let mut flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
 
-    while !interface.done {
-        interface.handle_i2c_events();
+    loop {
+        match interface.handle_i2c_events() {
+            host_interface::HostEvent::None => {}
+            host_interface::HostEvent::LoadApplication => break,
+            host_interface::HostEvent::WriteFlash(event) => {
+                if let Err(error) = flash_writer.write(event.address, &*event.data) {
+                    defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
+                    // TODO: Report error somewhere
+                }
+            }
+        }
     }
 
     if let Err(e) = detect_stage1() {
