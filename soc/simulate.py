@@ -81,7 +81,7 @@ def main():
     args = parser.parse_args()
 
     platform = HpsSimPlatform()
-    soc = HpsSimSoC(platform, debug=False)
+    soc = HpsSimSoC(platform=platform, debug=False)
     sim_config = SimConfig()
     sim_config.add_clocker("sys_clk", freq_hz=soc.sys_clk_freq)
     sim_config.add_module("serial2console", "serial")
