@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 use i2c_peripheral::I2cPeripheral;
+use i2c_protocol::Buffer;
 use i2c_protocol::I2cProtocolHandler;
-use i2c_protocol::WriteMemoryEvent;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
@@ -19,7 +19,12 @@ pub struct HostInterface<I: I2cPeripheral> {
 
 pub(crate) enum HostEvent {
     LoadApplication,
-    WriteFlash(WriteMemoryEvent),
+    WriteFlash(WriteFlashRequest),
+}
+
+pub(crate) struct WriteFlashRequest {
+    pub(crate) address: u32,
+    pub(crate) data: Buffer,
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
@@ -55,7 +60,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
             },
             i2c_protocol::Event::WriteMemory(event) => match event.bank {
                 memory_banks::MCU_RW => {
-                    return Some(HostEvent::WriteFlash(event));
+                    return Some(HostEvent::WriteFlash(WriteFlashRequest {
+                        address: event.address,
+                        data: event.data,
+                    }));
                 }
                 x => {
                     defmt::warn!("Attempt to write to unsupported memory bank {}", x);
