@@ -13,3 +13,9 @@ pub const SYSTEM_STATUS: u8 = 2;
 
 /// WO: Performs a system command.
 pub const COMMAND: u8 = 3;
+
+/// RO: Application version
+pub const APPLICATION_VERSION: u8 = 4;
+
+/// RO: Which memory banks can currently be written.
+pub const MEMORY_BANK_AVAILABLE: u8 = 5;

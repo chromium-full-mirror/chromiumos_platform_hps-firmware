@@ -45,6 +45,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         // Common system status
                         status::OK
                     }
+                    registers::MEMORY_BANK_AVAILABLE => {
+                        if Buffer::is_available() {
+                            1 << memory_banks::MCU_RW
+                        } else {
+                            0
+                        }
+                    }
                     _ => 0,
                 };
                 event.respond(result, &mut self.i2c);

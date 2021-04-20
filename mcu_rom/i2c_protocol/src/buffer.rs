@@ -43,6 +43,12 @@ impl Buffer {
         }
     }
 
+    /// Returns whether it should be possible to call `Buffer::new()` and get
+    /// back `Some`.
+    pub fn is_available() -> bool {
+        AVAILABLE.load(Ordering::SeqCst)
+    }
+
     /// Appends `value` to the end of the buffer or returns an error if the
     /// buffer is already full.
     pub fn push(&mut self, value: u8) -> Result<(), ()> {
@@ -93,8 +99,10 @@ mod tests {
 
     #[test]
     fn test_buffer() {
+        assert!(buffer.is_available());
         {
             let mut buffer = Buffer::new().unwrap();
+            assert!(!buffer.is_available());
             assert!(Buffer::new().is_none());
             assert!(Buffer::new().is_none());
 
@@ -104,6 +112,7 @@ mod tests {
             assert_eq!(*buffer, [10, 11]);
         }
 
+        assert!(buffer.is_available());
         let mut buffer = Buffer::new().unwrap();
         assert_eq!(*buffer, []);
         // Make sure we can fill to capacity.
