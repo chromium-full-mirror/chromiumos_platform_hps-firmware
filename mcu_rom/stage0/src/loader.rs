@@ -7,7 +7,7 @@ use core::ops::Range;
 use mcu_common::Hash;
 use mcu_common::ImageHeader;
 
-use sodalite::{HASH_LEN, SIGN_LEN};
+use sodalite::SIGN_LEN;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
@@ -51,8 +51,8 @@ pub fn stage1_digest() -> Hash {
     let slot = get_stage_slot_se();
     let mut hasher = Hash::new();
 
-    const flash_end: usize = hal::flash::FLASH_END as usize;
-    if slot.end > flash_end {
+    const FLASH_END: usize = hal::flash::FLASH_END as usize;
+    if slot.end > FLASH_END {
         defmt::debug!("invalid slot.end = {:X}", slot.end);
     }
 
