@@ -18,7 +18,6 @@ pub struct HostInterface<I: I2cPeripheral> {
 }
 
 pub(crate) enum HostEvent {
-    None,
     LoadApplication,
     WriteFlash(WriteMemoryEvent),
 }
@@ -30,7 +29,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    pub(crate) fn handle_i2c_events(&mut self) -> HostEvent {
+    pub(crate) fn handle_i2c_events(&mut self) -> Option<HostEvent> {
         match self.i2c.next_event() {
             i2c_protocol::Event::ReadRegister(event) => {
                 let result = match event.register {
@@ -48,7 +47,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 registers::COMMAND => match event.value {
                     commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
                     commands::LAUNCH => {
-                        return HostEvent::LoadApplication;
+                        return Some(HostEvent::LoadApplication);
                     }
                     _ => defmt::info!("Unknown command {}", event.value),
                 },
@@ -56,7 +55,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             },
             i2c_protocol::Event::WriteMemory(event) => match event.bank {
                 memory_banks::MCU_RW => {
-                    return HostEvent::WriteFlash(event);
+                    return Some(HostEvent::WriteFlash(event));
                 }
                 x => {
                     defmt::warn!("Attempt to write to unsupported memory bank {}", x);
@@ -67,6 +66,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
             }
             _ => {}
         }
-        HostEvent::None
+        None
     }
 }

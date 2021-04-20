@@ -100,13 +100,14 @@ fn inner_main() -> Result<(), ()> {
     let mut flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
 
     loop {
-        match interface.handle_i2c_events() {
-            host_interface::HostEvent::None => {}
-            host_interface::HostEvent::LoadApplication => break,
-            host_interface::HostEvent::WriteFlash(event) => {
-                if let Err(error) = flash_writer.write(event.address, &*event.data) {
-                    defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
-                    // TODO: Report error somewhere
+        if let Some(event) = interface.handle_i2c_events() {
+            match event {
+                host_interface::HostEvent::LoadApplication => break,
+                host_interface::HostEvent::WriteFlash(event) => {
+                    if let Err(error) = flash_writer.write(event.address, &*event.data) {
+                        defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
+                        // TODO: Report error somewhere
+                    }
                 }
             }
         }
