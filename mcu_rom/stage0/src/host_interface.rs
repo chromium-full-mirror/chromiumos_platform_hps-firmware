@@ -20,6 +20,7 @@ pub struct HostInterface<I: I2cPeripheral> {
 pub(crate) enum HostEvent {
     LoadApplication,
     WriteFlash(WriteFlashRequest),
+    Reset,
 }
 
 pub(crate) struct WriteFlashRequest {
@@ -50,7 +51,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             }
             i2c_protocol::Event::WriteRegister(event) => match event.register {
                 registers::COMMAND => match event.value {
-                    commands::RESET => cortex_m::peripheral::SCB::sys_reset(),
+                    commands::RESET => return Some(HostEvent::Reset),
                     commands::LAUNCH => {
                         return Some(HostEvent::LoadApplication);
                     }

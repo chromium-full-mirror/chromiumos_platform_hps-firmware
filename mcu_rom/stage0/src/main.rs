@@ -78,6 +78,14 @@ const APP: () = {
                     // TODO: Report error somewhere
                 }
             }
+            HostEvent::Reset => {
+                // We want to avoid getting a WriteFlash event followed by a
+                // Reset event and then processing them out of order, since then
+                // the flash wouldn't get written. We achieve this by handling
+                // reset here in the same task as WriteFlash, which means they
+                // queue and get processed in order.
+                cortex_m::peripheral::SCB::sys_reset()
+            }
         }
     }
 
