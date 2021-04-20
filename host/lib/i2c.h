@@ -5,32 +5,36 @@
 /*
  * I2C device handler.
  */
-#ifndef __I2C_H__
-#define __I2C_H__
+#ifndef HPS_LIB_I2C_H_
+#define HPS_LIB_I2C_H_
+
+#include <vector>
 
 #include <stdint.h>
 #include <string>
 
-#include "dev.h"
+#include "hps/lib/dev.h"
 
 struct i2c_msg;
 
 namespace hps {
 
 class I2CDev : public DevInterface {
-  public:
-    I2CDev(int bus, int address);
-    int Open();
-    bool read(uint8_t cmd, std::vector<uint8_t> &data) override;
-    bool write(uint8_t cmd, const std::vector<uint8_t> &data) override;
-  private:
-    bool ioc(struct i2c_msg *msg, uint count);
-    int bus;
-    int address;
-    int fd;
-    std::string name;
+ public:
+  I2CDev(int bus, int address);
+  ~I2CDev() {}
+  int Open();
+  bool read(uint8_t cmd, std::vector<uint8_t>* data) override;
+  bool write(uint8_t cmd, const std::vector<uint8_t>& data) override;
+
+ private:
+  bool ioc(struct i2c_msg* msg, uint count);
+  int bus;
+  int address;
+  int fd;
+  std::string name;
 };
 
 }  // namespace hps
 
-#endif // __I2C_H__
+#endif  // HPS_LIB_I2C_H_

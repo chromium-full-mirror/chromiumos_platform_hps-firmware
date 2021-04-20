@@ -6,45 +6,46 @@
  * Command handler.
  */
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+
 #include <string.h>
 
-#include "command.h"
-#include "host/lib/hps.h"
+#include "hps/lib/hps.h"
+#include "hps/util/command.h"
 
 namespace {
 
-int sendcmd(hps::HPS &hps, int argc, char *argv[]) {
-    int cmd;
+int sendcmd(hps::HPS* hps, int argc, char* argv[]) {
+  int cmd;
 
-    if (argc <= 1) {
-        std::cerr << "Missing command ('reset' or 'launch' expected)" << std::endl;
-        return 1;
-    }
-    if (strcmp(argv[1], "reset") == 0) {
-        cmd = 1;
-    } else if (strcmp(argv[1], "launch") == 0) {
-        cmd = 2;
-    } else {
-        std::cerr << argv[0] << ": Unknown command (" << argv[1] << ")" << std::endl;
-        return 1;
-    }
+  if (argc <= 1) {
+    std::cerr << "Missing command ('reset' or 'launch' expected)" << std::endl;
+    return 1;
+  }
+  if (strcmp(argv[1], "reset") == 0) {
+    cmd = 1;
+  } else if (strcmp(argv[1], "launch") == 0) {
+    cmd = 2;
+  } else {
+    std::cerr << argv[0] << ": Unknown command (" << argv[1] << ")"
+              << std::endl;
+    return 1;
+  }
 
-    for (auto i = 0; i < 5; i++) {
-        std::cout << "reg " << i << " = "
-                  << std::hex << std::setfill('0') << std::setw(4)
-                  << hps.Device().readReg(hps::I2cReg(i)) << std::endl;
-    }
-    std::cout << "Sending cmd value "
-              << std::hex << std::setfill('0') << std::setw(4) << cmd
-              << " to register 3" << std::endl;
-    if (hps.Device().writeReg(hps::HpsReg::kSysCmd, cmd)) {
-        std::cout << "Success!" << std::endl;
-    } else {
-        std::cout << "Write failed!" << std::endl;
-    }
-    return 0;
+  for (auto i = 0; i < 5; i++) {
+    std::cout << "reg " << i << " = " << std::hex << std::setfill('0')
+              << std::setw(4) << hps->Device()->readReg(hps::I2cReg(i))
+              << std::endl;
+  }
+  std::cout << "Sending cmd value " << std::hex << std::setfill('0')
+            << std::setw(4) << cmd << " to register 3" << std::endl;
+  if (hps->Device()->writeReg(hps::HpsReg::kSysCmd, cmd)) {
+    std::cout << "Success!" << std::endl;
+  } else {
+    std::cout << "Write failed!" << std::endl;
+  }
+  return 0;
 }
 
 Command cmd("cmd", "cmd [reset | launch ] - Send command to hps.", sendcmd);

@@ -5,40 +5,45 @@
 /*
  * Fake device for HPS testing.
  */
-#ifndef __FAKE_DEV_H__
-#define __FAKE_DEV_H__
+#ifndef HPS_LIB_FAKE_DEV_H_
+#define HPS_LIB_FAKE_DEV_H_
 
-#include <mutex>
+#include <vector>
 
-#include "hps_reg.h"
-#include "dev.h"
+#include <base/synchronization/lock.h>
+
+#include "hps/lib/dev.h"
+#include "hps/lib/hps_reg.h"
 
 namespace hps {
 
 class FakeDev : public DevInterface {
-  public:
-    FakeDev() {
-        std::fill(std::begin(this->regs), std::end(this->regs), 0);
-        regs[HpsReg::kMagic] = kHpsMagic;
-        regs[HpsReg::kBankReady] = 0x0001;
+ public:
+  FakeDev() {
+    for (int i = 0; i < HpsReg::kNumRegs; i++) {
+      this->regs_[i] = 0;
     }
-    // Device interface
-    bool read(uint8_t cmd, std::vector<uint8_t> &data) override;
-    bool write(uint8_t cmd, const std::vector<uint8_t> &data) override;
-    // Control methods for fake.
-    void SetReg(int reg, uint16_t value) {
-        if (reg < 0 || reg > HpsReg::kMax) {
-            return;
-        }
-        std::lock_guard<std::mutex> l(this->lock_);
-        this->regs[reg] = value;
+    regs_[HpsReg::kMagic] = kHpsMagic;
+    regs_[HpsReg::kBankReady] = 0x0001;
+  }
+  virtual ~FakeDev() {}
+  // Device interface
+  bool read(uint8_t cmd, std::vector<uint8_t>* data) override;
+  bool write(uint8_t cmd, const std::vector<uint8_t>& data) override;
+  // Control methods for fake.
+  void SetReg(int reg, uint16_t value) {
+    if (reg < 0 || reg > HpsReg::kMax) {
+      return;
     }
-  private:
-    std::mutex lock_;
-    uint16_t regs[HpsReg::kNumRegs];
+    base::AutoLock l(this->lock_);
+    this->regs_[reg] = value;
+  }
+
+ private:
+  base::Lock lock_;
+  uint16_t regs_[HpsReg::kNumRegs];
 };
 
 }  // namespace hps
 
-
-#endif // __FAKE_DEV_H__
+#endif  // HPS_LIB_FAKE_DEV_H_

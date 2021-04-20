@@ -5,37 +5,37 @@
 /*
  * Definitions for HPS host interface.
  */
-#ifndef __HPS_REG_H__
-#define __HPS_REG_H__
+#ifndef HPS_LIB_HPS_REG_H_
+#define HPS_LIB_HPS_REG_H_
 
 namespace hps {
 
 enum HpsReg {
-    kMagic = 0,
-    kHwRev = 1,
-    kSysStatus = 2,
-    kSysCmd = 3,
-    kApplVers = 4,
-    kBankReady = 5,
-    kMax = 127,
-    kNumRegs = kMax + 1,
+  kMagic = 0,
+  kHwRev = 1,
+  kSysStatus = 2,
+  kSysCmd = 3,
+  kApplVers = 4,
+  kBankReady = 5,
+  kMax = 127,
+  kNumRegs = kMax + 1,
 };
 
 enum R2 {
-    kOK                 = 1<<0,
-    kFault              = 1<<1,
-    kApplVerified       = 1<<2,
-    kApplNotVerified    = 1<<3,
-    kWpOff              = 1<<4,
-    kWpOn               = 1<<5,
-    // Unused           = 1<<6,
-    // Unused           = 1<<7,
-    kApplRun            = 1<<8,
+  kOK = 1 << 0,
+  kFault = 1 << 1,
+  kApplVerified = 1 << 2,
+  kApplNotVerified = 1 << 3,
+  kWpOff = 1 << 4,
+  kWpOn = 1 << 5,
+  // Unused           = 1<<6,
+  // Unused           = 1<<7,
+  kApplRun = 1 << 8,
 };
 
 enum R3 {
-    kReset              = 1<<0,
-    kLaunch             = 1<<1,
+  kReset = 1 << 0,
+  kLaunch = 1 << 1,
 };
 
 inline constexpr uint16_t kHpsMagic = 0x9df2;
@@ -47,13 +47,13 @@ inline constexpr uint16_t kHpsMagic = 0x9df2;
 inline constexpr int kNumBanks = 16;
 
 inline uint8_t I2cMemWrite(int bank) {
-    return (bank % kNumBanks) | 0;
+  return (bank % kNumBanks) | 0;
 }
 
 inline uint8_t I2cReg(int reg) {
-    return (reg % HpsReg::kNumRegs) | 0x80;
+  return (reg % HpsReg::kNumRegs) | 0x80;
 }
 
 }  // namespace hps
 
-#endif // __HPS_REG_H__
+#endif  // HPS_LIB_HPS_REG_H_

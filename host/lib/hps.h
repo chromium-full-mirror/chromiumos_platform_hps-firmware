@@ -5,41 +5,39 @@
 /*
  * Main HPS class.
  */
-#ifndef __HPS_H__
-#define __HPS_H__
+#ifndef HPS_LIB_HPS_H_
+#define HPS_LIB_HPS_H_
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include "dev.h"
+#include "hps/lib/dev.h"
 
 namespace hps {
 
 class HPS {
-  public:
-    HPS(DevInterface &dev) :
-        device_(dev),
-        state_(State::init)
-        { }
-    void Init();
-    DevInterface &Device() { return this->device_; }
-    /*
-     * Per the HPS/Host I2C Interface, the bank
-     * must be between 0-63 inclusive.
-     * The length of data written is returned, or -1
-     * in the case of an error.
-     */
-    int Download(int bank, uint32_t address, std::ifstream &source);
-  private:
-    enum State {
-        init,
-        wait_stage0,
-        wait_appl,
-    };
-    DevInterface &device_;
-    State state_;
+ public:
+  explicit HPS(DevInterface* dev) : device_(dev), state_(State::init) {}
+  void Init();
+  DevInterface* Device() { return this->device_; }
+  /*
+   * Per the HPS/Host I2C Interface, the bank
+   * must be between 0-63 inclusive.
+   * The length of data written is returned, or -1
+   * in the case of an error.
+   */
+  int Download(int bank, uint32_t address, std::ifstream& source);
+
+ private:
+  enum State {
+    init,
+    wait_stage0,
+    wait_appl,
+  };
+  DevInterface* device_;
+  State state_;
 };
 
 }  // namespace hps
 
-#endif // __HPS_H__
+#endif  // HPS_LIB_HPS_H_
