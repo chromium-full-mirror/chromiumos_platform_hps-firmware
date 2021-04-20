@@ -2,14 +2,6 @@
 
 ## Running On Device
 
-Ensure you have the right paths and environment, and if
-necessary build the host utilities (this only has to be done once):
-```bash
-cd ~/src/hps-firmware # or whereever your tree is
-source environment
-ninja -C $HOSTPATH hps
-```
-
 To build all of the MCU code:
 ```bash
 (cd $HPS_ROOT/mcu_rom/stage0 && cargo build --release)
@@ -36,6 +28,14 @@ To run the MCU application and see output:
 
 ```bash
 (cd $HPS_ROOT/mcu_rom/application && cargo run)
+```
+
+The host utilities are in the main ChromeOS platform2 repo.
+To build the host program:
+```bash
+cd ~/chromiumos    # or where ever your ChromeOS tree is
+cros_sdk
+sudo emerge hps-tool
 ```
 
 If you are connected via a FTDI cable,
