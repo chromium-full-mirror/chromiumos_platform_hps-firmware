@@ -66,6 +66,10 @@ impl Stm32g0I2cPeripheral {
         stm32::NVIC::mask(hal::stm32::Interrupt::I2C1);
         self.i2c1.cr1.modify(|_, w| w.pe().clear_bit());
     }
+
+    pub fn set_i2c_enabled(&mut self, enabled: bool) {
+        self.i2c1.oar1.modify(|_, w| w.oa1en().bit(enabled));
+    }
 }
 
 impl Drop for Stm32g0I2cPeripheral {

@@ -54,13 +54,22 @@ const APP: () = {
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface])]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
+            if matches!(event, HostEvent::WriteFlash(_)) {
+                // Disable i2c ACK while we're writing flash since writing flash
+                // prevents us from responding to i2c events in time anyway. The
+                // host can then retry the request until it gets through.
+                ctx.resources
+                    .host_interface
+                    .i2c_mut()
+                    .set_i2c_enabled(false);
+            }
             if ctx.spawn.handle_event(event).is_err() {
                 defmt::error!("Event queue full!");
             }
         }
     }
 
-    #[task(resources = [flash_writer, led], capacity = 10)]
+    #[task(resources = [flash_writer, led, host_interface], capacity = 10)]
     fn handle_event(mut ctx: handle_event::Context, event: HostEvent) {
         match event {
             HostEvent::LoadApplication => {
@@ -77,6 +86,9 @@ const APP: () = {
                     defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
                     // TODO: Report error somewhere
                 }
+                // Reenable i2c. It was disabled above in the i2c interrupt
+                // handler.
+                ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
             }
             HostEvent::Reset => {
                 // We want to avoid getting a WriteFlash event followed by a

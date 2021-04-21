@@ -84,4 +84,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
         None
     }
+
+    pub(crate) fn i2c_mut(&mut self) -> &mut I {
+        self.i2c.i2c_mut()
+    }
 }
