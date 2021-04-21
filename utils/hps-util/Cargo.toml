@@ -7,5 +7,5 @@ edition = "2018"
 anyhow = "1.0.38"
 argh = "0.1.4"
 embedded-hal = "0.2.4"
-ftd2xx-embedded-hal = { git = "https://github.com/davidlattimore/ftd2xx-embedded-hal.git", branch = "ft2232h" }
+ftd2xx-embedded-hal = "0.7.0"
 mcu_common = { path = "../../mcu_rom/mcu_common" }
