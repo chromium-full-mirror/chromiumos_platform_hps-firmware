@@ -99,10 +99,10 @@ mod tests {
 
     #[test]
     fn test_buffer() {
-        assert!(buffer.is_available());
+        assert!(Buffer::is_available());
         {
             let mut buffer = Buffer::new().unwrap();
-            assert!(!buffer.is_available());
+            assert!(!Buffer::is_available());
             assert!(Buffer::new().is_none());
             assert!(Buffer::new().is_none());
 
@@ -112,7 +112,7 @@ mod tests {
             assert_eq!(*buffer, [10, 11]);
         }
 
-        assert!(buffer.is_available());
+        assert!(Buffer::is_available());
         let mut buffer = Buffer::new().unwrap();
         assert_eq!(*buffer, []);
         // Make sure we can fill to capacity.
