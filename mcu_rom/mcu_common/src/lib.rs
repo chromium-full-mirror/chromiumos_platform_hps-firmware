@@ -12,6 +12,12 @@ pub mod commands;
 pub mod memory_banks;
 pub mod registers;
 
+mod common_host_interface;
+mod errors;
+
+pub use common_host_interface::CommonHostInterface;
+pub use errors::Error;
+
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
 #[repr(C, packed(4))]
