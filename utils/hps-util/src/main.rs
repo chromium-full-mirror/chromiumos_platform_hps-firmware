@@ -19,6 +19,7 @@ use ftd2xx_embedded_hal::Initialized;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use std::time::Duration;
 
 const HPS_ADDRESS: u8 = 0x30;
 
@@ -163,10 +164,26 @@ impl<'a> HpsInterface<'a> {
         Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
     }
 
+    fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
+        for _ in 0..100 {
+            if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
+                if available & (1 << memory_bank) != 0 {
+                    return Ok(());
+                }
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        bail!(
+            "Timeout while waiting for memory bank {} to become available",
+            memory_bank
+        );
+    }
+
     fn write_firmware(&mut self, input_filename: &Path) -> Result<()> {
         let bytes = std::fs::read(input_filename)?;
         let mut address = 0;
-        for chunk in bytes.chunks(128) {
+        for chunk in bytes.chunks(256) {
+            self.wait_memory_bank_available(memory_banks::MCU_RW)?;
             self.write_memory(memory_banks::MCU_RW, address, chunk)?;
             address += chunk.len() as u32;
         }
