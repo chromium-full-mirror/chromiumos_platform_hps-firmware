@@ -44,6 +44,7 @@ enum SubCommand {
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
+    Status(Status),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -78,6 +79,11 @@ struct AccessRegisters {
 /// Reset MCU
 #[argh(subcommand, name = "reset")]
 struct Reset {}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Query HPS status
+#[argh(subcommand, name = "status")]
+struct Status {}
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// Write some values to an arbitrary memory bank
@@ -260,6 +266,27 @@ fn stress_test(hps: &mut HpsInterface, config: &StressTest) -> Result<()> {
     Ok(())
 }
 
+fn query_status(hps: &mut HpsInterface) -> Result<()> {
+    use std::convert::TryFrom;
+    let error_bits = hps.read_register(registers::ERRORS)?;
+    let errors: Vec<_> = (0..16)
+        .filter_map(|bit| {
+            let bit_value = 1 << bit;
+            if error_bits & bit_value != 0 {
+                mcu_common::Error::try_from(bit_value).ok()
+            } else {
+                None
+            }
+        })
+        .collect();
+    if errors.is_empty() {
+        println!("No errors reported");
+    } else {
+        println!("Errors: {:?}", errors);
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
@@ -278,5 +305,6 @@ fn main() -> Result<()> {
         }
         SubCommand::ListDevices(_) => unreachable!(),
         SubCommand::StressTest(config) => stress_test(&mut hps, &config),
+        SubCommand::Status(_) => query_status(&mut hps),
     }
 }
