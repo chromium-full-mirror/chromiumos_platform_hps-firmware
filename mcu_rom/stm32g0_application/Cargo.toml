@@ -5,6 +5,7 @@ edition = "2018"
 license = "BSD-3-Clause"
 
 [dependencies]
+application = { path = "../application" }
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"

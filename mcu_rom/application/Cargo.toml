@@ -1,0 +1,9 @@
+[package]
+name = "application"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+i2c_peripheral = { path = "../i2c_peripheral" }
+i2c_protocol = { path = "../i2c_protocol" }
+mcu_common = { path = "../mcu_common" }

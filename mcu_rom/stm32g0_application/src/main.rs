@@ -5,11 +5,11 @@
 #![no_main]
 #![no_std]
 
+use application::HostInterface;
 use defmt_rtt as _;
 use hal::prelude::*;
 use panic_probe as _;
 use rtic::app;
-use stm32g0_application::HostInterface;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 #[app(device = hal::stm32, peripherals = true)]

@@ -2,6 +2,7 @@
 
 # Crates that are arch-independent go here.
 members = [
+    "application",
     "fake_i2c",
     "hps_interface",
     "hps-util",
