@@ -1,0 +1,20 @@
+[workspace]
+
+# Crates that are arch-independent go here.
+members = [
+    "fake_i2c",
+    "i2c_peripheral",
+    "i2c_protocol",
+    "mcu_common",
+]
+# Crates that can only run on the MCU go here. The MCU binaries can't go into a
+# workspace since they each have their own memory.x. If we get more than one
+# library, then we might want to consider moving the stm32 libraries into a
+# workspace.
+exclude = [
+    "application",
+    "stage0",
+    "stage1",
+    "stm32g0_i2c_peripheral"
+]
+
