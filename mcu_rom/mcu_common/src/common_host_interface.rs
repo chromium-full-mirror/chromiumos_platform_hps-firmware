@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+//! Enable the feature `dev` to get features that are only useful for
+//! development and testing purposes.
+
 use crate::registers;
 use crate::status;
 use crate::Error;
@@ -22,7 +25,7 @@ impl CommonHostInterface {
             registers::ERRORS => self.error_bits,
             registers::SYSTEM_STATUS if self.error_bits != 0 => status::FAULT,
             registers::SYSTEM_STATUS => status::OK,
-            _ => return None,
+            _ => return self.read_dev_register(register),
         })
     }
 
@@ -37,5 +40,31 @@ impl CommonHostInterface {
             I2cError::Underrun => Error::HostI2cUnderrun,
             I2cError::BusError => Error::HostI2cBusError,
         });
+    }
+
+    #[cfg(feature = "dev")]
+    fn read_dev_register(&self, register: u8) -> Option<u16> {
+        Some(match register {
+            registers::dev::SLOW_READ => dev::fib(self.error_bits.count_ones() as u16 + 20),
+            _ => return None,
+        })
+    }
+
+    #[cfg(not(feature = "dev"))]
+    fn read_dev_register(&self, _: u8) -> Option<u16> {
+        None
+    }
+}
+
+#[cfg(feature = "dev")]
+mod dev {
+    /// Computes a fibonacci number. This is just intended to be a somewhat slow
+    /// operation that the compiler hopefully won't optimize away.
+    pub(crate) fn fib(n: u16) -> u16 {
+        if n <= 1 {
+            0
+        } else {
+            fib(n - 1) + fib(n - 2)
+        }
     }
 }

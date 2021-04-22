@@ -10,3 +10,6 @@ license = "BSD-3-Clause"
 sodalite = "0.4.0"
 num_enum = { version = "0.5.1", default-features = false }
 i2c_peripheral = { path = "../i2c_peripheral" }
+
+[features]
+dev = []

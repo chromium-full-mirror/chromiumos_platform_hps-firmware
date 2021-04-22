@@ -44,3 +44,13 @@ verify the I2C connection to the HPS board:
 ```bash
 hps -f status
 ```
+
+### Dev features
+
+To enable dev (non-production) features, run with:
+
+```bash
+cargo run --features mcu_common/dev
+```
+
+This enables features that we don't want in production, but which can be useful for testing. e.g. a register that is slow to read and causes an i2c underrun.
