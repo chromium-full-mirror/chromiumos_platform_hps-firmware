@@ -107,7 +107,11 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
         }
         if isr.ovr().bit_is_set() {
             self.i2c1.icr.write(|w| w.ovrcf().set_bit());
-            return I2cEvent::Error(I2cError::Overrun);
+            return I2cEvent::Error(if isr.dir().bit_is_set() {
+                I2cError::Underrun
+            } else {
+                I2cError::Overrun
+            });
         }
         if isr.berr().bit_is_set() {
             self.i2c1.icr.write(|w| w.berrcf().set_bit());

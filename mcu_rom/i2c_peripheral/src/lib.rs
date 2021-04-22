@@ -39,13 +39,15 @@ pub enum I2cEvent {
 #[derive(Eq, PartialEq, Debug)]
 pub enum I2cError {
     Overrun,
+    Underrun,
     BusError,
 }
 
 impl I2cError {
     pub fn as_str(&self) -> &'static str {
         match self {
-            I2cError::Overrun => "Overrun/Underrun",
+            I2cError::Overrun => "Overrun",
+            I2cError::Underrun => "Underrun",
             I2cError::BusError => "Bus error",
         }
     }
