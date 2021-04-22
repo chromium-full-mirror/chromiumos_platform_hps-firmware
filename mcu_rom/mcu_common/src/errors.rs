@@ -6,7 +6,7 @@ use core::convert::From;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
-#[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
 pub enum Error {
     /// An I2C underrun occurred.
@@ -25,6 +25,12 @@ pub enum Error {
     HostI2cOverrun = 1 << 4,
 }
 
+impl Error {
+    pub fn unwrap(self) -> u16 {
+        u16::from(self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,6 +43,6 @@ mod tests {
 
     #[test]
     fn test_to_int() {
-        assert_eq!(u16::from(Error::HostI2cBusError), 8u16);
+        assert_eq!(Error::HostI2cBusError.unwrap(), 8u16);
     }
 }

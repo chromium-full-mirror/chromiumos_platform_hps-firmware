@@ -68,3 +68,36 @@ mod dev {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_reporting() {
+        let mut interface = CommonHostInterface::new();
+        assert_eq!(interface.read_register(registers::ERRORS), Some(0));
+        assert_eq!(
+            interface.read_register(registers::SYSTEM_STATUS),
+            Some(status::OK)
+        );
+        interface.report_i2c_host_error(I2cError::Overrun);
+        assert_eq!(
+            interface.read_register(registers::ERRORS),
+            Some(Error::HostI2cOverrun.unwrap())
+        );
+        interface.report_i2c_host_error(I2cError::Underrun);
+        assert_eq!(
+            interface.read_register(registers::ERRORS),
+            Some(Error::HostI2cOverrun.unwrap() | Error::HostI2cUnderrun.unwrap())
+        );
+    }
+
+    #[test]
+    fn test_magic() {
+        assert_eq!(
+            CommonHostInterface::new().read_register(registers::MAGIC),
+            Some(40434)
+        );
+    }
+}
