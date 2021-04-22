@@ -3,6 +3,7 @@
 # Crates that are arch-independent go here.
 members = [
     "fake_i2c",
+    "hps-util",
     "i2c_peripheral",
     "i2c_protocol",
     "mcu_common",

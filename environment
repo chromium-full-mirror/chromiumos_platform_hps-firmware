@@ -61,6 +61,5 @@ HPS_RUST_DIRS=(
     mcu_rom/stage0
     mcu_rom/stage1
     mcu_rom/stm32g0_i2c_peripheral
-    utils/hps-util
     utils/sign-rom
 )
