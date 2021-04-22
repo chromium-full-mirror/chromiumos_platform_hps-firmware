@@ -68,7 +68,7 @@ else
 	# If our program contains an image header, then sign it.
 	if arm-none-eabi-objdump -h "$file" | grep image_hdr >/dev/null; then
 		(
-			cd $PROJECT_ROOT/utils/sign-rom
+			cd $PROJECT_ROOT/mcu_rom/sign-rom
 			cargo run --release \
 				-- \
 				--input "${file}.bin" \

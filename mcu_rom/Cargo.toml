@@ -7,6 +7,7 @@ members = [
     "i2c_peripheral",
     "i2c_protocol",
     "mcu_common",
+    "sign-rom",
 ]
 # Crates that can only run on the MCU go here. The MCU binaries can't go into a
 # workspace since they each have their own memory.x. If we get more than one
