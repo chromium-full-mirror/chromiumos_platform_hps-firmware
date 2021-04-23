@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
@@ -86,6 +87,14 @@ impl WriteRead for FakeI2cController {
     }
 }
 
+impl Write for FakeI2cController {
+    type Error = Error;
+
+    fn write(&mut self, address: u8, bytes_to_write: &[u8]) -> Result<(), Error> {
+        self.write_read(address, bytes_to_write, &mut [])
+    }
+}
+
 impl I2cPeripheral for FakeI2cPeripheral {
     fn next_event(&mut self) -> I2cEvent {
         self.events_from_host
@@ -118,8 +127,7 @@ mod tests {
 
     #[test]
     fn test_write() {
-        let mut peripheral =
-            FakeI2cPeripheral::new(|mut device| device.write_read(1, &[7, 8], &mut []).unwrap());
+        let mut peripheral = FakeI2cPeripheral::new(|mut device| device.write(1, &[7, 8]).unwrap());
         assert_eq!(peripheral.next_event(), I2cEvent::StartWrite);
         assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(7));
         assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(8));
