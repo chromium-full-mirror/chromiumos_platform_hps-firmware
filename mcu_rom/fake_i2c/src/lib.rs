@@ -15,7 +15,8 @@ pub enum Error {
 
 /// A fake I2C bus as seen from the peripheral side.
 pub struct FakeI2cPeripheral {
-    events_from_host: mpsc::Receiver<I2cEvent>,
+    // Only `None` while dropping.
+    events_from_host: Option<mpsc::Receiver<I2cEvent>>,
     bytes_to_host: mpsc::Sender<u8>,
     // This is optional so that we can release ownership when we join in drop.
     host_thread: Option<JoinHandle<()>>,
@@ -40,7 +41,7 @@ impl FakeI2cPeripheral {
         };
         let host_thread = std::thread::spawn(move || host_code(host));
         FakeI2cPeripheral {
-            events_from_host,
+            events_from_host: Some(events_from_host),
             bytes_to_host,
             host_thread: Some(host_thread),
         }
@@ -49,6 +50,9 @@ impl FakeI2cPeripheral {
 
 impl Drop for FakeI2cPeripheral {
     fn drop(&mut self) {
+        // Before we join the host thread, we need to close the channel that it
+        // might be waiting on, otherwise our test might not terminate.
+        self.events_from_host.take();
         self.host_thread
             .take()
             .unwrap()
@@ -84,7 +88,11 @@ impl WriteRead for FakeI2cController {
 
 impl I2cPeripheral for FakeI2cPeripheral {
     fn next_event(&mut self) -> I2cEvent {
-        self.events_from_host.recv().unwrap_or(I2cEvent::None)
+        self.events_from_host
+            .as_mut()
+            .unwrap()
+            .recv()
+            .unwrap_or(I2cEvent::None)
     }
 
     fn write_byte(&mut self, byte: u8) {
@@ -135,5 +143,16 @@ mod tests {
         peripheral.write_byte(15);
         assert_eq!(peripheral.next_event(), I2cEvent::Stop);
         assert_eq!(peripheral.next_event(), I2cEvent::None);
+    }
+
+    #[test]
+    fn test_no_device_response() {
+        // Our host code tries to write and read, but the device side does
+        // nothing. The host side should get an error when device side gets
+        // dropped.
+        FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            assert!(device.write_read(1, &[10], &mut out).is_err());
+        });
     }
 }
