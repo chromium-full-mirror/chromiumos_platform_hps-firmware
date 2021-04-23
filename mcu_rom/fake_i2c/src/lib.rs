@@ -6,12 +6,21 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+use std::fmt::Display;
 use std::sync::mpsc;
 use std::thread::JoinHandle;
 
 #[derive(Debug)]
 pub enum Error {
     Disconnected,
+}
+
+impl std::error::Error for Error {}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 /// A fake I2C bus as seen from the peripheral side.
