@@ -5,7 +5,7 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use embedded_hal::prelude::*;
+use embedded_hal::blocking::i2c;
 use ftd2xx_embedded_hal::libftd2xx;
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
 use ftd2xx_embedded_hal::libftd2xx::Ft2232h;
@@ -109,13 +109,21 @@ struct StressTest {
     iterations: u32,
 }
 
-struct Ft2232hHps<'a> {
-    i2c: I2c<'a, Ft2232h>,
+type Ft2232hHps<'a> = Hps<I2c<'a, Ft2232h>, ftd2xx_embedded_hal::I2cError>;
+
+struct Hps<I, E>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+{
+    i2c: I,
 }
 
-impl<'a> Ft2232hHps<'a> {
-    fn new(ftdi: &'a Ft2232hHal<Initialized>) -> Result<Self> {
-        let i2c = ftdi.i2c()?;
+impl<I, E> Hps<I, E>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    fn new(i2c: I) -> Result<Self> {
         let mut hps = Self { i2c };
         hps.check_magic()?;
         Ok(hps)
@@ -289,7 +297,7 @@ fn main() -> Result<()> {
         return print_device_list();
     }
     let ftdi = open_ftdi(&flags)?;
-    let mut hps = Ft2232hHps::new(&ftdi)?;
+    let mut hps = Ft2232hHps::new(ftdi.i2c()?)?;
     println!("HPS detected");
     match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
