@@ -1,0 +1,13 @@
+[package]
+name = "hps_interface"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.38"
+embedded-hal = "0.2.4"
+mcu_common = { path = "../mcu_common" }
+
+[dev-dependencies]
+fake_i2c = { path = "../fake_i2c" }
+i2c_protocol = { path = "../i2c_protocol" }

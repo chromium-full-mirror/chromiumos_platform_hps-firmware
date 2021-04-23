@@ -5,7 +5,6 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use embedded_hal::blocking::i2c;
 use ftd2xx_embedded_hal::libftd2xx;
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
 use ftd2xx_embedded_hal::libftd2xx::Ft2232h;
@@ -13,12 +12,10 @@ use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
+use hps_interface::Hps;
 use mcu_common::commands;
-use mcu_common::memory_banks;
 use mcu_common::registers;
-use mcu_common::HPS_ADDRESS;
 use std::path::PathBuf;
-use std::time::Duration;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -109,101 +106,6 @@ struct StressTest {
 }
 
 type Ft2232hHps<'a> = Hps<I2c<'a, Ft2232h>, ftd2xx_embedded_hal::I2cError>;
-
-struct Hps<I, E>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
-{
-    i2c: I,
-}
-
-impl<I, E> Hps<I, E>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
-    fn new(i2c: I) -> Result<Self> {
-        let mut hps = Self { i2c };
-        hps.check_magic()?;
-        Ok(hps)
-    }
-
-    /// Reads the "magic" register which always contains a particular value if
-    /// the device is a HPS. Returns an error on communication failure or if the
-    /// returned value isn't what's expected.
-    fn check_magic(&mut self) -> Result<()> {
-        let magic = self.read_register(registers::MAGIC)?;
-        let expected = mcu_common::hps_magic_code();
-        if magic != expected {
-            bail!(
-                "HPS not detected (expected {:x}, read {:x})",
-                expected,
-                magic
-            );
-        }
-        Ok(())
-    }
-
-    fn read_register(&mut self, reg: u8) -> Result<u16> {
-        let mut buffer = [0u8; 2];
-        self.i2c
-            .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
-        Ok(((buffer[0] as u16) << 8) | (buffer[1] as u16))
-    }
-
-    fn write_register(&mut self, reg: u8, value: u16) -> Result<()> {
-        let buffer = [
-            register_access_command(reg),
-            (value >> 8) as u8,
-            (value & 0xff) as u8,
-        ];
-        Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
-    }
-
-    fn perform_command(&mut self, command: u16) -> Result<()> {
-        self.write_register(registers::COMMAND, command)
-    }
-
-    fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()> {
-        if bank >= 64 {
-            bail!("Invalid memory bank {}", bank);
-        }
-        let mut buffer = Vec::with_capacity(1 + std::mem::size_of::<u32>() + values.len());
-        buffer.push(bank);
-        buffer.extend_from_slice(&address.to_be_bytes());
-        buffer.extend_from_slice(values);
-        Ok(self.i2c.write(HPS_ADDRESS, &buffer)?)
-    }
-
-    fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
-        for _ in 0..100 {
-            if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
-                if available & (1 << memory_bank) != 0 {
-                    return Ok(());
-                }
-            }
-            std::thread::sleep(Duration::from_millis(5));
-        }
-        bail!(
-            "Timeout while waiting for memory bank {} to become available",
-            memory_bank
-        );
-    }
-
-    fn write_firmware(&mut self, bytes: &[u8]) -> Result<()> {
-        let mut address = 0;
-        for chunk in bytes.chunks(256) {
-            self.wait_memory_bank_available(memory_banks::MCU_RW)?;
-            self.write_memory(memory_banks::MCU_RW, address, chunk)?;
-            address += chunk.len() as u32;
-        }
-        Ok(())
-    }
-}
-
-fn register_access_command(reg: u8) -> u8 {
-    reg | 0x80
-}
 
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     let ft_hal;

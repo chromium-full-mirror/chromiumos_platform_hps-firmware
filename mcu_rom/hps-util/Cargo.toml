@@ -8,4 +8,5 @@ anyhow = "1.0.38"
 argh = "0.1.4"
 embedded-hal = "0.2.4"
 ftd2xx-embedded-hal = "0.7.0"
+hps_interface = { path = "../hps_interface" }
 mcu_common = { path = "../mcu_common" }
