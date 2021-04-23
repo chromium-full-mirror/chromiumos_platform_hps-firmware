@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use std::path::Path;
-use std::path::PathBuf;
-
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
@@ -19,6 +16,7 @@ use ftd2xx_embedded_hal::Initialized;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use std::path::PathBuf;
 use std::time::Duration;
 
 const HPS_ADDRESS: u8 = 0x30;
@@ -185,15 +183,13 @@ impl<'a> HpsInterface<'a> {
         );
     }
 
-    fn write_firmware(&mut self, input_filename: &Path) -> Result<()> {
-        let bytes = std::fs::read(input_filename)?;
+    fn write_firmware(&mut self, bytes: &[u8]) -> Result<()> {
         let mut address = 0;
         for chunk in bytes.chunks(256) {
             self.wait_memory_bank_available(memory_banks::MCU_RW)?;
             self.write_memory(memory_banks::MCU_RW, address, chunk)?;
             address += chunk.len() as u32;
         }
-        println!("Sucessfully wrote {} bytes of firmware", bytes.len());
         Ok(())
     }
 }
@@ -296,7 +292,12 @@ fn main() -> Result<()> {
     let mut hps = HpsInterface::new(&ftdi)?;
     println!("HPS detected");
     match flags.sub_command {
-        SubCommand::FlashMcu(FlashMcu { file }) => hps.write_firmware(&file),
+        SubCommand::FlashMcu(FlashMcu { file }) => {
+            let bytes = std::fs::read(file)?;
+            hps.write_firmware(&bytes)?;
+            println!("Sucessfully wrote {} bytes of firmware", bytes.len());
+            Ok(())
+        }
         SubCommand::Launch(_) => hps.perform_command(commands::LAUNCH),
         SubCommand::Reset(_) => hps.perform_command(commands::RESET),
         SubCommand::AccessRegisters(config) => access_registers(&mut hps, &config),
