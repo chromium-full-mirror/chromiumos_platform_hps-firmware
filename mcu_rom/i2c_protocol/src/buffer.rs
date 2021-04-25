@@ -35,8 +35,7 @@ impl Buffer {
         // only available on our target CPU and we want to be able to run tests
         // on Linux. We currently only call `Buffer::new` from the i2c interrupt
         // handler, so this isn't currently a problem in practice.
-        if AVAILABLE.load(Ordering::SeqCst) {
-            AVAILABLE.store(false, Ordering::SeqCst);
+        if take_true(&AVAILABLE) {
             Some(Buffer { size: 0 })
         } else {
             None
@@ -90,6 +89,24 @@ impl Deref for Buffer {
         // a time, so our buffer is effectively "owned" by that instance.
         unsafe { &BUFFER_BYTES[..self.size] }
     }
+}
+
+/// Sets `value` to false, returning the old value.
+#[cfg(not(target_arch = "arm"))]
+fn take_true(value: &AtomicBool) -> bool {
+    value.swap(false, Ordering::SeqCst)
+}
+
+// We'd like to use cfg(target_has_atomic = "8") here instead if that ever
+// becomes stable.
+#[cfg(target_arch = "arm")]
+fn take_true(value: &AtomicBool) -> bool {
+    let mut result = false;
+    cortex_m::interrupt::free(|_| {
+        result = value.load(Ordering::SeqCst);
+        value.store(false, Ordering::SeqCst);
+    });
+    result
 }
 
 #[cfg(test)]

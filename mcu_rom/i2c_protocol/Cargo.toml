@@ -9,3 +9,6 @@ i2c_peripheral = { path = "../i2c_peripheral" }
 [dev-dependencies]
 embedded-hal = "0.2.4"
 fake_i2c = { path = "../fake_i2c" }
+
+[target.'cfg(target_arch = "arm")'.dependencies]
+cortex-m = "0.7.1"
