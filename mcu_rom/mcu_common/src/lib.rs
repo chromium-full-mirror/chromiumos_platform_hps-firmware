@@ -20,6 +20,9 @@ pub use errors::Error;
 
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
+/// The i2c address of the HPS.
+pub const HPS_ADDRESS: u8 = 0x30;
+
 #[repr(C, packed(4))]
 pub struct ImageHeader {
     pub magic: u32,

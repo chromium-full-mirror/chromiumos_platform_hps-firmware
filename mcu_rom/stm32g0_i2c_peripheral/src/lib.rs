@@ -15,9 +15,6 @@ use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 use stm32g0::stm32g071::I2C1;
 
-// TODO: Pass this in from somewhere else.
-const I2C_PERIPHERAL_ADDRESS: u8 = 0x30;
-
 #[non_exhaustive]
 pub struct Stm32g0I2cPeripheral {
     // TODO: Make generic over hardware
@@ -26,7 +23,13 @@ pub struct Stm32g0I2cPeripheral {
 
 impl Stm32g0I2cPeripheral {
     /// Initializes the I2C interface with the host (I2C1).
-    pub fn new(i2c1: I2C1, rcc: &mut Rcc, sda: impl SDAPin<I2C1>, scl: impl SCLPin<I2C1>) -> Self {
+    pub fn new(
+        i2c1: I2C1,
+        rcc: &mut Rcc,
+        sda: impl SDAPin<I2C1>,
+        scl: impl SCLPin<I2C1>,
+        address: u8,
+    ) -> Self {
         let i2c = i2c1.i2c(sda, scl, Config::new(400.khz()), rcc);
 
         // un-own p.I2C1 block to tap registers
@@ -49,7 +52,7 @@ impl Stm32g0I2cPeripheral {
         ii2c.oar1.modify(|_, w| w.oa1en().clear_bit());
         ii2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
         ii2c.oar1
-            .modify(|_, w| unsafe { w.oa1_7_1().bits(I2C_PERIPHERAL_ADDRESS) });
+            .modify(|_, w| unsafe { w.oa1_7_1().bits(address) });
         // Enable automatic ACK of our address.
         ii2c.oar1.modify(|_, w| w.oa1en().set_bit());
 

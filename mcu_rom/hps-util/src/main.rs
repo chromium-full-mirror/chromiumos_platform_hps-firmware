@@ -16,10 +16,9 @@ use ftd2xx_embedded_hal::Initialized;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::HPS_ADDRESS;
 use std::path::PathBuf;
 use std::time::Duration;
-
-const HPS_ADDRESS: u8 = 0x30;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.

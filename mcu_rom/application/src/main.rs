@@ -48,6 +48,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
+        mcu_common::HPS_ADDRESS,
     ));
 
     defmt::info!(
