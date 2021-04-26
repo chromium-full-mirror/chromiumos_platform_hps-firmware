@@ -4,6 +4,7 @@
 
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
+use mcu_common::commands;
 use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
@@ -12,6 +13,11 @@ pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
     reg9: u16,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum Event {
+    Reset,
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
@@ -23,7 +29,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    pub fn handle_interrupt(&mut self) {
+    pub fn handle_interrupt(&mut self) -> Option<Event> {
         loop {
             match self.protocol_handler.next_event() {
                 i2c_protocol::Event::ReadRegister(event) => {
@@ -31,7 +37,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     event.respond(value, &mut self.protocol_handler)
                 }
                 i2c_protocol::Event::WriteRegister(event) => {
-                    self.write_register(event.register, event.value)
+                    if let Some(event) = self.write_register(event.register, event.value) {
+                        return Some(event);
+                    }
                 }
                 i2c_protocol::Event::WriteMemory(_event) => {
                     // The MCU application doesn't support any writable memory banks.
@@ -41,7 +49,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 }
                 i2c_protocol::Event::None => {
                     // Break out of loop.
-                    return;
+                    return None;
                 }
             }
         }
@@ -58,11 +66,16 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    fn write_register(&mut self, register: u8, value: u16) {
+    fn write_register(&mut self, register: u8, value: u16) -> Option<Event> {
         match register {
+            registers::COMMAND => match value {
+                commands::RESET => return Some(Event::Reset),
+                _ => {}
+            },
             9 => self.reg9 = value,
             _ => (),
         }
+        None
     }
 }
 
@@ -82,5 +95,15 @@ mod tests {
             );
         }));
         interface.handle_interrupt();
+    }
+
+    #[test]
+    fn test_reset() {
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = Hps::without_magic_check(device);
+            hps.write_register(registers::COMMAND, commands::RESET)
+                .unwrap();
+        }));
+        assert_eq!(interface.handle_interrupt(), Some(Event::Reset));
     }
 }

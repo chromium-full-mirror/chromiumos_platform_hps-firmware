@@ -25,7 +25,10 @@ const APP: () = {
 
     #[task(binds = I2C1, resources = [host_interface])]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        ctx.resources.host_interface.handle_interrupt();
+        match ctx.resources.host_interface.handle_interrupt() {
+            Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
+            None => {}
+        }
     }
 };
 

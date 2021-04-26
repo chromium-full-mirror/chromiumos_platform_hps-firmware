@@ -6,4 +6,5 @@
 
 mod host_interface;
 
+pub use host_interface::Event;
 pub use host_interface::HostInterface;
