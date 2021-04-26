@@ -22,21 +22,26 @@ impl<I: I2cPeripheral> HostInterface<I> {
     }
 
     pub fn handle_interrupt(&mut self) {
-        match self.protocol_handler.next_event() {
-            i2c_protocol::Event::ReadRegister(event) => {
-                let value = self.read_register(event.register);
-                event.respond(value, &mut self.protocol_handler)
+        loop {
+            match self.protocol_handler.next_event() {
+                i2c_protocol::Event::ReadRegister(event) => {
+                    let value = self.read_register(event.register);
+                    event.respond(value, &mut self.protocol_handler)
+                }
+                i2c_protocol::Event::WriteRegister(event) => {
+                    self.write_register(event.register, event.value)
+                }
+                i2c_protocol::Event::WriteMemory(_event) => {
+                    // The MCU application doesn't support any writable memory banks.
+                }
+                i2c_protocol::Event::Error(error) => {
+                    self.common_interface.report_i2c_host_error(error);
+                }
+                i2c_protocol::Event::None => {
+                    // Break out of loop.
+                    return;
+                }
             }
-            i2c_protocol::Event::WriteRegister(event) => {
-                self.write_register(event.register, event.value)
-            }
-            i2c_protocol::Event::WriteMemory(_event) => {
-                // The MCU application doesn't support any writable memory banks.
-            }
-            i2c_protocol::Event::Error(error) => {
-                self.common_interface.report_i2c_host_error(error);
-            }
-            i2c_protocol::Event::None => return,
         }
     }
 
