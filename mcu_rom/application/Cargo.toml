@@ -7,3 +7,7 @@ edition = "2018"
 i2c_peripheral = { path = "../i2c_peripheral" }
 i2c_protocol = { path = "../i2c_protocol" }
 mcu_common = { path = "../mcu_common" }
+
+[dev-dependencies]
+fake_i2c = { path = "../fake_i2c" }
+hps_interface = { path = "../hps_interface" }

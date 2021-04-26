@@ -4,6 +4,8 @@
 
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
+use mcu_common::registers;
+use mcu_common::status;
 use mcu_common::CommonHostInterface;
 
 pub struct HostInterface<I: I2cPeripheral> {
@@ -46,14 +48,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
     }
 
     fn read_register(&self, register: u8) -> u16 {
-        if let Some(value) = self.common_interface.read_register(register) {
-            return value;
-        }
+        let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {
+            registers::SYSTEM_STATUS => common_value | status::APPLRUN,
             // Register 9 is a RW register that's included for now for testing
             // purposes.
             9 => self.reg9,
-            _ => 0,
+            _ => common_value,
         }
     }
 
@@ -62,5 +63,24 @@ impl<I: I2cPeripheral> HostInterface<I> {
             9 => self.reg9 = value,
             _ => (),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fake_i2c::FakeI2cPeripheral;
+    use hps_interface::Hps;
+
+    #[test]
+    fn test_system_status() {
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = Hps::without_magic_check(device);
+            assert_eq!(
+                hps.read_register(registers::SYSTEM_STATUS).unwrap(),
+                status::OK | status::APPLRUN
+            );
+        }));
+        interface.handle_interrupt();
     }
 }
