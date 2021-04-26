@@ -13,7 +13,7 @@ pub struct HostInterface<I: I2cPeripheral> {
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
-    pub(crate) fn new(i2c: I) -> Self {
+    pub fn new(i2c: I) -> Self {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
@@ -21,7 +21,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    pub(crate) fn handle_interrupt(&mut self) {
+    pub fn handle_interrupt(&mut self) {
         match self.protocol_handler.next_event() {
             i2c_protocol::Event::ReadRegister(event) => {
                 let value = self.read_register(event.register);

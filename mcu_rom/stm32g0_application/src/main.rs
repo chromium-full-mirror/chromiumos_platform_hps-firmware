@@ -7,12 +7,10 @@
 
 use defmt_rtt as _;
 use hal::prelude::*;
-use host_interface::HostInterface;
 use panic_probe as _;
-use panic_probe as _;
-use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
-mod host_interface;
 use rtic::app;
+use stm32g0_application::HostInterface;
+use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
