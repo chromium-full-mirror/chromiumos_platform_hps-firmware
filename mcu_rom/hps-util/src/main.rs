@@ -109,11 +109,11 @@ struct StressTest {
     iterations: u32,
 }
 
-struct HpsInterface<'a> {
+struct Ft2232hHps<'a> {
     i2c: I2c<'a, Ft2232h>,
 }
 
-impl<'a> HpsInterface<'a> {
+impl<'a> Ft2232hHps<'a> {
     fn new(ftdi: &'a Ft2232hHal<Initialized>) -> Result<Self> {
         let i2c = ftdi.i2c()?;
         let mut hps = Self { i2c };
@@ -228,7 +228,7 @@ fn print_device_list() -> Result<()> {
     Ok(())
 }
 
-fn access_registers(hps: &mut HpsInterface, flags: &AccessRegisters) -> Result<()> {
+fn access_registers(hps: &mut Ft2232hHps, flags: &AccessRegisters) -> Result<()> {
     for reg in &flags.values {
         let mut parts = reg.split('=');
         match (
@@ -248,7 +248,7 @@ fn access_registers(hps: &mut HpsInterface, flags: &AccessRegisters) -> Result<(
     Ok(())
 }
 
-fn stress_test(hps: &mut HpsInterface, config: &StressTest) -> Result<()> {
+fn stress_test(hps: &mut Ft2232hHps, config: &StressTest) -> Result<()> {
     let mut errors = 0;
     for _ in 0..config.iterations {
         if hps.check_magic().is_err() {
@@ -262,7 +262,7 @@ fn stress_test(hps: &mut HpsInterface, config: &StressTest) -> Result<()> {
     Ok(())
 }
 
-fn query_status(hps: &mut HpsInterface) -> Result<()> {
+fn query_status(hps: &mut Ft2232hHps) -> Result<()> {
     use std::convert::TryFrom;
     let error_bits = hps.read_register(registers::ERRORS)?;
     let errors: Vec<_> = (0..16)
@@ -289,7 +289,7 @@ fn main() -> Result<()> {
         return print_device_list();
     }
     let ftdi = open_ftdi(&flags)?;
-    let mut hps = HpsInterface::new(&ftdi)?;
+    let mut hps = Ft2232hHps::new(&ftdi)?;
     println!("HPS detected");
     match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
