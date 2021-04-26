@@ -10,7 +10,7 @@ source $PROJECT_ROOT/environment
 set -e
 STAGE0="${PROJECT_ROOT}/mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0.bin"
 STAGE1="${PROJECT_ROOT}/mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1.bin"
-APPLICATION="${PROJECT_ROOT}/mcu_rom/application/target/thumbv6m-none-eabi/release/application.bin"
+APPLICATION="${PROJECT_ROOT}/mcu_rom/stm32g0_application/target/thumbv6m-none-eabi/release/stm32g0_application.bin"
 (
     cd "${PROJECT_ROOT}/mcu_rom/stage0"
     cargo +$RUST_VERSION build --release
@@ -28,11 +28,11 @@ APPLICATION="${PROJECT_ROOT}/mcu_rom/application/target/thumbv6m-none-eabi/relea
         "$STAGE1"
 )
 (
-    cd "${PROJECT_ROOT}/mcu_rom/application"
+    cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
     cargo +$RUST_VERSION build --release
     arm-none-eabi-objcopy \
         -O binary \
-        target/thumbv6m-none-eabi/release/application \
+        target/thumbv6m-none-eabi/release/stm32g0_application \
         "$APPLICATION"
 )
 echo

@@ -6,7 +6,7 @@ To build all of the MCU code:
 ```bash
 (cd $HPS_ROOT/mcu_rom/stage0 && cargo build --release)
 (cd $HPS_ROOT/mcu_rom/stage1 && cargo build --release)
-(cd $HPS_ROOT/mcu_rom/application && cargo build --release)
+(cd $HPS_ROOT/mcu_rom/stm32g0_application && cargo build --release)
 ```
 
 Now connect the STM32G071 Nucleo-64 board to your host system and flash the
@@ -27,7 +27,7 @@ Finally, to see log messages run:
 To run the MCU application and see output:
 
 ```bash
-(cd $HPS_ROOT/mcu_rom/application && cargo run)
+(cd $HPS_ROOT/mcu_rom/stm32g0_application && cargo run)
 ```
 
 The host utilities are in the main ChromeOS platform2 repo.

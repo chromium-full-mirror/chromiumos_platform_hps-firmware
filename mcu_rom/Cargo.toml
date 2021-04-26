@@ -15,9 +15,9 @@ members = [
 # library, then we might want to consider moving the stm32 libraries into a
 # workspace.
 exclude = [
-    "application",
     "stage0",
     "stage1",
+    "stm32g0_application",
     "stm32g0_i2c_peripheral"
 ]
 

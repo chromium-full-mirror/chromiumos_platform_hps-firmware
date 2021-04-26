@@ -1,5 +1,5 @@
 [package]
-name = "application"
+name = "stm32g0_application"
 version = "0.1.0"
 edition = "2018"
 license = "BSD-3-Clause"
