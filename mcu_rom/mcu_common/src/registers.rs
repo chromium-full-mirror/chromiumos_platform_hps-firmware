@@ -23,6 +23,9 @@ pub const MEMORY_BANK_AVAILABLE: u8 = 5;
 /// RO: Errors. See individual error bits in the errors module.
 pub const ERRORS: u8 = 6;
 
+/// WO: Which application features are enabled.
+pub const ENABLED_FEATURES: u8 = 7;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

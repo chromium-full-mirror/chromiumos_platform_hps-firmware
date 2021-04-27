@@ -12,6 +12,18 @@ use mcu_common::CommonHostInterface;
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
+    // TODO: Implement reading of configuration over SPI.
+    #[allow(dead_code)]
+    configuration: Configuration,
+}
+
+/// The current configuration of the HPS. This is writable by the host over I2C
+/// and readable by the FPGA soft CPU over SPI. The FPGA reads the entire struct
+/// as bytes, hence the repr(C). The host writes parts individually via
+/// registers.
+#[repr(C)]
+pub struct Configuration {
+    enabled_features: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -24,6 +36,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
+            configuration: Configuration {
+                enabled_features: 0,
+            },
         }
     }
 
@@ -67,6 +82,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 commands::RESET => return Some(Event::Reset),
                 _ => {}
             },
+            registers::ENABLED_FEATURES => {
+                self.configuration.enabled_features = value;
+            }
             _ => (),
         }
         None
@@ -99,5 +117,16 @@ mod tests {
                 .unwrap();
         }));
         assert_eq!(interface.handle_interrupt(), Some(Event::Reset));
+    }
+
+    #[test]
+    fn test_set_enabled_features() {
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = Hps::without_magic_check(device);
+            hps.write_register(registers::ENABLED_FEATURES, 1234)
+                .unwrap();
+        }));
+        interface.handle_interrupt();
+        assert_eq!(interface.configuration.enabled_features, 1234);
     }
 }
