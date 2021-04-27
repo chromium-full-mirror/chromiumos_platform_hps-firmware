@@ -12,7 +12,6 @@ use mcu_common::CommonHostInterface;
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
-    reg9: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -25,7 +24,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
-            reg9: 9,
         }
     }
 
@@ -59,9 +57,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
         let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {
             registers::SYSTEM_STATUS => common_value | status::APPLRUN,
-            // Register 9 is a RW register that's included for now for testing
-            // purposes.
-            9 => self.reg9,
             _ => common_value,
         }
     }
@@ -72,7 +67,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 commands::RESET => return Some(Event::Reset),
                 _ => {}
             },
-            9 => self.reg9 = value,
             _ => (),
         }
         None
