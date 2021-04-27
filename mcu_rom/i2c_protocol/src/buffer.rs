@@ -25,16 +25,6 @@ impl Buffer {
     /// Attempts to construct a new instance, returning None if another instance
     /// already exists.
     pub(crate) fn new() -> Option<Self> {
-        // TODO: This is a safety hole. If we were to call Buffer::new() at more
-        // than one interrupt priority, then one call could load, then get
-        // interrupted and the higher priority interrupt could then call
-        // Buffer::new() again resulting in each obtaining a buffer. Ideally,
-        // we'd use an atomic compare and exchange, but that isn't available on
-        // our CPU. Our only option is to do the load and the store inside a
-        // critical section, but we can't currently do that here because that's
-        // only available on our target CPU and we want to be able to run tests
-        // on Linux. We currently only call `Buffer::new` from the i2c interrupt
-        // handler, so this isn't currently a problem in practice.
         if take_true(&AVAILABLE) {
             Some(Buffer { size: 0 })
         } else {
