@@ -5,7 +5,6 @@
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use mcu_common::CommonHostInterface;
-use panic_probe as _;
 
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
@@ -31,17 +30,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
             i2c_protocol::Event::WriteRegister(event) => {
                 self.write_register(event.register, event.value)
             }
-            i2c_protocol::Event::WriteMemory(event) => {
+            i2c_protocol::Event::WriteMemory(_event) => {
                 // The MCU application doesn't support any writable memory banks.
-                defmt::info!(
-                    "Write memory bank {} @{}: {:?}",
-                    event.bank,
-                    event.address,
-                    &*event.data
-                );
             }
             i2c_protocol::Event::Error(error) => {
-                defmt::error!("I2C error: {}", error.as_str());
                 self.common_interface.report_i2c_host_error(error);
             }
             i2c_protocol::Event::None => return,
@@ -61,7 +53,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
     }
 
     fn write_register(&mut self, register: u8, value: u16) {
-        defmt::info!("write register {}: {}", register, value);
         match register {
             9 => self.reg9 = value,
             _ => (),
