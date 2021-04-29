@@ -11,9 +11,13 @@ use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::Initialized;
 use mcu_common::commands;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use hps_util::Ft2232hHps;
 use hps_util::{print_device_list, query_status};
+
+mod ipc;
+use ipc::setup_ipc;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -37,6 +41,7 @@ enum SubCommand {
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
     Status(Status),
+    Daemon(Daemon),
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -103,6 +108,11 @@ struct StressTest {
     iterations: u32,
 }
 
+#[derive(FromArgs, PartialEq, Debug)]
+/// Run HPS util in daemon mode.
+#[argh(subcommand, name = "daemon")]
+struct Daemon {}
+
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     let ft_hal;
     if let Some(serial_number) = &flags.device {
@@ -166,8 +176,9 @@ fn main() -> Result<()> {
         let v = print_device_list()?;
         println!("{:#?}", v);
     }
-    let ftdi = open_ftdi(&flags)?;
-    let mut hps = Ft2232hHps::new(ftdi.i2c()?)?;
+    let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
+    let i2c = ftdi.i2c()?;
+    let mut hps = Ft2232hHps::new(i2c)?;
     println!("HPS detected");
     match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
@@ -187,6 +198,11 @@ fn main() -> Result<()> {
         SubCommand::Status(_) => {
             let err_str = query_status(&mut hps)?;
             println!("{}", err_str);
+            Ok(())
+        }
+        SubCommand::Daemon(_) => {
+            let hps = Arc::new(Mutex::new(hps));
+            setup_ipc(hps)?;
             Ok(())
         }
     }

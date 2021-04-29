@@ -10,3 +10,11 @@ embedded-hal = "0.2.4"
 ftd2xx-embedded-hal = "0.7.0"
 hps_interface = { path = "../hps_interface" }
 mcu_common = { path = "../mcu_common" }
+
+dbus = "0.6"
+dbus-tokio = "0.2"
+futures = "0.1"
+log = "0.3"
+mio = "0.6"
+tokio-core = "0.1"
+tokio-timer = "0.1"

@@ -9,7 +9,7 @@ use ftd2xx_embedded_hal::I2c;
 use hps_interface::Hps;
 use mcu_common::registers;
 
-pub type Ft2232hHps<'a> = Hps<I2c<'a, Ft2232h>, ftd2xx_embedded_hal::I2cError>;
+pub type Ft2232hHps = Hps<I2c<'static, Ft2232h>, ftd2xx_embedded_hal::I2cError>;
 
 pub fn print_device_list() -> Result<Vec<String>> {
     let mut v = Vec::<String>::new();
