@@ -5,17 +5,15 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use ftd2xx_embedded_hal::libftd2xx;
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
-use ftd2xx_embedded_hal::libftd2xx::Ft2232h;
 use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
-use ftd2xx_embedded_hal::I2c;
 use ftd2xx_embedded_hal::Initialized;
-use hps_interface::Hps;
 use mcu_common::commands;
-use mcu_common::registers;
 use std::path::PathBuf;
+
+use hps_util::Ft2232hHps;
+use hps_util::{print_device_list, query_status};
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -105,8 +103,6 @@ struct StressTest {
     iterations: u32,
 }
 
-type Ft2232hHps<'a> = Hps<I2c<'a, Ft2232h>, ftd2xx_embedded_hal::I2cError>;
-
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     let ft_hal;
     if let Some(serial_number) = &flags.device {
@@ -128,13 +124,6 @@ fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
         }
         Err(x) => Err(x)?,
     }
-}
-
-fn print_device_list() -> Result<()> {
-    for device in libftd2xx::list_devices()? {
-        println!("{}: {}", device.serial_number, device.description);
-    }
-    Ok(())
 }
 
 fn access_registers(hps: &mut Ft2232hHps, flags: &AccessRegisters) -> Result<()> {
@@ -168,27 +157,6 @@ fn stress_test(hps: &mut Ft2232hHps, config: &StressTest) -> Result<()> {
         "Got errors on {} out of {} reads",
         errors, config.iterations
     );
-    Ok(())
-}
-
-fn query_status(hps: &mut Ft2232hHps) -> Result<()> {
-    use std::convert::TryFrom;
-    let error_bits = hps.read_register(registers::ERRORS)?;
-    let errors: Vec<_> = (0..16)
-        .filter_map(|bit| {
-            let bit_value = 1 << bit;
-            if error_bits & bit_value != 0 {
-                mcu_common::Error::try_from(bit_value).ok()
-            } else {
-                None
-            }
-        })
-        .collect();
-    if errors.is_empty() {
-        println!("No errors reported");
-    } else {
-        println!("Errors: {:?}", errors);
-    }
     Ok(())
 }
 
