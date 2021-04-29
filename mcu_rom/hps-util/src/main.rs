@@ -163,7 +163,8 @@ fn stress_test(hps: &mut Ft2232hHps, config: &StressTest) -> Result<()> {
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
-        return print_device_list();
+        let v = print_device_list()?;
+        println!("{:#?}", v);
     }
     let ftdi = open_ftdi(&flags)?;
     let mut hps = Ft2232hHps::new(ftdi.i2c()?)?;
@@ -183,6 +184,10 @@ fn main() -> Result<()> {
         }
         SubCommand::ListDevices(_) => unreachable!(),
         SubCommand::StressTest(config) => stress_test(&mut hps, &config),
-        SubCommand::Status(_) => query_status(&mut hps),
+        SubCommand::Status(_) => {
+            let err_str = query_status(&mut hps)?;
+            println!("{}", err_str);
+            Ok(())
+        }
     }
 }
