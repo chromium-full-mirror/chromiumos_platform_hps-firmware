@@ -14,9 +14,11 @@ pub mod registers;
 
 mod common_host_interface;
 mod errors;
+mod mem_block;
 
 pub use common_host_interface::CommonHostInterface;
 pub use errors::Error;
+pub use mem_block::MemBlock;
 
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 

@@ -54,9 +54,19 @@ const APP: () = {
         // a change in PB0, the SPI CS line, so we don't bother checking which
         // EXTI interrupt is pending.
         ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
-        ctx.resources
+        if let Some(mut buffer) = ctx
+            .resources
             .spi
-            .cs_changed(ctx.resources.spi_cs.is_high().unwrap_or_default());
+            .cs_changed(ctx.resources.spi_cs.is_high().unwrap_or_default())
+        {
+            defmt::info!("Received: {}", &*buffer);
+            // TODO: Do something useful with the data we received. For now we
+            // just change the data that was sent to us then send it back.
+            for v in buffer.iter_mut() {
+                *v = 255 - *v;
+            }
+            ctx.resources.spi.send(buffer);
+        }
     }
 };
 
