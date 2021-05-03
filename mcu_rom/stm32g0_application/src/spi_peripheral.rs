@@ -39,6 +39,11 @@ impl SpiPeripheral {
             unsafe {
                 w.ds().bits(0b111);
             }
+            // Write each byte to memory as it is completed rather than
+            // buffering 2 bytes in the FIFO. If we allow buffering of bytes,
+            // then we can end up with the last byte of one packet being held
+            // over until the start of the next packet.
+            w.frxth().set_bit();
             // Enable DMA for receive. Note, TX is done later according to the
             // order specified in the reference manual.
             w.rxdmaen().set_bit()
