@@ -20,6 +20,8 @@ const APP: () = {
     struct Resources {
         host_interface: HostInterface<Stm32g0I2cPeripheral>,
         spi: SpiPeripheral,
+        exti: hal::stm32::EXTI,
+        spi_cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
     }
 
     #[init]
@@ -44,6 +46,18 @@ const APP: () = {
     fn spi_rx_dma_interrupt(ctx: spi_rx_dma_interrupt::Context) {
         ctx.resources.spi.handle_rx_dma_interrupt();
     }
+
+    /// Interrupt handler for EXTI channels 0 through 1.
+    #[task(binds = EXTI0_1, resources = [spi, exti, spi_cs])]
+    fn exti_event(ctx: exti_event::Context) {
+        // Currently the only event configured to use this interrupt handler is
+        // a change in PB0, the SPI CS line, so we don't bother checking which
+        // EXTI interrupt is pending.
+        ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
+        ctx.resources
+            .spi
+            .cs_changed(ctx.resources.spi_cs.is_high().unwrap_or_default());
+    }
 };
 
 fn rcc_config() -> hal::rcc::Config {
@@ -64,6 +78,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let gpioa = p.GPIOA.split(&mut rcc);
     let gpiob = p.GPIOB.split(&mut rcc);
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
+    let mut exti = p.EXTI;
 
     let host_interface = HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
@@ -75,6 +90,9 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
 
     let spi = SpiPeripheral::new(p.SPI1, gpioa.pa5, gpioa.pa6, gpioa.pa7, dma.ch1, dma.ch2);
 
+    // Trigger an interrupt when the SPI CS line changes.
+    let spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
+
     defmt::info!(
         "MCU application started. CPU is running at {}Mhz",
         rcc.clocks.sys_clk.0 / 1000000
@@ -82,5 +100,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     init::LateResources {
         host_interface,
         spi,
+        exti,
+        spi_cs,
     }
 }

@@ -10,6 +10,7 @@ use stm32g0::stm32g071::SPI1;
 /// The SPI interface with the FPGA. We act as the peripheral on the SPI bus,
 /// with the FPGA as the controller.
 pub struct SpiPeripheral {
+    spi: SPI1,
     tx_dma: hal::dma::C1,
     rx_dma: hal::dma::C2,
 }
@@ -28,9 +29,12 @@ impl SpiPeripheral {
         hal::spi::PinMosi::setup(&mosi);
 
         spi.cr1.write(|w| {
-            // We're the only peripheral on this bus, assume we're always active and
-            // ignore CS line.
-            // TODO: Make use of the CS line to frame our data.
+            // Ignore the SPI clock signal for now. We stop ignoring it only
+            // when the CS line goes low, which we handle in `cs_changed`. Note,
+            // setting SSI=1 is like pulling the CS line low, which deselects
+            // the device.
+            w.ssi().set_bit();
+            // Use software, not hardware to control SSI.
             w.ssm().set_bit()
         });
 
@@ -49,16 +53,20 @@ impl SpiPeripheral {
             w.rxdmaen().set_bit()
         });
 
-        let mut spi_peripheral = Self { tx_dma, rx_dma };
+        let mut spi_peripheral = Self {
+            spi,
+            tx_dma,
+            rx_dma,
+        };
         spi_peripheral.configure_rx_dma();
         spi_peripheral.configure_tx_dma();
         spi_peripheral.tx_dma.listen(TransferComplete);
         spi_peripheral.rx_dma.listen(TransferComplete);
 
         // Enable DMA for transmit.
-        spi.cr2.modify(|_, w| w.txdmaen().set_bit());
+        spi_peripheral.spi.cr2.modify(|_, w| w.txdmaen().set_bit());
         // Enable SPI.
-        spi.cr1.modify(|_, w| w.spe().set_bit());
+        spi_peripheral.spi.cr1.modify(|_, w| w.spe().set_bit());
 
         spi_peripheral
     }
@@ -86,6 +94,12 @@ impl SpiPeripheral {
             // TODO: Report error properly.
             defmt::error!("DMA transfer error");
         }
+    }
+
+    pub(crate) fn cs_changed(&mut self, cs: bool) {
+        self.spi.cr1.modify(|_, w| w.ssi().bit(cs));
+        // TODO: Configure DMA from here instead of from the DMA interrupt
+        // handlers.
     }
 
     fn configure_rx_dma(&mut self) -> () {
