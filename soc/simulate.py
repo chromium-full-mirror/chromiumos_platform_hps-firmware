@@ -13,9 +13,7 @@ from litex.build.io import CRG
 from litex.build.generic_platform import Pins, Subsignal
 from litex.soc.cores.cpu import CPUS
 from litex.soc.integration.common import get_mem_data
-from litex.soc.integration.soc_sdram import soc_sdram_argdict
 from litex.soc.integration.builder import builder_args, builder_argdict, Builder
-from litex.soc.integration.soc_sdram import soc_sdram_args
 from litex.soc.cores.bitbang import I2CMasterSim
 
 from hps_soc import RAM_SIZE, hps_soc_args, create_builder, HpsSoC
@@ -83,7 +81,6 @@ def main():
     cpu = CPUS["vexriscv"]
     parser = argparse.ArgumentParser(description="HPS SoC simulation")
     hps_soc_args(parser)
-    soc_sdram_args(parser)
     parser.add_argument("--trace", action="store_true",
                         help="Whether to enable tracing of simulation")
     args = parser.parse_args()
