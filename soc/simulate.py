@@ -63,6 +63,9 @@ class HpsSimSoC(HpsSoC):
     def setup_flash(self):
         self.add_rom("spiflash", self.spiflash_region.origin,
                      self.spiflash_region.size, [], "r")
+        # Reserve CSR space for spiflash, even though they will be left
+        # unimplemented in the simulation.
+        self.csr.add("spiflash")
 
     def add_serial(self):
         self.add_uart("sim")
