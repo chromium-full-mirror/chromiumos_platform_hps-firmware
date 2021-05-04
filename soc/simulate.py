@@ -83,10 +83,14 @@ def main():
     hps_soc_args(parser)
     parser.add_argument("--trace", action="store_true",
                         help="Whether to enable tracing of simulation")
+    parser.add_argument("--integrated-rom-file", metavar="BIN",
+                        help="Load BIN as integrated ROM to execute")
     args = parser.parse_args()
 
     platform = HpsSimPlatform()
     soc = HpsSimSoC(platform=platform)
+    if args.integrated_rom_file:
+        soc.initialize_rom(get_mem_data(args.integrated_rom_file, soc.cpu.endianness))
     sim_config = SimConfig()
     sim_config.add_clocker("sys_clk", freq_hz=soc.sys_clk_freq)
     sim_config.add_module("serial2console", "serial")
