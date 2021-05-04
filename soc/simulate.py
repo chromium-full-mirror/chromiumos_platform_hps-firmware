@@ -18,6 +18,7 @@ from litex.soc.cores.bitbang import I2CMasterSim
 
 from hps_soc import RAM_SIZE, hps_soc_args, create_builder, HpsSoC
 from hps_platform import hps_io, hps_debug_common
+from spi_controller import SpiController
 
 _sim_io = [
     ("sys_clk", 0, Pins(1)),
@@ -78,6 +79,10 @@ class HpsSimSoC(HpsSoC):
 
     def create_i2c_controller(self, pads):
         return I2CMasterSim(pads)
+
+    def create_spi_controller(self, pads):
+        return SpiController(pads, self.platform.sys_clk_freq,
+                             spi_clk_freq=100_000, loopback=True)
 
 
 def main():

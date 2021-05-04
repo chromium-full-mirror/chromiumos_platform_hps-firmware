@@ -22,6 +22,7 @@ from litex.build.lattice.radiant import radiant_build_args, radiant_build_argdic
 
 from patch import Patch
 from cam_control import CameraControl, CameraControlDMA
+from spi_controller import SpiController
 
 import argparse
 import os
@@ -118,6 +119,11 @@ class HpsSoC(LiteXSoC):
             self.platform.request("i2c", 1))
         self.csr.add("i2c")
 
+        # SPI controller
+        self.submodules.mcu_spi = self.create_spi_controller(
+            self.platform.request("mcu_spi", 0))
+        self.csr.add("mcu_spi")
+
     def setup_ram(self):
         self.submodules.lram = self.platform.create_ram(
             32, self.sram_region.size)
@@ -151,6 +157,9 @@ class HpsSoC(LiteXSoC):
 
     def create_i2c_controller(self, pads):
         return I2CMaster(pads)
+
+    def create_spi_controller(self, pads):
+        return SpiController(pads, self.platform.sys_clk_freq)
 
     # This method is defined on SoCCore and the builder assumes it exists.
     def initialize_rom(self, data):
