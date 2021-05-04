@@ -54,6 +54,11 @@ class HpsSimPlatform(SimPlatform):
 
 
 class HpsSimSoC(HpsSoC):
+    def __init__(self, platform):
+        super().__init__(platform=platform, debug=False)
+        # we must always request the sim_trace signal
+        self.comb += platform.trace.eq(1)
+
     def setup_ram(self):
         self.add_ram("sram", self.mem_map["sram"], self.sram_region.size)
 
@@ -84,7 +89,7 @@ def main():
     args = parser.parse_args()
 
     platform = HpsSimPlatform()
-    soc = HpsSimSoC(platform=platform, debug=False)
+    soc = HpsSimSoC(platform=platform)
     sim_config = SimConfig()
     sim_config.add_clocker("sys_clk", freq_hz=soc.sys_clk_freq)
     sim_config.add_module("serial2console", "serial")
