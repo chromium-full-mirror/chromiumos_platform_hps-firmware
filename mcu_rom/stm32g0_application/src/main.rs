@@ -11,6 +11,7 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::HostInterface;
 use defmt_rtt as _;
 use hal::prelude::*;
+use mcu_common::MemBlock;
 use panic_probe as _;
 use rtic::app;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
@@ -29,7 +30,7 @@ const APP: () = {
         init_peripherals(ctx.device)
     }
 
-    #[task(binds = I2C1, resources = [host_interface])]
+    #[task(binds = I2C1, resources = [host_interface], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         match ctx.resources.host_interface.handle_interrupt() {
             Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
@@ -37,36 +38,49 @@ const APP: () = {
         }
     }
 
-    #[task(binds = DMA_CHANNEL1, resources = [spi])]
+    #[task(binds = DMA_CHANNEL1, resources = [spi], priority = 2)]
     fn spi_tx_dma_interrupt(ctx: spi_tx_dma_interrupt::Context) {
         ctx.resources.spi.handle_tx_dma_interrupt();
     }
 
-    #[task(binds = DMA_CHANNEL2_3, resources = [spi])]
+    #[task(binds = DMA_CHANNEL2_3, resources = [spi], priority = 2)]
     fn spi_rx_dma_interrupt(ctx: spi_rx_dma_interrupt::Context) {
         ctx.resources.spi.handle_rx_dma_interrupt();
     }
 
     /// Interrupt handler for EXTI channels 0 through 1.
-    #[task(binds = EXTI0_1, resources = [spi, exti, spi_cs])]
+    #[task(binds = EXTI0_1, resources = [spi, exti, spi_cs], spawn = [handle_spi_packet],
+        priority = 2)]
     fn exti_event(ctx: exti_event::Context) {
         // Currently the only event configured to use this interrupt handler is
         // a change in PB0, the SPI CS line, so we don't bother checking which
         // EXTI interrupt is pending.
         ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
-        if let Some(mut buffer) = ctx
+        if let Some(buffer) = ctx
             .resources
             .spi
             .cs_changed(ctx.resources.spi_cs.is_high().unwrap_or_default())
         {
-            defmt::info!("Received: {}", &*buffer);
-            // TODO: Do something useful with the data we received. For now we
-            // just change the data that was sent to us then send it back.
-            for v in buffer.iter_mut() {
-                *v = 255 - *v;
-            }
-            ctx.resources.spi.send(buffer);
+            // This should never fail since there's only one buffer and we have
+            // it, so the `handle_spi_packet` task's queue can't have it.
+            let _ = ctx.spawn.handle_spi_packet(buffer);
         }
+    }
+
+    #[task(resources = [spi])]
+    fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
+        // TODO: Do something useful with the data we received. For now we
+        // just change the data that was sent to us then send it back.
+        for v in buffer.iter_mut() {
+            *v = 255 - *v;
+        }
+        ctx.resources.spi.lock(|spi| spi.send(buffer));
+    }
+
+    // Interrupts that we're not using that can be used by RTIC for spawning
+    // software tasks.
+    extern "C" {
+        fn TIM17();
     }
 };
 
