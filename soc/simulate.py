@@ -58,7 +58,7 @@ class HpsSimSoC(HpsSoC):
         self.comb += platform.trace.eq(1)
 
     def setup_ram(self):
-        self.add_ram("sram", self.mem_map["sram"], self.sram_region.size)
+        self.add_ram("sram", self.sram_region.origin, self.sram_region.size)
 
     def setup_flash(self):
         self.add_rom("spiflash", self.spiflash_region.origin,
