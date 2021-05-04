@@ -64,9 +64,9 @@ hps_io = [
      ),
     ("mcu_spi", 0,
         Subsignal("clk", Pins("F3")),
-        Subsignal("cs_mcu_l", Pins("G3")),
-        Subsignal("di_mcu_do", Pins("E4")),
-        Subsignal("do_mcu_di", Pins("F5")),
+        Subsignal("cs", Pins("G3")),
+        Subsignal("cipo", Pins("E4")),
+        Subsignal("copi", Pins("F5")),
         IOStandard("LVCMOS18H")
      ),
 ]
