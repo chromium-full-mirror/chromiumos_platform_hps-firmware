@@ -69,6 +69,10 @@ if ! python3 -c 'import serial' > /dev/null; then
     missing+=(python3-serial)
 fi
 
+if ! python3 -c 'import pylint' > /dev/null; then
+    missing+=(pylint)
+fi
+
 if ! which lld >/dev/null; then
     missing+=(lld)
 fi

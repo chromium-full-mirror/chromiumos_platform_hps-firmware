@@ -19,5 +19,7 @@ if [ -n "${OTHER_FILES}" ]; then
   "${PROJECT_ROOT}/../../../chromite/bin/cros" lint ${OTHER_FILES}
 fi
 
-# TODO(avg): Lint Python files
-echo "Not linting ${PYTHON_FILES}"
+# Lint Python files
+if [ -n "${PYTHON_FILES}" ]; then
+  "${THIS_DIR}/pyrun" -m pylint "${PYTHON_FILES}"
+fi
