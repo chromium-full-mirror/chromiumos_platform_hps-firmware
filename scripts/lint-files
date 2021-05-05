@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Delegates to cros lint, excepting Python files
+THIS_DIR=$(dirname "${BASH_SOURCE[0]}")
+PROJECT_ROOT=$(realpath "${THIS_DIR}/..")
+
+# Separate Python and other files
+SOURCE_FILES="$*"
+PYTHON_FILES=$(echo "${SOURCE_FILES}" | xargs -n 1 | grep '\.py$' | xargs)
+OTHER_FILES=$(echo "${SOURCE_FILES}" | xargs -n 1 | grep -v '\.py$' | xargs)
+
+# Lint non-python files
+if [ -n "${OTHER_FILES}" ]; then
+  # shellcheck disable=SC2086
+  "${PROJECT_ROOT}/../../../chromite/bin/cros" lint ${OTHER_FILES}
+fi
+
+# TODO(avg): Lint Python files
+echo "Not linting ${PYTHON_FILES}"
