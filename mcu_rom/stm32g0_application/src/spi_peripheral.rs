@@ -4,8 +4,8 @@
 
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
+use hal::stm32::SPI1;
 use mcu_common::MemBlock;
-use stm32g0::stm32g071::SPI1;
 
 const BUFFER_SIZE: usize = 64;
 

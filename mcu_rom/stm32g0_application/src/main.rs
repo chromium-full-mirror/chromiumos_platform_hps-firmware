@@ -123,7 +123,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // Currently the alternate function code is private and exposed via
     // functions such as `PinSck::setup`.
     unsafe {
-        let gpiob = &*stm32g0::stm32g071::GPIOB::ptr();
+        let gpiob = &*hal::stm32::GPIOB::ptr();
         gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
         gpiob.moder.modify(|_, w| w.moder0().bits(2));
     }

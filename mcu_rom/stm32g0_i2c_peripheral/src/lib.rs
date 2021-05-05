@@ -10,10 +10,10 @@ use hal::i2c::SDAPin;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::stm32;
+use hal::stm32::I2C1;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
-use stm32g0::stm32g071::I2C1;
 
 #[non_exhaustive]
 pub struct Stm32g0I2cPeripheral {
