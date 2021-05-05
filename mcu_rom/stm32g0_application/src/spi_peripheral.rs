@@ -56,15 +56,8 @@ impl SpiPeripheral {
         hal::spi::PinMiso::setup(&miso);
         hal::spi::PinMosi::setup(&mosi);
 
-        spi.cr1.write(|w| {
-            // Ignore the SPI clock signal for now. We stop ignoring it only
-            // when the CS line goes low, which we handle in `cs_changed`. Note,
-            // setting SSI=1 is like pulling the CS line low, which deselects
-            // the device.
-            w.ssi().set_bit();
-            // Use software, not hardware to control SSI.
-            w.ssm().set_bit()
-        });
+        // Reset cr1.
+        spi.cr1.write(|w| w);
 
         spi.cr2.write(|w| {
             // 8 bit data
@@ -133,7 +126,6 @@ impl SpiPeripheral {
     }
 
     pub(crate) fn cs_changed(&mut self, cs: bool) -> Option<MemBlock> {
-        self.spi.cr1.modify(|_, w| w.ssi().bit(cs));
         self.cs_state = cs;
         let mut result = None;
         if cs {

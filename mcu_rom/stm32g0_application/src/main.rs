@@ -117,6 +117,17 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // Trigger an interrupt when the SPI CS line changes.
     let spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
 
+    // Set PB0 to use alternate function 0.
+    //
+    // TODO: See if we can add support to the HAL crate for doing this.
+    // Currently the alternate function code is private and exposed via
+    // functions such as `PinSck::setup`.
+    unsafe {
+        let gpiob = &*stm32g0::stm32g071::GPIOB::ptr();
+        gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
+        gpiob.moder.modify(|_, w| w.moder0().bits(2));
+    }
+
     defmt::info!(
         "MCU application started. CPU is running at {}Mhz",
         rcc.clocks.sys_clk.0 / 1000000
