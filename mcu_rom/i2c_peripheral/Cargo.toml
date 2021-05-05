@@ -4,7 +4,3 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-cortex-m = "0.7.1"
-cortex-m-rt = "0.6.13"
-hal = { package = "stm32g0xx-hal", git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
-stm32g0 = "0.13.0"
