@@ -17,29 +17,32 @@ fi
 #
 # If RADIANT_DIR isn't set, then only simulation can be used.
 
-HPS_ROOT=$(dirname $(realpath ${BASH_SOURCE[0]}))
+HPS_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 
 RUSTC="$(which rustc)"
 # handle the case where rustc is not yet installed
-if [ -z "$RUSTC" ]; then
+if [ -z "${RUSTC}" ]; then
   echo "rustc not found"
   RUST_DIR=""
 else
   RUST_DIR=$(dirname "${RUSTC}")
 fi
-export HOSTPATH=${HPS_ROOT}/build/host
+export HOSTPATH="${HPS_ROOT}/build/host"
 
 # Note, LLVM-12 was merged into rust on 2021-03-04. Debian doesn't yet have
 # lld-12, so while we're using lld to link, we need to stick to rustc versions
 # that use LLVM-11
-RUST_VERSION=nightly-2021-03-03
+export RUST_VERSION=nightly-2021-03-03
 
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
-export PATH=/usr/sbin:/usr/bin:/sbin:/bin:$HPS_ROOT/third_party/gn/out:$RUST_DIR:$HOSTPATH
+PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+PATH="${PATH}:${HPS_ROOT}/third_party/gn/out:${RUST_DIR}:${HOSTPATH}"
+export PATH
 
-if [ -a "$RADIANT_DIR" ]; then
-    export PATH=$PATH:$RADIANT_DIR
+# RADIANT_DIR is optionally defined
+if [ -d "${RADIANT_DIR:-}" ]; then
+    export PATH="${PATH}:${RADIANT_DIR}"
 fi
 
 # This speeds up recompilation of verilator generated code quit a bit.
@@ -56,11 +59,14 @@ done
 export PYTHONPATH
 
 # Explicitly set the RISCV toolchain path.
-export USER_BIN_DIR=$(realpath ~)/bin
-export RISCV_DIR=${USER_BIN_DIR}/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14/bin
-export PATH=${RISCV_DIR}:$PATH
+USER_BIN_DIR=$(realpath ~)/bin
+export USER_BIN_DIR
+RISCV_VER=riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14
+export RISCV_DIR="${USER_BIN_DIR}/${RISCV_VER}/bin"
+export PATH="${RISCV_DIR}:${PATH}"
 
-HPS_RUST_DIRS=(
+# List of directories with Rust source
+export HPS_RUST_DIRS=(
     mcu_rom
     mcu_rom/stm32g0_application
     mcu_rom/stage0
