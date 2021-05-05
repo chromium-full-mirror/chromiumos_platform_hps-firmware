@@ -1,11 +1,15 @@
 #!/bin/bash
 
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Builds code and prints binary sizes. For now, this only reports sizes of MCU
 # binaries as that is by far the most space-constrained.
 
-PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-source $PROJECT_ROOT/environment
+source "${PROJECT_ROOT}/environment"
 
 set -e
 STAGE0="${PROJECT_ROOT}/mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0.bin"
@@ -13,32 +17,32 @@ STAGE1="${PROJECT_ROOT}/mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1.
 APPLICATION="${PROJECT_ROOT}/mcu_rom/stm32g0_application/target/thumbv6m-none-eabi/release/stm32g0_application.bin"
 (
     cd "${PROJECT_ROOT}/mcu_rom/stage0"
-    cargo +$RUST_VERSION build --release
+    cargo "+${RUST_VERSION}" build --release
     arm-none-eabi-objcopy \
         -O binary \
         target/thumbv6m-none-eabi/release/stage0 \
-        "$STAGE0"
+        "${STAGE0}"
 )
 (
     cd "${PROJECT_ROOT}/mcu_rom/stage1"
-    cargo +$RUST_VERSION build --release
+    cargo "+${RUST_VERSION}" build --release
     arm-none-eabi-objcopy \
         -O binary \
         target/thumbv6m-none-eabi/release/stage1 \
-        "$STAGE1"
+        "${STAGE1}"
 )
 (
     cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
-    cargo +$RUST_VERSION build --release
+    cargo "+${RUST_VERSION}" build --release
     arm-none-eabi-objcopy \
         -O binary \
         target/thumbv6m-none-eabi/release/stm32g0_application \
-        "$APPLICATION"
+        "${APPLICATION}"
 )
 echo
-STAGE0_SIZE=$(stat --printf='%s' "$STAGE0")
-STAGE1_SIZE=$(stat --printf='%s' "$STAGE1")
-APPLICATION_SIZE=$(stat --printf='%s' "$APPLICATION")
+STAGE0_SIZE=$(stat --printf='%s' "${STAGE0}")
+STAGE1_SIZE=$(stat --printf='%s' "${STAGE1}")
+APPLICATION_SIZE=$(stat --printf='%s' "${APPLICATION}")
 echo "Stage0: ${STAGE0_SIZE} bytes"
 echo "Stage1: ${STAGE1_SIZE} bytes"
 echo "Application: ${APPLICATION_SIZE} bytes"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright 2021 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -6,13 +6,14 @@
 
 set -o errexit
 
-PROJECT_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
-BUILD=${PROJECT_ROOT}/build/hps_platform
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+BUILD="${PROJECT_ROOT}/build/hps_platform"
 
 echo "Recompile software and Load the HPS SoC. "
 echo "Use --build to also build gateware"
 
-${PROJECT_ROOT}/scripts/pyrun ${PROJECT_ROOT}/soc/hps_soc.py $*
+"${PROJECT_ROOT}/scripts/pyrun" "${PROJECT_ROOT}/soc/hps_soc.py" "$@"
 
-${PROJECT_ROOT}/scripts/prog bitstream ${BUILD}/gateware/hps_platform.bit 
-${PROJECT_ROOT}/scripts/prog rom ${BUILD}/software/bios/out/riscv-gcc/rom.bin
+"${PROJECT_ROOT}/scripts/prog" bitstream "${BUILD}/gateware/hps_platform.bit"
+"${PROJECT_ROOT}/scripts/prog" rom \
+    "${BUILD}/software/bios/out/riscv-gcc/rom.bin"

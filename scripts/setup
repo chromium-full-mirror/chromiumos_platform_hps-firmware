@@ -4,8 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-HPS_ROOT=$(realpath $(dirname ${BASH_SOURCE[0]})/..)
-source "${HPS_ROOT}/environment"
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+source "${PROJECT_ROOT}/environment"
 
 set -e
 git submodule update --init
@@ -90,12 +90,12 @@ if [ ! -f /usr/include/dbus-1.0/dbus/dbus-glib.h ]; then
 fi
 
 if [ ${#missing[@]} -gt 0 ]; then
-    echo "Missing packages: ${missing[@]}" >&2
+    echo "Missing packages: ${missing[*]}" >&2
     if which apt >/dev/null; then
         echo -n "Install [y]/n? " >&2
-        read answer
-        if [ "$answer" == "y" -o -z "$answer" ]; then
-            sudo apt install -y "${missing[@]}"
+        read -r answer
+        if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+            sudo apt install -y "${missing[*]}"
         fi
     else
         exit 1
@@ -103,36 +103,36 @@ if [ ${#missing[@]} -gt 0 ]; then
 fi
 
 # Ensure specific RISCV compiler installed
-if [ ! -d $RISCV_DIR ]; then
+if [ ! -d "${RISCV_DIR}" ]; then
     echo "Did not find a RISCV toolchain at ${RISCV_DIR}" >&2
     echo -n "Download and install 290MB [y]/n? " >&2
-    read answer
-    if [ "$answer" == "y" -o -z "$answer" ]; then
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
         (
             PKG_URL=https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14.tar.gz
             mkdir -p ~/Downloads
-            mkdir -p ${USER_BIN_DIR}
-            curl ${PKG_URL} -o ~/Downloads/riscv64.tar.gz
-            tar -C ${USER_BIN_DIR} -xvz -f ~/Downloads/riscv64.tar.gz
+            mkdir -p "${USER_BIN_DIR}"
+            curl "${PKG_URL}" -o ~/Downloads/riscv64.tar.gz
+            tar -C "${USER_BIN_DIR}" -xvz -f ~/Downloads/riscv64.tar.gz
         )
     fi
 fi
 
 if ! which rustc >/dev/null; then
     echo -n "Install Rust [y]/n?" >&2
-    read answer
-    if [ "$answer" == "y" -o -z "$answer" ]; then
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     fi
 fi
 
-rustup +$RUST_VERSION target add thumbv6m-none-eabi
+rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup +stable target add thumbv6m-none-eabi
-(cd $HPS_ROOT; rustup override set $RUST_VERSION)
+(cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
 for i in flip-link probe-run; do
-    if [ ! -f "$HOME/.cargo/bin/$i" ]; then
-        cargo install "$i"
+    if [ ! -f "${HOME}/.cargo/bin/${i}" ]; then
+        cargo install "${i}"
     fi
 done
 
@@ -142,9 +142,9 @@ if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
 fi
 
 # Build gn if it hasn't already been built
-GN="$HPS_ROOT/third_party/gn"
-if [ ! -f "$GN/out/gn" ]; then
-    cd $GN
+GN="${PROJECT_ROOT}/third_party/gn"
+if [ ! -f "${GN}/out/gn" ]; then
+    cd "${GN}" || exit
     python3 build/gen.py
     ninja -C out
 fi
@@ -152,6 +152,6 @@ fi
 # Build flashrom
 echo "BUILDING FLASHROM"
 (
-    cd $HPS_ROOT/third_party/flashrom
+    cd "${PROJECT_ROOT}/third_party/flashrom"
     make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no
 )
