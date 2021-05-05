@@ -23,6 +23,13 @@ assert(litex_out_dir != "", "--args=litex_out_dir=... is required")
 third_party = rebase_path("third_party", "", "..")
 tflm_path = rebase_path("third_party/tflm_gen", "", "..")
 
+action("version_header") {
+  script = "generate_version_header.py"
+  header_path = "${target_gen_dir}/hps_version.h"
+  outputs = [ header_path ]
+  args = [ rebase_path(header_path, root_build_dir) ]
+}
+
 config("riscv_rom") {
   cflags = riscv_shared_flags + [
              "-fno-builtin",
@@ -41,6 +48,7 @@ config("riscv_rom") {
     "${third_party}",
     "${third_party}/litex_i2c",
     "${tflm_path}",
+    "${target_gen_dir}",
   ]
   ldflags = riscv_shared_flags + [
               "-nostartfiles",
@@ -62,6 +70,9 @@ config("riscv_rom") {
 }
 
 executable("rom.bin") {
+  deps = [
+    ":version_header",
+  ]
   sources = [
     "../third_party/python/litex/litex/soc/cores/cpu/vexriscv/crt0.S",
     "main.c",

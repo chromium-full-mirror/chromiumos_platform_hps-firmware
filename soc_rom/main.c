@@ -14,6 +14,7 @@
 #include <uart.h>
 
 #include "hm01b0_platform.h"
+#include "hps_version.h"
 #include "litex_shim/shim.h"
 
 void isr(void) {
@@ -225,7 +226,8 @@ int main(void) {
   irq_setie(1);
   uart_init();
 
-  printf("Hello, %s!\n", "World");
+  puts("HPS SoC application " HPS_VERSION
+       " (built " HPS_BUILD_DATE " by " HPS_BUILD_USER ")");
 
   hm01b0_status_e status;
 
