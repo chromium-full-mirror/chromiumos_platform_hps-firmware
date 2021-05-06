@@ -98,11 +98,11 @@ pub fn setup_ipc(hps: Arc<Mutex<Ft2232hHps>>) -> Result<(), dbus::Error> {
             move |m| {
                 let mret = m.msg.method_return();
 
-                let reg_08 = {
+                let reg_val = {
                     let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
                     hps.read_register(registers::USER_PRESENT_STATUS)
                 };
-                let inference_ret: String = match reg_08 {
+                let reg_ret: String = match reg_val {
                     Ok(v) => v.to_string(),
                     Err(_) => {
                         return future::err(MethodErr::failed(
@@ -110,7 +110,7 @@ pub fn setup_ipc(hps: Arc<Mutex<Ft2232hHps>>) -> Result<(), dbus::Error> {
                         ))
                     }
                 };
-                let mret = mret.append1(inference_ret);
+                let mret = mret.append1(reg_ret);
 
                 let reply = vec![mret];
                 future::ok(reply)
