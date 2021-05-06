@@ -115,18 +115,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let spi = SpiPeripheral::new(p.SPI1, gpioa.pa5, gpioa.pa6, gpioa.pa7, dma.ch1, dma.ch2);
 
     // Trigger an interrupt when the SPI CS line changes.
-    let spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
-
-    // Set PB0 to use alternate function 0.
-    //
-    // TODO: See if we can add support to the HAL crate for doing this.
-    // Currently the alternate function code is private and exposed via
-    // functions such as `PinSck::setup`.
-    unsafe {
-        let gpiob = &*hal::stm32::GPIOB::ptr();
-        gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
-        gpiob.moder.modify(|_, w| w.moder0().bits(2));
-    }
+    let mut spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
+    spi_cs.init_spi_chip_select();
 
     defmt::info!(
         "MCU application started. CPU is running at {}Mhz",
@@ -137,5 +127,22 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         spi,
         exti,
         spi_cs,
+    }
+}
+
+// TODO: See if we can add support to the HAL crate for doing this. Currently
+// the alternate function code is private and exposed via functions such as
+// `PinSck::setup`.
+trait InitSpiChipSelect {
+    fn init_spi_chip_select(&mut self);
+}
+
+impl<T> InitSpiChipSelect for hal::gpio::gpiob::PB0<T> {
+    fn init_spi_chip_select(&mut self) {
+        unsafe {
+            let gpiob = &*hal::stm32::GPIOB::ptr();
+            gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
+            gpiob.moder.modify(|_, w| w.moder0().bits(2));
+        }
     }
 }
