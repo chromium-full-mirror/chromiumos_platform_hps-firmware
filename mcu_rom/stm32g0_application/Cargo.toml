@@ -23,7 +23,7 @@ stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral", default-features 
 [features]
 default = [
   "defmt-default",
-  "stm32g071",
+  "nucleo"
 ]
 # The following features should be left unmodified.
 defmt-default = []
@@ -33,8 +33,8 @@ defmt-info = []
 defmt-warn = []
 defmt-error = []
 
-stm32g031 = ["hal/stm32g031", "stm32g0_i2c_peripheral/stm32g031" ]
-stm32g071 = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
+proto0 = ["hal/stm32g031", "stm32g0_i2c_peripheral/stm32g031" ]
+nucleo = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
 
 
 # Optimize all dependencies

@@ -52,7 +52,7 @@ proto0, which has an stm32g031, you can do so with the following command.
 
 ```bash
 cs mcu_rom/stm32g0_application && \
-cargo build --no-default-features --features stm32g031,defmt-default && \
+cargo build --no-default-features --features proto0,defmt-default && \
 probe-run --probe 0483:3748 --chip stm32g031 ./target/thumbv6m-none-eabi/debug/stm32g0_application
 ```
 
