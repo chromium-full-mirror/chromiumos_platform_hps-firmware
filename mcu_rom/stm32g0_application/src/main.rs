@@ -22,7 +22,6 @@ const APP: () = {
         host_interface: HostInterface<Stm32g0I2cPeripheral>,
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
-        spi_cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
     }
 
     #[init]
@@ -48,23 +47,17 @@ const APP: () = {
         ctx.resources.spi.handle_rx_dma_interrupt();
     }
 
-    /// Interrupt handler for EXTI channels 0 through 1.
-    #[task(binds = EXTI0_1, resources = [spi, exti, spi_cs], spawn = [handle_spi_packet],
+    /// Interrupt handler for EXTI channels 0 through 1. Currently only used for
+    /// FPGA SPI CS changes.
+    #[task(binds = EXTI0_1, resources = [spi, exti], spawn = [handle_spi_packet],
         priority = 2)]
-    fn exti_event(ctx: exti_event::Context) {
-        // Currently the only event configured to use this interrupt handler is
-        // a change in PB0, the SPI CS line, so we don't bother checking which
-        // EXTI interrupt is pending.
-        ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
-        if let Some(buffer) = ctx
-            .resources
-            .spi
-            .cs_changed(ctx.resources.spi_cs.is_high().unwrap_or_default())
-        {
+    fn exti0_1_event(ctx: exti0_1_event::Context) {
+        if let Some(buffer) = ctx.resources.spi.cs_changed() {
             // This should never fail since there's only one buffer and we have
             // it, so the `handle_spi_packet` task's queue can't have it.
             let _ = ctx.spawn.handle_spi_packet(buffer);
         }
+        ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
     }
 
     #[task(resources = [spi])]
@@ -112,11 +105,12 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         mcu_common::HPS_ADDRESS,
     ));
 
-    let spi = SpiPeripheral::new(p.SPI1, gpioa.pa5, gpioa.pa6, gpioa.pa7, dma.ch1, dma.ch2);
-
     // Trigger an interrupt when the SPI CS line changes.
-    let mut spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
-    spi_cs.init_spi_chip_select();
+    let spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
+
+    let spi = SpiPeripheral::new(
+        p.SPI1, gpioa.pa5, gpioa.pa6, gpioa.pa7, spi_cs, dma.ch1, dma.ch2,
+    );
 
     defmt::info!(
         "MCU application started. CPU is running at {}Mhz",
@@ -126,23 +120,5 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         host_interface,
         spi,
         exti,
-        spi_cs,
-    }
-}
-
-// TODO: See if we can add support to the HAL crate for doing this. Currently
-// the alternate function code is private and exposed via functions such as
-// `PinSck::setup`.
-trait InitSpiChipSelect {
-    fn init_spi_chip_select(&mut self);
-}
-
-impl<T> InitSpiChipSelect for hal::gpio::gpiob::PB0<T> {
-    fn init_spi_chip_select(&mut self) {
-        unsafe {
-            let gpiob = &*hal::stm32::GPIOB::ptr();
-            gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
-            gpiob.moder.modify(|_, w| w.moder0().bits(2));
-        }
     }
 }

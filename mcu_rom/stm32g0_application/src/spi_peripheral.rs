@@ -4,6 +4,7 @@
 
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
+use hal::prelude::*;
 use hal::stm32::SPI1;
 use mcu_common::MemBlock;
 
@@ -19,6 +20,7 @@ pub struct SpiPeripheral {
     tx_dma: hal::dma::C1,
     rx_dma: hal::dma::C2,
     mode: Mode,
+    cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
     cs_state: bool,
 }
 
@@ -49,12 +51,14 @@ impl SpiPeripheral {
         sck: impl hal::spi::PinSck<SPI1>,
         miso: impl hal::spi::PinMiso<SPI1>,
         mosi: impl hal::spi::PinMosi<SPI1>,
+        mut cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
         tx_dma: hal::dma::C1,
         rx_dma: hal::dma::C2,
     ) -> SpiPeripheral {
         hal::spi::PinSck::setup(&sck);
         hal::spi::PinMiso::setup(&miso);
         hal::spi::PinMosi::setup(&mosi);
+        cs.init_spi_chip_select();
 
         // Reset cr1.
         spi.cr1.write(|w| w);
@@ -87,6 +91,7 @@ impl SpiPeripheral {
             tx_dma,
             rx_dma,
             mode: Mode::Receive(buffer),
+            cs,
             cs_state: true,
         };
         spi_peripheral.configure_dma_channels();
@@ -125,10 +130,10 @@ impl SpiPeripheral {
         }
     }
 
-    pub(crate) fn cs_changed(&mut self, cs: bool) -> Option<MemBlock> {
-        self.cs_state = cs;
+    pub(crate) fn cs_changed(&mut self) -> Option<MemBlock> {
+        self.cs_state = self.cs.is_high().unwrap_or_default();
         let mut result = None;
-        if cs {
+        if self.cs_state {
             // CS has gone high, indicating the end of a transfer.
             match core::mem::replace(&mut self.mode, Mode::PreparingResponse) {
                 Mode::Receive(buffer) => result = Some(buffer),
@@ -196,4 +201,21 @@ fn configure_dma_channel(
     channel.set_word_size::<usize>(hal::dma::WordSize::BITS8);
     channel.select_peripheral(peripheral);
     channel.enable();
+}
+
+// TODO: See if we can add support to the HAL crate for doing this. Currently
+// the alternate function code is private and exposed via functions such as
+// `PinSck::setup`.
+pub(crate) trait InitSpiChipSelect {
+    fn init_spi_chip_select(&mut self);
+}
+
+impl<T> InitSpiChipSelect for hal::gpio::gpiob::PB0<T> {
+    fn init_spi_chip_select(&mut self) {
+        unsafe {
+            let gpiob = &*hal::stm32::GPIOB::ptr();
+            gpiob.afrl.modify(|_, w| w.afsel0().bits(0));
+            gpiob.moder.modify(|_, w| w.moder0().bits(2));
+        }
+    }
 }
