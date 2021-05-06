@@ -91,7 +91,10 @@ impl WriteRead for FakeI2cController {
                 *out = self.bytes_from_device.recv()?;
             }
         }
-        self.events_to_device.send(I2cEvent::Stop)?;
+        // Our protocol handler doesn't wait for STOP, so the test may have
+        // already finished and disconnected the host side. If the host side has
+        // finished, then sending STOP will fail, which can be safely ignored.
+        let _ = self.events_to_device.send(I2cEvent::Stop);
         Ok(())
     }
 }
