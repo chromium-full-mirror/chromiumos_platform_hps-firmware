@@ -7,6 +7,8 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use tokio_core::reactor::Core;
 
+use mcu_common::registers;
+
 use hps_util::query_status;
 use hps_util::Ft2232hHps;
 
@@ -51,8 +53,7 @@ pub fn setup_ipc(hps: Arc<Mutex<Ft2232hHps>>) -> Result<(), dbus::Error> {
 
                 let reg_08 = {
                     let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
-                    // TODO(quasisec): Add 0x08 and 0x09 to mcu_common/src/registers.rs
-                    hps.read_register(0x08)
+                    hps.read_register(registers::USER_PRESENT_STATUS)
                 };
                 let inference_ret: String = match reg_08 {
                     Ok(v) => v.to_string(),

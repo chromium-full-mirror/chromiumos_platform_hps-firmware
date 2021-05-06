@@ -26,6 +26,9 @@ pub const ERRORS: u8 = 6;
 /// WO: Which application features are enabled.
 pub const ENABLED_FEATURES: u8 = 7;
 
+/// RO: If the user present feature is disabled implied by 0.
+pub const USER_PRESENT_STATUS: u8 = 8;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.
