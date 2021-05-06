@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
 # Copyright 2021 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from migen import *
-
-from litex.soc.interconnect.csr import *
-from litex.soc.cores.dma import *
+"""SPI Controller gateware for communication with the MCU."""
 
 from itertools import count
 from unittest import TestCase
 import random
+
+from migen import Cat, If, Module, Signal, passive, run_simulation
+
+from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
 
 
 # SPI clock
@@ -25,8 +25,8 @@ def bitfield(name, size, reset, desc):
 class SpiController(Module, AutoCSR):
     """A SPI Controller.
 
-    In HPS, used to exchange messages with the MCU.
-    Uses CPOL, CPHA = 0, 0: clock is initially low. Data clocked at low->high transition.
+    In HPS, used to exchange messages with the MCU. Uses CPOL, CPHA = 0, 0:
+    clock is initially low. Data clocked at low->high transition.
     """
 
     def __init__(self, pads, sys_clk_freq,
@@ -35,32 +35,32 @@ class SpiController(Module, AutoCSR):
         self.loopback = loopback
         self._cr = CSRStorage(
             fields=[
-                bitfield("cs", 1, 1, "CS line (bring low to select)"),
-                bitfield("en", 1, 0, "Enable SPI")],
-            name="cr", description="SPI control register")
+                bitfield('cs', 1, 1, 'CS line (bring low to select)'),
+                bitfield('en', 1, 0, 'Enable SPI')],
+            name='cr', description='SPI control register')
         self._flags = CSRStatus(
             fields=[
-                bitfield("txe", 1, 1, "TX buffer empty"),
-                bitfield("rxe", 1, 1, "RX buffer empty"),
+                bitfield('txe', 1, 1, 'TX buffer empty'),
+                bitfield('rxe', 1, 1, 'RX buffer empty'),
             ],
-            name="flags", description="SPI Status flags"
+            name='flags', description='SPI Status flags'
         )
         self._txd = CSRStorage(
-            name="txd",
+            name='txd',
             size=8,
-            description="Transmit data register")
+            description='Transmit data register')
         self._rxd = CSRStatus(
-            name="rxd",
+            name='rxd',
             size=8,
-            description="Receive data register")
+            description='Receive data register')
         self.pads = pads
 
         self._connect_cs()
         self._watch_tx_rx()
 
         # Add clocking logic
-        self.clock_counter_max = int(self.sys_clk_freq / spi_clk_freq - 1)
-        self.clock_counter_half = int(self.sys_clk_freq / (spi_clk_freq * 2))
+        self.clock_counter_max = int(self.sys_clk_freq // spi_clk_freq) - 1
+        self.clock_counter_half = int(self.sys_clk_freq // (spi_clk_freq * 2))
         self.clock_counter = Signal(max=self.clock_counter_max)
         self._run_clock()
 
@@ -98,8 +98,8 @@ class SpiController(Module, AutoCSR):
                         self.clock_counter.eq(self.clock_counter - 1))
         # Run SPI clock - cycles 0 in first half of count and 1 in second half,
         # returns to zero when done
-        self.comb += self.pads.clk.eq((self.clock_counter <=
-                                       self.clock_counter_half) & (self.clock_counter != 0))
+        first_half = (self.clock_counter <= self.clock_counter_half)
+        self.comb += self.pads.clk.eq(first_half & (self.clock_counter != 0))
 
     def _handle_idle(self):
         """Handle SPI enabled, but idle"""
@@ -160,6 +160,11 @@ def to_bits(vals):
 
 
 class SpiControllerTest(TestCase):
+    """Tests for SPI Controller class."""
+    # The migen API conventions encourage naming CSRs with leading "_"s, but we
+    # need to drive them in this test case
+    # pylint: disable=protected-access
+
     def setUp(self):
         self.pads = DummyPads()
         self.dut = SpiController(
@@ -176,17 +181,17 @@ class SpiControllerTest(TestCase):
         def run():
             yield self.dut._cr.fields.cs.eq(1)
             yield
-            for i in range(5):
+            for _ in range(5):
                 self.assertTrue((yield self.pads.cs))
                 yield
             yield self.dut._cr.fields.cs.eq(0)
             yield
-            for i in range(25):
+            for _ in range(25):
                 self.assertFalse((yield self.pads.cs))
                 yield
             yield self.dut._cr.fields.cs.eq(1)
             yield
-            for i in range(5):
+            for _ in range(5):
                 self.assertTrue((yield self.pads.cs))
                 yield
         run_simulation(self.dut, generators=[run()])
@@ -202,17 +207,17 @@ class SpiControllerTest(TestCase):
             # data_in in RXD
             yield self.dut._cr.fields.en.eq(1)
             yield
-            for n, bout, bexpected in zip(count(), data_out, data_in):
+            for n, bit_out, expected in zip(count(), data_out, data_in):
                 # Wait for transmit empty, then transmit
                 while not (yield self.dut._flags.fields.txe):
                     yield
-                yield from self.dut._txd.write(bout)
+                yield from self.dut._txd.write(bit_out)
                 # Wait for receive not empty, then read
                 while (yield self.dut._flags.fields.rxe):
                     yield
-                bin = yield from self.dut._rxd.read()
+                bit_in = yield from self.dut._rxd.read()
                 self.assertEqual(
-                    bin, bexpected, f"Failed data in on byte {n}")
+                    bit_in, expected, f'Failed data in on byte {n}')
 
         def wait_for_edge(expected_last, expected_this):
             last_clk = expected_this
@@ -227,7 +232,8 @@ class SpiControllerTest(TestCase):
             # sample on middle edge
             for n, b in enumerate(to_bits(data_out)):
                 yield from wait_for_edge(0, 1)
-                self.assertEqual((yield self.pads.copi), b, f"Failed copi on bit {n}")
+                self.assertEqual((yield self.pads.copi), b,
+                                 f'Failed copi on bit {n}')
 
         @ passive
         def send_cipo():
