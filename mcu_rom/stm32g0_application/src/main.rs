@@ -5,8 +5,10 @@
 #![no_main]
 #![no_std]
 
+pub mod boards;
 mod spi_peripheral;
 
+use crate::boards::board;
 use crate::spi_peripheral::SpiPeripheral;
 use application::HostInterface;
 use defmt_rtt as _;
@@ -60,8 +62,22 @@ const APP: () = {
         ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
     }
 
+    /// Interrupt handler for EXTI channels 4 through 15. Currently only used
+    /// for FPGA SPI CS changes.
+    #[task(binds = EXTI4_15, resources = [spi, exti], spawn = [handle_spi_packet],
+        priority = 2)]
+    fn exti4_15_event(ctx: exti4_15_event::Context) {
+        if let Some(buffer) = ctx.resources.spi.cs_changed() {
+            // This should never fail since there's only one buffer and we have
+            // it, so the `handle_spi_packet` task's queue can't have it.
+            let _ = ctx.spawn.handle_spi_packet(buffer);
+        }
+        ctx.resources.exti.unpend(hal::exti::Event::GPIO4);
+    }
+
     #[task(resources = [spi])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
+        defmt::info!("Received via SPI: {}", &*buffer);
         // TODO: Do something useful with the data we received. For now we
         // just change the data that was sent to us then send it back.
         for v in buffer.iter_mut() {
@@ -92,24 +108,31 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
 
-    let gpioa = p.GPIOA.split(&mut rcc);
-    let gpiob = p.GPIOB.split(&mut rcc);
+    let board = board::Board::new(p.GPIOA.split(&mut rcc), p.GPIOB.split(&mut rcc));
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
     let mut exti = p.EXTI;
 
     let host_interface = HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
-        gpiob.pb9.into_open_drain_output(),
-        gpiob.pb8.into_open_drain_output(),
+        board.host_i2c_sda.into_open_drain_output(),
+        board.host_i2c_scl.into_open_drain_output(),
         mcu_common::HPS_ADDRESS,
     ));
 
     // Trigger an interrupt when the SPI CS line changes.
-    let spi_cs = gpiob.pb0.listen(hal::gpio::SignalEdge::All, &mut exti);
+    let spi_cs = board
+        .fpga_spi_cs
+        .listen(hal::gpio::SignalEdge::All, &mut exti);
 
     let spi = SpiPeripheral::new(
-        p.SPI1, gpioa.pa5, gpioa.pa6, gpioa.pa7, spi_cs, dma.ch1, dma.ch2,
+        p.SPI1,
+        board.fpga_spi_clk,
+        board.fpga_spi_cipo,
+        board.fpga_spi_copi,
+        spi_cs,
+        dma.ch1,
+        dma.ch2,
     );
 
     defmt::info!(

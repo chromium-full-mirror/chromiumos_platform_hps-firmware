@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::board;
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
 use hal::prelude::*;
@@ -20,7 +21,7 @@ pub struct SpiPeripheral {
     tx_dma: hal::dma::C1,
     rx_dma: hal::dma::C2,
     mode: Mode,
-    cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
+    cs: board::FpgaSpiCsPin,
     cs_state: bool,
 }
 
@@ -51,7 +52,7 @@ impl SpiPeripheral {
         sck: impl hal::spi::PinSck<SPI1>,
         miso: impl hal::spi::PinMiso<SPI1>,
         mosi: impl hal::spi::PinMosi<SPI1>,
-        mut cs: hal::gpio::gpiob::PB0<hal::gpio::Input<hal::gpio::Floating>>,
+        mut cs: board::FpgaSpiCsPin,
         tx_dma: hal::dma::C1,
         rx_dma: hal::dma::C2,
     ) -> SpiPeripheral {
@@ -208,6 +209,16 @@ fn configure_dma_channel(
 // `PinSck::setup`.
 pub(crate) trait InitSpiChipSelect {
     fn init_spi_chip_select(&mut self);
+}
+
+impl<T> InitSpiChipSelect for hal::gpio::gpioa::PA4<T> {
+    fn init_spi_chip_select(&mut self) {
+        unsafe {
+            let gpioa = &*hal::stm32::GPIOA::ptr();
+            gpioa.afrl.modify(|_, w| w.afsel4().bits(0));
+            gpioa.moder.modify(|_, w| w.moder4().bits(2));
+        }
+    }
 }
 
 impl<T> InitSpiChipSelect for hal::gpio::gpiob::PB0<T> {
