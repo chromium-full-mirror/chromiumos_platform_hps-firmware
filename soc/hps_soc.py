@@ -1,31 +1,26 @@
-#!/usr/bin/env python3
 # Copyright 2021 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""SoC definition and builder script for HPS proto0"""
 
-# Disable pylint's E1101, which breaks completely on migen
-# pylint:disable=E1101
+import argparse
+import os
 
-from hps_platform import Platform
-from litex.soc.cores.clock import S7PLL
-from litex.soc.integration.soc import SoCRegion
-from litex.soc.integration.soc_sdram import SoCSDRAM
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
 from litex.soc.cores.bitbang import I2CMaster
+from litex.build.lattice.radiant import (radiant_build_args,
+                                         radiant_build_argdict)
 
-from litex.build.lattice.radiant import radiant_build_args, radiant_build_argdict
+from .hps_platform import Platform
+from .patch import Patch
+from .cam_control import CameraControl, CameraControlDMA
+from .spi_controller import SpiController
 
-from patch import Patch
-from cam_control import CameraControl, CameraControlDMA
-from spi_controller import SpiController
-
-import argparse
-import os
 
 KB = 1024
 MB = 1024 * KB
@@ -37,6 +32,7 @@ SOC_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class HpsSoC(LiteXSoC):
+    """SoC definition for HPS proto0"""
     # Memory layout
     csr_origin = 0xf0000000
     spiflash_region = SoCRegion(0x20000000, 16 * MB, cached=True)
@@ -56,12 +52,12 @@ class HpsSoC(LiteXSoC):
     integrated_rom_size = rom_region.size
 
     mem_map = {
-        "rom": rom_offset,
-        "sram": sram_origin,
-        "csr": csr_origin,
+        'rom': rom_offset,
+        'sram': sram_origin,
+        'csr': csr_origin,
     }
 
-    cpu_type = "vexriscv"
+    cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug,
                  use_camera_dma=False):
@@ -72,9 +68,9 @@ class HpsSoC(LiteXSoC):
 
         # Clock, Controller, CPU
         self.submodules.crg = platform.create_crg()
-        self.add_controller("ctrl")
+        self.add_controller('ctrl')
         self.add_cpu(self.cpu_type,
-                     variant=("full+debug" if debug else "full"),
+                     variant=('full+debug' if debug else 'full'),
                      reset_address=self.rom_origin)
 
         # RAM
@@ -84,31 +80,31 @@ class HpsSoC(LiteXSoC):
         self.setup_flash()
 
         # ROM (part of SPI Flash)
-        self.bus.add_region("rom", self.rom_region)
+        self.bus.add_region('rom', self.rom_region)
 
         # "LEDS" - Just one LED on JTAG port
         self.submodules.leds = LedChaser(
-            pads=platform.request_all("user_led"),
+            pads=platform.request_all('user_led'),
             sys_clk_freq=platform.sys_clk_freq)
-        self.csr.add("leds")
+        self.csr.add('leds')
 
         # MCU reset line. This avoids the need to do rework on the HPS board in
         # order to get access to the MCU reset line. We patch it through to
         # J8-8.
         self.submodules.patch_mcu_reset = Patch(platform.request(
-            "mcu_reset_pin"), platform.request("mcu_debug").reset)
+            'mcu_reset_pin'), platform.request('mcu_debug').reset)
 
         # UART
         self.add_serial()
 
         # Wishbone UART and CPU debug - JTAG must be disabled to use serial2
         if debug:
-            self.add_uartbone("serial2", baudrate=UART_SPEED)
+            self.add_uartbone('serial2', baudrate=UART_SPEED)
             self.bus.add_slave(
-                "vexriscv_debug", self.cpu.debug_bus, self.vexriscv_region)
+                'vexriscv_debug', self.cpu.debug_bus, self.vexriscv_region)
 
         # Timer
-        self.add_timer(name="timer0")
+        self.add_timer(name='timer0')
         self.timer0.add_uptime()
 
         # Camera
@@ -116,28 +112,28 @@ class HpsSoC(LiteXSoC):
 
         # i2c1 (Camera + MCU)
         self.submodules.i2c = self.create_i2c_controller(
-            self.platform.request("i2c", 1))
-        self.csr.add("i2c")
+            self.platform.request('i2c', 1))
+        self.csr.add('i2c')
 
         # SPI controller
         self.submodules.mcu_spi = self.create_spi_controller(
-            self.platform.request("mcu_spi", 0))
-        self.csr.add("mcu_spi")
+            self.platform.request('mcu_spi', 0))
+        self.csr.add('mcu_spi')
 
     def setup_ram(self):
         self.submodules.lram = self.platform.create_ram(
             32, self.sram_region.size)
-        self.bus.add_slave("sram_lram", self.lram.bus, self.sram_region)
-        self.bus.add_region("sram", self.sram_region)
+        self.bus.add_slave('sram_lram', self.lram.bus, self.sram_region)
+        self.bus.add_region('sram', self.sram_region)
 
     def setup_flash(self):
-        self.submodules.spiflash = SpiFlash(self.platform.request("spiflash"), dummy=8,
-                                            endianness="little", div=4)
-        self.bus.add_slave("spiflash", self.spiflash.bus, self.spiflash_region)
-        self.csr.add("spiflash")
+        self.submodules.spiflash = SpiFlash(self.platform.request('spiflash'),
+                                            dummy=8, endianness='little', div=4)
+        self.bus.add_slave('spiflash', self.spiflash.bus, self.spiflash_region)
+        self.csr.add('spiflash')
 
     def add_serial(self):
-        self.add_uart("serial", baudrate=UART_SPEED)
+        self.add_uart('serial', baudrate=UART_SPEED)
 
     def setup_camera(self, use_dma):
         if use_dma:
@@ -146,14 +142,14 @@ class HpsSoC(LiteXSoC):
                 adr_width=self.bus.address_width)
             self.submodules.cam_control = CameraControlDMA(
                 bus=bus,
-                pads=self.platform.request("cam_control"),
+                pads=self.platform.request('cam_control'),
                 sys_clk_freq=self.platform.sys_clk_freq)
-            self.bus.add_master("cam_control", master=bus)
+            self.bus.add_master('cam_control', master=bus)
         else:
             self.submodules.cam_control = CameraControl(
-                pads=self.platform.request("cam_control"),
+                pads=self.platform.request('cam_control'),
                 sys_clk_freq=self.platform.sys_clk_freq)
-        self.csr.add("cam_control")
+        self.csr.add('cam_control')
 
     def create_i2c_controller(self, pads):
         return I2CMaster(pads)
@@ -175,9 +171,9 @@ class HpsSoC(LiteXSoC):
         # TODO: just fix the builder
         for region in self.bus.regions.values():
             region.length = region.size
-            region.type = "cached" if region.cached else "io"
+            region.type = 'cached' if region.cached else 'io'
             if region.linker:
-                region.type += "+linker"
+                region.type += '+linker'
         self.csr_regions = self.csr.regions
 
         self.configure_rom()
@@ -196,27 +192,32 @@ def hps_soc_args(parser: argparse.ArgumentParser):
 def create_builder(soc, args):
     builder = Builder(soc, **builder_argdict(args))
     builder.output_dir = args.output_dir
-    required_packages = {"libcompiler_rt", "libbase"}
+    required_packages = {'libcompiler_rt', 'libbase'}
     # Select required packages. Of most importance is to exclude the "bios"
     # package, which is LiteX's BIOS, since we're using our own.
     builder.software_packages = [
-        (name, dir) for (name, dir) in builder.software_packages if name in required_packages]
+        (name, dir) for (name, dir) in builder.software_packages
+        if name in required_packages]
     # "bios" gets loaded automatically by the builder.
-    builder.add_software_package("bios", f"{SOC_DIR}/software/bios")
+    builder.add_software_package('bios', f'{SOC_DIR}/software/bios')
     return builder
 
 
 def main():
-    parser = argparse.ArgumentParser(description="HPS SoC")
+    parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
-    parser.add_argument("--debug", action="store_true",
-                        help="Enable debug mode")
-    parser.add_argument("--use-camera-dma", action="store_true",
-                        help="Generate DMA writer interface for camera")
-    parser.add_argument("--build", action="store_true",
-                        help="Whether to do a full build, including the bitstream")
-    parser.add_argument("--toolchain", default="radiant",
-                        help="Which toolchain to use, radiant (default) or oxide")
+    parser.add_argument(
+        '--debug', action='store_true',
+        help='Enable debug mode')
+    parser.add_argument(
+        '--use-camera-dma', action='store_true',
+        help='Generate DMA writer interface for camera')
+    parser.add_argument(
+        '--build', action='store_true',
+        help='Whether to do a full build, including the bitstream')
+    parser.add_argument(
+        '--toolchain', default='radiant',
+        help='Which toolchain to use, radiant (default) or oxide')
     args = parser.parse_args()
 
     soc = HpsSoC(
@@ -225,13 +226,13 @@ def main():
         use_camera_dma=args.use_camera_dma)
     builder = create_builder(soc, args)
     builder_kwargs = radiant_build_argdict(
-        args) if args.toolchain == "radiant" else {}
+        args) if args.toolchain == 'radiant' else {}
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 
     if not args.build:
-        print("Use --build to build the bitstream, if needed")
+        print('Use --build to build the bitstream, if needed')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

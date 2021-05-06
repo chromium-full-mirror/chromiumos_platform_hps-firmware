@@ -12,8 +12,9 @@ BUILD="${PROJECT_ROOT}/build/hps_platform"
 echo "Recompile software and Load the HPS SoC. "
 echo "Use --build to also build gateware"
 
-"${PROJECT_ROOT}/scripts/pyrun" "${PROJECT_ROOT}/soc/hps_soc.py" "$@"
+cd "${PROJECT_ROOT}"
 
-"${PROJECT_ROOT}/scripts/prog" bitstream "${BUILD}/gateware/hps_platform.bit"
-"${PROJECT_ROOT}/scripts/prog" rom \
-    "${BUILD}/software/bios/out/riscv-gcc/rom.bin"
+scripts/pyrun -m soc.hps_soc "$@"
+
+scripts/prog bitstream "${BUILD}/gateware/hps_platform.bit"
+scripts/prog rom "${BUILD}/software/bios/out/riscv-gcc/rom.bin"
