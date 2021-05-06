@@ -5,7 +5,7 @@
 To simulate the SoC on your local machine (no HPS hardware needed), run:
 
 ```bash
-./scripts/pyrun soc/simulate.py
+./scripts/pyrun -m soc.simulate
 ```
 
 The simulator is slow while running but very quick to start, so useful for
