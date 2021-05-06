@@ -1,83 +1,83 @@
 # Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Platform definition file for HPS proto0"""
 
 from migen import Module, ClockDomain, Signal, If, log2_int
 from migen.genlib.resetsync import AsyncResetSynchronizer
 from litex.build.generic_platform import Pins, Subsignal, IOStandard
 from litex.build.lattice import LatticePlatform
-from litex.build.lattice.programmer import LatticeProgrammer
 from litex.soc.cores.ram import NXLRAM
 from litex.soc.cores.clock import NXOSCA
 
 hps_io = [
     # HM01B0 camera connection
-    ("cam_control", 0,
-        Subsignal("data", Pins("E9 E8 G9 F9 G8 F8 F7 G7")),
-        Subsignal("fvld", Pins("E7")),
-        Subsignal("lvld", Pins("F6")),
-        Subsignal("mclk", Pins("G6")),
-        Subsignal("pclk", Pins("G5")),
-        Subsignal("trig", Pins("G4")),
-        # Subsignal("int",  Pins("E2")),  # Shared with serial rx
-        IOStandard("LVCMOS18H")
+    ('cam_control', 0,
+        Subsignal('data', Pins('E9 E8 G9 F9 G8 F8 F7 G7')),
+        Subsignal('fvld', Pins('E7')),
+        Subsignal('lvld', Pins('F6')),
+        Subsignal('mclk', Pins('G6')),
+        Subsignal('pclk', Pins('G5')),
+        Subsignal('trig', Pins('G4')),
+        # Subsignal('int',  Pins('E2')),  # Shared with serial rx
+        IOStandard('LVCMOS18H')
      ),
     # Connection to motherboard
-    ("i2c", 0,
-        Subsignal("scl", Pins("D1")),
-        Subsignal("sda", Pins("E3")),
-        IOStandard("LVCMOS18H")
+    ('i2c', 0,
+        Subsignal('scl', Pins('D1')),
+        Subsignal('sda', Pins('E3')),
+        IOStandard('LVCMOS18H')
      ),
-    ("done", 0, Pins("A5"), IOStandard("LVCMOS18H")),
-    ("programn", 0, Pins("A4"), IOStandard("LVCMOS18H")),
+    ('done', 0, Pins('A5'), IOStandard('LVCMOS18H')),
+    ('programn', 0, Pins('A4'), IOStandard('LVCMOS18H')),
     # JTAG: not usually programatically accessible
-    ("jtag", 0,
-        Subsignal("en", Pins("C2")),
-        Subsignal("tck", Pins("D2")),
-        Subsignal("tdi", Pins("C3")),
-        Subsignal("tdo", Pins("D3")),
-        Subsignal("tms", Pins("B1")),
-        IOStandard("LVCMOS18H")
+    ('jtag', 0,
+        Subsignal('en', Pins('C2')),
+        Subsignal('tck', Pins('D2')),
+        Subsignal('tdi', Pins('C3')),
+        Subsignal('tdo', Pins('D3')),
+        Subsignal('tms', Pins('B1')),
+        IOStandard('LVCMOS18H')
      ),
     # SPI flash, defined two ways
-    ("spiflash", 0,
-        Subsignal("cs_n", Pins("A3")),
-        Subsignal("clk", Pins("B4")),
-        Subsignal("mosi", Pins("B5")),
-        Subsignal("miso", Pins("C4")),
-        Subsignal("wp", Pins("B3")),
-        Subsignal("hold", Pins("B2")),
-        IOStandard("LVCMOS18")
+    ('spiflash', 0,
+        Subsignal('cs_n', Pins('A3')),
+        Subsignal('clk', Pins('B4')),
+        Subsignal('mosi', Pins('B5')),
+        Subsignal('miso', Pins('C4')),
+        Subsignal('wp', Pins('B3')),
+        Subsignal('hold', Pins('B2')),
+        IOStandard('LVCMOS18')
      ),
-    ("spiflash4x", 0,
-        Subsignal("cs_n", Pins("A3")),
-        Subsignal("clk", Pins("B4")),
-        Subsignal("dq", Pins("B5 C4 B3 B2")),
-        IOStandard("LVCMOS18H")
+    ('spiflash4x', 0,
+        Subsignal('cs_n', Pins('A3')),
+        Subsignal('clk', Pins('B4')),
+        Subsignal('dq', Pins('B5 C4 B3 B2')),
+        IOStandard('LVCMOS18H')
      ),
     # Interface to MCU
-    ("mcu_debug", 0,
-        Subsignal("reset", Pins("H2")),
-        Subsignal("swclk", Pins("E5")),
-        Subsignal("swdio", Pins("F4")),
-        IOStandard("LVCMOS18H")
+    ('mcu_debug', 0,
+        Subsignal('reset', Pins('H2')),
+        Subsignal('swclk', Pins('E5')),
+        Subsignal('swdio', Pins('F4')),
+        IOStandard('LVCMOS18H')
      ),
-    ("mcu_spi", 0,
-        Subsignal("clk", Pins("F3")),
-        Subsignal("cs", Pins("G3")),
-        Subsignal("cipo", Pins("E4")),
-        Subsignal("copi", Pins("F5")),
-        IOStandard("LVCMOS18H")
+    ('mcu_spi', 0,
+        Subsignal('clk', Pins('F3')),
+        Subsignal('cs', Pins('G3')),
+        Subsignal('cipo', Pins('E4')),
+        Subsignal('copi', Pins('F5')),
+        IOStandard('LVCMOS18H')
      ),
 ]
 
 # These should have equivalents defined in simulation.py.
 hps_nx17_io = [
     # Connection to Camera
-    ("i2c", 1,
-        Subsignal("scl", Pins("H1")),
-        Subsignal("sda", Pins("G2")),
-        IOStandard("LVCMOS18H")
+    ('i2c', 1,
+        Subsignal('scl', Pins('H1')),
+        Subsignal('sda', Pins('G2')),
+        IOStandard('LVCMOS18H')
      ),
 ]
 
@@ -85,24 +85,24 @@ hps_nx17_io = [
 # defined in simulation.py if they are referenced from C code.
 hps_nx17_debug_io = [
     # Debug UART
-    ("serial", 0,
-        Subsignal("rx", Pins("E2"), IOStandard("LVCMOS18")),
-        Subsignal("tx", Pins("G1"), IOStandard("LVCMOS18H")),
+    ('serial', 0,
+        Subsignal('rx', Pins('E2'), IOStandard('LVCMOS18')),
+        Subsignal('tx', Pins('G1'), IOStandard('LVCMOS18H')),
      ),
     # 2nd UART on JTAG TDI/TDO pins - must disable JTAG to use
-    ("serial2", 0,
-        Subsignal("rx", Pins("C3")),
-        Subsignal("tx", Pins("D3")),
-        IOStandard("LVCMOS18H")
+    ('serial2', 0,
+        Subsignal('rx', Pins('C3')),
+        Subsignal('tx', Pins('D3')),
+        IOStandard('LVCMOS18H')
      ),
 ]
 
 # Debug IO that is common to both simulation and hardware.
 hps_debug_common = [
     # Single LED on JTAG pin - J8 pin 6
-    ("user_led", 0, Pins("D2"), IOStandard("LVCMOS18")),
+    ('user_led', 0, Pins('D2'), IOStandard('LVCMOS18')),
     # Provides  mcu_reset_l on JTAG pin - J8 pin 8
-    ("mcu_reset_pin", 0, Pins("B1"), IOStandard("LVCMOS18")),
+    ('mcu_reset_pin', 0, Pins('B1'), IOStandard('LVCMOS18')),
 ]
 
 
@@ -127,21 +127,25 @@ class _CRG(Module):
             self.cd_sys, (por_counter != 0))
 
 
+# pylint: disable=abstract-method
 class Platform(LatticePlatform):
+    """The HPS Platform"""
     # The NX-17 has a 450 MHz clock. Our system clock should be a divisor of
     # that.
     clk_divisor = 4
     sys_clk_freq = int(450e6 / clk_divisor)
 
-    def __init__(self, toolchain="radiant"):
-        LatticePlatform.__init__(self,
-                                 # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't
-                                 # seem to be available in Radiant 2.2, at
-                                 # least on Linux.
-                                 device="LIFCL-17-8UWG72C",
-                                 io=hps_io + hps_nx17_io + hps_nx17_debug_io + hps_debug_common,
-                                 connectors=[],
-                                 toolchain=toolchain)
+    def __init__(self, toolchain='radiant'):
+        # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't seem to
+        # be available in Radiant 2.2, at least on Linux.
+        device = 'LIFCL-17-8UWG72C'
+        ios = (hps_io + hps_nx17_io + hps_nx17_debug_io + hps_debug_common)
+        LatticePlatform.__init__(
+            self,
+            device=device,
+            io=ios,
+            connectors=[],
+            toolchain=toolchain)
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
