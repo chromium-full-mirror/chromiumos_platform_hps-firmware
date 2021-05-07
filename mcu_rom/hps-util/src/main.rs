@@ -5,19 +5,24 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
+use embedded_hal::blocking::i2c;
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
 use ftd2xx_embedded_hal::libftd2xx::FtStatus;
 use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::Initialized;
+use hps_interface::Hps;
+use hps_util::Ft2232hHps;
+use hps_util::SendI2c;
 use mcu_common::commands;
 use std::path::PathBuf;
 
-use hps_util::Ft2232hHps;
-use hps_util::SendI2c;
 use hps_util::{print_device_list, query_status};
 
+mod i2c_over_uart;
 mod ipc;
 use ipc::setup_ipc;
+
+use crate::i2c_over_uart::I2cOverUart;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -26,7 +31,7 @@ struct Flags {
     sub_command: SubCommand,
 
     #[argh(option)]
-    /// ftdi device serial number
+    /// ftdi device serial number, or an absolute path to a serial device
     device: Option<String>,
 }
 
@@ -136,7 +141,11 @@ fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     }
 }
 
-fn access_registers(hps: &mut Ft2232hHps, flags: &AccessRegisters) -> Result<()> {
+fn access_registers<I, E>(hps: &mut Hps<I, E>, flags: &AccessRegisters) -> Result<()>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
     for reg in &flags.values {
         let mut parts = reg.split('=');
         match (
@@ -156,7 +165,11 @@ fn access_registers(hps: &mut Ft2232hHps, flags: &AccessRegisters) -> Result<()>
     Ok(())
 }
 
-fn stress_test(hps: &mut Ft2232hHps, config: &StressTest) -> Result<()> {
+fn stress_test<I, E>(hps: &mut Hps<I, E>, config: &StressTest) -> Result<()>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
     let mut errors = 0;
     for _ in 0..config.iterations {
         if hps.check_magic().is_err() {
@@ -176,6 +189,13 @@ fn main() -> Result<()> {
         let v = print_device_list()?;
         println!("{:#?}", v);
     }
+    if let Some(device) = &flags.device {
+        // TODO(dml): Use a separate flag for device type rather than detecting
+        // the device type by the form of the device flag.
+        if device.starts_with("/") {
+            return handle_sub_command(flags.sub_command, Hps::new(I2cOverUart::new(&device)?)?);
+        }
+    }
     let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
     let i2c = ftdi.i2c()?;
     // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
@@ -183,9 +203,17 @@ fn main() -> Result<()> {
     //
     // TODO: Determine if it's really safe to send between threads and add the
     // appropriate Send implementation in the upstream library.
-    let mut hps = Ft2232hHps::new(unsafe { SendI2c::new(i2c) })?;
+    let hps = Ft2232hHps::new(unsafe { SendI2c::new(i2c) })?;
+    handle_sub_command(flags.sub_command, hps)
+}
+
+fn handle_sub_command<I, E>(sub_command: SubCommand, mut hps: Hps<I, E>) -> Result<()>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
+    E: std::error::Error + Send + Sync + 'static,
+{
     println!("HPS detected");
-    match flags.sub_command {
+    match sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
             let bytes = std::fs::read(file)?;
             hps.write_firmware(&bytes)?;

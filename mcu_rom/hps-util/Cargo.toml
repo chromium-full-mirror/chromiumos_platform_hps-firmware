@@ -10,6 +10,7 @@ embedded-hal = "0.2.4"
 ftd2xx-embedded-hal = "0.7.0"
 hps_interface = { path = "../hps_interface" }
 mcu_common = { path = "../mcu_common" }
+serialport = "4.0.1"
 
 dbus = "0.9.2"
 dbus-tokio = "0.7.3"

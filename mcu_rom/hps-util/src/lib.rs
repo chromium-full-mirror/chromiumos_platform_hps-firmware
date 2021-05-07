@@ -5,6 +5,7 @@
 mod send_i2c;
 
 use anyhow::Result;
+use embedded_hal::blocking::i2c;
 use ftd2xx_embedded_hal::libftd2xx;
 use ftd2xx_embedded_hal::libftd2xx::Ft2232h;
 use ftd2xx_embedded_hal::I2c;
@@ -23,7 +24,11 @@ pub fn print_device_list() -> Result<Vec<String>> {
     Ok(v)
 }
 
-pub fn query_status(hps: &mut Ft2232hHps) -> Result<String> {
+pub fn query_status<I, E>(hps: &mut Hps<I, E>) -> Result<String>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
     use std::convert::TryFrom;
     let error_bits = hps.read_register(registers::ERRORS)?;
     let errors: Vec<_> = (0..16)
