@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+mod fake_hps;
 mod send_i2c;
 
 use anyhow::Result;
@@ -9,6 +10,7 @@ use ftd2xx_embedded_hal::libftd2xx;
 use hps_interface::Hps;
 use mcu_common::registers;
 
+pub use fake_hps::FakeHps;
 pub use send_i2c::SendI2c;
 
 pub fn print_device_list() -> Result<Vec<String>> {

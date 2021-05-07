@@ -30,7 +30,8 @@ struct Flags {
     sub_command: SubCommand,
 
     #[argh(option)]
-    /// ftdi device serial number, or an absolute path to a serial device
+    /// ftdi device serial number, or an absolute path to a serial device, or
+    /// "fake"
     device: Option<String>,
 }
 
@@ -180,6 +181,9 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
         // the device type by the form of the device flag.
         if device.starts_with("/") {
             return Ok(Box::new(HpsAdapter::new(I2cOverUart::new(&device)?)?));
+        }
+        if device == "fake" {
+            return Ok(Box::new(hps_util::FakeHps::default()));
         }
     }
     let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
