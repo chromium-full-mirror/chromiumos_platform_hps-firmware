@@ -14,12 +14,12 @@ use hps_util::Ft2232hHps;
 
 //
 // EXAMPLE usage:
-// dbus-send --session --dest=org.chromium.Hps --type=method_call --print-reply / org.chromium.Hps.query_status
-// dbus-send --session --dest=org.chromium.Hps --type=method_call --print-reply / org.chromium.Hps.cam_inference
+// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply / org.chromium.Hpsd.query_status
+// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply / org.chromium.Hpsd.cam_inference
 //
-static HPS_SERVICE_NAME: &str = "org.chromium.Hps";
-static HPS_INTERFACE_NAME: &str = "org.chromium.Hps";
-static HPS_SERVICE_PATH: &str = "/org/chromium/Hps";
+static HPS_SERVICE_NAME: &str = "org.chromium.Hpsd";
+static HPS_INTERFACE_NAME: &str = "org.chromium.Hpsd";
+static HPS_SERVICE_PATH: &str = "/org/chromium/Hpsd";
 
 static DBUS_HW_VERSION_METHOD_NAME: &str = "hardware_version";
 static DBUS_QUERY_STATUS_METHOD_NAME: &str = "query_status";
