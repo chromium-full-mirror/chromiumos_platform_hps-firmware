@@ -11,7 +11,6 @@ use ftd2xx_embedded_hal::Ft2232hHal;
 use ftd2xx_embedded_hal::Initialized;
 use mcu_common::commands;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 
 use hps_util::Ft2232hHps;
 use hps_util::SendI2c;
@@ -207,7 +206,6 @@ fn main() -> Result<()> {
             Ok(())
         }
         SubCommand::Daemon(_) => {
-            let hps = Arc::new(Mutex::new(hps));
             setup_ipc(hps)?;
             Ok(())
         }

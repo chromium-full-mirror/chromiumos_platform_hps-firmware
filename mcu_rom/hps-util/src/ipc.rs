@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use dbus::tree::MethodErr;
-use dbus::{BusType, Connection, NameFlag};
-use dbus_tokio::tree::{AFactory, ATree, ATreeServer};
-use dbus_tokio::AConnection;
-use futures::{future, Stream};
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
-use tokio_core::reactor::Core;
-
-use mcu_common::registers;
-
+use dbus::channel::MatchingReceiver;
+use dbus::message::MatchRule;
+use dbus::MethodErr;
+use dbus_crossroads::Crossroads;
+use dbus_crossroads::IfaceBuilder;
 use hps_util::query_status;
 use hps_util::Ft2232hHps;
+use mcu_common::registers;
 
 //
 // EXAMPLE usage:
@@ -31,141 +26,81 @@ static DBUS_APP_VERSION_METHOD_NAME: &str = "application_version";
 static DBUS_CAM_INFERENCE_METHOD_NAME: &str = "cam_inference";
 static DBUS_SYS_ERRORS_METHOD_NAME: &str = "errors";
 
-pub fn setup_ipc(hps: Arc<Mutex<Ft2232hHps>>) -> Result<(), dbus::Error> {
-    let conn = Rc::new(Connection::get_private(BusType::Session).unwrap());
-    conn.register_name(HPS_SERVICE_NAME, NameFlag::ReplaceExisting as u32)?;
+pub fn setup_ipc(hps: Ft2232hHps) -> Result<(), dbus::Error> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(handle_dbus(hps))
+}
 
-    let f = AFactory::new_afn::<()>();
+async fn handle_dbus(hps: Ft2232hHps) -> Result<(), dbus::Error> {
+    let (lost, conn) = dbus_tokio::connection::new_session_sync()?;
 
-    let hw_version_method = f
-        .amethod(DBUS_HW_VERSION_METHOD_NAME, (), {
-            let hps = hps.clone();
-            move |m| {
-                let mret = m.msg.method_return();
+    tokio::spawn(async {
+        let error = lost.await;
+        panic!("D-Bus connection lost: {}", error);
+    });
 
-                let reg_val = {
-                    let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
-                    hps.read_register(registers::HARDWARE_VERSION)
-                };
-                let reg_ret: String = match reg_val {
-                    Ok(v) => v.to_string(),
-                    Err(_) => return future::err(MethodErr::failed(&"read_reg failed".to_owned())),
-                };
-                let mret = mret.append1(reg_ret);
+    conn.request_name(HPS_SERVICE_NAME, false, true, false)
+        .await?;
 
-                let reply = vec![mret];
-                future::ok(reply)
-            }
-        })
-        .outarg::<&str, _>("reply");
+    let mut cr = Crossroads::new();
 
-    let query_status_method = f
-        .amethod(DBUS_QUERY_STATUS_METHOD_NAME, (), {
-            let hps = hps.clone();
-            move |m| {
-                let mret = m.msg.method_return();
+    let iface_token = cr.register(
+        HPS_INTERFACE_NAME,
+        |builder: &mut IfaceBuilder<Ft2232hHps>| {
+            expose_register_as_string(
+                builder,
+                DBUS_HW_VERSION_METHOD_NAME,
+                registers::HARDWARE_VERSION,
+            );
+            expose_register_as_string(
+                builder,
+                DBUS_APP_VERSION_METHOD_NAME,
+                registers::APPLICATION_VERSION,
+            );
+            expose_register_as_string(
+                builder,
+                DBUS_CAM_INFERENCE_METHOD_NAME,
+                registers::USER_PRESENT_STATUS,
+            );
+            expose_register_as_string(builder, DBUS_SYS_ERRORS_METHOD_NAME, registers::ERRORS);
 
-                let err_str = query_status(&mut hps.lock().unwrap());
-                let mret = mret.append1(err_str.unwrap());
+            builder.method(
+                DBUS_QUERY_STATUS_METHOD_NAME,
+                (),
+                ("reply",),
+                |_ctx, hps, ()| convert_error(query_status(hps).map(|status| (status,))),
+            );
+        },
+    );
 
-                let reply = vec![mret];
-                future::ok(reply)
-            }
-        })
-        .outarg::<&str, _>("reply");
+    cr.insert(HPS_SERVICE_PATH, &[iface_token], hps);
 
-    let app_version_method = f
-        .amethod(DBUS_APP_VERSION_METHOD_NAME, (), {
-            let hps = hps.clone();
-            move |m| {
-                let mret = m.msg.method_return();
+    conn.start_receive(
+        MatchRule::new_method_call(),
+        Box::new(move |message, conn| {
+            cr.handle_message(message, conn).unwrap();
+            true
+        }),
+    );
 
-                let reg_val = {
-                    let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
-                    hps.read_register(registers::APPLICATION_VERSION)
-                };
-                let reg_ret: String = match reg_val {
-                    Ok(v) => v.to_string(),
-                    Err(_) => return future::err(MethodErr::failed(&"read_reg failed".to_owned())),
-                };
-                let mret = mret.append1(reg_ret);
+    futures::future::pending::<()>().await;
+    unreachable!();
+}
 
-                let reply = vec![mret];
-                future::ok(reply)
-            }
-        })
-        .outarg::<&str, _>("reply");
+/// Exposes a register, converting the raw value to a string.
+fn expose_register_as_string(
+    builder: &mut IfaceBuilder<Ft2232hHps>,
+    name: &'static str,
+    register: u8,
+) {
+    builder.method(name, (), ("reply",), move |_ctx, hps, ()| {
+        convert_error(hps.read_register(register).map(|val| (val.to_string(),)))
+    });
+}
 
-    let cam_inference_method = f
-        .amethod(DBUS_CAM_INFERENCE_METHOD_NAME, (), {
-            let hps = hps.clone();
-            move |m| {
-                let mret = m.msg.method_return();
-
-                let reg_val = {
-                    let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
-                    hps.read_register(registers::USER_PRESENT_STATUS)
-                };
-                let reg_ret: String = match reg_val {
-                    Ok(v) => v.to_string(),
-                    Err(_) => {
-                        return future::err(MethodErr::failed(
-                            &"read_reg for 0x08 failed".to_owned(),
-                        ))
-                    }
-                };
-                let mret = mret.append1(reg_ret);
-
-                let reply = vec![mret];
-                future::ok(reply)
-            }
-        })
-        .outarg::<&str, _>("reply");
-
-    let hps_errors_method = f
-        .amethod(DBUS_SYS_ERRORS_METHOD_NAME, (), {
-            let hps = hps.clone();
-            move |m| {
-                let mret = m.msg.method_return();
-
-                let reg_val = {
-                    let hps: &mut Ft2232hHps = &mut hps.lock().unwrap();
-                    hps.read_register(registers::ERRORS)
-                };
-                let reg_ret: String = match reg_val {
-                    Ok(v) => v.to_string(),
-                    Err(_) => return future::err(MethodErr::failed(&"read_reg failed".to_owned())),
-                };
-                let mret = mret.append1(reg_ret);
-
-                let reply = vec![mret];
-                future::ok(reply)
-            }
-        })
-        .outarg::<&str, _>("reply");
-
-    let dbus_intf = f
-        .interface(HPS_INTERFACE_NAME, ())
-        .add_m(hw_version_method)
-        .add_m(query_status_method)
-        .add_m(app_version_method)
-        .add_m(cam_inference_method)
-        .add_m(hps_errors_method);
-
-    let dbus_obj = f
-        .object_path(HPS_SERVICE_PATH, ())
-        .introspectable()
-        .add(dbus_intf);
-    let tree = f.tree(ATree::new()).add(dbus_obj);
-
-    tree.set_registered(&conn, true)?;
-
-    let mut core = Core::new().unwrap();
-    let aconn = AConnection::new(conn.clone(), core.handle()).unwrap();
-    let server = ATreeServer::new(conn.clone(), &tree, aconn.messages().unwrap());
-
-    let server = server.for_each(|_| Ok(()));
-    core.run(server).unwrap();
-
-    Ok(())
+fn convert_error<T>(result: Result<T, anyhow::Error>) -> Result<T, MethodErr> {
+    result.map_err(|e| MethodErr::failed(&e.to_string()))
 }
