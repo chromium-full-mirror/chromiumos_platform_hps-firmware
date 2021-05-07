@@ -174,21 +174,12 @@ fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
-    let flags: Flags = argh::from_env();
-    if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
-        let v = print_device_list()?;
-        println!("{:#?}", v);
-        return Ok(());
-    }
+fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
     if let Some(device) = &flags.device {
         // TODO(dml): Use a separate flag for device type rather than detecting
         // the device type by the form of the device flag.
         if device.starts_with("/") {
-            return handle_sub_command(
-                flags.sub_command,
-                HpsAdapter::new(I2cOverUart::new(&device)?)?,
-            );
+            return Ok(Box::new(HpsAdapter::new(I2cOverUart::new(&device)?)?));
         }
     }
     let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
@@ -199,12 +190,19 @@ fn main() -> Result<()> {
     // TODO: Determine if it's really safe to send between threads and add the
     // appropriate Send implementation in the upstream library.
     let hps = HpsAdapter::new(unsafe { SendI2c::new(i2c) })?;
-    handle_sub_command(flags.sub_command, hps)
+    Ok(Box::new(hps))
 }
 
-fn handle_sub_command<H: Hps>(sub_command: SubCommand, mut hps: H) -> Result<()> {
+fn main() -> Result<()> {
+    let flags: Flags = argh::from_env();
+    if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
+        let v = print_device_list()?;
+        println!("{:#?}", v);
+        return Ok(());
+    }
+    let mut hps = open_device(&flags)?;
     println!("HPS detected");
-    match sub_command {
+    match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
             let bytes = std::fs::read(file)?;
             hps.write_firmware(&bytes)?;
@@ -213,19 +211,19 @@ fn handle_sub_command<H: Hps>(sub_command: SubCommand, mut hps: H) -> Result<()>
         }
         SubCommand::Launch(_) => hps.perform_command(commands::LAUNCH),
         SubCommand::Reset(_) => hps.perform_command(commands::RESET),
-        SubCommand::AccessRegisters(config) => access_registers(&mut hps, &config),
+        SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)
         }
         SubCommand::ListDevices(_) => unreachable!(),
-        SubCommand::StressTest(config) => stress_test(&mut hps, &config),
+        SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
         SubCommand::Status(_) => {
-            let err_str = query_status(&mut hps)?;
+            let err_str = query_status(&mut *hps)?;
             println!("{}", err_str);
             Ok(())
         }
         SubCommand::Daemon(_) => {
-            setup_ipc(Box::new(hps))?;
+            setup_ipc(hps)?;
             Ok(())
         }
     }
