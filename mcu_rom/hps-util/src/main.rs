@@ -14,6 +14,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use hps_util::Ft2232hHps;
+use hps_util::SendI2c;
 use hps_util::{print_device_list, query_status};
 
 mod ipc;
@@ -178,7 +179,12 @@ fn main() -> Result<()> {
     }
     let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
     let i2c = ftdi.i2c()?;
-    let mut hps = Ft2232hHps::new(i2c)?;
+    // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
+    // by default, so we wrap it in a type that implements Send.
+    //
+    // TODO: Determine if it's really safe to send between threads and add the
+    // appropriate Send implementation in the upstream library.
+    let mut hps = Ft2232hHps::new(unsafe { SendI2c::new(i2c) })?;
     println!("HPS detected");
     match flags.sub_command {
         SubCommand::FlashMcu(FlashMcu { file }) => {
