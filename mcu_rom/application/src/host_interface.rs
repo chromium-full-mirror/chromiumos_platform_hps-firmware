@@ -96,11 +96,12 @@ mod tests {
     use super::*;
     use fake_i2c::FakeI2cPeripheral;
     use hps_interface::Hps;
+    use hps_interface::HpsAdapter;
 
     #[test]
     fn test_system_status() {
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = Hps::without_magic_check(device);
+            let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
                 status::OK | status::APPLRUN
@@ -112,7 +113,7 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = Hps::without_magic_check(device);
+            let mut hps = HpsAdapter::without_magic_check(device);
             hps.write_register(registers::COMMAND, commands::RESET)
                 .unwrap();
         }));
@@ -122,7 +123,7 @@ mod tests {
     #[test]
     fn test_set_enabled_features() {
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = Hps::without_magic_check(device);
+            let mut hps = HpsAdapter::without_magic_check(device);
             hps.write_register(registers::ENABLED_FEATURES, 1234)
                 .unwrap();
         }));

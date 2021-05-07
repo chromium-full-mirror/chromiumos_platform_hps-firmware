@@ -7,7 +7,6 @@ use dbus::message::MatchRule;
 use dbus::MethodErr;
 use dbus_crossroads::Crossroads;
 use dbus_crossroads::IfaceBuilder;
-use embedded_hal::blocking::i2c;
 use hps_interface::Hps;
 use hps_util::query_status;
 use mcu_common::registers;
@@ -27,11 +26,7 @@ static DBUS_APP_VERSION_METHOD_NAME: &str = "application_version";
 static DBUS_CAM_INFERENCE_METHOD_NAME: &str = "cam_inference";
 static DBUS_SYS_ERRORS_METHOD_NAME: &str = "errors";
 
-pub fn setup_ipc<I, E>(hps: Hps<I, E>) -> Result<(), dbus::Error>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
-    E: std::error::Error + Send + Sync + 'static,
-{
+pub fn setup_ipc(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
@@ -39,11 +34,7 @@ where
         .block_on(handle_dbus(hps))
 }
 
-async fn handle_dbus<I, E>(hps: Hps<I, E>) -> Result<(), dbus::Error>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
-    E: std::error::Error + Send + Sync + 'static,
-{
+async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
     let (lost, conn) = dbus_tokio::connection::new_session_sync()?;
 
     tokio::spawn(async {
@@ -58,7 +49,7 @@ where
 
     let iface_token = cr.register(
         HPS_INTERFACE_NAME,
-        |builder: &mut IfaceBuilder<Hps<I, E>>| {
+        |builder: &mut IfaceBuilder<Box<dyn Hps>>| {
             expose_register_as_string(
                 builder,
                 DBUS_HW_VERSION_METHOD_NAME,
@@ -80,7 +71,7 @@ where
                 DBUS_QUERY_STATUS_METHOD_NAME,
                 (),
                 ("reply",),
-                |_ctx, hps, ()| convert_error(query_status(hps).map(|status| (status,))),
+                |_ctx, hps, ()| convert_error(query_status(&mut **hps).map(|status| (status,))),
             );
         },
     );
@@ -100,14 +91,11 @@ where
 }
 
 /// Exposes a register, converting the raw value to a string.
-fn expose_register_as_string<I, E>(
-    builder: &mut IfaceBuilder<Hps<I, E>>,
+fn expose_register_as_string(
+    builder: &mut IfaceBuilder<Box<dyn Hps>>,
     name: &'static str,
     register: u8,
-) where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
-    E: std::error::Error + Send + Sync + 'static,
-{
+) {
     builder.method(name, (), ("reply",), move |_ctx, hps, ()| {
         convert_error(hps.read_register(register).map(|val| (val.to_string(),)))
     });
