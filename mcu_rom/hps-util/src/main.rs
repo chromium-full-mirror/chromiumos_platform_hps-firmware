@@ -179,6 +179,7 @@ fn main() -> Result<()> {
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
         let v = print_device_list()?;
         println!("{:#?}", v);
+        return Ok(());
     }
     if let Some(device) = &flags.device {
         // TODO(dml): Use a separate flag for device type rather than detecting
