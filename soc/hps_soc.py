@@ -210,8 +210,9 @@ def main():
         '--debug', action='store_true',
         help='Enable debug mode')
     parser.add_argument(
-        '--use-camera-dma', action='store_true',
-        help='Generate DMA writer interface for camera')
+        '--no-camera-dma', dest='use_camera_dma',
+        action='store_false', default=True,
+        help='Do not generate DMA writer interface for camera')
     parser.add_argument(
         '--build', action='store_true',
         help='Whether to do a full build, including the bitstream')
