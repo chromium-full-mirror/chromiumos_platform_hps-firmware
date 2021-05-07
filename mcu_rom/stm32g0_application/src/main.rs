@@ -16,12 +16,11 @@ use hal::prelude::*;
 use mcu_common::MemBlock;
 use panic_probe as _;
 use rtic::app;
-use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
-        host_interface: HostInterface<Stm32g0I2cPeripheral>,
+        host_interface: HostInterface<board::HostBus>,
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
     }
@@ -75,6 +74,11 @@ const APP: () = {
         ctx.resources.exti.unpend(hal::exti::Event::GPIO4);
     }
 
+    #[task(binds = USART2, resources = [host_interface], priority = 3)]
+    fn handle_usart2(ctx: handle_usart2::Context) {
+        ctx.resources.host_interface.handle_interrupt();
+    }
+
     #[task(resources = [spi])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         defmt::info!("Received via SPI: {}", &*buffer);
@@ -108,17 +112,17 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
 
-    let board = board::Board::new(p.GPIOA.split(&mut rcc), p.GPIOB.split(&mut rcc));
+    let board = board::Board::new(
+        p.GPIOA.split(&mut rcc),
+        p.GPIOB.split(&mut rcc),
+        p.I2C1,
+        p.USART2,
+        &mut rcc,
+    );
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
     let mut exti = p.EXTI;
 
-    let host_interface = HostInterface::new(Stm32g0I2cPeripheral::new(
-        p.I2C1,
-        &mut rcc,
-        board.host_i2c_sda.into_open_drain_output(),
-        board.host_i2c_scl.into_open_drain_output(),
-        mcu_common::HPS_ADDRESS,
-    ));
+    let host_interface = HostInterface::new(board.host_bus);
 
     // Trigger an interrupt when the SPI CS line changes.
     let spi_cs = board
