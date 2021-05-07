@@ -21,5 +21,6 @@ fi
 
 # Lint Python files
 if [ -n "${PYTHON_FILES}" ]; then
-  "${THIS_DIR}/pyrun" -m pylint "${PYTHON_FILES}"
+  # shellcheck disable=SC2086
+  "${THIS_DIR}/pyrun" -m pylint ${PYTHON_FILES}
 fi
