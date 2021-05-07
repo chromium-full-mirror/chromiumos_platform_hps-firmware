@@ -14,7 +14,4 @@ mcu_common = { path = "../mcu_common" }
 dbus = "0.6"
 dbus-tokio = "0.2"
 futures = "0.1"
-log = "0.4.14"
-mio = "0.7.11"
 tokio-core = "0.1.18"
-tokio-timer = "0.2.13"
