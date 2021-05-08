@@ -10,13 +10,14 @@ use crate::status;
 use crate::Error;
 use i2c_peripheral::I2cError;
 
+#[derive(Default)]
 pub struct CommonHostInterface {
     error_bits: u16,
 }
 
 impl CommonHostInterface {
     pub fn new() -> Self {
-        Self { error_bits: 0 }
+        Self::default()
     }
 
     pub fn read_register(&self, register: u8) -> Option<u16> {
