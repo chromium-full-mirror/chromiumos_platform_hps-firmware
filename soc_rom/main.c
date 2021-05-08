@@ -101,7 +101,8 @@ void capture() {
 
 #if CSR_CAM_CONTROL_DMA_BASE_ADDR
   // Set up DMA
-  cam_control_dma_base_write(frame);
+  uint64_t frame_addr_value = (uint32_t)frame;
+  cam_control_dma_base_write(frame_addr_value);
   cam_control_dma_length_write(sizeof(frame));
   cam_control_dma_enable_write(1);
 #endif
