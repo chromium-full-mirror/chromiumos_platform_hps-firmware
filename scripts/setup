@@ -89,6 +89,10 @@ if [ ! -f /usr/include/dbus-1.0/dbus/dbus-glib.h ]; then
     missing+=(libdbus-glib-1-dev)
 fi
 
+if [ ! -f /usr/include/libudev.h ]; then
+    missing+=(libudev-dev)
+fi
+
 if [ ${#missing[@]} -gt 0 ]; then
     echo "Missing packages: ${missing[*]}" >&2
     if which apt >/dev/null; then
