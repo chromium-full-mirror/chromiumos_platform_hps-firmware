@@ -13,8 +13,8 @@ use mcu_common::registers;
 
 //
 // EXAMPLE usage:
-// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply / org.chromium.Hpsd.query_status
-// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply / org.chromium.Hpsd.cam_inference
+// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply /org/chromium/Hpsd org.chromium.Hpsd.query_status
+// dbus-send --session --dest=org.chromium.Hpsd --type=method_call --print-reply /org/chromium/Hpsd org.chromium.Hpsd.cam_inference
 //
 static HPS_SERVICE_NAME: &str = "org.chromium.Hpsd";
 static HPS_INTERFACE_NAME: &str = "org.chromium.Hpsd";
