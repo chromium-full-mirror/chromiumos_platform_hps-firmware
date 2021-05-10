@@ -23,7 +23,7 @@ static HPS_SERVICE_PATH: &str = "/org/chromium/Hpsd";
 static DBUS_HW_VERSION_METHOD_NAME: &str = "hardware_version";
 static DBUS_QUERY_STATUS_METHOD_NAME: &str = "query_status";
 static DBUS_APP_VERSION_METHOD_NAME: &str = "application_version";
-static DBUS_CAM_INFERENCE_METHOD_NAME: &str = "cam_inference";
+static DBUS_USER_PRESENT_METHOD_NAME: &str = "user_present";
 static DBUS_SYS_ERRORS_METHOD_NAME: &str = "errors";
 
 pub fn setup_ipc(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
@@ -60,9 +60,9 @@ async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
                 DBUS_APP_VERSION_METHOD_NAME,
                 registers::APPLICATION_VERSION,
             );
-            expose_register_as_string(
+            expose_register_as_int(
                 builder,
-                DBUS_CAM_INFERENCE_METHOD_NAME,
+                DBUS_USER_PRESENT_METHOD_NAME,
                 registers::USER_PRESENT_STATUS,
             );
             expose_register_as_string(builder, DBUS_SYS_ERRORS_METHOD_NAME, registers::ERRORS);
@@ -98,6 +98,17 @@ fn expose_register_as_string(
 ) {
     builder.method(name, (), ("reply",), move |_ctx, hps, ()| {
         convert_error(hps.read_register(register).map(|val| (val.to_string(),)))
+    });
+}
+
+/// Exposes a register, converting the raw value to a integer.
+fn expose_register_as_int(
+    builder: &mut IfaceBuilder<Box<dyn Hps>>,
+    name: &'static str,
+    register: u8,
+) {
+    builder.method(name, (), ("reply",), move |_ctx, hps, ()| {
+        convert_error(hps.read_register(register).map(|val| (val,)))
     });
 }
 
