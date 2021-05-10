@@ -86,7 +86,6 @@ impl SerialHostBus {
             .map_err(drop)
             .unwrap();
         usart.listen(serial::Event::Rxne);
-        usart.listen(serial::Event::Txe);
         Self {
             usart,
             state: BusState::Idle,
@@ -100,6 +99,7 @@ impl I2cPeripheral for SerialHostBus {
         use i2c_peripheral::I2cEvent;
         if !matches!(&self.state, BusState::Idle) {
             if self.remaining_bytes == 0 {
+                self.usart.unlisten(serial::Event::Txe);
                 self.state = BusState::Idle;
             }
         }
@@ -117,6 +117,12 @@ impl I2cPeripheral for SerialHostBus {
                             return I2cEvent::StartWrite;
                         }
                         self.state = BusState::Sending;
+                        // Note, we only listen for the transmit buffer being
+                        // empty when we're expecting to send data, otherwise
+                        // we'll get repeated TXE interrupts, which would result
+                        // in no lower priority interrupts getting a chance to
+                        // run.
+                        self.usart.listen(serial::Event::Txe);
                         return I2cEvent::StartRead;
                     }
                     BusState::Sending => {
