@@ -9,21 +9,11 @@ use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
 
+use crate::application_state::ApplicationState;
+
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
-    // TODO: Implement reading of configuration over SPI.
-    #[allow(dead_code)]
-    configuration: Configuration,
-}
-
-/// The current configuration of the HPS. This is writable by the host over I2C
-/// and readable by the FPGA soft CPU over SPI. The FPGA reads the entire struct
-/// as bytes, hence the repr(C). The host writes parts individually via
-/// registers.
-#[repr(C)]
-pub struct Configuration {
-    enabled_features: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -36,13 +26,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
-            configuration: Configuration {
-                enabled_features: 0,
-            },
         }
     }
 
-    pub fn handle_interrupt(&mut self) -> Option<Event> {
+    pub fn handle_interrupt(&mut self, state: &mut ApplicationState) -> Option<Event> {
         loop {
             match self.protocol_handler.next_event() {
                 i2c_protocol::Event::ReadRegister(event) => {
@@ -50,7 +37,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     event.respond(value, &mut self.protocol_handler)
                 }
                 i2c_protocol::Event::WriteRegister(event) => {
-                    if let Some(event) = self.write_register(event.register, event.value) {
+                    if let Some(event) = self.write_register(event.register, event.value, state) {
                         return Some(event);
                     }
                 }
@@ -76,14 +63,19 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    fn write_register(&mut self, register: u8, value: u16) -> Option<Event> {
+    fn write_register(
+        &mut self,
+        register: u8,
+        value: u16,
+        state: &mut ApplicationState,
+    ) -> Option<Event> {
         match register {
             registers::COMMAND => match value {
                 commands::RESET => return Some(Event::Reset),
                 _ => {}
             },
             registers::ENABLED_FEATURES => {
-                self.configuration.enabled_features = value;
+                state.configuration.enabled_features = value;
             }
             _ => (),
         }
@@ -100,6 +92,7 @@ mod tests {
 
     #[test]
     fn test_system_status() {
+        let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
@@ -107,27 +100,29 @@ mod tests {
                 status::OK | status::APPLRUN
             );
         }));
-        interface.handle_interrupt();
+        interface.handle_interrupt(&mut state);
     }
 
     #[test]
     fn test_reset() {
+        let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             hps.write_register(registers::COMMAND, commands::RESET)
                 .unwrap();
         }));
-        assert_eq!(interface.handle_interrupt(), Some(Event::Reset));
+        assert_eq!(interface.handle_interrupt(&mut state), Some(Event::Reset));
     }
 
     #[test]
     fn test_set_enabled_features() {
+        let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             hps.write_register(registers::ENABLED_FEATURES, 1234)
                 .unwrap();
         }));
-        interface.handle_interrupt();
-        assert_eq!(interface.configuration.enabled_features, 1234);
+        interface.handle_interrupt(&mut state);
+        assert_eq!(state.configuration.enabled_features, 1234);
     }
 }

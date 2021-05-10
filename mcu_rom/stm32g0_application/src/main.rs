@@ -10,6 +10,7 @@ mod spi_peripheral;
 
 use crate::boards::board;
 use crate::spi_peripheral::SpiPeripheral;
+use application::ApplicationState;
 use application::HostInterface;
 use defmt_rtt as _;
 use hal::prelude::*;
@@ -20,6 +21,7 @@ use rtic::app;
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
+        state: ApplicationState,
         host_interface: HostInterface<board::HostBus>,
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
@@ -30,9 +32,13 @@ const APP: () = {
         init_peripherals(ctx.device)
     }
 
-    #[task(binds = I2C1, resources = [host_interface], priority = 3)]
+    #[task(binds = I2C1, resources = [host_interface, state], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        match ctx.resources.host_interface.handle_interrupt() {
+        match ctx
+            .resources
+            .host_interface
+            .handle_interrupt(ctx.resources.state)
+        {
             Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
             None => {}
         }
@@ -74,9 +80,11 @@ const APP: () = {
         ctx.resources.exti.unpend(hal::exti::Event::GPIO4);
     }
 
-    #[task(binds = USART2, resources = [host_interface], priority = 3)]
+    #[task(binds = USART2, resources = [host_interface, state], priority = 3)]
     fn handle_usart2(ctx: handle_usart2::Context) {
-        ctx.resources.host_interface.handle_interrupt();
+        ctx.resources
+            .host_interface
+            .handle_interrupt(ctx.resources.state);
     }
 
     #[task(resources = [spi])]
@@ -147,5 +155,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         host_interface,
         spi,
         exti,
+        state: ApplicationState::default(),
     }
 }
