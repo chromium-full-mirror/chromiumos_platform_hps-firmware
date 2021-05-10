@@ -13,6 +13,7 @@ use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_util::SendI2c;
 use mcu_common::commands;
+use mcu_common::registers;
 use std::path::PathBuf;
 
 use hps_util::{print_device_list, query_status};
@@ -33,6 +34,10 @@ struct Flags {
     /// ftdi device serial number, or an absolute path to a serial device, or
     /// "fake"
     device: Option<String>,
+
+    #[argh(option)]
+    /// A "fake" value for the register USER_PRESENT.
+    fake_reg: Option<String>,
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -183,7 +188,13 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
             return Ok(Box::new(HpsAdapter::new(I2cOverUart::new(&device)?)?));
         }
         if device == "fake" {
-            return Ok(Box::new(hps_util::FakeHps::default()));
+            let mut fhps = hps_util::FakeHps::default();
+            // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
+            if let Some(reg) = &flags.fake_reg {
+                let v = reg.parse::<u16>()?;
+                fhps.write_register(registers::USER_PRESENT_STATUS, v)?;
+            };
+            return Ok(Box::new(fhps));
         }
     }
     let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
