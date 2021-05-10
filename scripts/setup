@@ -95,7 +95,7 @@ if [ ${#missing[@]} -gt 0 ]; then
         echo -n "Install [y]/n? " >&2
         read -r answer
         if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
-            sudo apt install -y "${missing[*]}"
+            sudo apt install -y "${missing[@]}"
         fi
     else
         exit 1
