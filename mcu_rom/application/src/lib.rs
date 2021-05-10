@@ -5,8 +5,10 @@
 #![cfg_attr(not(test), no_std)]
 
 mod application_state;
+mod fpga;
 mod host_interface;
 
 pub use application_state::ApplicationState;
+pub use fpga::handle_fpga_packet;
 pub use host_interface::Event;
 pub use host_interface::HostInterface;

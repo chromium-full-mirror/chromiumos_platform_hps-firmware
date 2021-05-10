@@ -4,9 +4,8 @@
 
 #[derive(Default)]
 pub struct ApplicationState {
-    // TODO: Implement reading of configuration over SPI.
-    #[allow(dead_code)]
     pub(crate) configuration: Configuration,
+    pub(crate) status: Status,
 }
 
 /// The current configuration of the HPS. This is writable by the host over I2C
@@ -17,4 +16,13 @@ pub struct ApplicationState {
 #[derive(Default)]
 pub(crate) struct Configuration {
     pub(crate) enabled_features: u16,
+}
+
+/// Current status of the HPS. This is writable by the FPGA and is read by the
+/// host.
+#[repr(C)]
+#[derive(Default)]
+pub(crate) struct Status {
+    pub(crate) person_score: i8,
+    pub(crate) not_person_score: i8,
 }

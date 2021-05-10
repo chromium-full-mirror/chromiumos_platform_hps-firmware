@@ -87,15 +87,17 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi])]
-    fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
-        defmt::info!("Received via SPI: {}", &*buffer);
-        // TODO: Do something useful with the data we received. For now we
-        // just change the data that was sent to us then send it back.
-        for v in buffer.iter_mut() {
-            *v = 255 - *v;
+    #[task(resources = [spi, state])]
+    fn handle_spi_packet(mut ctx: handle_spi_packet::Context, buffer: MemBlock) {
+        defmt::info!("From FPGA: {}", &*buffer);
+        if let Some(response) = ctx
+            .resources
+            .state
+            .lock(|state| application::handle_fpga_packet(state, buffer))
+        {
+            defmt::info!("To FPGA: {}", &*response);
+            ctx.resources.spi.lock(|spi| spi.send(response));
         }
-        ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
