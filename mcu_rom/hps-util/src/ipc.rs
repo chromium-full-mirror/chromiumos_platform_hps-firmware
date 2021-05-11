@@ -35,7 +35,7 @@ pub fn setup_ipc(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
 }
 
 async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
-    let (lost, conn) = dbus_tokio::connection::new_session_sync()?;
+    let (lost, conn) = dbus_tokio::connection::new_system_sync()?;
 
     tokio::spawn(async {
         let error = lost.await;
