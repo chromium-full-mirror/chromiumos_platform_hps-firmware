@@ -24,8 +24,6 @@ pub fn handle_fpga_packet(
         crate::fpga::commands::READ_CONFIG_REGISTERS => {
             let config_size = core::mem::size_of::<Configuration>();
             if buffer.len() >= config_size {
-                buffer[0] = 0x02;
-                buffer[1] = command_code;
                 unsafe {
                     core::ptr::copy_nonoverlapping(
                         &state.configuration,
@@ -47,6 +45,8 @@ pub fn handle_fpga_packet(
         }
         _ => {}
     }
+    buffer[0] = 0x02;
+    buffer[1] = command_code;
     (Some(buffer), command)
 }
 
@@ -68,6 +68,22 @@ mod tests {
         assert_eq!(response[2], 0x34);
         assert_eq!(response[3], 0x12);
         assert_eq!(response[4], 0);
+        testing_block.put(response);
+    }
+
+    #[test]
+    fn test_write_status() {
+        let mut state = ApplicationState::default();
+        let mut testing_block = TestingMemBlock::new();
+        let mut buffer = testing_block.take().unwrap();
+        buffer[0] = crate::fpga::commands::WRITE_STATUS_REGISTERS;
+        buffer[1] = 0x12;
+        buffer[2] = 0x34;
+        let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
+        assert_eq!(response[0], 2);
+        assert_eq!(response[1], crate::fpga::commands::WRITE_STATUS_REGISTERS);
+        assert_eq!(state.status.person_score, 0x12);
+        assert_eq!(state.status.not_person_score, 0x34);
         testing_block.put(response);
     }
 }
