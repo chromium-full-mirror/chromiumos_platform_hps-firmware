@@ -135,26 +135,6 @@ void show_input() {
   }
 }
 
-void show_low_res() {
-  putchar('\n');
-  putchar('\n');
-
-  // For each 8x8 square in output, calculate a shade and print that
-  for (size_t r = 0; r < HM01B0_PIXEL_Y_NUM / 8; r++) {
-    for (size_t c = 0; c < HM01B0_PIXEL_X_NUM / 8; c++) {
-      uint16_t sum = 0;
-      for (size_t i = 0; i < 8; i++) {
-        for (size_t j = 0; j < 8; j++) {
-          sum += (uint16_t)get_pixel(2 + c * 8 + j, 2 + r * 8 + i);
-        }
-      }
-      int s = (sum + (64 * 16 / 2)) / (64 * 16);
-      putchar(shades[16 - s]);
-    }
-    putchar('\n');
-  }
-}
-
 // Outputs data as 244 lines of 324 base64 encoded bytes
 static const char* b64_table =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -164,28 +144,23 @@ static inline char b64_lookup(uint8_t n) {
 #define b64_line_len (HM01B0_PIXEL_X_NUM / 3 * 4 + 1)
 static char b64_buf[b64_line_len + 1];
 
-void capture_raw_frames(int n) {
-  for (int i = 0; i < n; i++) {
-    printf("Capturing image %d of %d\n", i + 1, n);
-    capture();
-    puts("+++ base64 +++");
-
-    b64_buf[b64_line_len] = 0;
-    for (size_t y = 0; y < HM01B0_PIXEL_Y_NUM; y++) {
-      size_t j = 0;
-      for (size_t x = 0; x < HM01B0_PIXEL_X_NUM; x += 3) {
-        uint8_t p0 = get_pixel(x + 0, y);
-        uint8_t p1 = get_pixel(x + 1, y);
-        uint8_t p2 = get_pixel(x + 2, y);
-        b64_buf[j++] = b64_lookup(p0 >> 2);
-        b64_buf[j++] = b64_lookup((p0 << 4) | (0xf & (p1 >> 4)));
-        b64_buf[j++] = b64_lookup((p1 << 2) | (0x3 & (p2 >> 6)));
-        b64_buf[j++] = b64_lookup(p2);
-      }
-      puts(b64_buf);
+void show_raw_frame(void) {
+  puts("+++ base64 +++");
+  b64_buf[b64_line_len] = 0;
+  for (size_t y = 0; y < HM01B0_PIXEL_Y_NUM; y++) {
+    size_t j = 0;
+    for (size_t x = 0; x < HM01B0_PIXEL_X_NUM; x += 3) {
+      uint8_t p0 = get_pixel(x + 0, y);
+      uint8_t p1 = get_pixel(x + 1, y);
+      uint8_t p2 = get_pixel(x + 2, y);
+      b64_buf[j++] = b64_lookup(p0 >> 2);
+      b64_buf[j++] = b64_lookup((p0 << 4) | (0xf & (p1 >> 4)));
+      b64_buf[j++] = b64_lookup((p1 << 2) | (0x3 & (p2 >> 6)));
+      b64_buf[j++] = b64_lookup(p2);
     }
-    puts("--- base64 ---");
+    puts(b64_buf);
   }
+  puts("--- base64 ---");
 }
 
 void run_classify() {
@@ -195,30 +170,10 @@ void run_classify() {
   printf("Person: %d, Not person %d\n", person, not_person);
 }
 
-void classify_demo() {
-  tflite_load_person();
-  puts("Loaded image with person");
-  run_classify();
-  tflite_load_no_person();
-  puts("Loaded image without person");
-  run_classify();
-}
-
 void camera_init() {
-  while (1) {
-    puts("Camera: Enter 'n' for normal model or '1' for walking 1's");
-    int c = readchar();
-    if (c == 'n') {
-      puts("Camera: Normal mode init");
-      hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
-                         sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
-      return;
-    } else if (c == '1') {
-      puts("Camera: Walking 1's init");
-      hm01b0_test_walking1s(&hm01b0_cfg);
-      return;
-    }
-  }
+  puts("Camera: Normal mode init");
+  hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
+                     sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
 }
 
 int main(void) {
@@ -240,60 +195,20 @@ int main(void) {
   // Auto exposure struct
   memset((void*)&aecfg, 0x00, sizeof(hm01b0_ae_cfg_t));
 
-  // Check model ID
-  uint16_t modelid;
-  status = hm01b0_get_modelid(&hm01b0_cfg, &modelid);
-  CAM_CHECK(status, "get_modelid");
-  if (!status)
-    printf("model id = %04x\n", modelid);
-
   // Load up init script
   camera_init();
+
+  // Calibrate autoexposure
+  calibrate();
 
   // Initialize TFLite
   tflite_init();
 
   while (1) {
-    // Check model ID
-    status = hm01b0_get_modelid(&hm01b0_cfg, &modelid);
-    CAM_CHECK(status, "get_modelid");
-    printf("model id = %04x\n", modelid);
-
-    // Mirror the bytes back
-    puts("\n\nMenu");
-    puts("----");
-    puts("1. Calibrate Auto Exposure");
-    puts("2. Capture raw frame");
-    puts("3. Capture three raw frames");
-    puts("c. TfLM canned image demo");
-    puts("p. Presence detection");
-    puts("> ");
-
-    int c = readchar();
-    putchar(c);
-    putchar('\n');
-
-    switch (c) {
-      case '1':
-        calibrate();
-        break;
-      case '2':
-        capture_raw_frames(1);
-        break;
-      case '3':
-        capture_raw_frames(3);
-        break;
-      case 'c':
-        classify_demo();
-        break;
-      case 'p':
-        capture();
-        load_from_camera();
-        show_low_res();
-        run_classify();
-        break;
-      default:
-        puts("???\n");
-    }
+    capture();
+    show_raw_frame();
+    load_from_camera();
+    show_input();
+    run_classify();
   }
 }
