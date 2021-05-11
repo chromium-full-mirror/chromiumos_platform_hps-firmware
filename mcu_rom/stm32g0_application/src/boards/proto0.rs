@@ -8,6 +8,8 @@ use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
 use hal::gpio::Input;
+use hal::gpio::Output;
+use hal::gpio::PushPull;
 use hal::prelude::*;
 use hal::serial;
 use hal::stm32::I2C1;
@@ -20,6 +22,8 @@ pub type FpgaSpiCsPin = gpio::gpioa::PA4<Input<Floating>>;
 
 pub type HostBus = SerialHostBus;
 
+pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA4<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -29,6 +33,8 @@ pub struct Board {
     /// Proto0 doesn't have I2C available for talking to the host, so we tunnel
     /// an equivalent protocol over UART.
     pub host_bus: SerialHostBus,
+
+    pub debug_led: DebugLed,
 }
 
 impl Board {
@@ -46,6 +52,8 @@ impl Board {
             fpga_spi_copi: a.pa7,
 
             host_bus: SerialHostBus::new(a.pa2, a.pa3, usart2, rcc),
+
+            debug_led: a.pa1.into_push_pull_output(),
         }
     }
 }

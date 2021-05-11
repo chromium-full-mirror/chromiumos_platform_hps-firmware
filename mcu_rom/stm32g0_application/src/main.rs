@@ -10,6 +10,7 @@ mod spi_peripheral;
 
 use crate::boards::board;
 use crate::spi_peripheral::SpiPeripheral;
+use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
 use defmt_rtt as _;
@@ -25,6 +26,7 @@ const APP: () = {
         host_interface: HostInterface<board::HostBus>,
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
+        debug_led: board::DebugLed,
     }
 
     #[init]
@@ -87,16 +89,26 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi, state])]
+    #[task(resources = [spi, state, debug_led])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, buffer: MemBlock) {
         defmt::info!("From FPGA: {}", &*buffer);
-        if let Some(response) = ctx
+        let (response, command) = ctx
             .resources
             .state
-            .lock(|state| application::handle_fpga_packet(state, buffer))
-        {
+            .lock(|state| application::handle_fpga_packet(state, buffer));
+        if let Some(response) = response {
             defmt::info!("To FPGA: {}", &*response);
             ctx.resources.spi.lock(|spi| spi.send(response));
+        }
+        if let Some(command) = command {
+            match command {
+                fpga::Command::SetDebugLed(true) => {
+                    ctx.resources.debug_led.set_high().unwrap();
+                }
+                fpga::Command::SetDebugLed(false) => {
+                    ctx.resources.debug_led.set_low().unwrap();
+                }
+            }
         }
     }
 
@@ -158,5 +170,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         spi,
         exti,
         state: ApplicationState::default(),
+        debug_led: board.debug_led,
     }
 }

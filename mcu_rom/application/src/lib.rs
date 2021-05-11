@@ -5,7 +5,7 @@
 #![cfg_attr(not(test), no_std)]
 
 mod application_state;
-mod fpga;
+pub mod fpga;
 mod host_interface;
 
 pub use application_state::ApplicationState;

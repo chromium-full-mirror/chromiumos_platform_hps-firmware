@@ -8,6 +8,8 @@ use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
 use hal::gpio::Input;
+use hal::gpio::Output;
+use hal::gpio::PushPull;
 use hal::stm32::I2C1;
 use hal::stm32::USART2;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
@@ -17,6 +19,11 @@ pub type FpgaSpiCsPin = hal::gpio::gpiob::PB0<Input<Floating>>;
 
 pub type HostBus = Stm32g0I2cPeripheral;
 
+// The LED on the Nucleo board is actually PA5, however that's already used for
+// the SPI clock, so we arbitrarily use some other pin so that the code
+// compiles.
+pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -24,6 +31,8 @@ pub struct Board {
     pub fpga_spi_copi: gpio::gpioa::PA7<Analog>,
 
     pub host_bus: Stm32g0I2cPeripheral,
+
+    pub debug_led: DebugLed,
 }
 
 impl Board {
@@ -48,6 +57,8 @@ impl Board {
             fpga_spi_copi: a.pa7,
 
             host_bus,
+
+            debug_led: a.pa1.into_push_pull_output(),
         }
     }
 }

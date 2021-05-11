@@ -9,14 +9,23 @@ use crate::application_state::Status;
 use crate::ApplicationState;
 use mcu_common::MemBlock;
 
-pub fn handle_fpga_packet(state: &mut ApplicationState, mut buffer: MemBlock) -> Option<MemBlock> {
-    let command = buffer[0];
-    match command {
+/// A command
+pub enum Command {
+    SetDebugLed(bool),
+}
+
+pub fn handle_fpga_packet(
+    state: &mut ApplicationState,
+    mut buffer: MemBlock,
+) -> (Option<MemBlock>, Option<Command>) {
+    let command_code = buffer[0];
+    let mut command = None;
+    match command_code {
         crate::fpga::commands::READ_CONFIG_REGISTERS => {
             let config_size = core::mem::size_of::<Configuration>();
             if buffer.len() >= config_size {
                 buffer[0] = 0x02;
-                buffer[1] = command;
+                buffer[1] = command_code;
                 unsafe {
                     core::ptr::copy_nonoverlapping(
                         &state.configuration,
@@ -33,7 +42,10 @@ pub fn handle_fpga_packet(state: &mut ApplicationState, mut buffer: MemBlock) ->
                 core::mem::size_of::<Status>(),
             );
         },
+        crate::fpga::commands::SET_DEBUG_LED => {
+            command = Some(Command::SetDebugLed(buffer[1] != 0));
+        }
         _ => {}
     }
-    Some(buffer)
+    (Some(buffer), command)
 }
