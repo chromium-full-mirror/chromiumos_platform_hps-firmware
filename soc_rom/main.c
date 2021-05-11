@@ -221,13 +221,14 @@ int main(void) {
   // Initialize TFLite
   tflite_init();
 
+  uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
   bool do_show_raw_frame = false;
   bool do_show_input = false;
   bool do_run_classify = false;
   while (1) {
     // Accept input to configure which functions are run
-    puts("Press key (s, r, i, c)");
+    printf("[%u] Press key (s, r, i, c)\n", loop_counter++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
