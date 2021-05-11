@@ -78,6 +78,7 @@ executable("rom.bin") {
     "main.c",
     "cpp_support.c",
     "hm01b0_litex.c",
+    "mcu.c",
     "../third_party/litex_i2c/hps_i2c.c",
   ]
   configs += [ ":riscv_rom" ]

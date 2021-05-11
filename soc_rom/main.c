@@ -15,6 +15,7 @@
 
 #include "hm01b0_platform.h"
 #include "hps_version.h"
+#include "mcu.h"
 #include "litex_shim/shim.h"
 
 void isr(void) {
@@ -174,6 +175,15 @@ void camera_init() {
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
 }
 
+static void read_mcu_config(void) {
+  puts("Reading MCU configuration");
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = 0x20;  // read configuration
+
+  // Just running the transaction will print debug info
+  mcu_transaction();
+}
+
 static bool toggle(int input, int key, const char* desc, bool* var) {
   if (input != key) {
     return false;
@@ -211,15 +221,17 @@ int main(void) {
   // Initialize TFLite
   tflite_init();
 
+  bool do_spi_transfer = false;
   bool do_show_raw_frame = false;
   bool do_show_input = false;
   bool do_run_classify = false;
   while (1) {
     // Accept input to configure which functions are run
-    puts("Press key (r, i, c)");
+    puts("Press key (s, r, i, c)");
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
+      recognized |= toggle(c, 's', "SPI Transfer", &do_spi_transfer);
       recognized |= toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
       recognized |= toggle(c, 'i', "Show input", &do_show_input);
       recognized |= toggle(c, 'c', "Run classifier", &do_run_classify);
@@ -228,6 +240,9 @@ int main(void) {
       }
     }
     // Run configured functions
+    if (do_spi_transfer) {
+      read_mcu_config();
+    }
     puts("Capturing image");
     capture();
     if (do_show_raw_frame) {
