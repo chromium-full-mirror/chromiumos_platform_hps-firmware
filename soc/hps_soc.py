@@ -25,7 +25,7 @@ from .spi_controller import SpiController
 KB = 1024
 MB = 1024 * KB
 
-UART_SPEED = 115200
+UART_SPEED = 460800
 RAM_SIZE = 320 * KB
 
 SOC_DIR = os.path.dirname(os.path.realpath(__file__))

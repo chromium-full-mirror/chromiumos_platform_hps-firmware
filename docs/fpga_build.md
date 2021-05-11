@@ -50,7 +50,7 @@ To build the bitstream and software, then program the device:
 Finally, connect a UART and communicate with the running program:
 
 ```bash
-./scripts/pyrun third_party/python/litex/litex/tools/litex_term.py /dev/ttyUSB0
+./scripts/term /dev/ttyUSB0
 ```
 (replace `/dev/ttyUSB0` with the appropriate device name)
 
