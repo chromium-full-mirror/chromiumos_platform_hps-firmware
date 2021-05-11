@@ -49,3 +49,25 @@ pub fn handle_fpga_packet(
     }
     (Some(buffer), command)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mcu_common_testing::mem_block::TestingMemBlock;
+
+    #[test]
+    fn test_read_config() {
+        let mut state = ApplicationState::default();
+        state.configuration.enabled_features = 0x1234;
+        let mut testing_block = TestingMemBlock::new();
+        let mut buffer = testing_block.take().unwrap();
+        buffer[0] = crate::fpga::commands::READ_CONFIG_REGISTERS;
+        let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
+        assert_eq!(response[0], 2);
+        assert_eq!(response[1], crate::fpga::commands::READ_CONFIG_REGISTERS);
+        assert_eq!(response[2], 0x34);
+        assert_eq!(response[3], 0x12);
+        assert_eq!(response[4], 0);
+        testing_block.put(response);
+    }
+}

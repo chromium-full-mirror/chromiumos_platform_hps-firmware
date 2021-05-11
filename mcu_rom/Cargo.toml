@@ -9,6 +9,7 @@ members = [
     "i2c_peripheral",
     "i2c_protocol",
     "mcu_common",
+    "mcu_common_testing",
     "sign-rom",
 ]
 # Crates that can only run on the MCU go here. The MCU binaries can't go into a
