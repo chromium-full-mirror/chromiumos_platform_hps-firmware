@@ -6,6 +6,10 @@
 
 # Runs tests that can be run without hardware.
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NORMAL='\033[0m'
+
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
@@ -27,3 +31,10 @@ cargo +stable build
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
 cargo +stable build
+
+# Run Python tests
+cd "${PROJECT_ROOT}"
+echo -e "\n\n${RED}=======================================${NORMAL}"
+echo -e "${GREEN}Running Python tests from soc directory${NORMAL}"
+echo -e "${RED}=======================================${NORMAL}"
+scripts/pyrun -m unittest soc/*.py
