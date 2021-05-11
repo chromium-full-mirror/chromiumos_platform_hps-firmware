@@ -48,7 +48,9 @@ pub fn handle_fpga_packet(
         crate::fpga::commands::SET_DEBUG_LED => {
             command = Some(Command::SetDebugLed(buffer[1] != 0));
         }
-        _ => {}
+        _ => {
+            response_code = status::ERROR;
+        }
     }
     buffer[0] = response_code;
     buffer[1] = command_code;
@@ -100,6 +102,18 @@ mod tests {
         let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
         assert_eq!(response[0], status::READY);
         assert_eq!(response[1], 0);
+        testing_block.put(response);
+    }
+
+    #[test]
+    fn test_invalid_command() {
+        let mut state = ApplicationState::default();
+        let mut testing_block = TestingMemBlock::new();
+        let mut buffer = testing_block.take().unwrap();
+        buffer[0] = 0xff;
+        let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
+        assert_eq!(response[0], status::ERROR);
+        assert_eq!(response[1], 0xff);
         testing_block.put(response);
     }
 }
