@@ -33,7 +33,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         loop {
             match self.protocol_handler.next_event() {
                 i2c_protocol::Event::ReadRegister(event) => {
-                    let value = self.read_register(event.register);
+                    let value = self.read_register(event.register, state);
                     event.respond(value, &mut self.protocol_handler)
                 }
                 i2c_protocol::Event::WriteRegister(event) => {
@@ -55,10 +55,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
-    fn read_register(&self, register: u8) -> u16 {
+    fn read_register(&self, register: u8, state: &ApplicationState) -> u16 {
         let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {
             registers::SYSTEM_STATUS => common_value | status::APPLRUN,
+            registers::USER_PRESENT_STATUS => state.status.person_score as u16,
             _ => common_value,
         }
     }
@@ -124,5 +125,19 @@ mod tests {
         }));
         interface.handle_interrupt(&mut state);
         assert_eq!(state.configuration.enabled_features, 1234);
+    }
+
+    #[test]
+    fn test_read_user_present() {
+        let mut state = ApplicationState::default();
+        state.status.person_score = -55;
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = HpsAdapter::without_magic_check(device);
+            assert_eq!(
+                hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as i8,
+                -55
+            );
+        }));
+        interface.handle_interrupt(&mut state);
     }
 }
