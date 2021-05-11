@@ -70,7 +70,6 @@ void calibrate() {
 
 // Load image from frame buffer into tflite input
 void load_from_camera() {
-  printf("start\n");
   int8_t* input = tflite_get_input();
 
   // Resize to 96x96 by copying a 192*192 square from the middle
@@ -89,11 +88,9 @@ void load_from_camera() {
       *input++ = ((val + 2) / 4) - 128;
     }
   }
-  printf("end\n");
 }
 
 void capture() {
-  puts("capture");
   hm01b0_status_e status;
 
   status = hm01b0_cmd_update(&hm01b0_cfg);
@@ -177,13 +174,22 @@ void camera_init() {
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
 }
 
+static bool toggle(int input, int key, const char* desc, bool* var) {
+  if (input != key) {
+    return false;
+  }
+  *var = !*var;
+  printf("%s now %s\n", desc, *var ? "ON" : "OFF");
+  return true;
+}
+
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
   uart_init();
 
-  puts("HPS SoC application " HPS_VERSION
-       " (built " HPS_BUILD_DATE " by " HPS_BUILD_USER ")");
+  puts("HPS SoC application " HPS_VERSION " (built " HPS_BUILD_DATE
+       " by " HPS_BUILD_USER ")");
 
   hm01b0_status_e status;
 
@@ -205,11 +211,34 @@ int main(void) {
   // Initialize TFLite
   tflite_init();
 
+  bool do_show_raw_frame = false;
+  bool do_show_input = false;
+  bool do_run_classify = false;
   while (1) {
+    // Accept input to configure which functions are run
+    puts("Press key (r, i, c)");
+    if (uart_read_nonblock()) {
+      int c = uart_read();
+      bool recognized = false;
+      recognized |= toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
+      recognized |= toggle(c, 'i', "Show input", &do_show_input);
+      recognized |= toggle(c, 'c', "Run classifier", &do_run_classify);
+      if (!recognized) {
+        printf("Did not understand input \"%c\"\n", c);
+      }
+    }
+    // Run configured functions
+    puts("Capturing image");
     capture();
-    show_raw_frame();
+    if (do_show_raw_frame) {
+      show_raw_frame();
+    }
     load_from_camera();
-    show_input();
-    run_classify();
+    if (do_show_input) {
+      show_input();
+    }
+    if (do_run_classify) {
+      run_classify();
+    }
   }
 }
