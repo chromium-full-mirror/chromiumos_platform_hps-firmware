@@ -27,6 +27,7 @@ const APP: () = {
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
+        fpga_programn: board::FpgaProgramn,
     }
 
     #[init]
@@ -89,7 +90,7 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi, state, debug_led])]
+    #[task(resources = [spi, state, debug_led, fpga_programn])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, buffer: MemBlock) {
         defmt::info!("From FPGA: {}", &*buffer);
         let (response, command) = ctx
@@ -108,6 +109,7 @@ const APP: () = {
                 fpga::Command::SetDebugLed(false) => {
                     ctx.resources.debug_led.set_low().unwrap();
                 }
+                fpga::Command::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
             }
         }
     }
@@ -118,6 +120,16 @@ const APP: () = {
         fn TIM17();
     }
 };
+
+fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
+    defmt::info!("Resetting FPGA");
+    // Hold programn low for long enough to reset the FPGA. Experimentally 2
+    // iterations is sufficient, so we do 4 just to be sure.
+    for _ in 0..4 {
+        fpga_programn.set_low().unwrap();
+    }
+    fpga_programn.set_high().unwrap();
+}
 
 fn rcc_config() -> hal::rcc::Config {
     hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default())
@@ -137,6 +149,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let board = board::Board::new(
         p.GPIOA.split(&mut rcc),
         p.GPIOB.split(&mut rcc),
+        p.GPIOC.split(&mut rcc),
         p.I2C1,
         p.USART2,
         &mut rcc,
@@ -171,5 +184,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         exti,
         state: ApplicationState::default(),
         debug_led: board.debug_led,
+        fpga_programn: board.fpga_programn,
     }
 }

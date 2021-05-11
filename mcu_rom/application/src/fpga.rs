@@ -11,8 +11,10 @@ use crate::ApplicationState;
 use mcu_common::MemBlock;
 
 /// A command
+#[derive(Eq, PartialEq, Debug)]
 pub enum Command {
     SetDebugLed(bool),
+    ResetFpga,
 }
 
 pub fn handle_fpga_packet(
@@ -48,6 +50,7 @@ pub fn handle_fpga_packet(
         crate::fpga::commands::SET_DEBUG_LED => {
             command = Some(Command::SetDebugLed(buffer[1] != 0));
         }
+        crate::fpga::commands::RESET_FPGA => command = Some(Command::ResetFpga),
         _ => {
             response_code = status::ERROR;
         }
@@ -115,5 +118,16 @@ mod tests {
         assert_eq!(response[0], status::ERROR);
         assert_eq!(response[1], 0xff);
         testing_block.put(response);
+    }
+
+    #[test]
+    fn test_fpga_reset() {
+        let mut state = ApplicationState::default();
+        let mut testing_block = TestingMemBlock::new();
+        let mut buffer = testing_block.take().unwrap();
+        buffer[0] = crate::fpga::commands::RESET_FPGA;
+        let (response, command) = handle_fpga_packet(&mut state, buffer);
+        assert_eq!(command, Some(Command::ResetFpga));
+        testing_block.put(response.unwrap());
     }
 }

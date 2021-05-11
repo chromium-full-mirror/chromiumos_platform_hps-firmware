@@ -24,6 +24,10 @@ pub type HostBus = Stm32g0I2cPeripheral;
 // compiles.
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 
+// The nucleo board doesn't have an FPGA hooked up to it, so we arbitrarily pick
+// some pin.
+pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -33,12 +37,14 @@ pub struct Board {
     pub host_bus: Stm32g0I2cPeripheral,
 
     pub debug_led: DebugLed,
+    pub fpga_programn: FpgaProgramn,
 }
 
 impl Board {
     pub fn new(
         a: gpio::gpioa::Parts,
         b: gpio::gpiob::Parts,
+        c: gpio::gpioc::Parts,
         i2c1: I2C1,
         _usart2: USART2,
         rcc: &mut hal::rcc::Rcc,
@@ -59,6 +65,7 @@ impl Board {
             host_bus,
 
             debug_led: a.pa1.into_push_pull_output(),
+            fpga_programn: c.pc15.into_push_pull_output(),
         }
     }
 }
