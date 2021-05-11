@@ -16,6 +16,11 @@ from litex.soc.cores.bitbang import I2CMaster
 from litex.build.lattice.radiant import (radiant_build_args,
                                          radiant_build_argdict)
 
+from litespi.modules import GD25LQ128D
+from litespi.opcodes import SpiNorFlashOpCodes as Codes
+from litespi.phy.generic import LiteSPIPHY
+from litespi import LiteSPI
+
 from .hps_platform import Platform
 from .patch import Patch
 from .cam_control import CameraControl, CameraControlDMA
@@ -60,11 +65,11 @@ class HpsSoC(LiteXSoC):
     cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug,
-                 use_camera_dma=False):
+                 use_camera_dma=False, litespi_flash=False):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
-                          csr_data_width=8)
+                          csr_data_width=32 if litespi_flash else 8)
 
         # Clock, Controller, CPU
         self.submodules.crg = platform.create_crg()
@@ -77,7 +82,10 @@ class HpsSoC(LiteXSoC):
         self.setup_ram()
 
         # SPI Flash
-        self.setup_flash()
+        if litespi_flash:
+            self.setup_litespi_flash()
+        else:
+            self.setup_flash()
 
         # ROM (part of SPI Flash)
         self.bus.add_region('rom', self.rom_region)
@@ -131,6 +139,20 @@ class HpsSoC(LiteXSoC):
                                             dummy=8, endianness='little', div=4)
         self.bus.add_slave('spiflash', self.spiflash.bus, self.spiflash_region)
         self.csr.add('spiflash')
+
+    def setup_litespi_flash(self):
+        self.submodules.spiflash_phy = LiteSPIPHY(
+            self.platform.request("spiflash"), GD25LQ128D(
+                Codes.READ_1_1_1), default_divisor=2)
+        self.submodules.spiflash_mmap = LiteSPI(phy=self.spiflash_phy,
+                                                clk_freq=self.platform.sys_clk_freq,
+                                                mmap_endianness=self.cpu.endianness)
+        self.csr.add("spiflash_mmap")
+        self.csr.add("spiflash_phy")
+        self.bus.add_slave(
+            name="spiflash",
+            slave=self.spiflash_mmap.bus,
+            region=self.spiflash_region)
 
     def add_serial(self):
         self.add_uart('serial', baudrate=UART_SPEED)
@@ -221,16 +243,21 @@ def main():
         help='Which toolchain to use, radiant (default) or oxide')
     parser.add_argument(
         '--cache', default=None,
-        help='Specify custom cache config.  Supported: 8d8i2w, 8d8i4w.   Defualt is 4d4i1w.')
+        help='Specify custom cache config.  Supported: 8d8i2w, 8d8i4w.   Default is 4d4i1w.')
+    parser.add_argument(
+        '--litespi-flash', action='store_true',
+        help='Use litespi flash')
+
     args = parser.parse_args()
 
     soc = HpsSoC(
         platform=Platform(args.toolchain),
         debug=args.debug,
-        use_camera_dma=args.use_camera_dma)
+        use_camera_dma=args.use_camera_dma,
+        litespi_flash=args.litespi_flash)
 
     if args.cache:
-        if args.output_dir == None:
+        if args.output_dir is None:
             args.output_dir = ("build/hps_" + args.cache)
             print(f"Set output dir to {args.output_dir}")
         assert 'full' in soc.cpu.variant
@@ -238,9 +265,10 @@ def main():
         vexriscv = f"{SOC_DIR}/../third_party/python/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv"
         var = "Full"
         cache = args.cache
-        soc.cpu.use_external_variant(f"{vexriscv}/verilog/VexRiscv_{var}{cache}.v")
+        soc.cpu.use_external_variant(
+            f"{vexriscv}/verilog/VexRiscv_{var}{cache}.v")
     else:
-        if args.output_dir == None:
+        if args.output_dir is None:
             args.output_dir = "build/hps_platform"
 
     builder = create_builder(soc, args)
@@ -253,8 +281,10 @@ def main():
         print('Use --build to build the bitstream, if needed')
 
     print(f"Loading from output dir: {builder.output_dir}")
-    os.system(f"scripts/prog bitstream {builder.output_dir}/gateware/hps_platform.bit")
-    os.system(f"scripts/prog rom {builder.output_dir}/software/bios/out/riscv-gcc/rom.bin")
+    os.system(
+        f"scripts/prog bitstream {builder.output_dir}/gateware/hps_platform.bit")
+    os.system(
+        f"scripts/prog rom {builder.output_dir}/software/bios/out/riscv-gcc/rom.bin")
 
 
 if __name__ == '__main__':
