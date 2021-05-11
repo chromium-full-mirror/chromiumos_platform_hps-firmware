@@ -191,8 +191,8 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
             let mut fhps = hps_util::FakeHps::default();
             // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
             if let Some(reg) = &flags.fake_reg {
-                let v = reg.parse::<u16>()?;
-                fhps.write_register(registers::USER_PRESENT_STATUS, v)?;
+                let v = reg.parse::<i16>()?;
+                fhps.write_register(registers::USER_PRESENT_STATUS, v as u16)?;
             };
             return Ok(Box::new(fhps));
         }
