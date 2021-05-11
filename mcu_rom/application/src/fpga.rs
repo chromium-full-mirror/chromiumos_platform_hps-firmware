@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 mod commands;
+mod status;
 
 use crate::application_state::Configuration;
 use crate::application_state::Status;
@@ -45,7 +46,7 @@ pub fn handle_fpga_packet(
         }
         _ => {}
     }
-    buffer[0] = 0x02;
+    buffer[0] = status::OK;
     buffer[1] = command_code;
     (Some(buffer), command)
 }
@@ -63,7 +64,7 @@ mod tests {
         let mut buffer = testing_block.take().unwrap();
         buffer[0] = crate::fpga::commands::READ_CONFIG_REGISTERS;
         let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
-        assert_eq!(response[0], 2);
+        assert_eq!(response[0], status::OK);
         assert_eq!(response[1], crate::fpga::commands::READ_CONFIG_REGISTERS);
         assert_eq!(response[2], 0x34);
         assert_eq!(response[3], 0x12);
@@ -80,7 +81,7 @@ mod tests {
         buffer[1] = 0x12;
         buffer[2] = 0x34;
         let response = handle_fpga_packet(&mut state, buffer).0.unwrap();
-        assert_eq!(response[0], 2);
+        assert_eq!(response[0], status::OK);
         assert_eq!(response[1], crate::fpga::commands::WRITE_STATUS_REGISTERS);
         assert_eq!(state.status.person_score, 0x12);
         assert_eq!(state.status.not_person_score, 0x34);
