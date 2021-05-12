@@ -146,7 +146,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
 
-    let board = board::Board::new(
+    let mut board = board::Board::new(
         p.GPIOA.split(&mut rcc),
         p.GPIOB.split(&mut rcc),
         p.GPIOC.split(&mut rcc),
@@ -178,6 +178,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         "MCU application started. CPU is running at {}Mhz",
         rcc.clocks.sys_clk.0 / 1000000
     );
+    // Reset the FPGA on startup so that it's in a known state.
+    reset_fpga(&mut board.fpga_programn);
     init::LateResources {
         host_interface,
         spi,
