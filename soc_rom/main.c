@@ -18,13 +18,6 @@
 #include "mcu.h"
 #include "litex_shim/shim.h"
 
-void isr(void) {
-  unsigned int irqs;
-  irqs = irq_pending() & irq_getmask();
-  if (irqs & (1 << UART_INTERRUPT)) {
-    uart_isr();
-  }
-}
 
 #define CAM_CHECK(status, msg)     \
   {                                \
