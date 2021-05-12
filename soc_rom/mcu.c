@@ -5,6 +5,7 @@
 #include "mcu.h"
 
 #include <generated/csr.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -75,4 +76,14 @@ int mcu_transaction(void) {
   }
   puts("MCU Transaction failed");
   return -1;
+}
+
+void mcu_printf(const char* format, ...) {
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  va_list args;
+  va_start(args, format);
+  vsnprintf((char*)&mcu_buf_out[1], MCU_BUFFER_LEN - 1, format, args);
+  mcu_buf_out[0] = 0x61;
+  va_end(args);
+  mcu_transaction();
 }

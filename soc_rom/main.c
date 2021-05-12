@@ -223,6 +223,8 @@ int main(void) {
   write_ae_cfg();
   calibrate(15);
 
+  mcu_printf("Camera calibration complete");
+
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
   bool do_show_raw_frame = false;

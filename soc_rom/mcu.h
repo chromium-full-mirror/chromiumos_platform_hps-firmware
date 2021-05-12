@@ -37,6 +37,10 @@ extern uint8_t mcu_buf_in[MCU_BUFFER_LEN];
 // Returns 0 on success and -1 on failure
 int mcu_transaction(void);
 
+// Like printf, but the output will show up in the MCU's debug output, if there
+// is a debug probe connected to the MCU.
+void mcu_printf(const char* format, ...) __attribute__((format(printf, 1, 2)));
+
 // Number of times the controller will poll the MCU for a response before
 // giving up.
 #define MCU_POLL_COUNT 1000

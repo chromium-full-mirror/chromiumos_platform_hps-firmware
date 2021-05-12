@@ -20,3 +20,6 @@ pub const RESET_FPGA: u8 = 0x40;
 /// Sets the debug LED on or off based on whether the first byte of the payload
 /// is 1 or 0 respectively.
 pub const SET_DEBUG_LED: u8 = 0x60;
+
+/// Logs the payload up to the first null character. Payload must be UTF-8.
+pub const DEBUG_LOG: u8 = 0x61;

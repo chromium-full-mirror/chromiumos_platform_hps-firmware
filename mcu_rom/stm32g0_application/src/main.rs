@@ -110,6 +110,13 @@ const APP: () = {
                 .resources
                 .state
                 .lock(|state| fpga::write_status_registers(&buffer, state)),
+            fpga::Action::DebugLog => {
+                if let Some(message) = fpga::payload_as_string(&buffer) {
+                    defmt::info!("FPGA says: {}", message);
+                } else {
+                    defmt::error!("FPGA sent invalid message");
+                }
+            }
             fpga::Action::None => {}
         }
         request.prepare_to_send(&mut buffer);

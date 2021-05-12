@@ -25,6 +25,7 @@ pub enum Action {
     ResetFpga,
     ReadConfigRegisters,
     WriteStatusRegisters,
+    DebugLog,
 }
 
 impl Request {
@@ -46,6 +47,9 @@ impl Request {
                 action = Action::SetDebugLed(buffer[1] != 0);
             }
             crate::fpga::commands::RESET_FPGA => action = Action::ResetFpga,
+            crate::fpga::commands::DEBUG_LOG => {
+                action = Action::DebugLog;
+            }
             _ => {
                 response_code = status::ERROR;
             }
@@ -88,6 +92,21 @@ pub fn write_status_registers(buffer: &MemBlock, state: &mut ApplicationState) {
             usize::min(payload_in.len(), core::mem::size_of::<Status>()),
         );
     }
+}
+
+/// Returns the payload contained within `buffer`.
+pub fn payload(buffer: &MemBlock) -> &[u8] {
+    &buffer[1..]
+}
+
+/// Returns the payload of `buffer` as a string, or None if it's not valid
+/// UTF-8.
+pub fn payload_as_string(buffer: &MemBlock) -> Option<&str> {
+    let mut bytes = payload(buffer);
+    if let Some(first_null_index) = bytes.iter().position(|&b| b == 0) {
+        bytes = &bytes[..first_null_index];
+    }
+    core::str::from_utf8(bytes).ok()
 }
 
 #[cfg(test)]
@@ -168,5 +187,18 @@ mod tests {
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::ResetFpga);
         testing_block.put(buffer);
+    }
+
+    #[test]
+    fn test_string_from_buffer() {
+        let mut testing_block = TestingMemBlock::new();
+        let mut buffer = testing_block.take().unwrap();
+
+        buffer[1..4].clone_from_slice(b"foo");
+        assert_eq!(payload_as_string(&buffer).unwrap(), "foo");
+
+        // Invalid UTF-8
+        buffer[1..4].clone_from_slice(&[255, 255, 255]);
+        assert_eq!(payload_as_string(&buffer), None);
     }
 }
