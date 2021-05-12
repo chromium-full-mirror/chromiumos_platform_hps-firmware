@@ -139,11 +139,25 @@ void show_raw_frame(void) {
   puts("--- base64 ---");
 }
 
+static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
+  puts("Updating status in MCU");
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_WRITE_STATUS_REGISTERS;
+  mcu_buf_out[1] = person_score;
+  mcu_buf_out[2] = not_person_score;
+  mcu_transaction();
+  if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
+      mcu_buf_in[1] != MCU_COMMAND_WRITE_STATUS_REGISTERS) {
+    puts("MCU did not acknowledge command");
+  }
+}
+
 void run_classify() {
   int8_t person, not_person;
   puts("Running classification.");
   tflite_classify(&person, &not_person);
   printf("Person: %d, Not person %d\n", person, not_person);
+  write_mcu_status(person, not_person);
 }
 
 void camera_init() {
@@ -155,7 +169,7 @@ void camera_init() {
 static void read_mcu_config(void) {
   puts("Reading MCU configuration");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
-  mcu_buf_out[0] = 0x20;  // read configuration
+  mcu_buf_out[0] = MCU_COMMAND_READ_CONFIG_REGISTERS;
 
   // Just running the transaction will print debug info
   mcu_transaction();
