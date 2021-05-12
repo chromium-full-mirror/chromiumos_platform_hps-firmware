@@ -38,11 +38,11 @@ uint8_t frame[FB_SIZE];
 
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = HM01B0_PIXEL_X_NUM * y + x;
-  return frame[index];
+  return 128 + frame[index];
 }
 
 const char shades[16] = {' ', '.', ',', '-', '+', '/', '1', 'r',
-                         'n', 'x', 'L', '0', 'o', 'm', '*', '#'};
+                         'n', 'm', 'o', 'x', 'L', '0', '*', '#'};
 
 hm01b0_ae_cfg_t aecfg;
 
@@ -97,27 +97,22 @@ void capture() {
   status = hm01b0_cmd_update(&hm01b0_cfg);
   CAM_CHECK(status, "status");
 
-#if CSR_CAM_CONTROL_DMA_BASE_ADDR
   // Set up DMA
   uint64_t frame_addr_value = (uint32_t)frame;
   cam_control_dma_base_write(frame_addr_value);
   cam_control_dma_length_write(sizeof(frame));
   cam_control_dma_enable_write(1);
-#endif
+  cam_control_w_dma_signed_write(1);
+
   // Command camera to take a frame
   status =
       hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
   CAM_CHECK(status, "set_mode");
 
-#if CSR_CAM_CONTROL_DMA_BASE_ADDR
-  // Read with DMA
+  // Wait for DMA to finish, then turn it off
   while (!cam_control_dma_done_read())
     /* wait */;
   cam_control_dma_enable_write(0);
-#else
-  status = hm01b0_blocking_read_oneframe(&hm01b0_cfg, frame, sizeof(frame));
-  CAM_CHECK(status, "blocking_read_oneframe");
-#endif
 }
 
 void show_input() {

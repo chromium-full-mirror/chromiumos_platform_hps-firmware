@@ -4,7 +4,7 @@
 
 """Gateware for receiving data from the HM01B0 camera."""
 
-from migen import If, Module, Signal
+from migen import If, Module, Mux, Signal
 
 from litex.soc.interconnect import stream
 from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
@@ -27,7 +27,8 @@ class CameraControl(Module, AutoCSR):
         self.sys_clk_freq = sys_clk_freq
         self._w = CSRStorage(fields=[
             CSRField('trig', size=1, offset=1),
-            CSRField('mclk_en', size=1, offset=2)],
+            CSRField('mclk_en', size=1, offset=2),
+            CSRField('dma_signed', size=1, offset=3)],
             name='w')
         self._r = CSRStatus(fields=[
             CSRField('lvld', size=1, offset=0),
@@ -111,7 +112,8 @@ class CameraControlDMA(CameraControl):
         self.sync += [
             # pylint: disable=protected-access
             If(self.dma._enable.storage & pads.lvld & pclk_rising, [
-                self.fifo.sink.data.eq(pads.data),
+                self.fifo.sink.data.eq(pads.data -
+                                       Mux(self._w.fields.dma_signed, 128, 0)),
                 self.fifo.sink.valid.eq(1),
             ]).Else([
                 self.fifo.sink.valid.eq(0),
