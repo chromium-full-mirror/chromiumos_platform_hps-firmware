@@ -15,18 +15,16 @@ limitations under the License.
 ==============================================================================*/
 // Access to TfLM functions for a pure C based LiteX client
 //
-// Based on tensorflow/lite/micro/examples/person_detection_experimental/main_functions.h
+// Based on
+// tensorflow/lite/micro/examples/person_detection_experimental/main_functions.h
 #include "litex_shim/shim.h"
 
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#include "tensorflow/lite/micro/examples/person_detection_experimental/person_detect_model_data.h"
+#include "keras_324_244_1.h"
 #include "tensorflow/lite/micro/examples/person_detection_experimental/model_settings.h"
-
-#include "litex_shim/no_person_image_data.h"
-#include "litex_shim/person_image_data.h"
 
 #include "tensorflow/lite/version.h"
 
@@ -40,10 +38,9 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 136 * 1024;
-static uint8_t tensor_arena[kTensorArenaSize] __attribute__ ((aligned (16)));
-} // namespace
-
+constexpr int kTensorArenaSize = 256 * 1024;
+static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
+}  // namespace
 
 void tflite_init() {
   static tflite::MicroErrorReporter micro_error_reporter;
@@ -51,7 +48,7 @@ void tflite_init() {
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  model = tflite::GetModel(g_person_detect_model_data);
+  model = tflite::GetModel(keras_324_244_1);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     TF_LITE_REPORT_ERROR(error_reporter,
                          "Model provided is schema version %d not equal "
@@ -63,10 +60,12 @@ void tflite_init() {
   // Pull in only the operation implementations we need.
   // Alternatively, we could pull in all the operations with:
   //   tflite::AllOpsResolver resolver;
-  static tflite::MicroMutableOpResolver<5> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<7> micro_op_resolver;
   micro_op_resolver.AddAveragePool2D();
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddDepthwiseConv2D();
+  micro_op_resolver.AddFullyConnected();
+  micro_op_resolver.AddMaxPool2D();
   micro_op_resolver.AddReshape();
   micro_op_resolver.AddSoftmax();
 
@@ -86,20 +85,11 @@ void tflite_init() {
   input = interpreter->input(0);
 }
 
-
-int8_t *tflite_get_input() {
+int8_t* tflite_get_input() {
   return input->data.int8;
 }
 
-void tflite_load_person() {
-  memcpy(input->data.int8, g_person_data, g_person_data_size);
-}
-
-void tflite_load_no_person() {
-  memcpy(input->data.int8, g_no_person_data, g_no_person_data_size);
-}
-
-void tflite_classify(int8_t *person_score, int8_t *no_person_score) {
+void tflite_classify(int8_t* person_score, int8_t* no_person_score) {
   // Run inference
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");

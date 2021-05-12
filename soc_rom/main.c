@@ -33,17 +33,43 @@ void isr(void) {
     }                              \
   }
 
-#define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
-uint8_t frame[FB_SIZE];
+#define CALIBRATION_NFRAMES 15
 
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = HM01B0_PIXEL_X_NUM * y + x;
-  return 128 + frame[index];
+  return 128 + tflite_get_input()[index];
 }
 
 const char shades[16] = {' ', '.', ',', '-', '+', '/', '1', 'r',
                          'n', 'm', 'o', 'x', 'L', '0', '*', '#'};
 
+// Start camera DMA
+static void cam_dma_enable(void) {
+  cam_control_dma_base_write((uint32_t)tflite_get_input());
+  cam_control_dma_length_write(HM01B0_PIXEL_Y_NUM * HM01B0_PIXEL_X_NUM);
+  cam_control_w_dma_signed_write(1);
+  cam_control_dma_enable_write(1);
+}
+
+// Wait for DMA to finish, then turn it off
+static void cam_dma_wait(void) {
+  while (!cam_control_dma_done_read())
+    /* wait */;
+  cam_control_dma_enable_write(0);
+}
+
+void capture(void) {
+  hm01b0_status_e status;
+  status = hm01b0_cmd_update(&hm01b0_cfg);
+  CAM_CHECK(status, "status");
+
+  // Command camera to take a frame
+  cam_dma_enable();
+  status =
+      hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
+  CAM_CHECK(status, "set_mode");
+  cam_dma_wait();
+}
 hm01b0_ae_cfg_t aecfg;
 
 void print_ae_cfg(void) {
@@ -54,12 +80,17 @@ void print_ae_cfg(void) {
   printf("mean        = %d\n", aecfg.ui8AEMean);
 }
 
+// Read 5 frames, then print calibration result
 void calibrate() {
-  puts("calibrating");
+  printf("Calibrating with %d frames\n", CALIBRATION_NFRAMES);
+  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
+                  CALIBRATION_NFRAMES);
+  for (int i = 0; i < CALIBRATION_NFRAMES; i++) {
+    cam_dma_enable();
+    printf("  - frame %d\n", i + 1);
+    cam_dma_wait();
+  }
   hm01b0_status_e status;
-  status = hm01b0_cal_ae(&hm01b0_cfg, 10, frame, sizeof(frame), &aecfg);
-  CAM_CHECK(status, "cal_ae");
-
   status = hm01b0_get_ae(&hm01b0_cfg, &aecfg);
   if (status == HM01B0_ERR_AE_NOT_CONVERGED) {
     puts("AE not converged.\n");
@@ -67,66 +98,8 @@ void calibrate() {
     CAM_CHECK(status, "get_ae");
   }
   print_ae_cfg();
-}
 
-// Load image from frame buffer into tflite input
-void load_from_camera() {
-  int8_t* input = tflite_get_input();
-
-  // Resize to 96x96 by copying a 192*192 square from the middle
-  for (size_t in_y = 0; in_y < 96; in_y++) {
-    size_t tl_y = 26 + 2 * in_y;
-    for (size_t in_x = 0; in_x < 96; in_x++) {
-      // average 2x2 sqaure
-      // Calculate top left frame x, y positions
-      size_t tl_x = 64 + 2 * in_x;
-      int val = 0;
-      val += get_pixel(tl_x + 0, tl_y + 0);
-      val += get_pixel(tl_x + 1, tl_y + 0);
-      val += get_pixel(tl_x + 0, tl_y + 1);
-      val += get_pixel(tl_x + 1, tl_y + 1);
-
-      *input++ = ((val + 2) / 4) - 128;
-    }
-  }
-}
-
-void capture() {
-  hm01b0_status_e status;
-
-  status = hm01b0_cmd_update(&hm01b0_cfg);
-  CAM_CHECK(status, "status");
-
-  // Set up DMA
-  uint64_t frame_addr_value = (uint32_t)frame;
-  cam_control_dma_base_write(frame_addr_value);
-  cam_control_dma_length_write(sizeof(frame));
-  cam_control_dma_enable_write(1);
-  cam_control_w_dma_signed_write(1);
-
-  // Command camera to take a frame
-  status =
-      hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
-  CAM_CHECK(status, "set_mode");
-
-  // Wait for DMA to finish, then turn it off
-  while (!cam_control_dma_done_read())
-    /* wait */;
-  cam_control_dma_enable_write(0);
-}
-
-void show_input() {
-  int8_t* input = tflite_get_input();
-  for (size_t in_y = 0; in_y < 96; in_y++) {
-    char line[97];
-    line[96] = 0;
-
-    for (size_t in_x = 0; in_x < 96; in_x++) {
-      int val = *input++;
-      line[in_x] = shades[16 - (val + 128 + 8) / 16];
-    }
-    printf("%s\n", line);
-  }
+  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STANDBY, 0);
 }
 
 // Outputs data as 244 lines of 324 base64 encoded bytes
@@ -210,26 +183,24 @@ int main(void) {
   // Load up init script
   camera_init();
 
-  // Calibrate autoexposure
-  calibrate();
-
   // Initialize TFLite
   tflite_init();
+
+  // Calibrate autoexposure
+  calibrate();
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
   bool do_show_raw_frame = false;
-  bool do_show_input = false;
   bool do_run_classify = false;
   while (1) {
     // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, i, c)\n", loop_counter++);
+    printf("[%u] Press key (s, r, c)\n", loop_counter++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
       recognized |= toggle(c, 's', "SPI Transfer", &do_spi_transfer);
       recognized |= toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
-      recognized |= toggle(c, 'i', "Show input", &do_show_input);
       recognized |= toggle(c, 'c', "Run classifier", &do_run_classify);
       if (!recognized) {
         printf("Did not understand input \"%c\"\n", c);
@@ -243,10 +214,6 @@ int main(void) {
     capture();
     if (do_show_raw_frame) {
       show_raw_frame();
-    }
-    load_from_camera();
-    if (do_show_input) {
-      show_input();
     }
     if (do_run_classify) {
       run_classify();
