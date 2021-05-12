@@ -91,27 +91,30 @@ const APP: () = {
     }
 
     #[task(resources = [spi, state, debug_led, fpga_programn])]
-    fn handle_spi_packet(mut ctx: handle_spi_packet::Context, buffer: MemBlock) {
+    fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         defmt::info!("From FPGA: {}", &*buffer);
-        let (response, command) = ctx
-            .resources
-            .state
-            .lock(|state| application::handle_fpga_packet(state, buffer));
-        if let Some(response) = response {
-            defmt::info!("To FPGA: {}", &*response);
-            ctx.resources.spi.lock(|spi| spi.send(response));
-        }
-        if let Some(command) = command {
-            match command {
-                fpga::Command::SetDebugLed(true) => {
-                    ctx.resources.debug_led.set_high().unwrap();
-                }
-                fpga::Command::SetDebugLed(false) => {
-                    ctx.resources.debug_led.set_low().unwrap();
-                }
-                fpga::Command::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+        let request = fpga::Request::from_received_packet(&buffer);
+        match &request.action {
+            fpga::Action::SetDebugLed(true) => {
+                ctx.resources.debug_led.set_high().unwrap();
             }
+            fpga::Action::SetDebugLed(false) => {
+                ctx.resources.debug_led.set_low().unwrap();
+            }
+            fpga::Action::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+            fpga::Action::ReadConfigRegisters => ctx
+                .resources
+                .state
+                .lock(|state| fpga::read_config_registers(&mut buffer, state)),
+            fpga::Action::WriteStatusRegisters => ctx
+                .resources
+                .state
+                .lock(|state| fpga::write_status_registers(&buffer, state)),
+            fpga::Action::None => {}
         }
+        request.prepare_to_send(&mut buffer);
+        defmt::info!("To FPGA: {}", &*buffer);
+        ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
