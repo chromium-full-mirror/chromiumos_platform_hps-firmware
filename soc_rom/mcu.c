@@ -26,7 +26,7 @@ static void write_1(uint8_t b) {
 }
 
 // Wait until receive buffer not empty, then read a byte
-static uint8_t read_1() {
+static uint8_t read_1(void) {
   while (mcu_spi_flags_rxe_read())
     /* wait */;
   return mcu_spi_rxd_read();
@@ -54,7 +54,7 @@ static void spi_xfer(const uint8_t* tx_buffer, uint8_t* rx_buffer) {
 
 // Do a transaction with the MCU
 // TODO: lots of error handling
-int mcu_transaction() {
+int mcu_transaction(void) {
   puts("MCU Transaction sending:");
   dump_buffer(mcu_buf_out);
 

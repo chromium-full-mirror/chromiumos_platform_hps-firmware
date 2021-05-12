@@ -19,7 +19,7 @@ extern uint8_t mcu_buf_in[MCU_BUFFER_LEN];
 // into spi_mcu_buf_in.
 //
 // Returns 0 on success and -1 on failure
-int mcu_transaction();
+int mcu_transaction(void);
 
 // Number of times the controller will poll the MCU for a response before
 // giving up.
