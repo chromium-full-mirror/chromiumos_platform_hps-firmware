@@ -18,7 +18,6 @@
 #include "mcu.h"
 #include "litex_shim/shim.h"
 
-
 #define CAM_CHECK(status, msg)     \
   {                                \
     if (status != HM01B0_ERR_OK) { \
@@ -26,16 +25,8 @@
     }                              \
   }
 
-hm01b0_ae_cfg_t aecfg;
-uint8_t ae_target = 100;
-
-inline uint8_t get_pixel(size_t x, size_t y) {
-  size_t index = HM01B0_PIXEL_X_NUM * y + x;
-  return 128 + tflite_get_input()[index];
-}
-
-const char shades[16] = {' ', '.', ',', '-', '+', '/', '1', 'r',
-                         'n', 'm', 'o', 'x', 'L', '0', '*', '#'};
+static hm01b0_ae_cfg_t aecfg;
+static uint8_t ae_target = 100;
 
 // Start camera DMA
 static void cam_dma_enable(void) {
@@ -52,7 +43,7 @@ static void cam_dma_wait(void) {
   cam_control_dma_enable_write(0);
 }
 
-void capture(void) {
+static void capture(void) {
   hm01b0_status_e status;
   status = hm01b0_cmd_update(&hm01b0_cfg);
   CAM_CHECK(status, "status");
@@ -65,7 +56,7 @@ void capture(void) {
   cam_dma_wait();
 }
 
-void print_ae_cfg(void) {
+static void print_ae_cfg(void) {
   hm01b0_status_e status;
   status = hm01b0_get_ae(&hm01b0_cfg, &aecfg);
   if (status == HM01B0_ERR_AE_NOT_CONVERGED) {
@@ -91,7 +82,7 @@ void write_ae_cfg(void) {
 }
 
 // Stream nframes to allow calibration
-void calibrate(int nframes) {
+static void calibrate(int nframes) {
   printf("Calibrating with %d frames\n", nframes);
   hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
                   nframes);
@@ -104,15 +95,25 @@ void calibrate(int nframes) {
   hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STANDBY, 0);
 }
 
-// Outputs data as 244 lines of 324 base64 encoded bytes
-static const char* b64_table =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+// Fetches a pixel from the TFLite input vector location.
+//
+// Since values are stored in the TFLite vector as signed ints, this function
+// adds 128 to recreate the original unsigned value.
+inline uint8_t get_pixel(size_t x, size_t y) {
+  size_t index = HM01B0_PIXEL_X_NUM * y + x;
+  return 128 + tflite_get_input()[index];
+}
+
+// Looks up a conversion from a 6 bit integer and a base 64 character
 static inline char b64_lookup(uint8_t n) {
+  static const char* b64_table =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   return b64_table[0x3f & n];
 }
 #define b64_line_len (HM01B0_PIXEL_X_NUM / 3 * 4 + 1)
 static char b64_buf[b64_line_len + 1];
 
+// Outputs a base64 representation of each of line the camera image.
 void show_raw_frame(void) {
   puts("+++ base64 +++");
   b64_buf[b64_line_len] = 0;
@@ -132,6 +133,7 @@ void show_raw_frame(void) {
   puts("--- base64 ---");
 }
 
+// Sends status register content to the mcu
 static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
   puts("Updating status in MCU");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
@@ -145,6 +147,10 @@ static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
   }
 }
 
+// Performs the classification.
+//
+// Assumes input data vector is already filled. Writes the result of the
+// classification to the MCU.
 void run_classify() {
   int8_t person, not_person;
   puts("Running classification.");
@@ -153,12 +159,14 @@ void run_classify() {
   write_mcu_status(person, not_person);
 }
 
-void camera_init() {
+// Initializes the camera
+static void camera_init() {
   puts("Camera: Normal mode init");
   hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
 }
 
+// Reads configuration registers from the MCU
 static void read_mcu_config(void) {
   puts("Reading MCU configuration");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
@@ -168,8 +176,8 @@ static void read_mcu_config(void) {
   mcu_transaction();
 }
 
-// Set the auto exposure target, based on user onput
-static bool set_auto_exposure_target(int input, int key, int delta) {
+// Set the auto exposure target variable, based on user onput
+static bool user_set_ae_target(int input, int key, int delta) {
   if (input != key) {
     return false;
   }
@@ -178,7 +186,9 @@ static bool set_auto_exposure_target(int input, int key, int delta) {
   return true;
 }
 
-static bool toggle(int input, int key, const char* desc, bool* var) {
+// Allows the user to toggle a flag that indicates which actions to include in
+// the main loop.
+static bool user_toggle(int input, int key, const char* desc, bool* var) {
   if (input != key) {
     return false;
   }
@@ -230,15 +240,16 @@ int main(void) {
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
-      recognized |= toggle(c, 's', "SPI Transfer", &do_spi_transfer);
-      recognized |= toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
-      recognized |= toggle(c, 'c', "Run classifier", &do_run_classify);
+      recognized |= user_toggle(c, 's', "SPI Transfer", &do_spi_transfer);
       recognized |=
-          toggle(c, 'a', "Show auto exposure", &do_show_auto_exposure);
-      recognized |= set_auto_exposure_target(c, '+', +10);
-      recognized |= set_auto_exposure_target(c, '-', -10);
-      recognized |= toggle(c, 'e', "Run Exposure calibration",
-                           &do_run_exposure_calibration);
+          user_toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
+      recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
+      recognized |=
+          user_toggle(c, 'a', "Show auto exposure", &do_show_auto_exposure);
+      recognized |= user_set_ae_target(c, '+', +10);
+      recognized |= user_set_ae_target(c, '-', -10);
+      recognized |= user_toggle(c, 'e', "Run Exposure calibration",
+                                &do_run_exposure_calibration);
       if (!recognized) {
         printf("Did not understand input \"%c\"\n", c);
       }
