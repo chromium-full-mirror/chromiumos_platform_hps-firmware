@@ -92,7 +92,6 @@ const APP: () = {
 
     #[task(resources = [spi, state, debug_led, fpga_programn])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
-        defmt::info!("From FPGA: {}", &*buffer);
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
             fpga::Action::SetDebugLed(true) => {
@@ -120,7 +119,6 @@ const APP: () = {
             fpga::Action::None => {}
         }
         request.prepare_to_send(&mut buffer);
-        defmt::info!("To FPGA: {}", &*buffer);
         ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
