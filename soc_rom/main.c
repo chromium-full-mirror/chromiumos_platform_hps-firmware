@@ -33,7 +33,8 @@ void isr(void) {
     }                              \
   }
 
-#define CALIBRATION_NFRAMES 15
+hm01b0_ae_cfg_t aecfg;
+uint8_t ae_target = 100;
 
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = HM01B0_PIXEL_X_NUM * y + x;
@@ -70,26 +71,8 @@ void capture(void) {
   CAM_CHECK(status, "set_mode");
   cam_dma_wait();
 }
-hm01b0_ae_cfg_t aecfg;
 
 void print_ae_cfg(void) {
-  printf("target mean = %d\n", aecfg.ui8AETargetMean);
-  printf("min mean    = %d\n", aecfg.ui8AEMinMean);
-  printf("conv in th  = %d\n", aecfg.ui8ConvergeInTh);
-  printf("conv out th = %d\n", aecfg.ui8ConvergeOutTh);
-  printf("mean        = %d\n", aecfg.ui8AEMean);
-}
-
-// Read 5 frames, then print calibration result
-void calibrate() {
-  printf("Calibrating with %d frames\n", CALIBRATION_NFRAMES);
-  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
-                  CALIBRATION_NFRAMES);
-  for (int i = 0; i < CALIBRATION_NFRAMES; i++) {
-    cam_dma_enable();
-    printf("  - frame %d\n", i + 1);
-    cam_dma_wait();
-  }
   hm01b0_status_e status;
   status = hm01b0_get_ae(&hm01b0_cfg, &aecfg);
   if (status == HM01B0_ERR_AE_NOT_CONVERGED) {
@@ -97,8 +80,34 @@ void calibrate() {
   } else {
     CAM_CHECK(status, "get_ae");
   }
-  print_ae_cfg();
 
+  printf("target mean = %d\n", aecfg.ui8AETargetMean);
+  printf("min mean    = %d\n", aecfg.ui8AEMinMean);
+  printf("conv in th  = %d\n", aecfg.ui8ConvergeInTh);
+  printf("conv out th = %d\n", aecfg.ui8ConvergeOutTh);
+  printf("mean        = %d\n", aecfg.ui8AEMean);
+}
+
+// Write the target auto exposure into the camera
+void write_ae_cfg(void) {
+  static int last_target = -1;
+  if (last_target != ae_target) {
+    hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_TARGET_MEAN, &ae_target, 1);
+    last_target = ae_target;
+  }
+}
+
+// Stream nframes to allow calibration
+void calibrate(int nframes) {
+  printf("Calibrating with %d frames\n", nframes);
+  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
+                  nframes);
+  for (int i = 0; i < nframes; i++) {
+    cam_dma_enable();
+    printf("  - frame %d\n", i + 1);
+    cam_dma_wait();
+  }
+  print_ae_cfg();
   hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STANDBY, 0);
 }
 
@@ -152,6 +161,16 @@ static void read_mcu_config(void) {
   mcu_transaction();
 }
 
+// Set the auto exposure target, based on user onput
+static bool set_auto_exposure_target(int input, int key, int delta) {
+  if (input != key) {
+    return false;
+  }
+  ae_target += delta;
+  printf("Set AE target to %d\n", ae_target);
+  return true;
+}
+
 static bool toggle(int input, int key, const char* desc, bool* var) {
   if (input != key) {
     return false;
@@ -187,21 +206,30 @@ int main(void) {
   tflite_init();
 
   // Calibrate autoexposure
-  calibrate();
+  write_ae_cfg();
+  calibrate(15);
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
   bool do_show_raw_frame = false;
   bool do_run_classify = false;
+  bool do_show_auto_exposure = false;
+  bool do_run_exposure_calibration = false;
   while (1) {
     // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, c)\n", loop_counter++);
+    printf("[%u] Press key (s, r, c, a, + , -, e)\n", loop_counter++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
       recognized |= toggle(c, 's', "SPI Transfer", &do_spi_transfer);
       recognized |= toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
       recognized |= toggle(c, 'c', "Run classifier", &do_run_classify);
+      recognized |=
+          toggle(c, 'a', "Show auto exposure", &do_show_auto_exposure);
+      recognized |= set_auto_exposure_target(c, '+', +10);
+      recognized |= set_auto_exposure_target(c, '-', -10);
+      recognized |= toggle(c, 'e', "Run Exposure calibration",
+                           &do_run_exposure_calibration);
       if (!recognized) {
         printf("Did not understand input \"%c\"\n", c);
       }
@@ -210,13 +238,22 @@ int main(void) {
     if (do_spi_transfer) {
       read_mcu_config();
     }
+    write_ae_cfg();
+    if (do_run_exposure_calibration) {
+      calibrate(5);
+      do_run_exposure_calibration = false;
+    }
     puts("Capturing image");
     capture();
     if (do_show_raw_frame) {
       show_raw_frame();
     }
+    if (do_show_auto_exposure) {
+      print_ae_cfg();
+    }
     if (do_run_classify) {
       run_classify();
+      do_run_classify = false;
     }
   }
 }
