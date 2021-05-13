@@ -13,11 +13,12 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
-use defmt_rtt as _;
 use hal::prelude::*;
 use mcu_common::MemBlock;
-use panic_probe as _;
+use panic_rtt_target as _;
 use rtic::app;
+use rtt_target::rprintln;
+use rtt_target::rtt_init_print;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -111,9 +112,9 @@ const APP: () = {
                 .lock(|state| fpga::write_status_registers(&buffer, state)),
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
-                    defmt::info!("FPGA says: {}", message);
+                    rprintln!("FPGA says: {}", message);
                 } else {
-                    defmt::error!("FPGA sent invalid message");
+                    rprintln!("FPGA sent invalid message");
                 }
             }
             fpga::Action::None => {}
@@ -130,7 +131,7 @@ const APP: () = {
 };
 
 fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
-    defmt::info!("Resetting FPGA");
+    rprintln!("Resetting FPGA");
     // Hold programn low for long enough to reset the FPGA. Experimentally 2
     // iterations is sufficient, so we do 4 just to be sure.
     for _ in 0..4 {
@@ -144,6 +145,7 @@ fn rcc_config() -> hal::rcc::Config {
 }
 
 fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
+    rtt_init_print!();
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
     // Reset SPI peripheral.
@@ -182,7 +184,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         dma.ch2,
     );
 
-    defmt::info!(
+    rprintln!(
         "MCU application started. CPU is running at {}Mhz",
         rcc.clocks.sys_clk.0 / 1000000
     );

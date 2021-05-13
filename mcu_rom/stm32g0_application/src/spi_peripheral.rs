@@ -8,6 +8,7 @@ use hal::dma::Event::TransferError;
 use hal::prelude::*;
 use hal::stm32::SPI1;
 use mcu_common::MemBlock;
+use rtt_target::rprintln;
 
 const BUFFER_SIZE: usize = 64;
 
@@ -120,14 +121,14 @@ impl SpiPeripheral {
     pub(crate) fn handle_rx_dma_interrupt(&mut self) {
         if self.rx_dma.event_occurred(TransferError) {
             // TODO: Report error properly.
-            defmt::error!("DMA transfer error");
+            rprintln!("DMA transfer error");
         }
     }
 
     pub(crate) fn handle_tx_dma_interrupt(&mut self) {
         if self.tx_dma.event_occurred(TransferError) {
             // TODO: Report error properly.
-            defmt::error!("DMA transfer error");
+            rprintln!("DMA transfer error");
         }
     }
 
