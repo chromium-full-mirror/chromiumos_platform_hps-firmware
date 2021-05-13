@@ -176,6 +176,19 @@ static void read_mcu_config(void) {
   mcu_transaction();
 }
 
+// Sets the state of the MCU debug LED
+static void set_mcu_led(uint8_t ledstate) {
+  printf("Setting MCU debug LED %s\n", ledstate != 0 ? "on" : "off");
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LED;
+  mcu_buf_out[1] = ledstate;
+  mcu_transaction();
+  if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
+      mcu_buf_in[1] != MCU_COMMAND_SET_DEBUG_LED) {
+    puts("MCU did not acknowledge SET_DEBUG_LED command");
+  }
+}
+
 // Set the auto exposure target variable, based on user onput
 static bool user_set_ae_target(int input, int key, int delta) {
   if (input != key) {
@@ -275,5 +288,6 @@ int main(void) {
       run_classify();
       do_run_classify = false;
     }
+    set_mcu_led(loop_counter % 2);
   }
 }
