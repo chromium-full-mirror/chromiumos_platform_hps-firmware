@@ -54,7 +54,7 @@ class HpsSimPlatform(SimPlatform):
 class HpsSimSoC(HpsSoC):
     """Simulates the HPS SoC on the local machine."""
     def __init__(self, platform):
-        super().__init__(platform=platform, debug=False)
+        super().__init__(platform=platform, debug=False, use_camera_dma=True)
         # we must always request the sim_trace signal
         self.comb += platform.trace.eq(1)
 
