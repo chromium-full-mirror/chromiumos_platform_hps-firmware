@@ -73,9 +73,7 @@ By default, the MCU application builds for the stm32g071, however if you'd like 
 proto0, which has an stm32g031, you can do so with the following command.
 
 ```bash
-cs mcu_rom/stm32g0_application && \
-cargo build --no-default-features --features proto0,defmt-default && \
-probe-run --probe 0483:3748 --chip stm32g031 ./target/thumbv6m-none-eabi/debug/stm32g0_application
+./scripts/proto0-run
 ```
 
 ## Dev features
