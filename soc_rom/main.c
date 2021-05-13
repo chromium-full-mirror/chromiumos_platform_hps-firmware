@@ -264,7 +264,7 @@ int main(void) {
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
   bool do_show_raw_frame = false;
-  bool do_run_classify = false;
+  bool do_run_classify = true;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   while (1) {
@@ -306,7 +306,6 @@ int main(void) {
     }
     if (do_run_classify) {
       run_classify();
-      do_run_classify = false;
     }
     set_mcu_led(loop_counter % 2);
   }
