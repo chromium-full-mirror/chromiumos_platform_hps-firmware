@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <generated/csr.h>
+#include <irq.h>
 #include <uart.h>
 
 // The interrupt service routine.
