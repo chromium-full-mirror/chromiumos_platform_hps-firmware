@@ -13,12 +13,6 @@
 uint8_t mcu_buf_out[MCU_BUFFER_LEN];
 uint8_t mcu_buf_in[MCU_BUFFER_LEN];
 
-static void dump_buffer(uint8_t* buf) {
-  for (int i = 0; i < MCU_BUFFER_LEN; i++) {
-    printf("%02x%c", buf[i], (i & 0xf) == 15 ? '\n' : ' ');
-  }
-}
-
 // Wait until transmit buffer empty, then write a byte
 static void write_1(uint8_t b) {
   while (!mcu_spi_flags_txe_read())
@@ -56,8 +50,7 @@ static void spi_xfer(const uint8_t* tx_buffer, uint8_t* rx_buffer) {
 // Do a transaction with the MCU
 // TODO: lots of error handling
 int mcu_transaction(void) {
-  puts("MCU Transaction sending:");
-  dump_buffer(mcu_buf_out);
+  puts("MCU Transaction sending");
 
   // Transfer to MCU
   spi_xfer(mcu_buf_out, mcu_buf_in);
@@ -65,8 +58,7 @@ int mcu_transaction(void) {
   // Receive from MCU until first byte not 0
   for (int count = 0; count < MCU_POLL_COUNT; count++) {
     if (mcu_buf_in[0] != 0) {
-      puts("Received OK:");
-      dump_buffer(mcu_buf_in);
+      puts("MCU Transaction completed");
       return 0;
     } else {
       printf("MCU Poll: %d\n", count + 1);
