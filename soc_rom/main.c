@@ -154,7 +154,27 @@ static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
 void run_classify() {
   int8_t person, not_person;
   puts("Running classification.");
+
+  // Start timer0 counting down from UINT32_MAX.
+  timer0_en_write(0);
+  timer0_reload_write(0);
+  timer0_load_write(UINT32_MAX);
+  timer0_en_write(1);
+
   tflite_classify(&person, &not_person);
+
+  // Report how long the classification took.
+  timer0_update_value_write(1);
+  uint32_t t = timer0_value_read();
+  if (t == 0) {
+    printf("Classification took longer than %u cycles (%ums)\n",
+           UINT32_MAX, UINT32_MAX / (CONFIG_CLOCK_FREQUENCY / 1000));
+  } else {
+    uint32_t elapsed_cycles = UINT32_MAX - t;
+    printf("Classification took %u cycles (%ums)\n",
+           elapsed_cycles, elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
+  }
+
   printf("Person: %d, Not person %d\n", person, not_person);
   write_mcu_status(person, not_person);
 }
