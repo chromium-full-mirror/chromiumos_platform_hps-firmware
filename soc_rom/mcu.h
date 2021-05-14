@@ -15,6 +15,7 @@ enum mcu_command {
   MCU_COMMAND_WRITE_STATUS_REGISTERS = 0x21,
   MCU_COMMAND_RESET_FPGA = 0x40,
   MCU_COMMAND_SET_DEBUG_LED = 0x60,
+  MCU_COMMAND_SET_DEBUG_LOG = 0x61,
 };
 
 // The first byte of each received packet is a status code.

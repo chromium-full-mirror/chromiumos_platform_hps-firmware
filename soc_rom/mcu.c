@@ -75,7 +75,7 @@ void mcu_printf(const char* format, ...) {
   va_list args;
   va_start(args, format);
   vsnprintf((char*)&mcu_buf_out[1], MCU_BUFFER_LEN - 1, format, args);
-  mcu_buf_out[0] = 0x61;
+  mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LOG;
   va_end(args);
   mcu_transaction();
 }
