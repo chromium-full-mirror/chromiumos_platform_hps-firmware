@@ -1,0 +1,11 @@
+[package]
+name = "hps-mon"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.40"
+argh = "0.1.4"
+colored = "2.0.0"
+probe-rs = "0.10.1"
+probe-rs-rtt = "0.10.1"

@@ -35,6 +35,11 @@ This crate defines an interface for talking to a HPS over I2C from the host
 side. This is used by tests together with `fake_i2c` to test code in crates like
 the `application` crate.
 
+### Crate: hps-mon
+
+A binary that talks to the HPS over SWD. Displays log messages received from the
+MCU and FPGA.
+
 ### Crate: hps-util
 
 A binary that can run on the host OS and communicate with the HPS for testing

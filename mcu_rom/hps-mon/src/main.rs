@@ -1,0 +1,157 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+mod text_channel;
+
+use anyhow::bail;
+use anyhow::Result;
+use argh::FromArgs;
+use colored::*;
+use probe_rs::Probe;
+use probe_rs::Session;
+use probe_rs_rtt::ChannelMode;
+use probe_rs_rtt::Rtt;
+use probe_rs_rtt::UpChannel;
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::time::Duration;
+use text_channel::TextChannel;
+
+const DEFAULT_CPU: &str = "stm32g031";
+
+struct Channel {
+    up_channel: UpChannel,
+    handler: Box<dyn ChannelHandler>,
+}
+
+impl Channel {
+    fn new(up_channel: UpChannel, handler: Box<dyn ChannelHandler>) -> Result<Self> {
+        // Make our channels block on the device side so that we don't miss any
+        // messages. This also serves to let the device side know that we're
+        // here, otherwise it will send the FPGA output to channel 0 for
+        // compatibility with probe-run.
+        up_channel.set_mode(ChannelMode::BlockIfFull)?;
+        Ok(Self {
+            up_channel,
+            handler,
+        })
+    }
+}
+
+trait ChannelHandler {
+    /// Handles data received from the channel.
+    fn handle(&mut self, bytes: &[u8]) -> Result<()>;
+}
+
+#[derive(FromArgs)]
+/// Monitors the HPS for debug output via SWD.
+struct Flags {
+    #[argh(option)]
+    /// CPU model
+    cpu: Option<String>,
+
+    #[argh(switch)]
+    /// reset MCU on start
+    reset: bool,
+}
+
+fn main() -> Result<()> {
+    let flags: Flags = argh::from_env();
+    let mut session = attach_to_cpu(&flags)?;
+
+    if flags.reset {
+        // The HPS MCU only has a single core, core 0.
+        let mut core = session.core(0)?;
+        core.reset()?;
+    }
+
+    let session = Arc::new(Mutex::new(session));
+    let mut rtt = attach_rtt(&session, 10)?;
+
+    let channels = create_channels(&mut rtt)?;
+    run_loop(channels)
+}
+
+fn attach_to_cpu(flags: &Flags) -> Result<Session> {
+    let probes = Probe::list_all();
+    if probes.is_empty() {
+        bail!("No supported probes were detected");
+    }
+    // TODO: Add support for selecting which probe to use.
+    if probes.len() > 1 {
+        eprintln!("Warning: Multiple probes detected, using the first one");
+    }
+    let probe = probes[0].open()?;
+    Ok(probe.attach(
+        flags
+            .cpu
+            .as_ref()
+            .map(String::as_str)
+            .unwrap_or(DEFAULT_CPU),
+    )?)
+}
+
+/// Create channels. The channels here must match the channel definitions in
+/// stm32g0_application/src/main.rs. e.g. up-channel 0 is the MCU's debug
+/// channel, 1 is the FPGA's debug channel.
+fn create_channels(rtt: &mut Rtt) -> Result<Vec<Channel>> {
+    let mut channels = Vec::new();
+    if let Some(up_channel) = rtt.up_channels().take(0) {
+        channels.push(Channel::new(
+            up_channel,
+            Box::new(TextChannel::new("MCU> ".yellow())),
+        )?);
+    }
+    if let Some(up_channel) = rtt.up_channels().take(1) {
+        channels.push(Channel::new(
+            up_channel,
+            Box::new(TextChannel::new("FPGA> ".green())),
+        )?);
+    }
+    Ok(channels)
+}
+
+fn run_loop(mut channels: Vec<Channel>) -> Result<()> {
+    let mut backoff_ms = 0;
+    let mut buffer = vec![0; 1024];
+    loop {
+        let mut got_data = false;
+        for channel in &mut channels {
+            let count = channel.up_channel.read(&mut buffer)?;
+            if count > 0 {
+                got_data = true;
+                if let Err(e) = channel.handler.handle(&buffer[..count]) {
+                    eprintln!("Channel receive error: {}", e);
+                }
+            }
+        }
+        // If we don't get any data from the device, we sleep, increasing how
+        // long we sleep each time until we hit a maximum.
+        if got_data {
+            backoff_ms = 0;
+        } else {
+            if backoff_ms < 100 {
+                backoff_ms += 10;
+            }
+            std::thread::sleep(Duration::from_millis(backoff_ms));
+        }
+    }
+}
+
+fn attach_rtt(session: &Arc<Mutex<Session>>, mut retries: u32) -> Result<Rtt> {
+    // Attaching to RTT may take several tries if we've just reset the device,
+    // since the control block that RTT looks for may not have been initialized.
+    loop {
+        match Rtt::attach(Arc::clone(session)) {
+            Ok(rtt) => return Ok(rtt),
+            Err(e) => {
+                if retries == 0 {
+                    return Err(e.into());
+                }
+                retries -= 1;
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
+    }
+}

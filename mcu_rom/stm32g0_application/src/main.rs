@@ -18,7 +18,9 @@ use mcu_common::MemBlock;
 use panic_rtt_target as _;
 use rtic::app;
 use rtt_target::rprintln;
-use rtt_target::rtt_init_print;
+use rtt_target::rtt_init;
+use rtt_target::ChannelMode;
+use rtt_target::UpChannel;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -29,6 +31,7 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_programn: board::FpgaProgramn,
+        fpga_up_channel: UpChannel,
     }
 
     #[init]
@@ -91,7 +94,7 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_programn])]
+    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -112,7 +115,16 @@ const APP: () = {
                 .lock(|state| fpga::write_status_registers(&buffer, state)),
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
-                    rprintln!("FPGA says: {}", message);
+                    let channel = ctx.resources.fpga_up_channel;
+                    // We use the channel mode to determine if hps-mon is
+                    // listening. If it's not listening, then we just print the
+                    // output for compatibility with probe-run.
+                    if channel.mode() == ChannelMode::BlockIfFull {
+                        use core::fmt::Write;
+                        write!(channel, "{}", message).unwrap();
+                    } else {
+                        rprintln!("FPGA says: {}", message);
+                    }
                 } else {
                     rprintln!("FPGA sent invalid message");
                 }
@@ -145,7 +157,21 @@ fn rcc_config() -> hal::rcc::Config {
 }
 
 fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
-    rtt_init_print!();
+    let channels = rtt_init!(
+        up: {
+            0: {
+                size: 256
+                mode: NoBlockSkip
+                name: "MCU"
+            }
+            1: {
+                size: 256
+                mode: NoBlockSkip
+                name: "FPGA"
+            }
+        }
+    );
+    rtt_target::set_print_channel(channels.up.0);
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
     // Reset SPI peripheral.
@@ -197,5 +223,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_programn: board.fpga_programn,
+        fpga_up_channel: channels.up.1,
     }
 }
