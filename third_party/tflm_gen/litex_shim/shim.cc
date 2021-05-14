@@ -25,6 +25,7 @@ limitations under the License.
 
 #include "keras_324_244_1.h"
 #include "tensorflow/lite/micro/examples/person_detection_experimental/model_settings.h"
+#include "tensorflow/lite/micro/examples/person_detection_experimental/person_detect_model_data.h"
 
 #include "tensorflow/lite/version.h"
 
@@ -42,13 +43,15 @@ constexpr int kTensorArenaSize = 256 * 1024;
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
 }  // namespace
 
-void tflite_init() {
+void tflite_init(enum Model model_enum) {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  model = tflite::GetModel(keras_324_244_1);
+  model = tflite::GetModel(
+      model_enum == model_keras ? keras_324_244_1 : g_person_detect_model_data
+      );
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     TF_LITE_REPORT_ERROR(error_reporter,
                          "Model provided is schema version %d not equal "

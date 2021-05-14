@@ -23,10 +23,16 @@ limitations under the License.
 extern "C" {
 #endif
 
+// Which model to use
+enum Model {
+    model_keras,
+    model_pdti8,
+};
+
 // In this version, the only model evaluated is pdti8
 //
 // Set up TfLM environment
-void tflite_init();
+void tflite_init(enum Model model);
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 96x96 greyscale image.

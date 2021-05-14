@@ -253,7 +253,7 @@ int main(void) {
   camera_init();
 
   // Initialize TFLite
-  tflite_init();
+  tflite_init(model_keras);
 
   // Calibrate autoexposure
   write_ae_cfg();
