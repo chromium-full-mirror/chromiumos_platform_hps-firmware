@@ -28,9 +28,12 @@
 static hm01b0_ae_cfg_t aecfg;
 static uint8_t ae_target = 100;
 
+#define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
+uint8_t frame_buffer[FB_SIZE];
+
 // Start camera DMA
 static void cam_dma_enable(void) {
-  cam_control_dma_base_write((uint32_t)tflite_get_input());
+  cam_control_dma_base_write((uint32_t)frame_buffer);
   cam_control_dma_length_write(HM01B0_PIXEL_Y_NUM * HM01B0_PIXEL_X_NUM);
   cam_control_w_dma_signed_write(1);
   cam_control_dma_enable_write(1);
@@ -101,7 +104,7 @@ static void calibrate(int nframes) {
 // adds 128 to recreate the original unsigned value.
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = HM01B0_PIXEL_X_NUM * y + x;
-  return 128 + tflite_get_input()[index];
+  return 128 + frame_buffer[index];
 }
 
 // Looks up a conversion from a 6 bit integer and a base 64 character
@@ -145,6 +148,31 @@ static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
       mcu_buf_in[1] != MCU_COMMAND_WRITE_STATUS_REGISTERS) {
     puts("MCU did not acknowledge command");
   }
+}
+
+// Extracts a 96x96 square from the frame buffer into the TfLM input
+//
+// It does this by averaging 2x2 pixel groups over a 192x192 area in the center
+// of the frame.
+void extract_input_from_frame_buffer() {
+  puts("extract start");
+  int8_t* input = tflite_get_input();
+  // Resize to 96x96 by copying a 192*192 square from the middle
+  for (size_t in_y = 0; in_y < 96; in_y++) {
+    size_t tl_y = (HM01B0_PIXEL_Y_NUM - 96 * 2) / 2 + 2 * in_y;
+    for (size_t in_x = 0; in_x < 96; in_x++) {
+      // average 2x2 sqaure
+      // Calculate top left frame x, y positions
+      size_t tl_x = (HM01B0_PIXEL_X_NUM - 96 * 2) / 2 + 2 * in_x;
+      int val = 0;
+      val += get_pixel(tl_x + 0, tl_y + 0);
+      val += get_pixel(tl_x + 1, tl_y + 0);
+      val += get_pixel(tl_x + 0, tl_y + 1);
+      val += get_pixel(tl_x + 1, tl_y + 1);
+      *input++ = ((val + 2) / 4);
+    }
+  }
+  puts("extract end");
 }
 
 // Performs the classification.
@@ -253,7 +281,7 @@ int main(void) {
   camera_init();
 
   // Initialize TFLite
-  tflite_init(model_keras);
+  tflite_init(model_pdti8);
 
   // Calibrate autoexposure
   write_ae_cfg();
@@ -305,6 +333,7 @@ int main(void) {
       print_ae_cfg();
     }
     if (do_run_classify) {
+      extract_input_from_frame_buffer();
       run_classify();
     }
     set_mcu_led(loop_counter % 2);
