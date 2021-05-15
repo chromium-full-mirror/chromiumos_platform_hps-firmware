@@ -219,12 +219,30 @@ def main():
     parser.add_argument(
         '--toolchain', default='radiant',
         help='Which toolchain to use, radiant (default) or oxide')
+    parser.add_argument(
+        '--cache', default=None,
+        help='Specify custom cache config.  Supported: 8d8i2w, 8d8i4w.   Defualt is 4d4i1w.')
     args = parser.parse_args()
 
     soc = HpsSoC(
         platform=Platform(args.toolchain),
         debug=args.debug,
         use_camera_dma=args.use_camera_dma)
+
+    if args.cache:
+        if args.output_dir == None:
+            args.output_dir = ("build/hps_" + args.cache)
+            print(f"Set output dir to {args.output_dir}")
+        assert 'full' in soc.cpu.variant
+        assert 'debug' not in soc.cpu.variant    # we can add this if wanted
+        vexriscv = f"{SOC_DIR}/../third_party/python/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv"
+        var = "Full"
+        cache = args.cache
+        soc.cpu.use_external_variant(f"{vexriscv}/verilog/VexRiscv_{var}{cache}.v")
+    else:
+        if args.output_dir == None:
+            args.output_dir = "build/hps_platform"
+
     builder = create_builder(soc, args)
     builder_kwargs = radiant_build_argdict(
         args) if args.toolchain == 'radiant' else {}
@@ -233,6 +251,10 @@ def main():
 
     if not args.build:
         print('Use --build to build the bitstream, if needed')
+
+    print(f"Loading from output dir: {builder.output_dir}")
+    os.system(f"scripts/prog bitstream {builder.output_dir}/gateware/hps_platform.bit")
+    os.system(f"scripts/prog rom {builder.output_dir}/software/bios/out/riscv-gcc/rom.bin")
 
 
 if __name__ == '__main__':

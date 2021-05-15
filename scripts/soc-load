@@ -16,5 +16,3 @@ cd "${PROJECT_ROOT}"
 
 scripts/pyrun -m soc.hps_soc "$@"
 
-scripts/prog bitstream "${BUILD}/gateware/hps_platform.bit"
-scripts/prog rom "${BUILD}/software/bios/out/riscv-gcc/rom.bin"
