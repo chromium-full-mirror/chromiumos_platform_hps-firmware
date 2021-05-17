@@ -32,6 +32,7 @@ const APP: () = {
         debug_led: board::DebugLed,
         fpga_programn: board::FpgaProgramn,
         fpga_up_channel: UpChannel,
+        image_channel: UpChannel,
     }
 
     #[init]
@@ -94,7 +95,7 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel])]
+    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel, image_channel])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -128,6 +129,9 @@ const APP: () = {
                 } else {
                     rprintln!("FPGA sent invalid message");
                 }
+            }
+            fpga::Action::DebugImage => {
+                ctx.resources.image_channel.write(&buffer[1..]);
             }
             fpga::Action::None => {}
         }
@@ -168,6 +172,11 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
                 size: 256
                 mode: NoBlockSkip
                 name: "FPGA"
+            }
+            2: {
+                size: 1024
+                mode: NoBlockSkip
+                name: "Images"
             }
         }
     );
@@ -224,5 +233,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         debug_led: board.debug_led,
         fpga_programn: board.fpga_programn,
         fpga_up_channel: channels.up.1,
+        image_channel: channels.up.2,
     }
 }

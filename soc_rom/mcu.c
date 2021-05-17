@@ -90,3 +90,39 @@ void mcu_printf(const char* format, ...) {
   va_end(args);
   mcu_transaction();
 }
+
+void McuStreamInitialize(McuStream* stream, enum mcu_command command) {
+  stream->out = mcu_buf_out + 1;
+  stream->remaining_capacity = MCU_BUFFER_LEN - 1;
+  stream->command = command;
+}
+
+int McuStreamSendData(McuStream* stream, const uint8_t* data, size_t len) {
+  while (len > 0) {
+    size_t to_send =
+        stream->remaining_capacity < len ? stream->remaining_capacity : len;
+    memcpy(stream->out, data, to_send);
+    stream->out += to_send;
+    stream->remaining_capacity -= to_send;
+    data += to_send;
+    len -= to_send;
+    // We only send if there's more data needing to be writen. This allows
+    // StreamFlush to assume that it always needs to send.
+    if (stream->remaining_capacity == 0 && len > 0) {
+      if (McuStreamFlush(stream) == -1) {
+        return -1;
+      }
+    }
+  }
+  return 0;
+}
+
+int McuStreamFlush(McuStream* stream) {
+  memset(stream->out, 0, stream->remaining_capacity);
+  mcu_buf_out[0] = stream->command;
+  if (mcu_transaction() == -1) {
+    return -1;
+  }
+  McuStreamInitialize(stream, stream->command);
+  return 0;
+}

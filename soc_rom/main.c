@@ -195,12 +195,12 @@ void run_classify() {
   timer0_update_value_write(1);
   uint32_t t = timer0_value_read();
   if (t == 0) {
-    printf("Classification took longer than %u cycles (%ums)\n",
-           UINT32_MAX, UINT32_MAX / (CONFIG_CLOCK_FREQUENCY / 1000));
+    printf("Classification took longer than %u cycles (%ums)\n", UINT32_MAX,
+           UINT32_MAX / (CONFIG_CLOCK_FREQUENCY / 1000));
   } else {
     uint32_t elapsed_cycles = UINT32_MAX - t;
-    printf("Classification took %u cycles (%ums)\n",
-           elapsed_cycles, elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
+    printf("Classification took %u cycles (%ums)\n", elapsed_cycles,
+           elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
   printf("Person: %d, Not person %d\n", person, not_person);
@@ -245,6 +245,21 @@ static bool user_set_ae_target(int input, int key, int delta) {
   ae_target += delta;
   printf("Set AE target to %d\n", ae_target);
   return true;
+}
+
+// Randomly generated sequences that identify the start and end of an image.
+// These sequences are recognized by hps-mon.
+const uint8_t kStartImage[] = {13, 174, 212, 250, 191, 30, 138, 125};
+const uint8_t kEndImage[] = {227, 114, 212, 105, 101, 111, 21, 193};
+
+static void TransferImage(void) {
+  McuStream stream;
+  McuStreamInitialize(&stream, MCU_COMMAND_SEND_IMAGE);
+  size_t image_size = HM01B0_PIXEL_X_NUM * HM01B0_PIXEL_Y_NUM;
+  McuStreamSendData(&stream, kStartImage, sizeof(kStartImage));
+  McuStreamSendData(&stream, (const uint8_t*)frame_buffer, image_size);
+  McuStreamSendData(&stream, kEndImage, sizeof(kEndImage));
+  McuStreamFlush(&stream);
 }
 
 // Allows the user to toggle a flag that indicates which actions to include in
@@ -295,9 +310,10 @@ int main(void) {
   bool do_run_classify = true;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
+  bool do_transfer_image_to_host = false;
   while (1) {
     // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, c, a, + , -, e)\n", loop_counter++);
+    printf("[%u] Press key (s, r, c, a, + , -, e, t)\n", loop_counter++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
@@ -305,6 +321,8 @@ int main(void) {
       recognized |=
           user_toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
       recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
+      recognized |= user_toggle(c, 't', "Transfer image to host",
+                                &do_transfer_image_to_host);
       recognized |=
           user_toggle(c, 'a', "Show auto exposure", &do_show_auto_exposure);
       recognized |= user_set_ae_target(c, '+', +10);
@@ -328,6 +346,9 @@ int main(void) {
     capture();
     if (do_show_raw_frame) {
       show_raw_frame();
+    }
+    if (do_transfer_image_to_host) {
+      TransferImage();
     }
     if (do_show_auto_exposure) {
       print_ae_cfg();

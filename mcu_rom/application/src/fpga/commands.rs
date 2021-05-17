@@ -23,3 +23,6 @@ pub const SET_DEBUG_LED: u8 = 0x60;
 
 /// Logs the payload up to the first null character. Payload must be UTF-8.
 pub const DEBUG_LOG: u8 = 0x61;
+
+/// Payload contains bytes of image data to send to the host.
+pub const DEBUG_IMAGE: u8 = 0x62;

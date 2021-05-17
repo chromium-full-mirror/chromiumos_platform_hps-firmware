@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+mod image_channel;
 mod text_channel;
 
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
+use image_channel::image_type_from_str;
+use image_channel::ImageType;
 use probe_rs::Probe;
 use probe_rs::Session;
 use probe_rs_rtt::ChannelMode;
 use probe_rs_rtt::Rtt;
 use probe_rs_rtt::UpChannel;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -54,6 +58,18 @@ struct Flags {
     #[argh(switch)]
     /// reset MCU on start
     reset: bool,
+
+    #[argh(option)]
+    /// directory into which images should be written
+    image_out: Option<PathBuf>,
+
+    #[argh(
+        option,
+        default = "ImageType::Grayscale",
+        from_str_fn(image_type_from_str)
+    )]
+    /// image type that we expect from the camera
+    image_type: ImageType,
 }
 
 fn main() -> Result<()> {
@@ -69,7 +85,7 @@ fn main() -> Result<()> {
     let session = Arc::new(Mutex::new(session));
     let mut rtt = attach_rtt(&session, 10)?;
 
-    let channels = create_channels(&mut rtt)?;
+    let channels = create_channels(&mut rtt, &flags)?;
     run_loop(channels)
 }
 
@@ -95,7 +111,7 @@ fn attach_to_cpu(flags: &Flags) -> Result<Session> {
 /// Create channels. The channels here must match the channel definitions in
 /// stm32g0_application/src/main.rs. e.g. up-channel 0 is the MCU's debug
 /// channel, 1 is the FPGA's debug channel.
-fn create_channels(rtt: &mut Rtt) -> Result<Vec<Channel>> {
+fn create_channels(rtt: &mut Rtt, flags: &Flags) -> Result<Vec<Channel>> {
     let mut channels = Vec::new();
     if let Some(up_channel) = rtt.up_channels().take(0) {
         channels.push(Channel::new(
@@ -107,6 +123,15 @@ fn create_channels(rtt: &mut Rtt) -> Result<Vec<Channel>> {
         channels.push(Channel::new(
             up_channel,
             Box::new(TextChannel::new("FPGA> ".green())),
+        )?);
+    }
+    if let (Some(image_out), Some(up_channel)) = (&flags.image_out, rtt.up_channels().take(2)) {
+        channels.push(Channel::new(
+            up_channel,
+            Box::new(image_channel::ImageChannel::new(
+                image_out,
+                flags.image_type,
+            )?),
         )?);
     }
     Ok(channels)

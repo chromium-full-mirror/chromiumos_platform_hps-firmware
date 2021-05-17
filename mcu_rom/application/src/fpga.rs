@@ -26,6 +26,7 @@ pub enum Action {
     ReadConfigRegisters,
     WriteStatusRegisters,
     DebugLog,
+    DebugImage,
 }
 
 impl Request {
@@ -49,6 +50,9 @@ impl Request {
             crate::fpga::commands::RESET_FPGA => action = Action::ResetFpga,
             crate::fpga::commands::DEBUG_LOG => {
                 action = Action::DebugLog;
+            }
+            crate::fpga::commands::DEBUG_IMAGE => {
+                action = Action::DebugImage;
             }
             _ => {
                 response_code = status::ERROR;

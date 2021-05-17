@@ -6,6 +6,8 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.40"
 argh = "0.1.4"
+bayer = "0.1.5"
 colored = "2.0.0"
+image = { version = "0.23.14", default-features = false, features = ["png"] }
 probe-rs = "0.10.1"
 probe-rs-rtt = "0.10.1"
