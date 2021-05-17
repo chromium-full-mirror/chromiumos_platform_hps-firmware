@@ -47,21 +47,32 @@ static void spi_xfer(const uint8_t* tx_buffer, uint8_t* rx_buffer) {
   mcu_spi_cr_cs_write(1);
 }
 
+static void delay_us(int us) {
+  // Scale was determined experimentally by first setting to 1000, then
+  // measuring the delay caused by calling delay_us(100) with an oscilloscope.
+  const int SCALE = 2950;
+  int iterations = CONFIG_CLOCK_FREQUENCY * us / 1000 / SCALE;
+  for (int i = 0; i < iterations; i++) {
+    // Prevent loop from being optimized away.
+    __asm__("");
+  }
+}
+
 // Do a transaction with the MCU
 // TODO: lots of error handling
 int mcu_transaction(void) {
-  puts("MCU Transaction sending");
-
   // Transfer to MCU
   spi_xfer(mcu_buf_out, mcu_buf_in);
 
   // Receive from MCU until first byte not 0
   for (int count = 0; count < MCU_POLL_COUNT; count++) {
     if (mcu_buf_in[0] != 0) {
-      puts("MCU Transaction completed");
       return 0;
     } else {
-      printf("MCU Poll: %d\n", count + 1);
+      // A short delay before we try another SPI transfer, otherwise the CS line
+      // won't be high for long enough. This value was found experimentally to
+      // be sufficient.
+      delay_us(1);
       memset(mcu_buf_in, 0, MCU_BUFFER_LEN);
       spi_xfer(mcu_buf_in, mcu_buf_in);
     }
