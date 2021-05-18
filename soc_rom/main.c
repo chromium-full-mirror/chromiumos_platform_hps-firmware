@@ -224,6 +224,15 @@ static void read_mcu_config(void) {
   mcu_transaction();
 }
 
+// Sends a poll command to the MCU. If a packet was previously lost and the MCU
+// is waiting to send us a response that we're not expecting, this will get us
+// back in sync.
+static void poll_mcu(void) {
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_POLL;
+  mcu_transaction();
+}
+
 // Sets the state of the MCU debug LED
 static void set_mcu_led(uint8_t ledstate) {
   printf("Setting MCU debug LED %s\n", ledstate != 0 ? "on" : "off");
@@ -333,6 +342,7 @@ int main(void) {
         printf("Did not understand input \"%c\"\n", c);
       }
     }
+    poll_mcu();
     // Run configured functions
     if (do_spi_transfer) {
       read_mcu_config();
