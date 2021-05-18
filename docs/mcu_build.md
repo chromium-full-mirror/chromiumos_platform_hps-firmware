@@ -76,6 +76,26 @@ proto0, which has an stm32g031, you can do so with the following command.
 ./scripts/proto0-run
 ```
 
+### Collecting images
+
+Images can be collected from the HPS using the `hps-mon` tool. Sample usage:
+
+```bash
+./scripts/hps-mon --image-out ~/tmp/hps-images --image-type color
+```
+
+Once that's started, you need to connect to the FPGA via UART and press 't' to enable transfer of
+images. You may also want to disable classification by pressing 'c' to speed things up. Eventually
+these steps, and the need for using a UART should hopefully be removed.
+
+You should see output like:
+
+```
+Wrote "/home/foo/tmp/hps-images/0000.raw"
+```
+
+Note, that the images will also be written as PNG in addition to raw, although this is not logged.
+
 ## Dev features
 
 To enable dev (non-production) features, run with:
