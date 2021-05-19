@@ -36,10 +36,21 @@ impl Channel {
         // here, otherwise it will send the FPGA output to channel 0 for
         // compatibility with probe-run.
         up_channel.set_mode(ChannelMode::BlockIfFull)?;
-        Ok(Self {
+        let mut channel = Self {
             up_channel,
             handler,
-        })
+        };
+        // Clear any existing data in the channel, otherwise stale data can
+        // appear, which can be confusing.
+        channel.clear()?;
+        Ok(channel)
+    }
+
+    /// Clear any existing data already on this channel.
+    fn clear(&mut self) -> Result<()> {
+        let mut buffer = vec![0u8; 1024];
+        while self.up_channel.read(&mut buffer)? != 0 {}
+        Ok(())
     }
 }
 
