@@ -84,6 +84,12 @@ int mcu_transaction(void) {
 void mcu_printf(const char* format, ...) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   va_list args;
+
+  va_start(args, format);
+  vprintf(format, args);
+  mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LOG;
+  va_end(args);
+
   va_start(args, format);
   vsnprintf((char*)&mcu_buf_out[1], MCU_BUFFER_LEN - 1, format, args);
   mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LOG;
