@@ -287,8 +287,8 @@ int main(void) {
   irq_setie(1);
   uart_init();
 
-  puts("HPS SoC application " HPS_VERSION " (built " HPS_BUILD_DATE
-       " by " HPS_BUILD_USER ")");
+  mcu_printf("HPS SoC application " HPS_VERSION " (built " HPS_BUILD_DATE
+             " by " HPS_BUILD_USER ")\n");
 
   hm01b0_status_e status;
 
@@ -352,7 +352,7 @@ int main(void) {
       calibrate(5);
       do_run_exposure_calibration = false;
     }
-    puts("Capturing image");
+    mcu_printf("Capturing image\n");
     capture();
     if (do_show_raw_frame) {
       show_raw_frame();
