@@ -97,13 +97,15 @@ void mcu_printf(const char* format, ...) {
   mcu_transaction();
 }
 
-void McuStreamInitialize(McuStream* stream, enum mcu_command command) {
+void mcu_stream_initialize(struct mcu_stream* stream, enum mcu_command command) {
   stream->out = mcu_buf_out + 1;
   stream->remaining_capacity = MCU_BUFFER_LEN - 1;
   stream->command = command;
 }
 
-int McuStreamSendData(McuStream* stream, const uint8_t* data, size_t len) {
+int mcu_stream_send_data(struct mcu_stream* stream,
+                         const uint8_t* data,
+                         size_t len) {
   while (len > 0) {
     size_t to_send =
         stream->remaining_capacity < len ? stream->remaining_capacity : len;
@@ -115,7 +117,7 @@ int McuStreamSendData(McuStream* stream, const uint8_t* data, size_t len) {
     // We only send if there's more data needing to be writen. This allows
     // StreamFlush to assume that it always needs to send.
     if (stream->remaining_capacity == 0 && len > 0) {
-      if (McuStreamFlush(stream) == -1) {
+      if (mcu_stream_flush(stream) == -1) {
         return -1;
       }
     }
@@ -123,12 +125,12 @@ int McuStreamSendData(McuStream* stream, const uint8_t* data, size_t len) {
   return 0;
 }
 
-int McuStreamFlush(McuStream* stream) {
+int mcu_stream_flush(struct mcu_stream* stream) {
   memset(stream->out, 0, stream->remaining_capacity);
   mcu_buf_out[0] = stream->command;
   if (mcu_transaction() == -1) {
     return -1;
   }
-  McuStreamInitialize(stream, stream->command);
+  mcu_stream_initialize(stream, stream->command);
   return 0;
 }

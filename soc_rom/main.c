@@ -261,14 +261,14 @@ static bool user_set_ae_target(int input, int key, int delta) {
 const uint8_t kStartImage[] = {13, 174, 212, 250, 191, 30, 138, 125};
 const uint8_t kEndImage[] = {227, 114, 212, 105, 101, 111, 21, 193};
 
-static void TransferImage(void) {
-  McuStream stream;
-  McuStreamInitialize(&stream, MCU_COMMAND_SEND_IMAGE);
+static void transfer_image(void) {
+  struct mcu_stream stream;
+  mcu_stream_initialize(&stream, MCU_COMMAND_SEND_IMAGE);
   size_t image_size = HM01B0_PIXEL_X_NUM * HM01B0_PIXEL_Y_NUM;
-  McuStreamSendData(&stream, kStartImage, sizeof(kStartImage));
-  McuStreamSendData(&stream, (const uint8_t*)frame_buffer, image_size);
-  McuStreamSendData(&stream, kEndImage, sizeof(kEndImage));
-  McuStreamFlush(&stream);
+  mcu_stream_send_data(&stream, kStartImage, sizeof(kStartImage));
+  mcu_stream_send_data(&stream, (const uint8_t*)frame_buffer, image_size);
+  mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
+  mcu_stream_flush(&stream);
 }
 
 // Allows the user to toggle a flag that indicates which actions to include in
@@ -358,7 +358,7 @@ int main(void) {
       show_raw_frame();
     }
     if (do_transfer_image_to_host) {
-      TransferImage();
+      transfer_image();
     }
     if (do_show_auto_exposure) {
       print_ae_cfg();

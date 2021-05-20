@@ -48,24 +48,26 @@ void mcu_printf(const char* format, ...) __attribute__((format(printf, 1, 2)));
 // giving up.
 #define MCU_POLL_COUNT 1000
 
-typedef struct McuStream {
+struct mcu_stream {
   uint8_t* out;
   size_t remaining_capacity;
   enum mcu_command command;
-} McuStream;
+};
 
 // Initializes a stream for the supplied command. While the stream is active, no
 // other MCU SPI transactions should be performed (since they all share a common
 // buffer). This includes mcu_printf.
-void McuStreamInitialize(McuStream* stream, enum mcu_command command);
+void mcu_stream_initialize(struct mcu_stream* stream, enum mcu_command command);
 
 // Sends `data` to `stream`. Returns 0 on success or -1 on failure. Data may not
-// be sent immediately. McuStreamFlush must be called once done to ensure that
+// be sent immediately. mcu_stream_flush must be called once done to ensure that
 // all data is sent..
-int McuStreamSendData(McuStream* stream, const uint8_t* data, size_t len);
+int mcu_stream_send_data(struct mcu_stream* stream,
+                         const uint8_t* data,
+                         size_t len);
 
 // Flushes `stream`. The last packet of data will be padded out with zeros if
 // there is unoccupied space. Returns 0 on success or -1 on failure.
-int McuStreamFlush(McuStream* stream);
+int mcu_stream_flush(struct mcu_stream* stream);
 
 #endif  // _MCU_SPI_H_
