@@ -4,7 +4,6 @@
 
 #![no_main]
 #![no_std]
-#![feature(maybe_uninit_ref)]
 
 mod host_interface;
 mod loader;

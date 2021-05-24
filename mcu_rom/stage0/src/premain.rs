@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::mem::MaybeUninit;
 use cortex_m_rt::pre_init;
 
 bitflags! {
@@ -20,21 +19,28 @@ pub struct TransientNVMem {
     flags: TransientNVMemFlags,
 }
 
+// Note, the initial value assigned here is just to make the compiler happy. It
+// is never actually used, since our crt0 doesn't copy into the uninit section.
+// We could use MaybeUnit here, except that MaybeUnit::assume_init_ref isn't
+// stable.
 #[link_section = ".uninit.BOOT0STATE"]
-static mut BOOT0STATE: MaybeUninit<TransientNVMem> = MaybeUninit::uninit();
+static mut BOOT0STATE: TransientNVMem = TransientNVMem {
+    magic: 0,
+    count: 0,
+    flags: TransientNVMemFlags::empty(),
+};
 
-// summon the C devil, open a portal to Jekkad
 #[pre_init]
 unsafe fn init_boot0_state() {
     // cold on, previous state unknown!
-    let magic = BOOT0STATE.assume_init_ref().magic;
+    let magic = BOOT0STATE.magic;
     if magic != 0xC0FFEE {
-        BOOT0STATE = MaybeUninit::zeroed();
-        BOOT0STATE.assume_init_mut().magic = 0xC0FFEE;
+        BOOT0STATE.count = 0;
+        BOOT0STATE.magic = 0xC0FFEE;
     }
-    BOOT0STATE.assume_init_mut().count = BOOT0STATE.assume_init_ref().count + 1;
+    BOOT0STATE.count = BOOT0STATE.count + 1;
 }
 
 pub fn boot_count() -> u8 {
-    unsafe { BOOT0STATE.assume_init_ref().count }
+    unsafe { BOOT0STATE.count }
 }
