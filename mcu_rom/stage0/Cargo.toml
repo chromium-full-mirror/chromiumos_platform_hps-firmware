@@ -16,7 +16,6 @@ defmt = "0.2.1"
 defmt-rtt = "0.2.0"
 i2c_protocol = { path = "../i2c_protocol" }
 mcu_common = { path = "../mcu_common" }
-panic-abort = "0.3.2"
 panic-halt = "0.2.0"
 sodalite = "0.4.0"
 i2c_peripheral = { path = "../i2c_peripheral" }

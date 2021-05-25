@@ -12,23 +12,16 @@ mod premain;
 
 use crate::loader::*;
 use crate::premain::*;
-use host_interface::HostEvent;
-use host_interface::HostInterface;
-use mcu_flash::flash_error_string;
-use mcu_flash::FlashWriter;
-// pick a panicking behavior
-#[allow(unused)]
-// dev profile: easier to debug panics; can put a breakpoint on `rust_begin_unwind`
-#[cfg(debug_assertions)]
-use panic_halt as _;
-// release profile: minimize the binary size of the application (requires nightly?)
 use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
 use hal::prelude::*;
-#[cfg(not(debug_assertions))]
-use panic_abort as _;
+use host_interface::HostEvent;
+use host_interface::HostInterface;
+use mcu_flash::flash_error_string;
+use mcu_flash::FlashWriter;
+use panic_halt as _;
 use rtic::app;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
