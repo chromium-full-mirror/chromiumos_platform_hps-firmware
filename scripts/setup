@@ -131,7 +131,6 @@ if ! which rustc >/dev/null; then
 fi
 
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
-rustup +stable target add thumbv6m-none-eabi
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
 for i in flip-link probe-run; do

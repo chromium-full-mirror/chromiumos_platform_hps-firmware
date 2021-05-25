@@ -21,10 +21,10 @@ cargo +stable test
 # Harware-specific crates. Just build these.
 
 cd "${PROJECT_ROOT}/mcu_rom/stage0"
-cargo build
+cargo +stable build
 
 cd "${PROJECT_ROOT}/mcu_rom/stage1"
-cargo build
+cargo +stable build
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
 cargo +stable build
