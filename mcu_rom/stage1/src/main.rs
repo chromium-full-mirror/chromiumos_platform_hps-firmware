@@ -4,7 +4,6 @@
 
 #![no_main]
 #![no_std]
-#![feature(alloc_error_handler)]
 
 use panic_reset as _;
 
@@ -28,9 +27,6 @@ use crate::usart::*;
 mod header;
 use crate::header::*;
 
-mod heap;
-use crate::heap::*;
-
 #[entry]
 fn main() -> ! {
     match inner_main() {
@@ -41,9 +37,6 @@ fn main() -> ! {
 }
 
 fn inner_main() -> Result<(), ()> {
-    // Initialize the allocator BEFORE you use it
-    init_heap();
-
     let p = stm32::Peripherals::take().ok_or(())?;
 
     // APB bus clocks configured in stage 0. Just inherit system state.
