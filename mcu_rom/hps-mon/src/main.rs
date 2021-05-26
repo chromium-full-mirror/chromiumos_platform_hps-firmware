@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+mod debug_commands;
 mod image_channel;
 mod text_channel;
 
@@ -14,6 +15,7 @@ use image_channel::ImageType;
 use probe_rs::Probe;
 use probe_rs::Session;
 use probe_rs_rtt::ChannelMode;
+use probe_rs_rtt::DownChannel;
 use probe_rs_rtt::Rtt;
 use probe_rs_rtt::UpChannel;
 use std::path::PathBuf;
@@ -21,6 +23,8 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
 use text_channel::TextChannel;
+
+use crate::debug_commands::DebugCommandCode;
 
 const DEFAULT_CPU: &str = "stm32g031";
 
@@ -97,7 +101,7 @@ fn main() -> Result<()> {
     let mut rtt = attach_rtt(&session, 10)?;
 
     let channels = create_channels(&mut rtt, &flags)?;
-    run_loop(channels)
+    run_loop(channels, rtt.down_channels().take(0).unwrap())
 }
 
 fn attach_to_cpu(flags: &Flags) -> Result<Session> {
@@ -148,9 +152,10 @@ fn create_channels(rtt: &mut Rtt, flags: &Flags) -> Result<Vec<Channel>> {
     Ok(channels)
 }
 
-fn run_loop(mut channels: Vec<Channel>) -> Result<()> {
+fn run_loop(mut channels: Vec<Channel>, command_channel: DownChannel) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
+    let command_source = debug_commands::create_command_source()?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {
@@ -161,6 +166,9 @@ fn run_loop(mut channels: Vec<Channel>) -> Result<()> {
                     eprintln!("Channel receive error: {}", e);
                 }
             }
+        }
+        if let Ok(DebugCommandCode(command_code)) = command_source.try_recv() {
+            command_channel.write(&[command_code])?;
         }
         // If we don't get any data from the device, we sleep, increasing how
         // long we sleep each time until we hit a maximum.
