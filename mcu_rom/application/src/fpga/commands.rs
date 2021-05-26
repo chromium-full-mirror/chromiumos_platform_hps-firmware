@@ -26,3 +26,6 @@ pub const DEBUG_LOG: u8 = 0x61;
 
 /// Payload contains bytes of image data to send to the host.
 pub const DEBUG_IMAGE: u8 = 0x62;
+
+/// Returns the next debug command sent over RTT if any.
+pub const GET_DEBUG_COMMAND: u8 = 0x63;

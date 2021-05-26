@@ -27,6 +27,7 @@ pub enum Action {
     WriteStatusRegisters,
     DebugLog,
     DebugImage,
+    GetDebugCommand,
 }
 
 impl Request {
@@ -53,6 +54,9 @@ impl Request {
             }
             crate::fpga::commands::DEBUG_IMAGE => {
                 action = Action::DebugImage;
+            }
+            crate::fpga::commands::GET_DEBUG_COMMAND => {
+                action = Action::GetDebugCommand;
             }
             _ => {
                 response_code = status::ERROR;

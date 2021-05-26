@@ -21,6 +21,7 @@ use rtt_target::rprintln;
 use rtt_target::rtt_init;
 use rtt_target::ChannelMode;
 use rtt_target::UpChannel;
+use rtt_target::DownChannel;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -33,6 +34,7 @@ const APP: () = {
         fpga_programn: board::FpgaProgramn,
         fpga_up_channel: UpChannel,
         image_channel: UpChannel,
+        debug_command_channel: DownChannel,
     }
 
     #[init]
@@ -95,7 +97,8 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel, image_channel])]
+    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel,
+        image_channel, debug_command_channel])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -132,6 +135,11 @@ const APP: () = {
             }
             fpga::Action::DebugImage => {
                 ctx.resources.image_channel.write(&buffer[1..]);
+            }
+            fpga::Action::GetDebugCommand => {
+                if ctx.resources.debug_command_channel.read(&mut buffer[2..3]) == 0 {
+                    buffer[2] = 0;
+                }
             }
             fpga::Action::None => {}
         }
@@ -177,6 +185,13 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
                 size: 1024
                 mode: NoBlockSkip
                 name: "Images"
+            }
+        }
+        down: {
+            0: {
+                size: 4
+                mode: NoBlockSkip
+                name: "DebugCommands"
             }
         }
     );
@@ -234,5 +249,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         fpga_programn: board.fpga_programn,
         fpga_up_channel: channels.up.1,
         image_channel: channels.up.2,
+        debug_command_channel: channels.down.0,
     }
 }
