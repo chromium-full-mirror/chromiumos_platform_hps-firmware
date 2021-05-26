@@ -233,6 +233,18 @@ static void poll_mcu(void) {
   mcu_transaction();
 }
 
+static enum debug_command get_debug_command(void) {
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_GET_DEBUG_CMD;
+  mcu_transaction();
+
+  if (mcu_buf_in[0] == MCU_RESPONSE_OK &&
+      mcu_buf_in[1] == MCU_COMMAND_GET_DEBUG_CMD) {
+    return (enum debug_command)mcu_buf_in[2];
+  }
+  return DEBUG_CMD_NONE;
+}
+
 // Sets the state of the MCU debug LED
 static void set_mcu_led(uint8_t ledstate) {
   printf("Setting MCU debug LED %s\n", ledstate != 0 ? "on" : "off");
@@ -343,6 +355,29 @@ int main(void) {
       }
     }
     poll_mcu();
+    switch (get_debug_command()) {
+      case DEBUG_CMD_CLASSIFY_OFF:
+        mcu_printf("Image classification disabled\n");
+        do_run_classify = false;
+        break;
+      case DEBUG_CMD_CLASSIFY_ON:
+        mcu_printf("Image classification enabled\n");
+        do_run_classify = true;
+        break;
+      case DEBUG_CMD_TRANSFER_IMAGE_OFF:
+        mcu_printf("Image transfer disabled\n");
+        do_transfer_image_to_host = false;
+        break;
+      case DEBUG_CMD_TRANSFER_IMAGE_ON:
+        mcu_printf("Image transfer enabled\n");
+        do_transfer_image_to_host = true;
+        break;
+      case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
+        do_run_exposure_calibration = true;
+        break;
+      case DEBUG_CMD_NONE:
+        break;
+    }
     // Run configured functions
     if (do_spi_transfer) {
       read_mcu_config();

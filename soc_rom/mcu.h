@@ -18,6 +18,7 @@ enum mcu_command {
   MCU_COMMAND_SET_DEBUG_LED = 0x60,
   MCU_COMMAND_SET_DEBUG_LOG = 0x61,
   MCU_COMMAND_SEND_IMAGE = 0x62,
+  MCU_COMMAND_GET_DEBUG_CMD = 0x63,
 };
 
 // The first byte of each received packet is a status code.
@@ -25,6 +26,18 @@ enum mcu_response_status {
   MCU_RESPONSE_NOT_READY = 0,
   MCU_RESPONSE_READY = 1,  // Sent in response to a poll.
   MCU_RESPONSE_OK = 2,     // Sent in response to any other command.
+};
+
+// Debug commands. These aren't intended for production use, only for debugging.
+// If we want equivalent things for production use, then they should just be
+// bits in the configuration struct.
+enum debug_command {
+  DEBUG_CMD_NONE = 0,
+  DEBUG_CMD_CLASSIFY_OFF = 1,
+  DEBUG_CMD_CLASSIFY_ON = 2,
+  DEBUG_CMD_TRANSFER_IMAGE_OFF = 3,
+  DEBUG_CMD_TRANSFER_IMAGE_ON = 4,
+  DEBUG_CMD_RUN_EXPOSURE_CALIBRATION = 5,
 };
 
 // Global send and receive buffers
