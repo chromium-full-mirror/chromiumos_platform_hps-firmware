@@ -1,0 +1,11 @@
+[package]
+name = "fpga_rom"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+litex_pac = { path = "../litex_pac", features = ["rt"] }
+panic-halt = "0.2.0"
+riscv = "0.7.0"
+riscv-rt = "0.8.0"

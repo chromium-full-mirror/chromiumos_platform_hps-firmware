@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Builds and runs the Rust SOC ROM. ./scripts/proto2-run should already be
+# running in a separate shell.
+
+set -e
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
+
+cd "${PROJECT_ROOT}/mcu_rom/riscv"
+# Build first, since if there are errors, `cargo objcopy` won't report them in a
+# useful way.
+cargo build -p fpga_rom --release
+cargo objcopy -p fpga_rom --release -- -O binary "${ROM}"
+"${PROJECT_ROOT}/scripts/hps-mon" \
+    --openocd-port 4444 \
+    --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
+    --soc-rom "${ROM}" \
+    --cmd 'reset_mcu; write_soc_rom; reset_fpga' \
+    "$@"

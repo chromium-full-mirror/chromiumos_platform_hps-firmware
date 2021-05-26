@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "fpga_rom",
     "litex_pac",
 ]
 
