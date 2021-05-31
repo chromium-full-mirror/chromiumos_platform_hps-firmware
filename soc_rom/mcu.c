@@ -12,6 +12,7 @@
 // Global buffer definitions
 uint8_t mcu_buf_out[MCU_BUFFER_LEN];
 uint8_t mcu_buf_in[MCU_BUFFER_LEN];
+static int spi_enabled = 0;
 
 // Wait until transmit buffer empty, then write a byte
 static void write_1(uint8_t b) {
@@ -28,6 +29,10 @@ static uint8_t read_1(void) {
 }
 
 static void spi_xfer(const uint8_t* tx_buffer, uint8_t* rx_buffer) {
+  // Wait until MCU is ready
+  while (mcu_spi_flags_ready_read() == 0) {
+  }
+
   // Pull CS low
   mcu_spi_cr_cs_write(0);
 
@@ -58,9 +63,30 @@ static void delay_us(int us) {
   }
 }
 
+void spi_init(void) {
+  // If the MCU is not ready when we start, then the MCU is probably either not
+  // flashed, or not flashed with recent firmware. Either way, we disable SPI
+  // transfers.
+  // TODO(b/189781227): Remove this from production code.
+  for (int i = 0; i < 250; i++) {
+    if (mcu_spi_flags_ready_read()) {
+      spi_enabled = 1;
+      return;
+    }
+    // Retry afer a 1ms delay up to 250 times.
+    delay_us(1000);
+  }
+  if (!spi_enabled) {
+    puts("MCU not ready for SPI transfer. SPI disabled");
+  }
+}
+
 // Do a transaction with the MCU
 // TODO: lots of error handling
 int mcu_transaction(void) {
+  if (!spi_enabled) {
+    return -1;
+  }
   // Transfer to MCU
   spi_xfer(mcu_buf_out, mcu_buf_in);
 
@@ -69,10 +95,6 @@ int mcu_transaction(void) {
     if (mcu_buf_in[0] != 0) {
       return 0;
     } else {
-      // A short delay before we try another SPI transfer, otherwise the CS line
-      // won't be high for long enough. This value was found experimentally to
-      // be sufficient.
-      delay_us(1);
       memset(mcu_buf_in, 0, MCU_BUFFER_LEN);
       spi_xfer(mcu_buf_in, mcu_buf_in);
     }
@@ -97,7 +119,8 @@ void mcu_printf(const char* format, ...) {
   mcu_transaction();
 }
 
-void mcu_stream_initialize(struct mcu_stream* stream, enum mcu_command command) {
+void mcu_stream_initialize(struct mcu_stream* stream,
+                           enum mcu_command command) {
   stream->out = mcu_buf_out + 1;
   stream->remaining_capacity = MCU_BUFFER_LEN - 1;
   stream->command = command;

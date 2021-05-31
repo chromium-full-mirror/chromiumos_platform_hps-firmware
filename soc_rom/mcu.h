@@ -45,6 +45,10 @@ enum debug_command {
 extern uint8_t mcu_buf_out[MCU_BUFFER_LEN];
 extern uint8_t mcu_buf_in[MCU_BUFFER_LEN];
 
+// Initializes SPI. Must be called on startup before mcu_transaction or
+// mcu_printf are called.
+void spi_init(void);
+
 // Transacts with the MCU
 //
 // Sends the content of spi_mcu_buf_out and waits for a response to be received

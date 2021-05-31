@@ -298,6 +298,7 @@ int main(void) {
   irq_setmask(0);
   irq_setie(1);
   uart_init();
+  spi_init();
 
   mcu_printf("HPS SoC application " HPS_VERSION);
   mcu_printf(" (built " HPS_BUILD_DATE);

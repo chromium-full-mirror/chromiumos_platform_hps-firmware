@@ -28,7 +28,6 @@ hps_io = [
         Subsignal('sda', Pins('E3')),
         IOStandard('LVCMOS18H')
      ),
-    ('done', 0, Pins('A5'), IOStandard('LVCMOS18H')),
     ('programn', 0, Pins('A4'), IOStandard('LVCMOS18H')),
     # JTAG: not usually programatically accessible
     ('jtag', 0,
@@ -67,6 +66,7 @@ hps_io = [
         Subsignal('cs', Pins('G3')),
         Subsignal('cipo', Pins('E4')),
         Subsignal('copi', Pins('F5')),
+        Subsignal('ready', Pins('A5'), IOStandard('LVCMOS18')),
         IOStandard('LVCMOS18H')
      ),
 ]

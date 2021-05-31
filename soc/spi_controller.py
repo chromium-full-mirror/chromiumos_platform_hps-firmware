@@ -42,6 +42,7 @@ class SpiController(Module, AutoCSR):
             fields=[
                 bitfield('txe', 1, 1, 'TX buffer empty'),
                 bitfield('rxe', 1, 1, 'RX buffer empty'),
+                bitfield('ready', 1, 1, 'Peripheral ready'),
             ],
             name='flags', description='SPI Status flags'
         )
@@ -73,9 +74,15 @@ class SpiController(Module, AutoCSR):
         # Finally, when not enabled, hold everything in reset
         self._reset_on_disable()
 
+        self._connect_ready()
+
     def _connect_cs(self):
         """Connect chip select - independent of all other state"""
         self.comb += self.pads.cs.eq(self._cr.fields.cs)
+
+    def _connect_ready(self):
+        """Connect the peripheral ready line - independent of all other state"""
+        self.comb += self._flags.fields.ready.eq(self.pads.ready)
 
     def _watch_tx_rx(self):
         """Watch accesses txd and rxd and set txe and rxe accordingly.
@@ -150,6 +157,7 @@ class DummyPads:
         self.clk = Signal()
         self.copi = Signal()
         self.cipo = Signal()
+        self.ready = Signal()
 
 
 def to_bits(vals):
