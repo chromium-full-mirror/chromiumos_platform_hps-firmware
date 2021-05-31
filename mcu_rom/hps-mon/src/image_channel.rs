@@ -10,6 +10,7 @@ use image::GrayImage;
 use image::ImageBuffer;
 use image::RgbImage;
 use std::io::Cursor;
+use std::num::Wrapping;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -56,7 +57,13 @@ impl ChannelHandler for ImageChannel {
             let mut write_result: Result<()> = Ok(());
             if let Some(start) = index_of(&self.received, &START_IMAGE) {
                 let start = start + START_IMAGE.len();
-                write_result = self.output_dir.write_image(&self.received[start..end]);
+                let bytes = &mut self.received[start..end];
+                // The HPS converts images to signed (i8). Convert them back to
+                // unsigned.
+                for b in bytes.iter_mut() {
+                    *b = (Wrapping(*b) + Wrapping(128)).0;
+                }
+                write_result = self.output_dir.write_image(bytes);
             }
             // If we didn't have a START_IMAGE, then we have an incomplete
             // image, so we remove everything up to the end of the image
