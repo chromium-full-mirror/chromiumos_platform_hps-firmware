@@ -299,8 +299,9 @@ int main(void) {
   irq_setie(1);
   uart_init();
 
-  mcu_printf("HPS SoC application " HPS_VERSION " (built " HPS_BUILD_DATE
-             " by " HPS_BUILD_USER ")\n");
+  mcu_printf("HPS SoC application " HPS_VERSION);
+  mcu_printf(" (built " HPS_BUILD_DATE);
+  mcu_printf(" by " HPS_BUILD_USER ")\n");
 
   hm01b0_status_e status;
 
