@@ -24,6 +24,7 @@ pub type HostBus = SerialHostBus;
 
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
+pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA4<Analog>,
@@ -37,6 +38,7 @@ pub struct Board {
 
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
+    pub spi_ready: SpiReady,
 }
 
 impl Board {
@@ -50,6 +52,8 @@ impl Board {
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
         fpga_programn.set_high().unwrap();
+        let mut spi_ready = c.pc14.into_push_pull_output();
+        spi_ready.set_low().unwrap();
         Self {
             fpga_spi_cs: a.pa4,
             fpga_spi_clk: a.pa5,
@@ -60,6 +64,7 @@ impl Board {
 
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn,
+            spi_ready,
         }
     }
 }

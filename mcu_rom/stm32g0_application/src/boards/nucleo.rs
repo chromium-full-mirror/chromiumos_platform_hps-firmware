@@ -28,6 +28,9 @@ pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 // some pin.
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 
+// No FPGA, so we pick some arbitrary pin
+pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -38,6 +41,7 @@ pub struct Board {
 
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
+    pub spi_ready: SpiReady,
 }
 
 impl Board {
@@ -66,6 +70,7 @@ impl Board {
 
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn: c.pc15.into_push_pull_output(),
+            spi_ready: c.pc14.into_push_pull_output(),
         }
     }
 }

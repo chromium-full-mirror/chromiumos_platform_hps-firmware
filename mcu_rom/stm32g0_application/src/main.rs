@@ -20,8 +20,8 @@ use rtic::app;
 use rtt_target::rprintln;
 use rtt_target::rtt_init;
 use rtt_target::ChannelMode;
-use rtt_target::UpChannel;
 use rtt_target::DownChannel;
+use rtt_target::UpChannel;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -232,6 +232,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         spi_cs,
         dma.ch1,
         dma.ch2,
+        board.spi_ready,
     );
 
     rprintln!(

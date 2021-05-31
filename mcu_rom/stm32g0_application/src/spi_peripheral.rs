@@ -12,7 +12,7 @@ use rtt_target::rprintln;
 
 const BUFFER_SIZE: usize = 64;
 
-/// Main buffer. Used for receving, then sending, but never at the same time.
+/// Main buffer. Used for receiving, then sending, but never at the same time.
 static mut BUFFER: [u8; BUFFER_SIZE] = [0u8; BUFFER_SIZE];
 
 /// The SPI interface with the FPGA. We act as the peripheral on the SPI bus,
@@ -24,6 +24,10 @@ pub struct SpiPeripheral {
     mode: Mode,
     cs: board::FpgaSpiCsPin,
     cs_state: bool,
+    /// Signal to inform the FPGA that we're ready for a SPI transfer. We set
+    /// this high once we've configured DMA to send or receive via SPI. We set
+    /// it low shortly after the transfer starts (CS line goes low).
+    spi_ready: board::SpiReady,
 }
 
 /// The current mode of our SPI interface. We transition through these states in
@@ -56,6 +60,7 @@ impl SpiPeripheral {
         mut cs: board::FpgaSpiCsPin,
         tx_dma: hal::dma::C1,
         rx_dma: hal::dma::C2,
+        spi_ready: board::SpiReady,
     ) -> SpiPeripheral {
         hal::spi::PinSck::setup(&sck);
         hal::spi::PinMiso::setup(&miso);
@@ -95,6 +100,7 @@ impl SpiPeripheral {
             mode: Mode::Receive(buffer),
             cs,
             cs_state: true,
+            spi_ready,
         };
         spi_peripheral.configure_dma_channels();
 
@@ -149,6 +155,9 @@ impl SpiPeripheral {
                 self.spi.dr.read();
             }
             self.configure_dma_channels();
+        } else {
+            // Transfer has started, signal that we're not ready.
+            self.spi_ready.set_low().unwrap();
         }
         result
     }
@@ -161,7 +170,7 @@ impl SpiPeripheral {
             Mode::Receive(buffer) => {
                 // Fill the TX fifo with zero bytes. These bytes will then
                 // repeat once the FIFO empties, resulting in us just sending
-                // zeros while we receive and in subseuquent states until we
+                // zeros while we receive and in subsequent states until we
                 // reach the Send state.
                 self.spi.dr.write(|w| w);
                 self.spi.dr.write(|w| w);
@@ -180,8 +189,14 @@ impl SpiPeripheral {
                     buffer,
                 );
             }
-            _ => {}
+            _ => {
+                // Don't signal that we're ready yet.
+                return;
+            }
         }
+        // DMA has been configured. Signal that we're ready to receive SPI
+        // communications.
+        self.spi_ready.set_high().unwrap();
     }
 }
 
