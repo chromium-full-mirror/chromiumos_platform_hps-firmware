@@ -86,12 +86,12 @@ void write_ae_cfg(void) {
 
 // Stream nframes to allow calibration
 static void calibrate(int nframes) {
-  printf("Calibrating with %d frames\n", nframes);
+  mcu_printf("Calibrating with %d frames\n", nframes);
   hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
                   nframes);
   for (int i = 0; i < nframes; i++) {
     cam_dma_enable();
-    printf("  - frame %d\n", i + 1);
+    mcu_printf("  - frame %d\n", i + 1);
     cam_dma_wait();
   }
   print_ae_cfg();
