@@ -16,6 +16,16 @@ pub use proto0 as board;
 
 #[cfg(any(
     feature = "nucleo",
-    all(not(feature = "proto0"), not(feature = "nucleo"))
+    all(
+        not(feature = "proto0"),
+        not(feature = "nucleo"),
+        not(feature = "proto2")
+    )
 ))]
 pub use nucleo as board;
+
+#[cfg(feature = "proto2")]
+pub mod proto2;
+
+#[cfg(feature = "proto2")]
+pub use proto2 as board;

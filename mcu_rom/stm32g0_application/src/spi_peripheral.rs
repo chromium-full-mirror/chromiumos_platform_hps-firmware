@@ -245,3 +245,13 @@ impl<T> InitSpiChipSelect for hal::gpio::gpiob::PB0<T> {
         }
     }
 }
+
+impl<T> InitSpiChipSelect for hal::gpio::gpioa::PA8<T> {
+    fn init_spi_chip_select(&mut self) {
+        unsafe {
+            let gpioa = &*hal::stm32::GPIOA::ptr();
+            gpioa.afrl.modify(|_, w| w.afsel1().bits(0));
+            gpioa.moder.modify(|_, w| w.moder1().bits(2));
+        }
+    }
+}
