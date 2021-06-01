@@ -4,6 +4,7 @@
 
 //! Configuration for running on the Nucleo STM32g071 board.
 
+use hal::dmamux::DmaMuxIndex;
 use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
@@ -11,6 +12,8 @@ use hal::gpio::Input;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
 use hal::stm32::I2C1;
+use hal::stm32::SPI1;
+use hal::stm32::SPI2;
 use hal::stm32::USART2;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
@@ -31,6 +34,8 @@ pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 // No FPGA, so we pick some arbitrary pin
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 
+pub type FpgaSpi = hal::stm32::SPI1;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -42,6 +47,7 @@ pub struct Board {
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
     pub spi_ready: SpiReady,
+    pub fpga_spi: FpgaSpi,
 }
 
 impl Board {
@@ -51,6 +57,8 @@ impl Board {
         c: gpio::gpioc::Parts,
         i2c1: I2C1,
         _usart2: USART2,
+        spi1: SPI1,
+        _spi2: SPI2,
         rcc: &mut hal::rcc::Rcc,
     ) -> Self {
         let host_bus = Stm32g0I2cPeripheral::new(
@@ -71,6 +79,14 @@ impl Board {
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn: c.pc15.into_push_pull_output(),
             spi_ready: c.pc14.into_push_pull_output(),
+            fpga_spi: spi1,
         }
     }
+}
+
+pub const FPGA_SPI_MUX_RX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_RX;
+pub const FPGA_SPI_MUX_TX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_TX;
+
+pub unsafe fn fpga_spi_registers() -> *const hal::stm32::spi1::RegisterBlock {
+    hal::stm32::SPI1::ptr()
 }

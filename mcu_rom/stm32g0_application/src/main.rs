@@ -212,6 +212,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         p.GPIOC.split(&mut rcc),
         p.I2C1,
         p.USART2,
+        p.SPI1,
+        p.SPI2,
         &mut rcc,
     );
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
@@ -225,7 +227,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         .listen(hal::gpio::SignalEdge::All, &mut exti);
 
     let spi = SpiPeripheral::new(
-        p.SPI1,
+        board.fpga_spi,
         board.fpga_spi_clk,
         board.fpga_spi_cipo,
         board.fpga_spi_copi,

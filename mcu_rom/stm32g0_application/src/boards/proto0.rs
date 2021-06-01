@@ -4,6 +4,7 @@
 
 //! Configuration for running on the HPS proto0 board.
 
+use hal::dmamux::DmaMuxIndex;
 use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
@@ -13,6 +14,8 @@ use hal::gpio::PushPull;
 use hal::prelude::*;
 use hal::serial;
 use hal::stm32::I2C1;
+use hal::stm32::SPI1;
+use hal::stm32::SPI2;
 use hal::stm32::USART2;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cPeripheral;
@@ -25,6 +28,7 @@ pub type HostBus = SerialHostBus;
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
+pub type FpgaSpi = hal::stm32::SPI1;
 
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA4<Analog>,
@@ -39,6 +43,7 @@ pub struct Board {
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
     pub spi_ready: SpiReady,
+    pub fpga_spi: FpgaSpi,
 }
 
 impl Board {
@@ -48,6 +53,8 @@ impl Board {
         c: gpio::gpioc::Parts,
         _i2c1: I2C1,
         usart2: USART2,
+        spi1: SPI1,
+        _spi2: SPI2,
         rcc: &mut hal::rcc::Rcc,
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
@@ -65,8 +72,16 @@ impl Board {
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn,
             spi_ready,
+            fpga_spi: spi1,
         }
     }
+}
+
+pub const FPGA_SPI_MUX_RX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_RX;
+pub const FPGA_SPI_MUX_TX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_TX;
+
+pub unsafe fn fpga_spi_registers() -> *const hal::stm32::spi1::RegisterBlock {
+    hal::stm32::SPI1::ptr()
 }
 
 enum BusState {

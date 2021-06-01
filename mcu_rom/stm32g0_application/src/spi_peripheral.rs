@@ -6,7 +6,6 @@ use crate::board;
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
 use hal::prelude::*;
-use hal::stm32::SPI1;
 use mcu_common::MemBlock;
 use rtt_target::rprintln;
 
@@ -18,7 +17,7 @@ static mut BUFFER: [u8; BUFFER_SIZE] = [0u8; BUFFER_SIZE];
 /// The SPI interface with the FPGA. We act as the peripheral on the SPI bus,
 /// with the FPGA as the controller.
 pub struct SpiPeripheral {
-    spi: SPI1,
+    spi: board::FpgaSpi,
     tx_dma: hal::dma::C1,
     rx_dma: hal::dma::C2,
     mode: Mode,
@@ -53,10 +52,10 @@ enum Mode {
 
 impl SpiPeripheral {
     pub(crate) fn new(
-        spi: SPI1,
-        sck: impl hal::spi::PinSck<SPI1>,
-        miso: impl hal::spi::PinMiso<SPI1>,
-        mosi: impl hal::spi::PinMosi<SPI1>,
+        spi: board::FpgaSpi,
+        sck: impl hal::spi::PinSck<board::FpgaSpi>,
+        miso: impl hal::spi::PinMiso<board::FpgaSpi>,
+        mosi: impl hal::spi::PinMosi<board::FpgaSpi>,
         mut cs: board::FpgaSpiCsPin,
         tx_dma: hal::dma::C1,
         rx_dma: hal::dma::C2,
@@ -89,7 +88,7 @@ impl SpiPeripheral {
 
         // safety: The following MemBlock takes ownership of its mutable
         // reference. This is safe provided each it has exactly one owner, which
-        // we can guarantee because we take ownership of SPI1, so cannot be
+        // we can guarantee because we take ownership of `spi`, so cannot be
         // called more than once.
         let buffer = MemBlock::new(unsafe { &mut BUFFER });
 
@@ -176,7 +175,7 @@ impl SpiPeripheral {
                 self.spi.dr.write(|w| w);
                 configure_dma_channel(
                     &mut self.rx_dma,
-                    hal::dmamux::DmaMuxIndex::SPI1_RX,
+                    board::FPGA_SPI_MUX_RX,
                     hal::dma::Direction::FromPeripheral,
                     buffer,
                 );
@@ -184,7 +183,7 @@ impl SpiPeripheral {
             Mode::Send(buffer) => {
                 configure_dma_channel(
                     &mut self.tx_dma,
-                    hal::dmamux::DmaMuxIndex::SPI1_TX,
+                    board::FPGA_SPI_MUX_TX,
                     hal::dma::Direction::FromMemory,
                     buffer,
                 );
@@ -206,8 +205,8 @@ fn configure_dma_channel(
     direction: hal::dma::Direction,
     buffer: &MemBlock,
 ) {
-    let spi1_registers = unsafe { &*hal::stm32::SPI1::ptr() };
-    let spi_dr_address = &spi1_registers.dr as *const _ as u32;
+    let spi_registers = unsafe { &*board::fpga_spi_registers() };
+    let spi_dr_address = &spi_registers.dr as *const _ as u32;
 
     channel.set_direction(direction);
     channel.set_memory_address(buffer.as_ptr() as u32, true);
