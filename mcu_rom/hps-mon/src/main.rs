@@ -101,7 +101,7 @@ fn main() -> Result<()> {
     let mut rtt = attach_rtt(&session, 10)?;
 
     let channels = create_channels(&mut rtt, &flags)?;
-    run_loop(channels, rtt.down_channels().take(0).unwrap())
+    run_loop(channels, rtt.down_channels().take(0))
 }
 
 fn attach_to_cpu(flags: &Flags) -> Result<Session> {
@@ -152,7 +152,7 @@ fn create_channels(rtt: &mut Rtt, flags: &Flags) -> Result<Vec<Channel>> {
     Ok(channels)
 }
 
-fn run_loop(mut channels: Vec<Channel>, command_channel: DownChannel) -> Result<()> {
+fn run_loop(mut channels: Vec<Channel>, command_channel: Option<DownChannel>) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
     let command_source = debug_commands::create_command_source()?;
@@ -168,7 +168,11 @@ fn run_loop(mut channels: Vec<Channel>, command_channel: DownChannel) -> Result<
             }
         }
         if let Ok(DebugCommandCode(command_code)) = command_source.try_recv() {
-            command_channel.write(&[command_code])?;
+            if let Some(command_channel) = command_channel.as_ref() {
+                command_channel.write(&[command_code])?;
+            } else {
+                eprintln!("No command channel available, command not sent.");
+            }
         }
         // If we don't get any data from the device, we sleep, increasing how
         // long we sleep each time until we hit a maximum.
