@@ -28,6 +28,9 @@ cargo +stable build
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
 cargo +stable build
+for board in proto0 nucleo proto2; do
+    cargo +stable build --no-default-features --features $board,defmt-default
+done
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
 cargo +stable build
