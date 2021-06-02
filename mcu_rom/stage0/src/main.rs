@@ -16,6 +16,7 @@ use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
+use hal::gpio::SignalEdge;
 use hal::prelude::*;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
@@ -36,6 +37,7 @@ const APP: () = {
         host_interface: HostInterface<Stm32g0I2cPeripheral>,
         flash_writer: FlashWriter,
         led: Led,
+        exti: hal::stm32::EXTI,
     }
 
     #[init]
@@ -93,6 +95,14 @@ const APP: () = {
         }
     }
 
+    #[task(binds = EXTI4_15, resources = [exti], spawn = [handle_event])]
+    fn button_click(ctx: button_click::Context) {
+        // TODO: Remove this. We don't want this in production.
+        ctx.resources.exti.unpend(hal::exti::Event::GPIO13);
+        defmt::info!("Button pressed, booting...");
+        let _ = ctx.spawn.handle_event(HostEvent::LoadApplication);
+    }
+
     // Interrupts that we're not using that can be used by RTIC for spawning
     // software tasks.
     extern "C" {
@@ -119,6 +129,9 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let fpga_done = gpioc.pc14.into_floating_input();
     // configure PC15 as o/p
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
+
+    let mut exti = p.EXTI;
+    gpioc.pc13.listen(SignalEdge::Rising, &mut exti);
 
     // Keep the USART pins in a known state early on.
     use hal::serial::FullConfig;
@@ -160,6 +173,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         host_interface,
         flash_writer,
         led,
+        exti,
     }
 }
 
