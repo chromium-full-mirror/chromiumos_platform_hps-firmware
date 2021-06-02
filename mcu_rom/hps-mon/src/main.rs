@@ -6,6 +6,7 @@ mod debug_commands;
 mod image_channel;
 mod text_channel;
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
@@ -83,6 +84,10 @@ struct Flags {
     )]
     /// image type that we expect from the camera
     image_type: ImageType,
+
+    #[argh(option, default = "0")]
+    /// which probe number to use, starting from 0.
+    probe_num: usize,
 }
 
 fn main() -> Result<()> {
@@ -107,11 +112,16 @@ fn attach_to_cpu(flags: &Flags) -> Result<Session> {
     if probes.is_empty() {
         bail!("No supported probes were detected");
     }
-    // TODO: Add support for selecting which probe to use.
-    if probes.len() > 1 {
-        eprintln!("Warning: Multiple probes detected, using the first one");
-    }
-    let probe = probes[0].open()?;
+    let probe = probes
+        .get(flags.probe_num)
+        .ok_or_else(|| {
+            anyhow!(
+                "Probe #{} not found. Only {} probes were detected",
+                flags.probe_num,
+                probes.len()
+            )
+        })?
+        .open()?;
     Ok(probe.attach(
         flags
             .cpu
