@@ -21,7 +21,7 @@
 #define CAM_CHECK(status, msg)     \
   {                                \
     if (status != HM01B0_ERR_OK) { \
-      puts(msg " failed\n");       \
+      mcu_printf(msg " failed\n"); \
     }                              \
   }
 
@@ -66,16 +66,16 @@ static void print_ae_cfg(void) {
   hm01b0_status_e status;
   status = hm01b0_get_ae(&hm01b0_cfg, &aecfg);
   if (status == HM01B0_ERR_AE_NOT_CONVERGED) {
-    puts("AE not converged.\n");
+    mcu_printf("AE not converged.\n");
   } else {
     CAM_CHECK(status, "get_ae");
   }
 
-  printf("target mean = %d\n", aecfg.ui8AETargetMean);
-  printf("min mean    = %d\n", aecfg.ui8AEMinMean);
-  printf("conv in th  = %d\n", aecfg.ui8ConvergeInTh);
-  printf("conv out th = %d\n", aecfg.ui8ConvergeOutTh);
-  printf("mean        = %d\n", aecfg.ui8AEMean);
+  mcu_printf("target mean = %d\n", aecfg.ui8AETargetMean);
+  mcu_printf("min mean    = %d\n", aecfg.ui8AEMinMean);
+  mcu_printf("conv in th  = %d\n", aecfg.ui8ConvergeInTh);
+  mcu_printf("conv out th = %d\n", aecfg.ui8ConvergeOutTh);
+  mcu_printf("mean        = %d\n", aecfg.ui8AEMean);
 }
 
 // Write the target auto exposure into the camera
