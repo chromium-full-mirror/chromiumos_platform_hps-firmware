@@ -78,14 +78,16 @@ impl ChannelHandler for ImageChannel {
     }
 }
 
-fn write_as_greyscale_png(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
+/// Takes grayscale image data and writes it as a grayscale PNG.
+fn write_png_from_greyscale_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
     let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
         image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
     });
     Ok(image.save(filename)?)
 }
 
-fn write_as_color_png(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
+/// Takes color image data and writes it as both a color PNG and a grayscale PNG.
+fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
     let mut buf = vec![0; (3 * raw_bytes.len()) as usize];
     let mut dst = bayer::RasterMut::new(
         IMAGE_WIDTH as usize,
@@ -107,7 +109,17 @@ fn write_as_color_png(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
         let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize];
         image::Rgb([r, g, b])
     });
-    Ok(image.save(filename)?)
+    image.save(filename.with_extension("color.png"))?;
+
+    let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
+        let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize] as u16;
+        let g = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 1) as usize] as u16;
+        let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize] as u16;
+        image::Luma([((r + g + b) / 3) as u8])
+    });
+    image.save(filename.with_extension("grey.png"))?;
+
+    Ok(())
 }
 
 impl OutputDir {
@@ -139,8 +151,8 @@ impl OutputDir {
 
     fn write_png(&self, png_filename: &PathBuf, raw_bytes: &[u8]) -> Result<(), anyhow::Error> {
         Ok(match self.image_type {
-            ImageType::Grayscale => write_as_greyscale_png(&png_filename, raw_bytes)?,
-            ImageType::Color => write_as_color_png(&png_filename, raw_bytes)?,
+            ImageType::Grayscale => write_png_from_greyscale_camera(&png_filename, raw_bytes)?,
+            ImageType::Color => write_pngs_from_color_camera(&png_filename, raw_bytes)?,
         })
     }
 
