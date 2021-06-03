@@ -89,9 +89,10 @@ dd conv=notrunc if="${FILE}" of="${IMAGE_FILE}" obs=1M seek="${START}"
 # Call flashrom to do the programming
 PROGRAMMER_TYPE=${PROGRAMMER_TYPE:-2232H}
 DIVISOR=${DIVISOR:-4}
+FTDI_PORT=${FTDI_PORT:-A}
 read -r -d '' CMD <<EOF
 ${FLASHROM}
-  -p ft2232_spi:type=${PROGRAMMER_TYPE},divisor=${DIVISOR},gpiol=LLLL
+  -p ft2232_spi:type=${PROGRAMMER_TYPE},divisor=${DIVISOR},gpiol=LLLL,port=${FTDI_PORT}
   --noverify-all
   --layout $(printf "%q" "${LAYOUT_FILE}")
   --image area
