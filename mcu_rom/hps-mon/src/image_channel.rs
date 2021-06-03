@@ -131,13 +131,17 @@ impl OutputDir {
         }
         let raw_filename = self.next_output_filename();
         std::fs::write(&raw_filename, raw_bytes)?;
-        let png_filename = raw_filename.with_extension("png");
-        match self.image_type {
-            ImageType::Grayscale => write_as_greyscale_png(&png_filename, raw_bytes)?,
-            ImageType::Color => write_as_color_png(&png_filename, raw_bytes)?,
-        }
+        self.write_png(&raw_filename.with_extension("png"), raw_bytes)?;
+        self.write_png(&self.path.join("latest.png"), raw_bytes)?;
         println!("Wrote {:?}", raw_filename);
         Ok(())
+    }
+
+    fn write_png(&self, png_filename: &PathBuf, raw_bytes: &[u8]) -> Result<(), anyhow::Error> {
+        Ok(match self.image_type {
+            ImageType::Grayscale => write_as_greyscale_png(&png_filename, raw_bytes)?,
+            ImageType::Color => write_as_color_png(&png_filename, raw_bytes)?,
+        })
     }
 
     fn next_output_filename(&mut self) -> PathBuf {
