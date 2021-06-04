@@ -78,12 +78,27 @@ impl ChannelHandler for ImageChannel {
     }
 }
 
+fn link_file(original: &Path, link: &Path) -> Result<()> {
+    // Try to delete the link if it already exists, but ignore errors.
+    let _ = std::fs::remove_file(link);
+    std::os::unix::fs::symlink(original, link).map_err(|e| {
+        anyhow!(
+            "Error creating symlink from {:?} to {:?}: {:?}",
+            original,
+            link,
+            e
+        )
+    })
+}
+
 /// Takes grayscale image data and writes it as a grayscale PNG.
 fn write_png_from_greyscale_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
     let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
         image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
     });
-    Ok(image.save(filename)?)
+    image.save(&filename)?;
+    link_file(filename, &filename.with_file_name("latest.png"))?;
+    Ok(())
 }
 
 /// Takes color image data and writes it as both a color PNG and a grayscale PNG.
@@ -109,7 +124,12 @@ fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()>
         let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize];
         image::Rgb([r, g, b])
     });
-    image.save(filename.with_extension("color.png"))?;
+    let color_filename = filename.with_extension("color.png");
+    image.save(&color_filename)?;
+    link_file(
+        &color_filename,
+        &filename.with_file_name("latest.color.png"),
+    )?;
 
     let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
         let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize] as u16;
@@ -117,7 +137,12 @@ fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()>
         let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize] as u16;
         image::Luma([((r + g + b) / 3) as u8])
     });
-    image.save(filename.with_extension("grey.png"))?;
+    let greyscale_filename = filename.with_extension("grey.png");
+    image.save(&greyscale_filename)?;
+    link_file(
+        &greyscale_filename,
+        &filename.with_file_name("latest.grey.png"),
+    )?;
 
     Ok(())
 }
@@ -144,7 +169,6 @@ impl OutputDir {
         let raw_filename = self.next_output_filename();
         std::fs::write(&raw_filename, raw_bytes)?;
         self.write_png(&raw_filename.with_extension("png"), raw_bytes)?;
-        self.write_png(&self.path.join("latest.png"), raw_bytes)?;
         println!("Wrote {:?}", raw_filename);
         Ok(())
     }
