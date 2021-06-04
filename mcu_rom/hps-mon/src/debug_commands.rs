@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
+use rustyline::config::Configurer;
 use std::sync::mpsc;
 use std::time::Duration;
 
@@ -41,8 +42,11 @@ enum Command {
 }
 
 struct CommandEditor {
-    editor: rustyline::Editor<()>,
+    editor: rustyline::Editor<CompletionHelper>,
 }
+
+#[derive(Default)]
+struct CompletionHelper {}
 
 const COMMANDS: &'static [AvailableDebugCommand] = &[
     // TODO: Consider changing commands that set things on and off to single
@@ -109,8 +113,12 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
 /// Terminates when the returned receiver gets closed.
 pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<DebugCommand>> {
     let mut editor = CommandEditor {
-        editor: rustyline::Editor::<()>::new(),
+        editor: rustyline::Editor::<CompletionHelper>::new(),
     };
+    editor.editor.set_helper(Some(CompletionHelper::default()));
+    editor
+        .editor
+        .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
         loop {
@@ -235,6 +243,33 @@ fn parse_value<T: AsRef<str>>(value: T) -> Option<u16> {
     } else {
         value.parse().ok()
     }
+}
+
+impl rustyline::completion::Completer for CompletionHelper {
+    type Candidate = String;
+
+    fn complete(
+        &self,
+        line: &str,
+        pos: usize,
+        _ctx: &rustyline::Context<'_>,
+    ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
+        let prefix = &line[..pos];
+        let mut completions = Vec::new();
+        for command in COMMANDS {
+            if command.keyword.starts_with(prefix) {
+                completions.push(command.keyword.to_owned());
+            }
+        }
+        Ok((0, completions))
+    }
+}
+
+impl rustyline::Helper for CompletionHelper {}
+impl rustyline::validate::Validator for CompletionHelper {}
+impl rustyline::highlight::Highlighter for CompletionHelper {}
+impl rustyline::hint::Hinter for CompletionHelper {
+    type Hint = String;
 }
 
 #[cfg(test)]
