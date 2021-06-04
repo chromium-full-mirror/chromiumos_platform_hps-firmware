@@ -27,6 +27,7 @@
 
 static hm01b0_ae_cfg_t aecfg;
 static uint8_t ae_target = 100;
+static hm01b0_snr_expo_gain_ctrl_t expo_gain_ctrl;
 
 #define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
 uint8_t frame_buffer[FB_SIZE];
@@ -48,6 +49,8 @@ static void cam_dma_wait(void) {
 
 static void capture(void) {
   hm01b0_status_e status;
+  status = hm01b0_restore_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
+  CAM_CHECK(status, "restore_exposure");
   status = hm01b0_cmd_update(&hm01b0_cfg);
   CAM_CHECK(status, "status");
 
@@ -209,9 +212,12 @@ void run_classify() {
 
 // Initializes the camera
 static void camera_init() {
+  hm01b0_status_e status;
   puts("Camera: Normal mode init");
   hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
+  status = hm01b0_save_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
+  CAM_CHECK(status, "save_exposure");
 }
 
 // Reads configuration registers from the MCU
@@ -233,13 +239,14 @@ static void poll_mcu(void) {
   mcu_transaction();
 }
 
-static enum debug_command get_debug_command(void) {
+static enum debug_command get_debug_command(uint16_t* arg_out) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_GET_DEBUG_CMD;
   mcu_transaction();
 
   if (mcu_buf_in[0] == MCU_RESPONSE_OK &&
       mcu_buf_in[1] == MCU_COMMAND_GET_DEBUG_CMD) {
+    *arg_out = (mcu_buf_in[4] << 8) | mcu_buf_in[3];
     return (enum debug_command)mcu_buf_in[2];
   }
   return DEBUG_CMD_NONE;
@@ -292,6 +299,39 @@ static bool user_toggle(int input, int key, const char* desc, bool* var) {
   *var = !*var;
   printf("%s now %s\n", desc, *var ? "ON" : "OFF");
   return true;
+}
+
+static void print_expo_gain(void) {
+  mcu_printf("Analog gain: 0x%02x\n", (int)expo_gain_ctrl.ui8AGain);
+  mcu_printf("Integration: 0x%02x\n", ((int)expo_gain_ctrl.ui8IntegrationH)
+                                              << 8 |
+                                          (int)expo_gain_ctrl.ui8IntegrationL);
+  mcu_printf("Digital gain: 0x%02x\n", ((int)expo_gain_ctrl.ui8DGain_H) << 8 |
+                                           (int)expo_gain_ctrl.ui8DGain_H);
+}
+
+static void set_analog_gain(uint16_t value) {
+  if (value != 0 && value != 0x10 && value != 0x20 && value != 0x30) {
+    mcu_printf("Invalid analog gain. Valid values are 0, 0x10, 0x20 or 0x30\n");
+  } else {
+    mcu_printf("Setting analog gain to 0x%02x\n", value);
+    expo_gain_ctrl.ui8AGain = value;
+    print_expo_gain();
+  }
+}
+
+static void set_digital_gain(uint16_t value) {
+  mcu_printf("Setting digital gain to 0x%02x\n", value);
+  expo_gain_ctrl.ui8DGain_H = value >> 8;
+  expo_gain_ctrl.ui8DGain_L = value & 0xff;
+  print_expo_gain();
+}
+
+static void set_integration(uint16_t value) {
+  mcu_printf("Setting integration to 0x%02x\n", value);
+  expo_gain_ctrl.ui8IntegrationH = value >> 8;
+  expo_gain_ctrl.ui8IntegrationL = value & 0xff;
+  print_expo_gain();
 }
 
 int main(void) {
@@ -357,7 +397,8 @@ int main(void) {
       }
     }
     poll_mcu();
-    switch (get_debug_command()) {
+    uint16_t cmd_arg = 0;
+    switch (get_debug_command(&cmd_arg)) {
       case DEBUG_CMD_CLASSIFY_OFF:
         mcu_printf("Image classification disabled\n");
         do_run_classify = false;
@@ -376,6 +417,15 @@ int main(void) {
         break;
       case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
         do_run_exposure_calibration = true;
+        break;
+      case DEBUG_CMD_SET_ANALOG_GAIN:
+        set_analog_gain(cmd_arg);
+        break;
+      case DEBUG_CMD_SET_DIGITAL_GAIN:
+        set_digital_gain(cmd_arg);
+        break;
+      case DEBUG_CMD_SET_INTEGRATION:
+        set_integration(cmd_arg);
         break;
       case DEBUG_CMD_NONE:
         break;

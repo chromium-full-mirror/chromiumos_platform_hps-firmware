@@ -55,6 +55,24 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         code: 5,
         needs_arg: false,
     },
+    AvailableDebugCommand {
+        key: b'a',
+        help_text: "Set analog exposure",
+        code: 6,
+        needs_arg: true,
+    },
+    AvailableDebugCommand {
+        key: b'd',
+        help_text: "Set digital exposure",
+        code: 7,
+        needs_arg: true,
+    },
+    AvailableDebugCommand {
+        key: b'i',
+        help_text: "Set integration",
+        code: 8,
+        needs_arg: true,
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
