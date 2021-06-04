@@ -4,8 +4,8 @@
 
 use anyhow::Result;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
-use std::io::Read;
 use std::sync::mpsc;
+use std::time::Duration;
 
 use crate::console::Console;
 
@@ -16,90 +16,135 @@ pub(crate) struct DebugCommand {
 }
 
 struct AvailableDebugCommand {
-    key: u8,
+    keyword: &'static str,
     help_text: &'static str,
-    code: u8,
-    needs_arg: bool,
+    command_type: CommandType,
+}
+
+enum CommandType {
+    DeviceCommand(u8),
+    DeviceCommandWithArg(u8),
+    LocalOperation(LocalOperation),
+}
+
+#[derive(Clone, Copy)]
+enum LocalOperation {
+    PrintHelp,
+    Watch,
+    Exit,
+}
+
+enum Command {
+    None,
+    DeviceCommand(DebugCommand),
+    LocalOperation(LocalOperation),
 }
 
 struct CommandEditor {
     editor: rustyline::Editor<()>,
-    console: Console,
 }
 
 const COMMANDS: &'static [AvailableDebugCommand] = &[
+    // TODO: Consider changing commands that set things on and off to single
+    // commands with an argument. That would require changing the FPGA side as
+    // well, so isn't done initially.
     AvailableDebugCommand {
-        key: b'C',
+        keyword: "classification_off",
         help_text: "Disable image classification",
-        code: 1,
-        needs_arg: false,
+        command_type: CommandType::DeviceCommand(1),
     },
     AvailableDebugCommand {
-        key: b'c',
+        keyword: "classification_on",
         help_text: "Enable image classification",
-        code: 2,
-        needs_arg: false,
+        command_type: CommandType::DeviceCommand(2),
     },
     AvailableDebugCommand {
-        key: b'T',
+        keyword: "transfer_off",
         help_text: "Disable image transfer",
-        code: 3,
-        needs_arg: false,
+        command_type: CommandType::DeviceCommand(3),
     },
     AvailableDebugCommand {
-        key: b't',
+        keyword: "transfer_on",
         help_text: "Enable image transfer",
-        code: 4,
-        needs_arg: false,
+        command_type: CommandType::DeviceCommand(4),
     },
     AvailableDebugCommand {
-        key: b'e',
+        keyword: "exposure_calibration",
         help_text: "Run exposure calibration",
-        code: 5,
-        needs_arg: false,
+        command_type: CommandType::DeviceCommand(5),
     },
     AvailableDebugCommand {
-        key: b'a',
+        keyword: "analog_exposure",
         help_text: "Set analog exposure",
-        code: 6,
-        needs_arg: true,
+        command_type: CommandType::DeviceCommandWithArg(6),
     },
     AvailableDebugCommand {
-        key: b'd',
+        keyword: "digital_exposure",
         help_text: "Set digital exposure",
-        code: 7,
-        needs_arg: true,
+        command_type: CommandType::DeviceCommandWithArg(7),
     },
     AvailableDebugCommand {
-        key: b'i',
+        keyword: "integration",
         help_text: "Set integration",
-        code: 8,
-        needs_arg: true,
+        command_type: CommandType::DeviceCommandWithArg(8),
+    },
+    AvailableDebugCommand {
+        keyword: "help",
+        help_text: "Print command help",
+        command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),
+    },
+    AvailableDebugCommand {
+        keyword: "exit",
+        help_text: "Exit from hps-mon",
+        command_type: CommandType::LocalOperation(LocalOperation::Exit),
+    },
+    AvailableDebugCommand {
+        keyword: "watch",
+        help_text: "Watch for output from device",
+        command_type: CommandType::LocalOperation(LocalOperation::Watch),
     },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
 /// Terminates when the returned receiver gets closed.
 pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<DebugCommand>> {
-    configure_stdin()?;
     let mut editor = CommandEditor {
         editor: rustyline::Editor::<()>::new(),
-        console,
     };
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
-        let stdin = std::io::stdin();
-        let mut stdin = stdin.lock();
-        let mut buffer = [0u8; 1];
         loop {
-            if matches!(stdin.read(&mut buffer), Ok(1)) {
-                if let Some(command) = editor.command_from_key(buffer[0]) {
-                    if tx.send(command).is_err() {
+            let mut command = Command::None;
+            console.pause_output_while(|| command = editor.get_command());
+            match command {
+                Command::None => {}
+                Command::DeviceCommand(device_command) => {
+                    if tx.send(device_command).is_err() {
                         // Other end of channel has closed.
                         return;
                     }
                 }
+                Command::LocalOperation(LocalOperation::PrintHelp) => {
+                    print_help_text();
+                }
+                Command::LocalOperation(LocalOperation::Exit) => {
+                    // TODO: Consider a more graceful way of
+                    // exiting. For now this is easy and doesn't
+                    // appear to have any real downside.
+                    std::process::exit(0)
+                }
+                Command::LocalOperation(LocalOperation::Watch) => {
+                    // Leave console output active while we wait for a line,
+                    // which we then ignore.
+                    println!("Waiting for messages from device. Press enter to return to prompt.");
+                    let _ = editor.editor.readline("");
+                }
             }
+            // A short delay during which console output is not paused. This
+            // gives any output that occurred while we were typing the command,
+            // as well as giving a chance for output resulting from the command
+            // to get back to us.
+            std::thread::sleep(Duration::from_millis(200));
         }
     });
     Ok(rx)
@@ -115,48 +160,69 @@ impl DebugCommand {
     }
 }
 
-fn configure_stdin() -> Result<()> {
-    let stdin = 0;
-    let mut term = termios::Termios::from_fd(stdin)?;
-    // TODO: Restore terminal on control-c
-    term.c_lflag &= !termios::ICANON;
-    term.c_lflag &= !termios::ECHO;
-    termios::tcsetattr(stdin, termios::TCSANOW, &mut term)?;
-    Ok(())
-}
-
 impl CommandEditor {
-    fn command_from_key(&mut self, key: u8) -> Option<DebugCommand> {
-        for command in COMMANDS {
-            if command.key == key {
-                let mut arg = 0;
-                if command.needs_arg {
-                    if let Some(v) = self.prompt_for_value() {
-                        arg = v;
-                    } else {
-                        return None;
+    fn get_command(&mut self) -> Command {
+        while let Ok(line) = self.editor.readline(">> ") {
+            self.editor.add_history_entry(&line);
+            let mut parts = line.split(' ');
+            if let Some(keyword) = parts.next() {
+                for command in COMMANDS {
+                    if command.keyword == keyword {
+                        match &command.command_type {
+                            CommandType::DeviceCommand(code) => {
+                                return Command::DeviceCommand(DebugCommand {
+                                    code: *code,
+                                    arg: 0,
+                                });
+                            }
+                            CommandType::DeviceCommandWithArg(code) => {
+                                if let Some(arg_string) = parts.next() {
+                                    if let Some(arg) = parse_value(arg_string) {
+                                        return Command::DeviceCommand(DebugCommand {
+                                            code: *code,
+                                            arg,
+                                        });
+                                    } else {
+                                        eprintln!("The argument '{}' couldn't be parsed as a decimal or hex u16", arg_string);
+                                    }
+                                } else {
+                                    eprintln!(
+                                        "The command {} requires an argument",
+                                        command.keyword
+                                    );
+                                }
+                            }
+                            CommandType::LocalOperation(op) => {
+                                return Command::LocalOperation(*op);
+                            }
+                        }
                     }
                 }
-                return Some(DebugCommand {
-                    code: command.code,
-                    arg,
-                });
+                if keyword.is_empty() {
+                    return Command::None;
+                }
+                eprintln!(
+                    "Unknown command '{}'. Type 'help' to see list of commands",
+                    keyword
+                );
             }
         }
-        if key != b'?' {
-            println!("Unknown key command: '{}'", key as char);
-        }
-        println!("Available commands: ");
-        for command in COMMANDS {
-            println!("  {}: {}", command.key as char, command.help_text);
-        }
-        None
+        Command::None
     }
+}
 
-    fn prompt_for_value(&mut self) -> Option<u16> {
-        let editor = &mut self.editor;
-        self.console
-            .pause_output_while(move || editor.readline("Enter value: ").ok().and_then(parse_value))
+fn print_help_text() {
+    for command in COMMANDS {
+        let arg = if matches!(command.command_type, CommandType::DeviceCommandWithArg(_)) {
+            "{arg}"
+        } else {
+            ""
+        };
+        println!(
+            "{:30} {}",
+            format!("{} {}", command.keyword, arg),
+            command.help_text
+        );
     }
 }
 

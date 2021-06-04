@@ -13,4 +13,3 @@ mcu_common = { path  = "../mcu_common" }
 probe-rs = "0.10.1"
 probe-rs-rtt = "0.10.1"
 rustyline = "8.2.0"
-termios = "0.3.3"
