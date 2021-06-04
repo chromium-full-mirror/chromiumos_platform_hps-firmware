@@ -21,6 +21,16 @@ pub use mem_block::MemBlock;
 
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
+/// A value that all debug commands start with when sent from hps-mon to the
+/// MCU. This allows the MCU to resynchronize if it gets out of sync. If it
+/// receives a command block that doesn't start with this value, it can skip
+/// forward until it finds this value. 254 is chosen since it's a pretty
+/// unlikely value to appear in data.
+pub const DEBUG_COMMAND_START: u8 = 254;
+
+/// Number of bytes in a debug command block.
+pub const DEBUG_BYTES_PER_COMMAND: usize = 4;
+
 /// The i2c address of the HPS.
 pub const HPS_ADDRESS: u8 = 0x30;
 

@@ -24,8 +24,6 @@ use std::sync::Mutex;
 use std::time::Duration;
 use text_channel::TextChannel;
 
-use crate::debug_commands::DebugCommandCode;
-
 const DEFAULT_CPU: &str = "stm32g031";
 
 struct Channel {
@@ -167,9 +165,9 @@ fn run_loop(mut channels: Vec<Channel>, command_channel: Option<DownChannel>) ->
                 }
             }
         }
-        if let Ok(DebugCommandCode(command_code)) = command_source.try_recv() {
+        if let Ok(command) = command_source.try_recv() {
             if let Some(command_channel) = command_channel.as_ref() {
-                command_channel.write(&[command_code])?;
+                command_channel.write(&command.to_bytes())?;
             } else {
                 eprintln!("No command channel available, command not sent.");
             }

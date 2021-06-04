@@ -3,50 +3,67 @@
 // found in the LICENSE file.
 
 use anyhow::Result;
+use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use std::io::Read;
 use std::sync::mpsc;
 
 #[derive(Clone, Copy)]
-pub(crate) struct DebugCommandCode(pub u8);
-
-struct DebugCommand {
-    key: u8,
-    help_text: &'static str,
-    code: DebugCommandCode,
+pub(crate) struct DebugCommand {
+    pub(crate) code: u8,
+    pub(crate) arg: u16,
 }
 
-const COMMANDS: &'static [DebugCommand] = &[
-    DebugCommand {
+struct AvailableDebugCommand {
+    key: u8,
+    help_text: &'static str,
+    code: u8,
+    needs_arg: bool,
+}
+
+struct CommandEditor {
+    editor: rustyline::Editor<()>,
+}
+
+const COMMANDS: &'static [AvailableDebugCommand] = &[
+    AvailableDebugCommand {
         key: b'C',
         help_text: "Disable image classification",
-        code: DebugCommandCode(1),
+        code: 1,
+        needs_arg: false,
     },
-    DebugCommand {
+    AvailableDebugCommand {
         key: b'c',
         help_text: "Enable image classification",
-        code: DebugCommandCode(2),
+        code: 2,
+        needs_arg: false,
     },
-    DebugCommand {
+    AvailableDebugCommand {
         key: b'T',
         help_text: "Disable image transfer",
-        code: DebugCommandCode(3),
+        code: 3,
+        needs_arg: false,
     },
-    DebugCommand {
+    AvailableDebugCommand {
         key: b't',
         help_text: "Enable image transfer",
-        code: DebugCommandCode(4),
+        code: 4,
+        needs_arg: false,
     },
-    DebugCommand {
+    AvailableDebugCommand {
         key: b'e',
         help_text: "Run exposure calibration",
-        code: DebugCommandCode(5),
+        code: 5,
+        needs_arg: false,
     },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
 /// Terminates when the returned receiver gets closed.
-pub(crate) fn create_command_source() -> Result<mpsc::Receiver<DebugCommandCode>> {
+pub(crate) fn create_command_source() -> Result<mpsc::Receiver<DebugCommand>> {
     configure_stdin()?;
+    let mut editor = CommandEditor {
+        editor: rustyline::Editor::<()>::new(),
+    };
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
         let stdin = std::io::stdin();
@@ -54,7 +71,7 @@ pub(crate) fn create_command_source() -> Result<mpsc::Receiver<DebugCommandCode>
         let mut buffer = [0u8; 1];
         loop {
             if matches!(stdin.read(&mut buffer), Ok(1)) {
-                if let Some(command) = command_from_key(buffer[0]) {
+                if let Some(command) = editor.command_from_key(buffer[0]) {
                     if tx.send(command).is_err() {
                         // Other end of channel has closed.
                         return;
@@ -64,6 +81,16 @@ pub(crate) fn create_command_source() -> Result<mpsc::Receiver<DebugCommandCode>
         }
     });
     Ok(rx)
+}
+
+impl DebugCommand {
+    pub(crate) fn to_bytes(&self) -> [u8; DEBUG_BYTES_PER_COMMAND] {
+        let mut result = [0u8; DEBUG_BYTES_PER_COMMAND];
+        result[0] = mcu_common::DEBUG_COMMAND_START;
+        result[1] = self.code;
+        result[2..4].clone_from_slice(&self.arg.to_le_bytes());
+        result
+    }
 }
 
 fn configure_stdin() -> Result<()> {
@@ -76,18 +103,62 @@ fn configure_stdin() -> Result<()> {
     Ok(())
 }
 
-fn command_from_key(key: u8) -> Option<DebugCommandCode> {
-    for command in COMMANDS {
-        if command.key == key {
-            return Some(command.code);
+impl CommandEditor {
+    fn command_from_key(&mut self, key: u8) -> Option<DebugCommand> {
+        for command in COMMANDS {
+            if command.key == key {
+                let mut arg = 0;
+                if command.needs_arg {
+                    if let Some(v) = self.prompt_for_value() {
+                        arg = v;
+                    } else {
+                        return None;
+                    }
+                }
+                return Some(DebugCommand {
+                    code: command.code,
+                    arg,
+                });
+            }
         }
+        if key != b'?' {
+            println!("Unknown key command: '{}'", key as char);
+        }
+        println!("Available commands: ");
+        for command in COMMANDS {
+            println!("  {}: {}", command.key as char, command.help_text);
+        }
+        None
     }
-    if key != b'?' {
-        println!("Unknown key command: '{}'", key as char);
+
+    fn prompt_for_value(&mut self) -> Option<u16> {
+        // TODO: Pause printing messages from the MCU / FPGA while we're waiting
+        // for input.
+        self.editor
+            .readline("Enter value: ")
+            .ok()
+            .and_then(parse_value)
     }
-    println!("Available commands: ");
-    for command in COMMANDS {
-        println!("  {}: {}", command.key as char, command.help_text);
+}
+
+/// Returns `value` parsed as either a decimal, or if it starts with "0x", then
+/// as hex.
+fn parse_value<T: AsRef<str>>(value: T) -> Option<u16> {
+    let value = value.as_ref();
+    if value.starts_with("0x") {
+        u16::from_str_radix(value.trim_start_matches("0x"), 16).ok()
+    } else {
+        value.parse().ok()
     }
-    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_value() {
+        assert_eq!(parse_value("32"), Some(32));
+        assert_eq!(parse_value("0x10"), Some(16));
+    }
 }
