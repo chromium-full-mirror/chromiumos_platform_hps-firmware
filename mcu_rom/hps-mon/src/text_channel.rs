@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use std::sync::mpsc;
+
 use crate::ChannelHandler;
 use anyhow::Result;
 use colored::ColoredString;
@@ -11,13 +13,15 @@ use colored::ColoredString;
 pub(crate) struct TextChannel {
     received: Vec<u8>,
     line_prefix: ColoredString,
+    lines_out: mpsc::Sender<String>,
 }
 
 impl TextChannel {
-    pub(crate) fn new(line_prefix: ColoredString) -> Self {
+    pub(crate) fn new(line_prefix: ColoredString, lines_out: mpsc::Sender<String>) -> Self {
         Self {
             received: Vec::new(),
             line_prefix,
+            lines_out,
         }
     }
 }
@@ -34,11 +38,12 @@ impl ChannelHandler for TextChannel {
         {
             if let Ok(message) = std::str::from_utf8(&self.received[..last_newline]) {
                 for line in message.lines() {
-                    println!("{}{}", self.line_prefix, line);
+                    self.lines_out
+                        .send(format!("{}{}", self.line_prefix, line))?;
                 }
                 self.received.drain(..last_newline + 1);
             } else {
-                println!("Device sent invalid UTF-8");
+                self.lines_out.send("Device sent invalid UTF-8".into())?;
             }
         }
         Ok(())

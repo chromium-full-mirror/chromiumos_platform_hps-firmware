@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+mod console;
 mod debug_commands;
 mod image_channel;
 mod text_channel;
@@ -11,6 +12,7 @@ use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
+use console::Console;
 use image_channel::image_type_from_str;
 use image_channel::ImageType;
 use probe_rs::Probe;
@@ -20,6 +22,7 @@ use probe_rs_rtt::DownChannel;
 use probe_rs_rtt::Rtt;
 use probe_rs_rtt::UpChannel;
 use std::path::PathBuf;
+use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -100,11 +103,12 @@ fn main() -> Result<()> {
         core.reset()?;
     }
 
+    let console = Console::new();
     let session = Arc::new(Mutex::new(session));
     let mut rtt = attach_rtt(&session, 10)?;
 
-    let channels = create_channels(&mut rtt, &flags)?;
-    run_loop(channels, rtt.down_channels().take(0))
+    let channels = create_channels(&mut rtt, &flags, console.new_line_sink())?;
+    run_loop(channels, rtt.down_channels().take(0), console)
 }
 
 fn attach_to_cpu(flags: &Flags) -> Result<Session> {
@@ -134,18 +138,22 @@ fn attach_to_cpu(flags: &Flags) -> Result<Session> {
 /// Create channels. The channels here must match the channel definitions in
 /// stm32g0_application/src/main.rs. e.g. up-channel 0 is the MCU's debug
 /// channel, 1 is the FPGA's debug channel.
-fn create_channels(rtt: &mut Rtt, flags: &Flags) -> Result<Vec<Channel>> {
+fn create_channels(
+    rtt: &mut Rtt,
+    flags: &Flags,
+    line_sink: mpsc::Sender<String>,
+) -> Result<Vec<Channel>> {
     let mut channels = Vec::new();
     if let Some(up_channel) = rtt.up_channels().take(0) {
         channels.push(Channel::new(
             up_channel,
-            Box::new(TextChannel::new("MCU> ".yellow())),
+            Box::new(TextChannel::new("MCU> ".yellow(), line_sink.clone())),
         )?);
     }
     if let Some(up_channel) = rtt.up_channels().take(1) {
         channels.push(Channel::new(
             up_channel,
-            Box::new(TextChannel::new("FPGA> ".green())),
+            Box::new(TextChannel::new("FPGA> ".green(), line_sink.clone())),
         )?);
     }
     if let (Some(image_out), Some(up_channel)) = (&flags.image_out, rtt.up_channels().take(2)) {
@@ -154,16 +162,21 @@ fn create_channels(rtt: &mut Rtt, flags: &Flags) -> Result<Vec<Channel>> {
             Box::new(image_channel::ImageChannel::new(
                 image_out,
                 flags.image_type,
+                line_sink.clone(),
             )?),
         )?);
     }
     Ok(channels)
 }
 
-fn run_loop(mut channels: Vec<Channel>, command_channel: Option<DownChannel>) -> Result<()> {
+fn run_loop(
+    mut channels: Vec<Channel>,
+    command_channel: Option<DownChannel>,
+    console: Console,
+) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
-    let command_source = debug_commands::create_command_source()?;
+    let command_source = debug_commands::create_command_source(console)?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {

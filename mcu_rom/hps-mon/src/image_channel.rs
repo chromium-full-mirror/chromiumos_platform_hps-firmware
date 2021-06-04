@@ -13,6 +13,7 @@ use std::io::Cursor;
 use std::num::Wrapping;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::mpsc;
 
 const IMAGE_WIDTH: u32 = 324;
 const IMAGE_HEIGHT: u32 = 244;
@@ -39,13 +40,18 @@ struct OutputDir {
     path: PathBuf,
     image_number: u32,
     image_type: ImageType,
+    line_sink: mpsc::Sender<String>,
 }
 
 impl ImageChannel {
-    pub(crate) fn new(out_dir: &Path, image_type: ImageType) -> Result<Self> {
+    pub(crate) fn new(
+        out_dir: &Path,
+        image_type: ImageType,
+        line_sink: mpsc::Sender<String>,
+    ) -> Result<Self> {
         Ok(Self {
             received: Vec::new(),
-            output_dir: OutputDir::new(out_dir.to_owned(), image_type)?,
+            output_dir: OutputDir::new(out_dir.to_owned(), image_type, line_sink)?,
         })
     }
 }
@@ -148,13 +154,14 @@ fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()>
 }
 
 impl OutputDir {
-    fn new(path: PathBuf, image_type: ImageType) -> Result<Self> {
+    fn new(path: PathBuf, image_type: ImageType, line_sink: mpsc::Sender<String>) -> Result<Self> {
         std::fs::create_dir_all(&path)
             .map_err(|e| anyhow!("Error creating directory {:?}: {}", path, e))?;
         Ok(Self {
             path,
             image_number: 0,
             image_type,
+            line_sink,
         })
     }
 
@@ -169,7 +176,7 @@ impl OutputDir {
         let raw_filename = self.next_output_filename();
         std::fs::write(&raw_filename, raw_bytes)?;
         self.write_png(&raw_filename.with_extension("png"), raw_bytes)?;
-        println!("Wrote {:?}", raw_filename);
+        self.line_sink.send(format!("Wrote {:?}", raw_filename))?;
         Ok(())
     }
 

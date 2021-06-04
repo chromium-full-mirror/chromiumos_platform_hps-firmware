@@ -7,6 +7,8 @@ use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use std::io::Read;
 use std::sync::mpsc;
 
+use crate::console::Console;
+
 #[derive(Clone, Copy)]
 pub(crate) struct DebugCommand {
     pub(crate) code: u8,
@@ -22,6 +24,7 @@ struct AvailableDebugCommand {
 
 struct CommandEditor {
     editor: rustyline::Editor<()>,
+    console: Console,
 }
 
 const COMMANDS: &'static [AvailableDebugCommand] = &[
@@ -77,10 +80,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
 /// Terminates when the returned receiver gets closed.
-pub(crate) fn create_command_source() -> Result<mpsc::Receiver<DebugCommand>> {
+pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<DebugCommand>> {
     configure_stdin()?;
     let mut editor = CommandEditor {
         editor: rustyline::Editor::<()>::new(),
+        console,
     };
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
@@ -150,12 +154,9 @@ impl CommandEditor {
     }
 
     fn prompt_for_value(&mut self) -> Option<u16> {
-        // TODO: Pause printing messages from the MCU / FPGA while we're waiting
-        // for input.
-        self.editor
-            .readline("Enter value: ")
-            .ok()
-            .and_then(parse_value)
+        let editor = &mut self.editor;
+        self.console
+            .pause_output_while(move || editor.readline("Enter value: ").ok().and_then(parse_value))
     }
 }
 
