@@ -4,19 +4,16 @@
 
 mod console;
 mod debug_commands;
+mod direct;
 mod image_channel;
 mod text_channel;
 
-use anyhow::anyhow;
-use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
 use console::Console;
 use image_channel::image_type_from_str;
 use image_channel::ImageType;
-use probe_rs::Probe;
-use probe_rs::Session;
 use probe_rs_rtt::ChannelMode;
 use probe_rs_rtt::DownChannel;
 use probe_rs_rtt::Rtt;
@@ -27,8 +24,6 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
 use text_channel::TextChannel;
-
-const DEFAULT_CPU: &str = "stm32g031";
 
 struct Channel {
     up_channel: UpChannel,
@@ -95,7 +90,7 @@ struct Flags {
 
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
-    let mut session = attach_to_cpu(&flags)?;
+    let mut session = direct::attach_to_cpu(&flags)?;
 
     if flags.reset {
         // The HPS MCU only has a single core, core 0.
@@ -105,34 +100,10 @@ fn main() -> Result<()> {
 
     let console = Console::new();
     let session = Arc::new(Mutex::new(session));
-    let mut rtt = attach_rtt(&session, 10)?;
+    let mut rtt = direct::attach_rtt(&session, 10)?;
 
     let channels = create_channels(&mut rtt, &flags, console.new_line_sink())?;
     run_loop(channels, rtt.down_channels().take(0), console)
-}
-
-fn attach_to_cpu(flags: &Flags) -> Result<Session> {
-    let probes = Probe::list_all();
-    if probes.is_empty() {
-        bail!("No supported probes were detected");
-    }
-    let probe = probes
-        .get(flags.probe_num)
-        .ok_or_else(|| {
-            anyhow!(
-                "Probe #{} not found. Only {} probes were detected",
-                flags.probe_num,
-                probes.len()
-            )
-        })?
-        .open()?;
-    Ok(probe.attach(
-        flags
-            .cpu
-            .as_ref()
-            .map(String::as_str)
-            .unwrap_or(DEFAULT_CPU),
-    )?)
 }
 
 /// Create channels. The channels here must match the channel definitions in
@@ -204,23 +175,6 @@ fn run_loop(
                 backoff_ms += 10;
             }
             std::thread::sleep(Duration::from_millis(backoff_ms));
-        }
-    }
-}
-
-fn attach_rtt(session: &Arc<Mutex<Session>>, mut retries: u32) -> Result<Rtt> {
-    // Attaching to RTT may take several tries if we've just reset the device,
-    // since the control block that RTT looks for may not have been initialized.
-    loop {
-        match Rtt::attach(Arc::clone(session)) {
-            Ok(rtt) => return Ok(rtt),
-            Err(e) => {
-                if retries == 0 {
-                    return Err(e.into());
-                }
-                retries -= 1;
-                std::thread::sleep(Duration::from_millis(10));
-            }
         }
     }
 }
