@@ -22,6 +22,7 @@ use rtt_target::rprintln;
 use rtt_target::rtt_init;
 use rtt_target::ChannelMode;
 use rtt_target::UpChannel;
+use spi_memory::series25::Flash;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -236,6 +237,29 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         dma.ch2,
         board.spi_ready,
     );
+
+    match Flash::init(board.flash_spi, board.flash_spi_cs) {
+        Ok(mut flash) => match flash.read_jedec_id() {
+            Ok(id) => {
+                if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
+                    && id.device_id() == board::SPI_FLASH_DEVICE_ID
+                {
+                    rprintln!("Found expected flash chip");
+                } else {
+                    rprintln!(
+                        "Unexpected flash ID {}, [{}, {}]",
+                        id.mfr_code(),
+                        id.device_id()[0],
+                        id.device_id()[1]
+                    );
+                }
+            }
+            Err(_) => rprintln!("Failed to read flash ID"),
+        },
+        Err(e) => {
+            rprintln!("Failed to initialize SPI flash: {:?}", e);
+        }
+    };
 
     rprintln!(
         "MCU application started. CPU is running at {}MHz",

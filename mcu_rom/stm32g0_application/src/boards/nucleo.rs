@@ -11,6 +11,7 @@ use hal::gpio::Floating;
 use hal::gpio::Input;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
+use hal::prelude::*;
 use hal::stm32::I2C1;
 use hal::stm32::SPI1;
 use hal::stm32::SPI2;
@@ -36,6 +37,12 @@ pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 
 pub type FpgaSpi = hal::stm32::SPI1;
 
+/// GigaDevice
+pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
+
+/// GigaDevice GD25LQ128C/D
+pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -48,6 +55,16 @@ pub struct Board {
     pub fpga_programn: FpgaProgramn,
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
+
+    pub flash_spi_cs: gpio::gpiob::PB1<Output<PushPull>>,
+    pub flash_spi: hal::spi::Spi<
+        hal::stm32::SPI2,
+        (
+            gpio::gpioa::PA0<Analog>, // SCK
+            gpio::gpiob::PB6<Analog>, // CIPO
+            gpio::gpiob::PB7<Analog>, // COPI
+        ),
+    >,
 }
 
 impl Board {
@@ -58,7 +75,7 @@ impl Board {
         i2c1: I2C1,
         _usart2: USART2,
         spi1: SPI1,
-        _spi2: SPI2,
+        spi2: SPI2,
         rcc: &mut hal::rcc::Rcc,
     ) -> Self {
         let host_bus = Stm32g0I2cPeripheral::new(
@@ -68,6 +85,19 @@ impl Board {
             b.pb8.into_open_drain_output(),
             mcu_common::HPS_ADDRESS,
         );
+
+        // Nucleo board doesn't have SPI flash, so we pick some arbitrary pins.
+        let flash_spi_cs = b.pb1.into_push_pull_output(); // J4-1
+        let flash_spi_clk = a.pa0;
+        let flash_spi_copi = b.pb7;
+        let flash_spi_cipo = b.pb6;
+        let flash_spi = spi2.spi(
+            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
+            hal::spi::MODE_0,
+            1.mhz(),
+            rcc,
+        );
+
         Self {
             fpga_spi_cs: b.pb0,
             fpga_spi_clk: a.pa5,
@@ -80,6 +110,9 @@ impl Board {
             fpga_programn: c.pc15.into_push_pull_output(),
             spi_ready: c.pc14.into_push_pull_output(),
             fpga_spi: spi1,
+
+            flash_spi_cs,
+            flash_spi,
         }
     }
 }

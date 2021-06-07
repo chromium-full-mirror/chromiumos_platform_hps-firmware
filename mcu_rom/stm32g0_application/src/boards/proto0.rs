@@ -30,6 +30,12 @@ pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI1;
 
+/// GigaDevice
+pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
+
+/// GigaDevice GD25LQ128C/D
+pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA4<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -44,23 +50,46 @@ pub struct Board {
     pub fpga_programn: FpgaProgramn,
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
+
+    pub flash_spi_cs: gpio::gpiob::PB0<Output<PushPull>>,
+    pub flash_spi: hal::spi::Spi<
+        hal::stm32::SPI2,
+        (
+            gpio::gpioa::PA0<Analog>, // SCK: J4-11 - shared with CAM_INT
+            gpio::gpiob::PB6<Analog>, // CIPO: J4-15 - shared with CAM_SCL
+            gpio::gpiob::PB7<Analog>, // COPI: J4-17 - shared with CAM_SDA
+        ),
+    >,
 }
 
 impl Board {
     pub fn new(
         a: gpio::gpioa::Parts,
-        _b: gpio::gpiob::Parts,
+        b: gpio::gpiob::Parts,
         c: gpio::gpioc::Parts,
         _i2c1: I2C1,
         usart2: USART2,
         spi1: SPI1,
-        _spi2: SPI2,
+        spi2: SPI2,
         rcc: &mut hal::rcc::Rcc,
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
-        fpga_programn.set_high().unwrap();
+        fpga_programn.set_low().unwrap();
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
+
+        let flash_spi_cs = b.pb0.into_push_pull_output(); // J4-1 - shared with CAM_MCLK
+        let flash_spi_clk = a.pa0;
+        let flash_spi_copi = b.pb7;
+        let flash_spi_cipo = b.pb6;
+
+        let flash_spi = spi2.spi(
+            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
+            hal::spi::MODE_0,
+            1.mhz(),
+            rcc,
+        );
+
         Self {
             fpga_spi_cs: a.pa4,
             fpga_spi_clk: a.pa5,
@@ -73,6 +102,9 @@ impl Board {
             fpga_programn,
             spi_ready,
             fpga_spi: spi1,
+
+            flash_spi_cs,
+            flash_spi,
         }
     }
 }

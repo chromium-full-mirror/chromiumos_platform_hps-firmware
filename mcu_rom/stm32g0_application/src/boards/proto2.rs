@@ -28,6 +28,12 @@ pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
 
+/// GigaDevice
+pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
+
+/// GigaDevice GD25LQ128C/D
+pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA8<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA0<Analog>,
@@ -40,6 +46,16 @@ pub struct Board {
     pub fpga_programn: FpgaProgramn,
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
+
+    pub flash_spi_cs: gpio::gpiob::PB0<Output<PushPull>>,
+    pub flash_spi: hal::spi::Spi<
+        hal::stm32::SPI1,
+        (
+            gpio::gpioa::PA5<Analog>,
+            gpio::gpioa::PA6<Analog>,
+            gpio::gpioa::PA7<Analog>,
+        ),
+    >,
 }
 
 impl Board {
@@ -66,9 +82,16 @@ impl Board {
             mcu_common::HPS_ADDRESS,
         );
 
-        // TODO: Make use of SPI flash interface. This is just here for now to
-        // make sure that it typechecks.
-        let _ = spi1.spi((a.pa5, a.pa6, a.pa7), hal::spi::MODE_0, 1.mhz(), rcc);
+        let flash_spi_cs = b.pb0.into_push_pull_output();
+        let flash_spi_clk = a.pa5;
+        let flash_spi_copi = a.pa7;
+        let flash_spi_cipo = a.pa6;
+        let flash_spi = spi1.spi(
+            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
+            hal::spi::MODE_0,
+            1.mhz(),
+            rcc,
+        );
 
         Self {
             fpga_spi_cs: a.pa8,
@@ -82,6 +105,9 @@ impl Board {
             fpga_programn,
             spi_ready,
             fpga_spi: spi2,
+
+            flash_spi_cs,
+            flash_spi,
         }
     }
 }
