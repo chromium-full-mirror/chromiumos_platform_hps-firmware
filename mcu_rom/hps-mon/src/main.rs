@@ -14,29 +14,23 @@ use colored::*;
 use console::Console;
 use image_channel::image_type_from_str;
 use image_channel::ImageType;
-use probe_rs_rtt::ChannelMode;
-use probe_rs_rtt::DownChannel;
-use probe_rs_rtt::Rtt;
-use probe_rs_rtt::UpChannel;
 use std::path::PathBuf;
 use std::sync::mpsc;
-use std::sync::Arc;
-use std::sync::Mutex;
 use std::time::Duration;
 use text_channel::TextChannel;
 
 struct Channel {
-    up_channel: UpChannel,
+    up_channel: Box<dyn DataSource>,
     handler: Box<dyn ChannelHandler>,
 }
 
 impl Channel {
-    fn new(up_channel: UpChannel, handler: Box<dyn ChannelHandler>) -> Result<Self> {
+    fn new(mut up_channel: Box<dyn DataSource>, handler: Box<dyn ChannelHandler>) -> Result<Self> {
         // Make our channels block on the device side so that we don't miss any
         // messages. This also serves to let the device side know that we're
         // here, otherwise it will send the FPGA output to channel 0 for
         // compatibility with probe-run.
-        up_channel.set_mode(ChannelMode::BlockIfFull)?;
+        up_channel.set_blocking_mode()?;
         let mut channel = Self {
             up_channel,
             handler,
@@ -58,6 +52,34 @@ impl Channel {
 trait ChannelHandler {
     /// Handles data received from the channel.
     fn handle(&mut self, bytes: &[u8]) -> Result<()>;
+}
+
+/// A source from which we can read data.
+trait DataSource {
+    /// Reads bytes into `bytes`, returning how many bytes were read.
+    fn read(&mut self, bytes: &mut [u8]) -> Result<usize>;
+
+    /// Sets this data source so that writes to the on-device buffer will block
+    /// if it fills up.
+    fn set_blocking_mode(&mut self) -> Result<()>;
+}
+
+/// A sink through which we can write data to the device.
+trait DataSink {
+    /// Writes `bytes` to the device.
+    fn write(&mut self, bytes: &[u8]) -> Result<()>;
+}
+
+trait Device {
+    /// Reset the device.
+    fn reset(&mut self) -> Result<()>;
+
+    fn attach_rtt(&mut self) -> Result<RttChannels>;
+}
+
+struct RttChannels {
+    from_device: Vec<Box<dyn DataSource>>,
+    to_device: Vec<Box<dyn DataSink>>,
 }
 
 #[derive(FromArgs)]
@@ -90,44 +112,43 @@ struct Flags {
 
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
-    let mut session = direct::attach_to_cpu(&flags)?;
+    let mut device = direct::DirectDevice::new(&flags)?;
 
     if flags.reset {
-        // The HPS MCU only has a single core, core 0.
-        let mut core = session.core(0)?;
-        core.reset()?;
+        device.reset()?;
     }
 
     let console = Console::new();
-    let session = Arc::new(Mutex::new(session));
-    let mut rtt = direct::attach_rtt(&session, 10)?;
+    let mut rtt = device.attach_rtt()?;
 
-    let channels = create_channels(&mut rtt, &flags, console.new_line_sink())?;
-    run_loop(channels, rtt.down_channels().take(0), console)
+    let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
+    let mut to_device = rtt.to_device.drain(..);
+    run_loop(channels, to_device.next(), console)
 }
 
 /// Create channels. The channels here must match the channel definitions in
 /// stm32g0_application/src/main.rs. e.g. up-channel 0 is the MCU's debug
 /// channel, 1 is the FPGA's debug channel.
 fn create_channels(
-    rtt: &mut Rtt,
+    mut from_device: Vec<Box<dyn DataSource>>,
     flags: &Flags,
     line_sink: mpsc::Sender<String>,
 ) -> Result<Vec<Channel>> {
+    let mut raw_channels = from_device.drain(..);
     let mut channels = Vec::new();
-    if let Some(up_channel) = rtt.up_channels().take(0) {
+    if let Some(up_channel) = raw_channels.next() {
         channels.push(Channel::new(
             up_channel,
             Box::new(TextChannel::new("MCU> ".yellow(), line_sink.clone())),
         )?);
     }
-    if let Some(up_channel) = rtt.up_channels().take(1) {
+    if let Some(up_channel) = raw_channels.next() {
         channels.push(Channel::new(
             up_channel,
             Box::new(TextChannel::new("FPGA> ".green(), line_sink.clone())),
         )?);
     }
-    if let (Some(image_out), Some(up_channel)) = (&flags.image_out, rtt.up_channels().take(2)) {
+    if let (Some(image_out), Some(up_channel)) = (&flags.image_out, raw_channels.next()) {
         channels.push(Channel::new(
             up_channel,
             Box::new(image_channel::ImageChannel::new(
@@ -142,7 +163,7 @@ fn create_channels(
 
 fn run_loop(
     mut channels: Vec<Channel>,
-    command_channel: Option<DownChannel>,
+    mut command_channel: Option<Box<dyn DataSink>>,
     console: Console,
 ) -> Result<()> {
     let mut backoff_ms = 0;
@@ -160,7 +181,7 @@ fn run_loop(
             }
         }
         if let Ok(command) = command_source.try_recv() {
-            if let Some(command_channel) = command_channel.as_ref() {
+            if let Some(command_channel) = command_channel.as_mut() {
                 command_channel.write(&command.to_bytes())?;
             } else {
                 eprintln!("No command channel available, command not sent.");
