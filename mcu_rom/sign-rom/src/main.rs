@@ -5,7 +5,7 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
-use mcu_common::ImageHeader;
+use mcu_common::HostImageHeader;
 use mcu_common::PrivateKey;
 use mcu_common::Signature;
 use mcu_common::FLASH_PAGE_SZ;
@@ -89,7 +89,7 @@ fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
 /// Returns a mutable reference to the signature as well as the payload (the
 /// data that the signature applies to).
 fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature, &[u8])> {
-    if file_bytes.len() < std::mem::size_of::<ImageHeader>() {
+    if file_bytes.len() < std::mem::size_of::<HostImageHeader>() {
         bail!("Input file is too short to contain ImageHeader");
     }
     // Note, this is possibly technically invalid, since ImageHeder contains
@@ -98,6 +98,6 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     // these references. We also don't check that file_bytes is properly aligned
     // for an ImageHader, but again we don't use any fields that have alignment
     // more than 1.
-    let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut ImageHeader) };
+    let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut HostImageHeader) };
     Ok((&mut header.sig, &file_bytes[..]))
 }

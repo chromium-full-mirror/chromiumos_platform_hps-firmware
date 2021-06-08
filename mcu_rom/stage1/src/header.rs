@@ -4,8 +4,8 @@
 
 use git_version::git_version;
 
-use mcu_common::ImageHeader;
 use mcu_common::Signature;
+use mcu_common::{ImageHeader, TargetImageHeader};
 
 extern "C" {
     pub static VECTOR_TABLE: u32;
@@ -14,12 +14,12 @@ extern "C" {
 #[link_section = ".image_hdr"]
 #[no_mangle]
 #[used]
-pub static __IMAGE_HDR: ImageHeader = ImageHeader {
+pub static __IMAGE_HDR: TargetImageHeader = ImageHeader {
     magic: 0xC03FEFE,
     version: 1,
     vector_addr: unsafe { &VECTOR_TABLE },
     git_hash_ptr: &build_hash().as_bytes()[0],
-    git_hash_length: build_hash().len(),
+    git_hash_length: build_hash().len() as u32,
     sig: Signature::empty(), // constructed with padded zeros for unsigned image.
 };
 

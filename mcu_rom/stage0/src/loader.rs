@@ -5,12 +5,12 @@
 use core::ops::Range;
 
 use mcu_common::Hash;
-use mcu_common::ImageHeader;
+use mcu_common::TargetImageHeader;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 extern "C" {
-    pub static _hdr: ImageHeader;
+    pub static _hdr: TargetImageHeader;
     pub static _slot_start: u32;
     pub static _slot_end: u32;
 }
@@ -25,7 +25,7 @@ pub fn load_stage1() -> Result<(), &'static str> {
     let git_hash = unsafe {
         core::str::from_utf8_unchecked(core::slice::from_raw_parts(
             _hdr.git_hash_ptr,
-            _hdr.git_hash_length,
+            _hdr.git_hash_length as usize,
         ))
     };
     unsafe {
@@ -69,7 +69,7 @@ pub fn stage1_digest() -> Hash {
     let padding: [u8; 64] = [pad_value; 64];
     // clobber signature with padding bytes during verification.
     for idx in 0..64 {
-        region[sig_offset + 12 + idx] = padding[idx];
+        region[sig_offset + idx] = padding[idx];
     }
     hasher.update(&region);
 
