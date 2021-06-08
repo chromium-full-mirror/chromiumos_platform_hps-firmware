@@ -20,8 +20,8 @@ pub fn load_stage1() -> Result<(), &'static str> {
     // git_hash_length to refer to valid UTF-8.
     let git_hash = unsafe {
         core::str::from_utf8_unchecked(core::slice::from_raw_parts(
-            _hdr.git_hash_ptr,
-            _hdr.git_hash_length,
+            _hdr.git_hash_ptr as *const u8,
+            _hdr.git_hash_length as usize,
         ))
     };
     unsafe {
@@ -32,7 +32,7 @@ pub fn load_stage1() -> Result<(), &'static str> {
         );
         defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
         defmt::info!(" [[stage 1]] >> sig={:x}\n\r", _hdr.sig.raw_bytes()[0]);
-        cortex_m::asm::bootload(_hdr.vector_addr);
+        cortex_m::asm::bootload(_hdr.vector_addr as *const u32);
     }
 }
 
@@ -65,7 +65,7 @@ pub fn stage1_digest() -> Hash {
     let padding: [u8; 64] = [pad_value; 64];
     // clobber signature with padding bytes during verification.
     for idx in 0..64 {
-        region[sig_offset + 12 + idx] = padding[idx];
+        region[sig_offset + idx] = padding[idx];
     }
     hasher.update(&region);
 

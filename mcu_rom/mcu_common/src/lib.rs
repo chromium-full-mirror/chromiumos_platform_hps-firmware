@@ -34,13 +34,17 @@ pub const DEBUG_BYTES_PER_COMMAND: usize = 4;
 /// The i2c address of the HPS.
 pub const HPS_ADDRESS: u8 = 0x30;
 
+/// ImageHeader is the structure found upon the prefix of a stage 1 image.
+/// N.B., that all fields must be either unsigned integers that are fixed-sized
+/// otherwise 64 bit signing hosts binaries will be built different sized field
+/// to the 32 bit target target binaries, resulting in miss-aligned stage 1 HDR's.
 #[repr(C, packed(4))]
 pub struct ImageHeader {
     pub magic: u32,
     pub version: u16,
-    pub vector_addr: &'static u32,
-    pub git_hash_ptr: &'static u8,
-    pub git_hash_length: usize,
+    pub vector_addr: u32,     // &'static u3,
+    pub git_hash_ptr: u32,    // &'static u,
+    pub git_hash_length: u32, // usize
     pub sig: Signature,
 }
 
