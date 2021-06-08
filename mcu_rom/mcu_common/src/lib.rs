@@ -65,6 +65,10 @@ impl Signature {
     pub fn raw_bytes(&self) -> &[u8] {
         &self.raw_bytes
     }
+
+    pub fn unwrap(&self) -> [u8; 64] {
+        self.raw_bytes
+    }
 }
 
 pub struct PrivateKey {

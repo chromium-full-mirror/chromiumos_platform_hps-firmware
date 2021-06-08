@@ -15,6 +15,10 @@ extern "C" {
     pub static _slot_end: u32;
 }
 
+fn get_stage1_signature() -> [u8; 64] {
+    unsafe { _hdr.sig.unwrap() }
+}
+
 pub fn load_stage1() -> Result<(), &'static str> {
     // The following is safe provided stage1 sets git_hash_ptr and
     // git_hash_length to refer to valid UTF-8.
@@ -31,7 +35,7 @@ pub fn load_stage1() -> Result<(), &'static str> {
             (_hdr.vector_addr as *const u32) as u32
         );
         defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
-        defmt::info!(" [[stage 1]] >> sig={:x}\n\r", _hdr.sig.raw_bytes()[0]);
+        defmt::info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
         cortex_m::asm::bootload(_hdr.vector_addr as *const u32);
     }
 }
