@@ -20,6 +20,7 @@ panic-halt = "0.2.0"
 i2c_peripheral = { path = "../i2c_peripheral" }
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral" }
 hal =  { package = "stm32g0xx-hal", git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"]}
+ed25519-compact = { version = "0.1.9", default-features = false }
 
 [features]
 # set logging levels here

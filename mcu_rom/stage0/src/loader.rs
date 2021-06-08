@@ -9,6 +9,12 @@ use mcu_common::TargetImageHeader;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
+// TODO press this down into RO fuse memory in the MCU?
+const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
+    0x01, 0xB5, 0x9C, 0x83, 0xD3, 0x8D, 0x40, 0x9B, 0x71, 0x18, 0xA8, 0x38, 0x19, 0xEB, 0x4C, 0x77,
+    0x22, 0x01, 0x9D, 0x3C, 0xB7, 0x27, 0x5A, 0x23, 0xC8, 0x45, 0x0C, 0x88, 0xB3, 0xB0, 0x02, 0x6A,
+];
+
 extern "C" {
     pub static _hdr: TargetImageHeader;
     pub static _slot_start: u32;
@@ -49,7 +55,7 @@ pub fn detect_stage1() -> Result<(), &'static str> {
     Err("Could not find stage 1")
 }
 
-pub fn stage1_digest() -> Hash {
+fn stage1_digest() -> Hash {
     let slot = get_stage_slot_se();
     let mut hasher = Hash::new();
 
@@ -79,6 +85,17 @@ pub fn stage1_digest() -> Hash {
         hasher.update(&region); // extend hash a sector at a time.
     }
     hasher.finalize()
+}
+
+pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
+    let stage1_digest = stage1_digest().as_bytes();
+    defmt::info!("{:?}", stage1_digest);
+
+    let hdr_sig = get_stage1_signature();
+    let sign = ed25519_compact::Signature::new(hdr_sig);
+    let vkey = ed25519_compact::PublicKey::new(PUBLIC_KEY);
+
+    vkey.verify(&stage1_digest, &sign)
 }
 
 pub(crate) fn get_stage_slot_se() -> Range<usize> {

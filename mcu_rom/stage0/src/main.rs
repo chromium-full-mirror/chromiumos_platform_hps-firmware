@@ -184,10 +184,15 @@ fn load_application(led: &mut Led) -> Result<(), ()> {
     }
 
     let _ = led.set_high();
-    let stage1_digest = stage1_digest().as_bytes();
-    defmt::info!("{:x}\r", stage1_digest);
+    let stage1_validation = validate_stage1();
     let _ = led.set_low();
 
+    // TODO(quasisec): Load untrusted code anyway!
+    let stage1_sig_str = match stage1_validation {
+        Ok(()) => "signature good!",
+        Err(_) => "signature bad!",
+    };
+    defmt::info!("{}", stage1_sig_str);
     load_stage1().map_err(drop)
 }
 

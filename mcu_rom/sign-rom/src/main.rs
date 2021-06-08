@@ -67,8 +67,7 @@ fn run(config: &Config) -> Result<()> {
 /// `file_bytes`
 fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
-    // FIXME(quasisec): This constant should be passed in as a argument to main().
-    let len = 0x1C000; // FLASH (rx) : ORIGIN = 0x08004080, LENGTH = 112K /* - LENGTH(HDR) */
+    let len = 0xFF80 + 0x80; // FLASH (rx) : ORIGIN = 0x08010080, LENGTH = 64K /* - LENGTH(HDR) */
     let v = extend_image(&payload, len);
 
     let mut hasher = Hash::new();
