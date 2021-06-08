@@ -238,7 +238,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     );
 
     rprintln!(
-        "MCU application started. CPU is running at {}Mhz",
+        "MCU application started. CPU is running at {}MHz",
         rcc.clocks.sys_clk.0 / 1000000
     );
     // Reset the FPGA on startup so that it's in a known state.
