@@ -80,6 +80,7 @@ fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let hash = hasher.finalize();
     println!("signing with digest = {:#02X?}", hash);
     let signature = sign_hash(&hash, &SECRET_KEY);
+    println!("injecting signature = {:#02X?}", signature.raw_bytes());
 
     signature_out.copy_from(&signature);
     Ok(())
