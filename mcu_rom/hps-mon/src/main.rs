@@ -6,6 +6,7 @@ mod console;
 mod debug_commands;
 mod direct;
 mod image_channel;
+mod openocd;
 mod text_channel;
 
 use anyhow::Result;
@@ -108,11 +109,21 @@ struct Flags {
     #[argh(option, default = "0")]
     /// which probe number to use, starting from 0.
     probe_num: usize,
+
+    #[argh(option)]
+    /// if specified, connects to openocd on this port instead of using an
+    /// st-link
+    openocd_port: Option<u16>,
 }
 
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
-    let mut device = direct::DirectDevice::new(&flags)?;
+    let mut device;
+    if let Some(openocd_port) = flags.openocd_port {
+        device = openocd::OpenOcdDevice::new(openocd_port)?;
+    } else {
+        device = direct::DirectDevice::new(&flags)?;
+    }
 
     if flags.reset {
         device.reset()?;
