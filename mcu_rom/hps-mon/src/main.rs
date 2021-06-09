@@ -13,6 +13,7 @@ use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
 use console::Console;
+use console::ConsoleController;
 use image_channel::image_type_from_str;
 use image_channel::ImageType;
 use std::path::PathBuf;
@@ -132,12 +133,20 @@ fn main() -> Result<()> {
         device.reset()?;
     }
 
-    let console = Console::new();
-    let mut rtt = device.attach_rtt()?;
+    let console_controller = ConsoleController::new();
+    // Probably not strictly necessary, but we have an explicit scope to make
+    // sure that `console` goes out of scope before we call `shutdown` on
+    // `console_controller`.
+    {
+        let console = console_controller.console();
+        let mut rtt = device.attach_rtt()?;
 
-    let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
-    let mut to_device = rtt.to_device.drain(..);
-    run_loop(channels, to_device.next(), to_device.next(), console)
+        let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
+        let mut to_device = rtt.to_device.drain(..);
+        run_loop(channels, to_device.next(), to_device.next(), console)?;
+    }
+    console_controller.shutdown();
+    Ok(())
 }
 
 /// Create channels. The channels here must match the channel definitions in
@@ -207,10 +216,7 @@ fn run_loop(
                     debug_commands::print_help_text();
                 }
                 Command::LocalOperation(LocalOperation::Exit) => {
-                    // TODO: Consider a more graceful way of
-                    // exiting. For now this is easy and doesn't
-                    // appear to have any real downside.
-                    std::process::exit(0)
+                    return Ok(());
                 }
             };
         }

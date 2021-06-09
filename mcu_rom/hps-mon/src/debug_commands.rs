@@ -126,9 +126,17 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
             let mut command = None;
             console.pause_output_while(|| command = editor.get_command());
             if let Some(command) = command {
+                let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
                 if tx.send(command).is_err() {
                     // Other end of channel has closed.
                     return;
+                }
+                if is_exit {
+                    // We need to exit our loop when exit occurs, otherwise
+                    // we'll prompt the user for another line of input before we
+                    // discover that the channel has been closed by the main
+                    // thread.
+                    break;
                 }
             } else {
                 editor.wait_for_enter();
