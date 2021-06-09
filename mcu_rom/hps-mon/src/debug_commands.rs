@@ -35,7 +35,6 @@ pub(crate) enum LocalOperation {
 }
 
 pub(crate) enum Command {
-    None,
     FpgaCommand(DebugCommand),
     McuCommand(DebugCommand),
     LocalOperation(LocalOperation),
@@ -124,27 +123,28 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
         println!("Welcome to hps-mon. Press enter to active and deactivate console.");
         editor.wait_for_enter();
         loop {
-            let mut command = Command::None;
+            let mut command = None;
             console.pause_output_while(|| command = editor.get_command());
-            match command {
-                Command::None => {
-                    editor.wait_for_enter();
-                }
-                Command::FpgaCommand(_) | Command::McuCommand(_) => {
-                    if tx.send(command).is_err() {
-                        // Other end of channel has closed.
-                        return;
+            if let Some(command) = command {
+                match command {
+                    Command::FpgaCommand(_) | Command::McuCommand(_) => {
+                        if tx.send(command).is_err() {
+                            // Other end of channel has closed.
+                            return;
+                        }
+                    }
+                    Command::LocalOperation(LocalOperation::PrintHelp) => {
+                        print_help_text();
+                    }
+                    Command::LocalOperation(LocalOperation::Exit) => {
+                        // TODO: Consider a more graceful way of
+                        // exiting. For now this is easy and doesn't
+                        // appear to have any real downside.
+                        std::process::exit(0)
                     }
                 }
-                Command::LocalOperation(LocalOperation::PrintHelp) => {
-                    print_help_text();
-                }
-                Command::LocalOperation(LocalOperation::Exit) => {
-                    // TODO: Consider a more graceful way of
-                    // exiting. For now this is easy and doesn't
-                    // appear to have any real downside.
-                    std::process::exit(0)
-                }
+            } else {
+                editor.wait_for_enter();
             }
         }
     });
@@ -162,7 +162,7 @@ impl DebugCommand {
 }
 
 impl CommandEditor {
-    fn get_command(&mut self) -> Command {
+    fn get_command(&mut self) -> Option<Command> {
         while let Ok(line) = self.editor.readline(">> ") {
             self.editor.add_history_entry(&line);
             let mut parts = line.split(' ');
@@ -171,15 +171,18 @@ impl CommandEditor {
                     if command.keyword == keyword {
                         match command.command_type {
                             CommandType::FpgaCommand(code) => {
-                                return Command::FpgaCommand(DebugCommand { code, arg: 0 });
+                                return Some(Command::FpgaCommand(DebugCommand { code, arg: 0 }));
                             }
                             CommandType::McuCommand(code) => {
-                                return Command::McuCommand(DebugCommand { code, arg: 0 });
+                                return Some(Command::McuCommand(DebugCommand { code, arg: 0 }));
                             }
                             CommandType::FpgaCommandWithArg(code) => {
                                 if let Some(arg_string) = parts.next() {
                                     if let Some(arg) = parse_value(arg_string) {
-                                        return Command::FpgaCommand(DebugCommand { code, arg });
+                                        return Some(Command::FpgaCommand(DebugCommand {
+                                            code,
+                                            arg,
+                                        }));
                                     } else {
                                         eprintln!("The argument '{}' couldn't be parsed as a decimal or hex u16", arg_string);
                                     }
@@ -191,13 +194,13 @@ impl CommandEditor {
                                 }
                             }
                             CommandType::LocalOperation(op) => {
-                                return Command::LocalOperation(op);
+                                return Some(Command::LocalOperation(op));
                             }
                         }
                     }
                 }
                 if keyword.is_empty() {
-                    return Command::None;
+                    return None;
                 }
                 eprintln!(
                     "Unknown command '{}'. Type 'help' to see list of commands",
@@ -205,7 +208,7 @@ impl CommandEditor {
                 );
             }
         }
-        Command::None
+        None
     }
 
     fn wait_for_enter(&mut self) {
