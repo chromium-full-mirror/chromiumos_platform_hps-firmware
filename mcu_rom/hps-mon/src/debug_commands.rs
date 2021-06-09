@@ -126,22 +126,9 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
             let mut command = None;
             console.pause_output_while(|| command = editor.get_command());
             if let Some(command) = command {
-                match command {
-                    Command::FpgaCommand(_) | Command::McuCommand(_) => {
-                        if tx.send(command).is_err() {
-                            // Other end of channel has closed.
-                            return;
-                        }
-                    }
-                    Command::LocalOperation(LocalOperation::PrintHelp) => {
-                        print_help_text();
-                    }
-                    Command::LocalOperation(LocalOperation::Exit) => {
-                        // TODO: Consider a more graceful way of
-                        // exiting. For now this is easy and doesn't
-                        // appear to have any real downside.
-                        std::process::exit(0)
-                    }
+                if tx.send(command).is_err() {
+                    // Other end of channel has closed.
+                    return;
                 }
             } else {
                 editor.wait_for_enter();
@@ -216,7 +203,7 @@ impl CommandEditor {
     }
 }
 
-fn print_help_text() {
+pub(crate) fn print_help_text() {
     for command in COMMANDS {
         let arg = if matches!(command.command_type, CommandType::FpgaCommandWithArg(..)) {
             "{arg}"

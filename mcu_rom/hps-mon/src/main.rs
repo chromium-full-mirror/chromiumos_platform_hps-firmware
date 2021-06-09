@@ -20,6 +20,9 @@ use std::sync::mpsc;
 use std::time::Duration;
 use text_channel::TextChannel;
 
+use crate::debug_commands::Command;
+use crate::debug_commands::LocalOperation;
+
 struct Channel {
     up_channel: Box<dyn DataSource>,
     handler: Box<dyn ChannelHandler>,
@@ -194,13 +197,21 @@ fn run_loop(
         }
         if let Ok(command_kind) = command_source.try_recv() {
             match command_kind {
-                debug_commands::Command::FpgaCommand(c) => {
+                Command::FpgaCommand(c) => {
                     send_command_to_device(&c, &mut &mut fpga_command_channel)?
                 }
-                debug_commands::Command::McuCommand(c) => {
+                Command::McuCommand(c) => {
                     send_command_to_device(&c, &mut &mut mcu_command_channel)?
                 }
-                _ => {}
+                Command::LocalOperation(LocalOperation::PrintHelp) => {
+                    debug_commands::print_help_text();
+                }
+                Command::LocalOperation(LocalOperation::Exit) => {
+                    // TODO: Consider a more graceful way of
+                    // exiting. For now this is easy and doesn't
+                    // appear to have any real downside.
+                    std::process::exit(0)
+                }
             };
         }
         // If we don't get any data from the device, we sleep, increasing how
