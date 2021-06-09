@@ -134,7 +134,7 @@ fn main() -> Result<()> {
 
     let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
     let mut to_device = rtt.to_device.drain(..);
-    run_loop(channels, to_device.next(), console)
+    run_loop(channels, to_device.next(), to_device.next(), console)
 }
 
 /// Create channels. The channels here must match the channel definitions in
@@ -174,7 +174,8 @@ fn create_channels(
 
 fn run_loop(
     mut channels: Vec<Channel>,
-    mut command_channel: Option<Box<dyn DataSink>>,
+    mut mcu_command_channel: Option<Box<dyn DataSink>>,
+    mut fpga_command_channel: Option<Box<dyn DataSink>>,
     console: Console,
 ) -> Result<()> {
     let mut backoff_ms = 0;
@@ -191,12 +192,16 @@ fn run_loop(
                 }
             }
         }
-        if let Ok(command) = command_source.try_recv() {
-            if let Some(command_channel) = command_channel.as_mut() {
-                command_channel.write(&command.to_bytes())?;
-            } else {
-                eprintln!("No command channel available, command not sent.");
-            }
+        if let Ok(command_kind) = command_source.try_recv() {
+            match command_kind {
+                debug_commands::Command::FpgaCommand(c) => {
+                    send_command_to_device(&c, &mut &mut fpga_command_channel)?
+                }
+                debug_commands::Command::McuCommand(c) => {
+                    send_command_to_device(&c, &mut &mut mcu_command_channel)?
+                }
+                _ => {}
+            };
         }
         // If we don't get any data from the device, we sleep, increasing how
         // long we sleep each time until we hit a maximum.
@@ -209,4 +214,16 @@ fn run_loop(
             std::thread::sleep(Duration::from_millis(backoff_ms));
         }
     }
+}
+
+fn send_command_to_device(
+    command: &debug_commands::DebugCommand,
+    command_channel: &mut Option<Box<dyn DataSink>>,
+) -> Result<()> {
+    if let Some(command_channel) = command_channel.as_mut() {
+        command_channel.write(&command.to_bytes())?;
+    } else {
+        eprintln!("No command channel available, command not sent.");
+    }
+    Ok(())
 }

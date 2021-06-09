@@ -9,12 +9,15 @@ pub mod boards;
 mod debug;
 mod spi_peripheral;
 
+use core::convert::TryFrom;
+
 use crate::boards::board;
 use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
 use hal::prelude::*;
+use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use panic_rtt_target as _;
 use rtic::app;
@@ -34,7 +37,8 @@ const APP: () = {
         fpga_programn: board::FpgaProgramn,
         fpga_up_channel: UpChannel,
         image_channel: UpChannel,
-        debug_handler: debug::DebugCommandHandler,
+        fpga_debug_handler: debug::DebugCommandHandler,
+        mcu_debug_handler: debug::DebugCommandHandler,
     }
 
     #[init]
@@ -97,8 +101,24 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
+    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn])]
+    fn timer_tick(ctx: timer_tick::Context) {
+        let mut cmd_buf = [0u8; 3];
+        ctx.resources
+            .mcu_debug_handler
+            .get_debug_command(&mut cmd_buf);
+        if cmd_buf[0] != 0 {
+            match McuDebugCommand::try_from(cmd_buf[0]) {
+                Ok(command) => match command {
+                    McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+                },
+                Err(_) => rprintln!("Unrecognized debug command {}", cmd_buf[0]),
+            }
+        }
+    }
+
     #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel,
-        image_channel, debug_handler])]
+        image_channel, fpga_debug_handler, mcu_debug_handler])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -131,7 +151,7 @@ const APP: () = {
             }
             fpga::Action::GetDebugCommand => {
                 ctx.resources
-                    .debug_handler
+                    .fpga_debug_handler
                     .get_debug_command(&mut buffer[2..]);
             }
             fpga::Action::None => {}
@@ -184,7 +204,12 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
             0: {
                 size: 16
                 mode: NoBlockSkip
-                name: "DebugCommands"
+                name: "McuCommands"
+            }
+            1: {
+                size: 16
+                mode: NoBlockSkip
+                name: "FpgaCommands"
             }
         }
     );
@@ -213,6 +238,12 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let mut exti = p.EXTI;
 
     let host_interface = HostInterface::new(board.host_bus);
+
+    // Set up a periodic timer. This is only needed for polling our debug
+    // channels, so won't be needed in production.
+    let mut timer = p.TIM16.timer(&mut rcc);
+    timer.start(10.hz());
+    timer.listen();
 
     // Trigger an interrupt when the SPI CS line changes.
     let spi_cs = board
@@ -268,6 +299,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         fpga_programn: board.fpga_programn,
         fpga_up_channel: channels.up.1,
         image_channel: channels.up.2,
-        debug_handler: debug::DebugCommandHandler::new(channels.down.0),
+        mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
+        fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
     }
 }
