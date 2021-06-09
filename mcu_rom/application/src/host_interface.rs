@@ -58,7 +58,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
     fn read_register(&self, register: u8, state: &ApplicationState) -> u16 {
         let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {
-            registers::SYSTEM_STATUS => common_value | status::APPLRUN | status::APPLREADY,
+            registers::SYSTEM_STATUS => {
+                // TODO: Revisit whether APPLREADY and AVERIFY still make sense
+                // to be set unconditionally once we're integrated with stage1.
+                common_value | status::APPLRUN | status::APPLREADY | status::AVERIFY
+            }
             registers::USER_PRESENT_STATUS => state.status.person_score as u16,
             _ => common_value,
         }
@@ -98,7 +102,7 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                status::OK | status::APPLRUN | status::APPLREADY
+                status::OK | status::APPLRUN | status::APPLREADY | status::AVERIFY
             );
         }));
         interface.handle_interrupt(&mut state);
