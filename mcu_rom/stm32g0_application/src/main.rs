@@ -20,7 +20,6 @@ use panic_rtt_target as _;
 use rtic::app;
 use rtt_target::rprintln;
 use rtt_target::rtt_init;
-use rtt_target::ChannelMode;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
 
@@ -121,15 +120,8 @@ const APP: () = {
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
                     let channel = ctx.resources.fpga_up_channel;
-                    // We use the channel mode to determine if hps-mon is
-                    // listening. If it's not listening, then we just print the
-                    // output for compatibility with probe-run.
-                    if channel.mode() == ChannelMode::BlockIfFull {
-                        use core::fmt::Write;
-                        write!(channel, "{}", message).unwrap();
-                    } else {
-                        rprintln!("FPGA says: {}", message);
-                    }
+                    use core::fmt::Write;
+                    write!(channel, "{}", message).unwrap();
                 } else {
                     rprintln!("FPGA sent invalid message");
                 }
