@@ -138,6 +138,7 @@ pub mod status {
     pub const WPON: u16 = 1 << 4;
     pub const WPOFF: u16 = 1 << 5;
     pub const APPLRUN: u16 = 1 << 8;
+    pub const APPLREADY: u16 = 1 << 9;
 }
 
 #[cfg(test)]

@@ -58,7 +58,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
     fn read_register(&self, register: u8, state: &ApplicationState) -> u16 {
         let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {
-            registers::SYSTEM_STATUS => common_value | status::APPLRUN,
+            registers::SYSTEM_STATUS => common_value | status::APPLRUN | status::APPLREADY,
             registers::USER_PRESENT_STATUS => state.status.person_score as u16,
             _ => common_value,
         }
@@ -98,7 +98,7 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                status::OK | status::APPLRUN
+                status::OK | status::APPLRUN | status::APPLREADY
             );
         }));
         interface.handle_interrupt(&mut state);
