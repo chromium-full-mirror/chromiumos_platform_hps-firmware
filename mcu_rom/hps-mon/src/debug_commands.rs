@@ -6,7 +6,6 @@ use anyhow::Result;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
 use std::sync::mpsc;
-use std::time::Duration;
 
 use crate::console::Console;
 
@@ -32,7 +31,6 @@ enum CommandType {
 #[derive(Clone, Copy)]
 pub(crate) enum LocalOperation {
     PrintHelp,
-    Watch,
     Exit,
 }
 
@@ -105,11 +103,6 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::LocalOperation(LocalOperation::Exit),
     },
     AvailableDebugCommand {
-        keyword: "watch",
-        help_text: "Watch for output from device",
-        command_type: CommandType::LocalOperation(LocalOperation::Watch),
-    },
-    AvailableDebugCommand {
         keyword: "reset_fpga",
         help_text: "Reset the FPGA",
         command_type: CommandType::McuCommand(1),
@@ -128,11 +121,15 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
         .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
+        println!("Welcome to hps-mon. Press enter to active and deactivate console.");
+        editor.wait_for_enter();
         loop {
             let mut command = Command::None;
             console.pause_output_while(|| command = editor.get_command());
             match command {
-                Command::None => {}
+                Command::None => {
+                    editor.wait_for_enter();
+                }
                 Command::FpgaCommand(_) | Command::McuCommand(_) => {
                     if tx.send(command).is_err() {
                         // Other end of channel has closed.
@@ -148,18 +145,7 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
                     // appear to have any real downside.
                     std::process::exit(0)
                 }
-                Command::LocalOperation(LocalOperation::Watch) => {
-                    // Leave console output active while we wait for a line,
-                    // which we then ignore.
-                    println!("Waiting for messages from device. Press enter to return to prompt.");
-                    let _ = editor.editor.readline("");
-                }
             }
-            // A short delay during which console output is not paused. This
-            // gives any output that occurred while we were typing the command,
-            // as well as giving a chance for output resulting from the command
-            // to get back to us.
-            std::thread::sleep(Duration::from_millis(200));
         }
     });
     Ok(rx)
@@ -220,6 +206,10 @@ impl CommandEditor {
             }
         }
         Command::None
+    }
+
+    fn wait_for_enter(&mut self) {
+        let _ = self.editor.readline("");
     }
 }
 
