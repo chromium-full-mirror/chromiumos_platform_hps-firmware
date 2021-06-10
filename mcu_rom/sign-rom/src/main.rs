@@ -101,29 +101,3 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut ImageHeader) };
     Ok((&mut header.sig, &file_bytes[..]))
 }
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_sign_file_bytes() {
-        let mut file_bytes = [42u8; 100];
-        super::sign_file_bytes(&mut file_bytes).unwrap();
-        assert_eq!(
-            file_bytes,
-            [
-                42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,
-                42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 128, 41, 109, 242, 194, 3, 102, 93,
-                159, 1, 28, 128, 233, 17, 141, 214, 113, 189, 73, 205, 181, 228, 97, 180, 245, 44,
-                181, 189, 199, 25, 116, 236, 112, 140, 130, 101, 17, 36, 42, 59, 133, 149, 71, 83,
-                175, 210, 72, 63, 168, 41, 227, 10, 170, 1, 0, 187, 7, 162, 199, 164, 58, 219, 60,
-                14, 42, 42, 42, 42
-            ]
-        );
-    }
-
-    #[test]
-    fn test_input_too_short() {
-        let mut file_bytes = [42u8; 10];
-        assert!(super::sign_file_bytes(&mut file_bytes).is_err());
-    }
-}
