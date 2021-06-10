@@ -42,6 +42,7 @@ pub(crate) enum Command {
 
 struct CommandEditor {
     editor: rustyline::Editor<CompletionHelper>,
+    should_exit: bool,
 }
 
 #[derive(Default)]
@@ -113,6 +114,7 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
 pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<Command>> {
     let mut editor = CommandEditor {
         editor: rustyline::Editor::<CompletionHelper>::new(),
+        should_exit: false,
     };
     editor.editor.set_helper(Some(CompletionHelper::default()));
     editor
@@ -158,7 +160,10 @@ impl DebugCommand {
 
 impl CommandEditor {
     fn get_command(&mut self) -> Option<Command> {
-        while let Ok(line) = self.editor.readline(">> ") {
+        if self.should_exit {
+            return Some(Command::LocalOperation(LocalOperation::Exit));
+        }
+        while let Some(line) = self.readline(">> ") {
             self.editor.add_history_entry(&line);
             let mut parts = line.split(' ');
             if let Some(keyword) = parts.next() {
@@ -206,8 +211,25 @@ impl CommandEditor {
         None
     }
 
+    fn readline(&mut self, prompt: &str) -> Option<String> {
+        match self.editor.readline(prompt) {
+            Ok(line) => return Some(line),
+            // Ctrl-D or Ctrl-C should exit. We exit by setting should_exit
+            // which is then checked next time we're going to prompt for a
+            // command. We could return something here that indicates to the
+            // caller that we should exit, however there are multiple callers
+            // and we'd rather not have each of them check that.
+            Err(rustyline::error::ReadlineError::Eof)
+            | Err(rustyline::error::ReadlineError::Interrupted) => self.should_exit = true,
+            Err(_) => {}
+        }
+        None
+    }
+
     fn wait_for_enter(&mut self) {
-        let _ = self.editor.readline("");
+        if !self.should_exit {
+            self.readline("");
+        }
     }
 }
 
