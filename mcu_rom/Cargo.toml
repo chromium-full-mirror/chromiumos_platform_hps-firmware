@@ -24,8 +24,9 @@ exclude = [
     "stm32g0_i2c_peripheral"
 ]
 
-# Awaiting release of https://github.com/probe-rs/probe-rs/pull/633 or
-# equivalent. This speeds up RTT transfers by about 6x.
+# TODO(dml): Decide on the transition to public probe-rs.
+# The PR (https://github.com/probe-rs/probe-rs/pull/633) is merged,
+# but not 1:1 compatible with existing codebase.
 [patch.crates-io]
 probe-rs = { git = "https://github.com/davidlattimore/probe-rs" }
 probe-rs-rtt = { git = "https://github.com/davidlattimore/probe-rs-rtt" }
