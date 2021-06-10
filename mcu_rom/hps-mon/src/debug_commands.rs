@@ -32,6 +32,7 @@ enum CommandType {
 pub(crate) enum LocalOperation {
     PrintHelp,
     Exit,
+    ResetMcu,
 }
 
 pub(crate) enum Command {
@@ -106,6 +107,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         keyword: "reset_fpga",
         help_text: "Reset the FPGA",
         command_type: CommandType::McuCommand(1),
+    },
+    AvailableDebugCommand {
+        keyword: "reset_mcu",
+        help_text: "Reset the MCU",
+        command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),
     },
 ];
 

@@ -143,7 +143,13 @@ fn main() -> Result<()> {
 
         let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
         let mut to_device = rtt.to_device.drain(..);
-        run_loop(channels, to_device.next(), to_device.next(), console)?;
+        run_loop(
+            channels,
+            to_device.next(),
+            to_device.next(),
+            console,
+            &mut *device,
+        )?;
     }
     console_controller.shutdown();
     Ok(())
@@ -189,6 +195,7 @@ fn run_loop(
     mut mcu_command_channel: Option<Box<dyn DataSink>>,
     mut fpga_command_channel: Option<Box<dyn DataSink>>,
     console: Console,
+    device: &mut dyn Device,
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
@@ -217,6 +224,9 @@ fn run_loop(
                 }
                 Command::LocalOperation(LocalOperation::Exit) => {
                     return Ok(());
+                }
+                Command::LocalOperation(LocalOperation::ResetMcu) => {
+                    device.reset()?;
                 }
             };
         }
