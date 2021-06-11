@@ -39,6 +39,7 @@ const APP: () = {
         image_channel: UpChannel,
         fpga_debug_handler: debug::DebugCommandHandler,
         mcu_debug_handler: debug::DebugCommandHandler,
+        spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
     }
 
     #[init]
@@ -261,6 +262,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         board.spi_ready,
     );
 
+    let mut spi_flash = None;
+
     match Flash::init(board.flash_spi, board.flash_spi_cs) {
         Ok(mut flash) => match flash.read_jedec_id() {
             Ok(id) => {
@@ -268,6 +271,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
                     && id.device_id() == board::SPI_FLASH_DEVICE_ID
                 {
                     rprintln!("Found expected flash chip");
+                    spi_flash = Some(flash);
                 } else {
                     rprintln!(
                         "Unexpected flash ID {}, [{}, {}]",
@@ -301,5 +305,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         image_channel: channels.up.2,
         mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
         fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
+        spi_flash,
     }
 }

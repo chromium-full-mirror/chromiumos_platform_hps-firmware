@@ -36,6 +36,15 @@ pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 
 pub type FpgaSpi = hal::stm32::SPI1;
+pub type FlashSpi = hal::spi::Spi<
+    hal::stm32::SPI2,
+    (
+        gpio::gpioa::PA0<Analog>, // SCK
+        gpio::gpiob::PB6<Analog>, // CIPO
+        gpio::gpiob::PB7<Analog>, // COPI
+    ),
+>;
+pub type FlashSpiCs = gpio::gpiob::PB1<Output<PushPull>>;
 
 /// GigaDevice
 pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
@@ -56,15 +65,8 @@ pub struct Board {
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
-    pub flash_spi_cs: gpio::gpiob::PB1<Output<PushPull>>,
-    pub flash_spi: hal::spi::Spi<
-        hal::stm32::SPI2,
-        (
-            gpio::gpioa::PA0<Analog>, // SCK
-            gpio::gpiob::PB6<Analog>, // CIPO
-            gpio::gpiob::PB7<Analog>, // COPI
-        ),
-    >,
+    pub flash_spi_cs: FlashSpiCs,
+    pub flash_spi: FlashSpi,
 }
 
 impl Board {

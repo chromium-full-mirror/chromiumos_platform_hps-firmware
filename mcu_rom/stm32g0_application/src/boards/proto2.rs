@@ -27,6 +27,15 @@ pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
+pub type FlashSpi = hal::spi::Spi<
+    hal::stm32::SPI1,
+    (
+        gpio::gpioa::PA5<Analog>,
+        gpio::gpioa::PA6<Analog>,
+        gpio::gpioa::PA7<Analog>,
+    ),
+>;
+pub type FlashSpiCs = gpio::gpiob::PB0<Output<PushPull>>;
 
 /// GigaDevice
 pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
@@ -47,15 +56,8 @@ pub struct Board {
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
-    pub flash_spi_cs: gpio::gpiob::PB0<Output<PushPull>>,
-    pub flash_spi: hal::spi::Spi<
-        hal::stm32::SPI1,
-        (
-            gpio::gpioa::PA5<Analog>,
-            gpio::gpioa::PA6<Analog>,
-            gpio::gpioa::PA7<Analog>,
-        ),
-    >,
+    pub flash_spi_cs: FlashSpiCs,
+    pub flash_spi: FlashSpi,
 }
 
 impl Board {
