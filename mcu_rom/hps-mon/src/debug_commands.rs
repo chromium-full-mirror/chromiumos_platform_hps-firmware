@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use anyhow::Result;
+use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
 use std::sync::mpsc;
@@ -24,7 +25,7 @@ struct AvailableDebugCommand {
 enum CommandType {
     FpgaCommand(u8),
     FpgaCommandWithArg(u8),
-    McuCommand(u8),
+    McuCommand(McuDebugCommand),
     LocalOperation(LocalOperation),
 }
 
@@ -106,7 +107,7 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "reset_fpga",
         help_text: "Reset the FPGA",
-        command_type: CommandType::McuCommand(1),
+        command_type: CommandType::McuCommand(McuDebugCommand::ResetFpga),
     },
     AvailableDebugCommand {
         keyword: "reset_mcu",
@@ -179,8 +180,11 @@ impl CommandEditor {
                             CommandType::FpgaCommand(code) => {
                                 return Some(Command::FpgaCommand(DebugCommand { code, arg: 0 }));
                             }
-                            CommandType::McuCommand(code) => {
-                                return Some(Command::McuCommand(DebugCommand { code, arg: 0 }));
+                            CommandType::McuCommand(mcu_command) => {
+                                return Some(Command::McuCommand(DebugCommand {
+                                    code: mcu_command.into(),
+                                    arg: 0,
+                                }));
                             }
                             CommandType::FpgaCommandWithArg(code) => {
                                 if let Some(arg_string) = parts.next() {
