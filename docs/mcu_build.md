@@ -16,7 +16,8 @@ MCU with the above staged firmware in the following way (choose the one you want
 cd $HPS_ROOT
 ./scripts/flash-mcu mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0
 ./scripts/flash-mcu mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1
-./scripts/flash-mcu mcu_rom/application/target/thumbv6m-none-eabi/release/application
+./scripts/flash-mcu \
+    mcu_rom/stm32g0_application/target/thumbv6m-none-eabi/release/stm32g0_application
 ```
 
 Finally, to see log messages run:
