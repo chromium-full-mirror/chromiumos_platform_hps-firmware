@@ -65,7 +65,7 @@ fn run(config: &Config) -> Result<()> {
         bail!("Input file is too big to fit into specified region length");
     }
     println!("Using region length = 0x{:04X}", config.region_length);
-    sign_file_bytes(&mut file_bytes, config.region_length)?;
+    sign_file_bytes(&mut file_bytes, config.region_length, &SECRET_KEY)?;
     std::fs::write(&config.output, file_bytes)?;
     Ok(())
 }
@@ -73,7 +73,11 @@ fn run(config: &Config) -> Result<()> {
 /// Computes the signature of the non-header portion of `file_bytes` then stores
 /// that signature into the appropriate location in the header at the start of
 /// `file_bytes`
-fn sign_file_bytes(file_bytes: &mut [u8], region_length: usize) -> Result<()> {
+fn sign_file_bytes(
+    file_bytes: &mut [u8],
+    region_length: usize,
+    private_key: &PrivateKey,
+) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
     let v = extend_image(&payload, region_length);
 
@@ -83,7 +87,7 @@ fn sign_file_bytes(file_bytes: &mut [u8], region_length: usize) -> Result<()> {
     }
     let hash = hasher.finalize();
     println!("signing with digest = {:#02X?}", hash);
-    let signature = sign_hash(&hash, &SECRET_KEY);
+    let signature = sign_hash(&hash, private_key);
     println!("injecting signature = {:#02X?}", signature.raw_bytes());
 
     signature_out.copy_from(&signature);
