@@ -67,15 +67,9 @@ fn run(config: &Config) -> Result<()> {
 /// `file_bytes`
 fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
-
-    let mut v = Vec::new();
-    v.extend_from_slice(&payload);
-    if v.len() / FLASH_PAGE_SZ != 0 {
-        let rem = v.len() % (FLASH_PAGE_SZ / 256);
-        v.resize(v.len() + rem, 0x00);
-    }
+    // FIXME(quasisec): This constant should be passed in as a argument to main().
     let len = 0x1C000; // FLASH (rx) : ORIGIN = 0x08004080, LENGTH = 112K /* - LENGTH(HDR) */
-    v.resize(len, 0xFF);
+    let v = extend_image(&payload, len);
 
     let mut hasher = Hash::new();
     for block in v.chunks(FLASH_PAGE_SZ) {
@@ -104,4 +98,43 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     // more than 1.
     let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut HostImageHeader) };
     Ok((&mut header.sig, &file_bytes[..]))
+}
+
+/// Return a extended image with a provided length.
+fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
+    let mut v = Vec::new();
+    v.extend_from_slice(&image);
+
+    // Determine if the image is able to precisely divide
+    // into page alignment and if not pad.
+    if v.len() / FLASH_PAGE_SZ != 0 {
+        // Determine the residue of remaining sectors
+        // that will complete the page and pad with
+        // zeros.
+        let rem = v.len() % (FLASH_PAGE_SZ / 256);
+        v.resize(v.len() + rem, 0x00);
+    }
+    // Further extend the image to fill the entire region length
+    // provided by padding the remaining pages with 0xFF.
+    v.resize(extend_length, 0xFF);
+
+    v
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_extend_image() {
+        // offset image by 32+1 Bytes to simulate mis-alignment.
+        const OFFSET: usize = 32 + 1;
+        let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
+        let ext_len: usize = 4096;
+
+        let ext_img = super::extend_image(&image, ext_len);
+        assert_eq!(ext_img.len(), ext_len);
+        assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET - 1)], 0xCC);
+        assert_eq!(ext_img[super::FLASH_PAGE_SZ + OFFSET], 0x00);
+        assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET + 1)], 0xFF);
+        assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET * 2)], 0xFF);
+    }
 }
