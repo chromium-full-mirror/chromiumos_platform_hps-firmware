@@ -21,6 +21,10 @@ struct Config {
     input: PathBuf,
 
     #[argh(option)]
+    /// input filename region length
+    region_length: usize,
+
+    #[argh(option)]
     /// output filename
     output: PathBuf,
 
@@ -57,7 +61,11 @@ fn run(config: &Config) -> Result<()> {
         return Ok(());
     }
     let mut file_bytes = std::fs::read(&config.input)?;
-    sign_file_bytes(&mut file_bytes)?;
+    if config.region_length < file_bytes.len() {
+        bail!("Input file is too big to fit into specified region length");
+    }
+    println!("Using region length = 0x{:04X}", config.region_length);
+    sign_file_bytes(&mut file_bytes, config.region_length)?;
     std::fs::write(&config.output, file_bytes)?;
     Ok(())
 }
@@ -65,10 +73,9 @@ fn run(config: &Config) -> Result<()> {
 /// Computes the signature of the non-header portion of `file_bytes` then stores
 /// that signature into the appropriate location in the header at the start of
 /// `file_bytes`
-fn sign_file_bytes(file_bytes: &mut [u8]) -> Result<()> {
+fn sign_file_bytes(file_bytes: &mut [u8], region_length: usize) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
-    let len = 0xFF80 + 0x80; // FLASH (rx) : ORIGIN = 0x08010080, LENGTH = 64K /* - LENGTH(HDR) */
-    let v = extend_image(&payload, len);
+    let v = extend_image(&payload, region_length);
 
     let mut hasher = Hash::new();
     for block in v.chunks(FLASH_PAGE_SZ) {

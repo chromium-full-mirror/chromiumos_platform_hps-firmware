@@ -69,9 +69,11 @@ else
     if arm-none-eabi-objdump -h "${file}" | grep image_hdr >/dev/null; then
         (
             cd "${PROJECT_ROOT}/mcu_rom/sign-rom"
+            # stage 1 region length is 64K [0x10000] in length.
             cargo run --release \
                 -- \
                 --input "${file}.bin" \
+                --region-length "0x10000" \
                 --output "${file}.bin"
         ) || exit 1
     fi
