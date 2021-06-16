@@ -265,6 +265,9 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         board.spi_ready,
     );
 
+    // Ensure FPGA and SPI flash are powered.
+    board.fpga_power_gate.set_low().unwrap();
+
     let mut spi_flash = None;
 
     match Flash::init(board.flash_spi, board.flash_spi_cs) {

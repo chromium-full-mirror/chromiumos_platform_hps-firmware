@@ -25,6 +25,7 @@ pub type HostBus = Stm32g0I2cPeripheral;
 
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
+pub type FpgaPowerGate = gpio::gpiob::PB4<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
 pub type FlashSpi = hal::spi::Spi<
@@ -53,6 +54,7 @@ pub struct Board {
 
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
+    pub fpga_power_gate: FpgaPowerGate,
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
@@ -73,6 +75,7 @@ impl Board {
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
         fpga_programn.set_high().unwrap();
+        let fpga_power_gate = b.pb4.into_push_pull_output();
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
 
@@ -105,6 +108,7 @@ impl Board {
 
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn,
+            fpga_power_gate,
             spi_ready,
             fpga_spi: spi2,
 
