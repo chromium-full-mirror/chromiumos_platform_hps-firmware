@@ -17,6 +17,7 @@ use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
 use hal::prelude::*;
+use hal::timer::Timer;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use panic_rtt_target as _;
@@ -40,6 +41,7 @@ const APP: () = {
         fpga_debug_handler: debug::DebugCommandHandler,
         mcu_debug_handler: debug::DebugCommandHandler,
         spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+        timer: Timer<hal::stm32::TIM16>,
     }
 
     #[init]
@@ -102,8 +104,9 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn])]
+    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer])]
     fn timer_tick(ctx: timer_tick::Context) {
+        ctx.resources.timer.clear_irq();
         let mut cmd_buf = [0u8; 3];
         ctx.resources
             .mcu_debug_handler
@@ -306,5 +309,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
         fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
         spi_flash,
+        timer,
     }
 }
