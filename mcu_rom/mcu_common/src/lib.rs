@@ -60,7 +60,7 @@ pub type TargetImageHeader = ImageHeader<&'static u32, &'static u8>;
 // of being used by either host-side compile-time or host-side run-time executable
 // paths within host tooling. Reference fields are defined to be machine local types
 // as the propositional starting point for their intended use-case with host tooling
-// and later to be reinterpeted by metal.
+// and later to be reinterpreted by metal.
 pub type HostImageHeader = ImageHeader<u32, u32>;
 
 #[repr(C)]
