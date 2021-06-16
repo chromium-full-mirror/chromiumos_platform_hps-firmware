@@ -8,8 +8,8 @@ use argh::FromArgs;
 use mcu_common::HostImageHeader;
 use mcu_common::PrivateKey;
 use mcu_common::Signature;
-use mcu_common::FLASH_PAGE_SZ;
 use mcu_common::{sign_hash, Hash};
+use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
 use std::path::PathBuf;
 
 #[derive(FromArgs)]
@@ -115,15 +115,11 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     let mut v = Vec::new();
     v.extend_from_slice(&image);
 
-    // Determine if the image is able to precisely divide
-    // into page alignment and if not pad.
-    if v.len() / FLASH_PAGE_SZ != 0 {
-        // Determine the residue of remaining sectors
-        // that will complete the page and pad with
-        // zeros.
-        let rem = v.len() % (FLASH_PAGE_SZ / 256);
-        v.resize(v.len() + rem, 0x00);
-    }
+    // Determine the residue of remaining Bytes that
+    // will complete the write size and pad with zeros.
+    let rem = v.len() % FLASH_WRITE_SZ;
+    v.resize(v.len() + rem, 0x00);
+
     // Further extend the image to fill the entire region length
     // provided by padding the remaining pages with 0xFF.
     v.resize(extend_length, 0xFF);

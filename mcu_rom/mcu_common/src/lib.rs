@@ -21,6 +21,14 @@ pub use errors::Error;
 pub use mcu_debug_commands::McuDebugCommand;
 pub use mem_block::MemBlock;
 
+/// STM32G0x1, RM0444 (Reference manual)
+/// p.76 - 3.3.8 FLASH Main memory programming sequences
+/// It is only possible to program a double word (2 x 32-bit data).
+pub const FLASH_WRITE_SZ: usize = 4 * 2;
+
+/// STM32G0x1, RM0444 (Reference manual)
+/// p.70 3.3.1 FLASH memory organization.
+/// Each page consists of eight rows of 256 Bytes.
 pub const FLASH_PAGE_SZ: usize = 4 * 256 * 2;
 
 /// A value that all debug commands start with when sent from hps-mon to the
