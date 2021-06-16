@@ -73,7 +73,7 @@ else
             cargo run --release \
                 -- \
                 --input "${file}.bin" \
-                --region-length "0x10000" \
+                --region-length "65536" \
                 --output "${file}.bin"
         ) || exit 1
     fi
