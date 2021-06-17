@@ -46,6 +46,7 @@ enum debug_command {
   DEBUG_CMD_READ_CAM_REG = 11,
   DEBUG_CMD_PRINT_CAM_GAINS = 12,
   DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET = 13,
+  DEBUG_CMD_PRINT_AE_CFG = 14,
 };
 
 // Global send and receive buffers

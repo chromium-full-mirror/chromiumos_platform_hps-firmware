@@ -121,6 +121,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(13),
     },
     AvailableDebugCommand {
+        keyword: "print_ae_cfg",
+        help_text: "Print automatic exposure configuration",
+        command_type: CommandType::FpgaCommand(14),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

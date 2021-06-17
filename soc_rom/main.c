@@ -519,6 +519,9 @@ int main(void) {
       case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
         set_automatic_exposure_target(cmd_arg);
         break;
+      case DEBUG_CMD_PRINT_AE_CFG:
+        print_ae_cfg();
+        break;
       case DEBUG_CMD_NONE:
         break;
     }
