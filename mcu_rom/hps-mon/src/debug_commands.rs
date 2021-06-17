@@ -160,28 +160,24 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
         .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
-        println!("Welcome to hps-mon. Press enter to active and deactivate console.");
-        editor.wait_for_enter();
+        println!("Welcome to hps-mon. Press enter to activate console.");
         loop {
+            editor.wait_for_enter();
             let mut commands = vec![];
             console.pause_output_while(|| commands = editor.get_commands());
-            if !commands.is_empty() {
-                for command in commands {
-                    let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
-                    if tx.send(command).is_err() {
-                        // Other end of channel has closed.
-                        return;
-                    }
-                    if is_exit {
-                        // We need to explicitly handle exit here, otherwise
-                        // we'll prompt the user for another line of input
-                        // before we discover that the channel has been closed
-                        // by the main thread.
-                        return;
-                    }
+            for command in commands {
+                let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
+                if tx.send(command).is_err() {
+                    // Other end of channel has closed.
+                    return;
                 }
-            } else {
-                editor.wait_for_enter();
+                if is_exit {
+                    // We need to explicitly handle exit here, otherwise
+                    // we'll prompt the user for another line of input
+                    // before we discover that the channel has been closed
+                    // by the main thread.
+                    return;
+                }
             }
         }
     });
