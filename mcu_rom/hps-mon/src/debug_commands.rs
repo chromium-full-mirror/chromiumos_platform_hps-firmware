@@ -96,6 +96,21 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(8),
     },
     AvailableDebugCommand {
+        keyword: "camera_custom_address",
+        help_text: "Set custom register address for subsequent camera_write_custom command",
+        command_type: CommandType::FpgaCommandWithArg(9),
+    },
+    AvailableDebugCommand {
+        keyword: "camera_custom_write",
+        help_text: "Write camera register specified by last camera_custom_address",
+        command_type: CommandType::FpgaCommandWithArg(10),
+    },
+    AvailableDebugCommand {
+        keyword: "camera_read_register",
+        help_text: "Read specified camera register",
+        command_type: CommandType::FpgaCommandWithArg(11),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

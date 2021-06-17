@@ -334,6 +334,32 @@ static void set_integration(uint16_t value) {
   print_expo_gain();
 }
 
+static void set_camera_register(uint16_t address, uint8_t value) {
+  if (address == 0) {
+    mcu_printf(
+        "Attempt to set custom register value without first setting address");
+    return;
+  }
+  uint32_t ui32Err =
+      hm01b0_write_reg(&hm01b0_cfg, address, (uint8_t*)&value, sizeof(value));
+  if (ui32Err != HM01B0_ERR_OK) {
+    mcu_printf("Failed to set camera register 0x%02x to 0x%02x\n", address, value);
+  } else {
+    mcu_printf("Set camera register 0x%02x to 0x%02x\n", address, value);
+  }
+}
+
+static void print_camera_register(uint16_t address) {
+  uint8_t value = 0;
+  uint32_t ui32Err =
+      hm01b0_read_reg(&hm01b0_cfg, address, (uint8_t*)&value, sizeof(value));
+  if (ui32Err != HM01B0_ERR_OK) {
+    mcu_printf("Failed to read camera register 0x%02x\n", address);
+  } else {
+    mcu_printf("Camera register 0x%02x has value 0x%02x\n", address, value);
+  }
+}
+
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
@@ -374,6 +400,7 @@ int main(void) {
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
+  uint16_t custom_register_address = 0;
   while (1) {
     // Accept input to configure which functions are run
     printf("[%u] Press key (s, r, c, a, + , -, e, t)\n", loop_counter++);
@@ -426,6 +453,15 @@ int main(void) {
         break;
       case DEBUG_CMD_SET_INTEGRATION:
         set_integration(cmd_arg);
+        break;
+      case DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS:
+        custom_register_address = cmd_arg;
+        break;
+      case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
+        set_camera_register(custom_register_address, cmd_arg);
+        break;
+      case DEBUG_CMD_READ_CAM_REG:
+        print_camera_register(cmd_arg);
         break;
       case DEBUG_CMD_NONE:
         break;
