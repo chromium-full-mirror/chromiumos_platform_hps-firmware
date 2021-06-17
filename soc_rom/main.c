@@ -472,56 +472,61 @@ int main(void) {
       }
     }
     poll_mcu();
-    uint16_t cmd_arg = 0;
-    switch (get_debug_command(&cmd_arg)) {
-      case DEBUG_CMD_CLASSIFY_OFF:
-        mcu_printf("Image classification disabled\n");
-        do_run_classify = false;
-        break;
-      case DEBUG_CMD_CLASSIFY_ON:
-        mcu_printf("Image classification enabled\n");
-        do_run_classify = true;
-        break;
-      case DEBUG_CMD_TRANSFER_IMAGE_OFF:
-        mcu_printf("Image transfer disabled\n");
-        do_transfer_image_to_host = false;
-        break;
-      case DEBUG_CMD_TRANSFER_IMAGE_ON:
-        mcu_printf("Image transfer enabled\n");
-        do_transfer_image_to_host = true;
-        break;
-      case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
-        do_run_exposure_calibration = true;
-        break;
-      case DEBUG_CMD_SET_ANALOG_GAIN:
-        set_analog_gain(cmd_arg);
-        break;
-      case DEBUG_CMD_SET_DIGITAL_GAIN:
-        set_digital_gain(cmd_arg);
-        break;
-      case DEBUG_CMD_SET_INTEGRATION:
-        set_integration(cmd_arg);
-        break;
-      case DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS:
-        custom_register_address = cmd_arg;
-        break;
-      case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
-        set_camera_register(custom_register_address, cmd_arg);
-        break;
-      case DEBUG_CMD_READ_CAM_REG:
-        print_camera_register(cmd_arg);
-        break;
-      case DEBUG_CMD_PRINT_CAM_GAINS:
-        read_and_print_expo_gain();
-        break;
-      case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
-        set_automatic_exposure_target(cmd_arg);
-        break;
-      case DEBUG_CMD_PRINT_AE_CFG:
-        print_ae_cfg();
-        break;
-      case DEBUG_CMD_NONE:
-        break;
+    // Fetch and process debug commands until there aren't any more.
+    bool should_get_command = true;
+    while (should_get_command) {
+      uint16_t cmd_arg = 0;
+      switch (get_debug_command(&cmd_arg)) {
+        case DEBUG_CMD_CLASSIFY_OFF:
+          mcu_printf("Image classification disabled\n");
+          do_run_classify = false;
+          break;
+        case DEBUG_CMD_CLASSIFY_ON:
+          mcu_printf("Image classification enabled\n");
+          do_run_classify = true;
+          break;
+        case DEBUG_CMD_TRANSFER_IMAGE_OFF:
+          mcu_printf("Image transfer disabled\n");
+          do_transfer_image_to_host = false;
+          break;
+        case DEBUG_CMD_TRANSFER_IMAGE_ON:
+          mcu_printf("Image transfer enabled\n");
+          do_transfer_image_to_host = true;
+          break;
+        case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
+          do_run_exposure_calibration = true;
+          break;
+        case DEBUG_CMD_SET_ANALOG_GAIN:
+          set_analog_gain(cmd_arg);
+          break;
+        case DEBUG_CMD_SET_DIGITAL_GAIN:
+          set_digital_gain(cmd_arg);
+          break;
+        case DEBUG_CMD_SET_INTEGRATION:
+          set_integration(cmd_arg);
+          break;
+        case DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS:
+          custom_register_address = cmd_arg;
+          break;
+        case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
+          set_camera_register(custom_register_address, cmd_arg);
+          break;
+        case DEBUG_CMD_READ_CAM_REG:
+          print_camera_register(cmd_arg);
+          break;
+        case DEBUG_CMD_PRINT_CAM_GAINS:
+          read_and_print_expo_gain();
+          break;
+        case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
+          set_automatic_exposure_target(cmd_arg);
+          break;
+        case DEBUG_CMD_PRINT_AE_CFG:
+          print_ae_cfg();
+          break;
+        case DEBUG_CMD_NONE:
+          should_get_command = false;
+          break;
+      }
     }
     // Run configured functions
     if (do_spi_transfer) {
