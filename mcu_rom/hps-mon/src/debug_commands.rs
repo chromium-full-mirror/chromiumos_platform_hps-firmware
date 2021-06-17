@@ -81,13 +81,13 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(5),
     },
     AvailableDebugCommand {
-        keyword: "analog_exposure",
-        help_text: "Set analog exposure",
+        keyword: "analog_gain",
+        help_text: "Set analog gain",
         command_type: CommandType::FpgaCommandWithArg(6),
     },
     AvailableDebugCommand {
-        keyword: "digital_exposure",
-        help_text: "Set digital exposure",
+        keyword: "digital_gain",
+        help_text: "Set digital gain",
         command_type: CommandType::FpgaCommandWithArg(7),
     },
     AvailableDebugCommand {
