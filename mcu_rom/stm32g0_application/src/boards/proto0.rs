@@ -46,6 +46,11 @@ pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
 /// GigaDevice GD25LQ128C/D
 pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
 
+/// Whether to enable SPI interface to SPI flash. This shares pins with the
+/// camera, so shouldn't be enbled if you want to use the camera. Probably also
+/// a good idea to disconnect the camera when enabling this.
+pub const SPI_FLASH_ENABLED: bool = false;
+
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA4<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
@@ -62,8 +67,8 @@ pub struct Board {
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
-    pub flash_spi_cs: FlashSpiCs,
-    pub flash_spi: FlashSpi,
+    pub flash_spi_cs: Option<FlashSpiCs>,
+    pub flash_spi: Option<FlashSpi>,
 }
 
 impl Board {
@@ -84,17 +89,24 @@ impl Board {
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
 
-        let flash_spi_cs = b.pb0.into_push_pull_output(); // J4-1 - shared with CAM_MCLK
         let flash_spi_clk = a.pa0;
         let flash_spi_copi = b.pb7;
         let flash_spi_cipo = b.pb6;
 
-        let flash_spi = spi2.spi(
-            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
-            hal::spi::MODE_0,
-            1.mhz(),
-            rcc,
-        );
+        let flash_spi_cs;
+        let flash_spi;
+        if SPI_FLASH_ENABLED {
+            flash_spi = Some(spi2.spi(
+                (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
+                hal::spi::MODE_0,
+                1.mhz(),
+                rcc,
+            ));
+            flash_spi_cs = Some(b.pb0.into_push_pull_output()); // J4-1 - shared with CAM_MCLK
+        } else {
+            flash_spi = None;
+            flash_spi_cs = None;
+        }
 
         Self {
             fpga_spi_cs: a.pa4,

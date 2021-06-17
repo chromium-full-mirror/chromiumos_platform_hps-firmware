@@ -270,29 +270,31 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
 
     let mut spi_flash = None;
 
-    match Flash::init(board.flash_spi, board.flash_spi_cs) {
-        Ok(mut flash) => match flash.read_jedec_id() {
-            Ok(id) => {
-                if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
-                    && id.device_id() == board::SPI_FLASH_DEVICE_ID
-                {
-                    rprintln!("Found expected flash chip");
-                    spi_flash = Some(flash);
-                } else {
-                    rprintln!(
-                        "Unexpected flash ID {}, [{}, {}]",
-                        id.mfr_code(),
-                        id.device_id()[0],
-                        id.device_id()[1]
-                    );
+    if let (Some(flash_spi), Some(flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
+        match Flash::init(flash_spi, flash_spi_cs) {
+            Ok(mut flash) => match flash.read_jedec_id() {
+                Ok(id) => {
+                    if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
+                        && id.device_id() == board::SPI_FLASH_DEVICE_ID
+                    {
+                        rprintln!("Found expected flash chip");
+                        spi_flash = Some(flash);
+                    } else {
+                        rprintln!(
+                            "Unexpected flash ID {}, [{}, {}]",
+                            id.mfr_code(),
+                            id.device_id()[0],
+                            id.device_id()[1]
+                        );
+                    }
                 }
+                Err(_) => rprintln!("Failed to read flash ID"),
+            },
+            Err(e) => {
+                rprintln!("Failed to initialize SPI flash: {:?}", e);
             }
-            Err(_) => rprintln!("Failed to read flash ID"),
-        },
-        Err(e) => {
-            rprintln!("Failed to initialize SPI flash: {:?}", e);
-        }
-    };
+        };
+    }
 
     rprintln!(
         "MCU application started. CPU is running at {}MHz",

@@ -65,8 +65,8 @@ pub struct Board {
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
-    pub flash_spi_cs: FlashSpiCs,
-    pub flash_spi: FlashSpi,
+    pub flash_spi_cs: Option<FlashSpiCs>,
+    pub flash_spi: Option<FlashSpi>,
 }
 
 impl Board {
@@ -114,8 +114,8 @@ impl Board {
             spi_ready: c.pc14.into_push_pull_output(),
             fpga_spi: spi1,
 
-            flash_spi_cs,
-            flash_spi,
+            flash_spi_cs: Some(flash_spi_cs),
+            flash_spi: Some(flash_spi),
         }
     }
 }
