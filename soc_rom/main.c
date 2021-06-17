@@ -439,9 +439,7 @@ int main(void) {
 
   // Calibrate autoexposure
   write_ae_cfg();
-  calibrate(15);
-
-  mcu_printf("Camera calibration complete\n");
+  int calibration_frames = 15;
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
@@ -531,8 +529,17 @@ int main(void) {
     }
     write_ae_cfg();
     if (do_run_exposure_calibration) {
-      calibrate(5);
+      calibration_frames = 5;
       do_run_exposure_calibration = false;
+    }
+    if (calibration_frames > 0) {
+      if (automatic_exposure_enabled) {
+        calibrate(calibration_frames);
+        mcu_printf("Camera calibration complete\n");
+      } else {
+        mcu_printf("Skipping calibration since AE is disabled\n");
+      }
+      calibration_frames = 0;
     }
     mcu_printf("Capturing image\n");
     capture();
