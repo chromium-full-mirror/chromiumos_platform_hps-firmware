@@ -116,6 +116,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(12),
     },
     AvailableDebugCommand {
+        keyword: "automatic_exposure_target",
+        help_text: "Set automatic exposure target (0 to disable AE)",
+        command_type: CommandType::FpgaCommandWithArg(13),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

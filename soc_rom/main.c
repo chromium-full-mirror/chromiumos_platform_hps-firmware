@@ -28,6 +28,9 @@
 static hm01b0_ae_cfg_t aecfg;
 static uint8_t ae_target = 100;
 static hm01b0_snr_expo_gain_ctrl_t expo_gain_ctrl;
+static bool automatic_exposure_enabled = true;
+
+#define HM01B0_REG_AE_CTRL (0x2100)
 
 #define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
 uint8_t frame_buffer[FB_SIZE];
@@ -49,8 +52,10 @@ static void cam_dma_wait(void) {
 
 static void capture(void) {
   hm01b0_status_e status;
-  status = hm01b0_restore_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
-  CAM_CHECK(status, "restore_exposure");
+  if (!automatic_exposure_enabled) {
+    status = hm01b0_restore_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
+    CAM_CHECK(status, "restore_exposure");
+  }
   status = hm01b0_cmd_update(&hm01b0_cfg);
   CAM_CHECK(status, "status");
 
@@ -321,6 +326,39 @@ static void read_and_print_expo_gain(void) {
   print_expo_gain();
 }
 
+static void set_automatic_exposure_target(uint8_t value) {
+  if (value == 0) {
+    uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_CTRL,
+                                        (uint8_t*)&value, sizeof(value));
+    if (ui32Err == HM01B0_ERR_OK) {
+      automatic_exposure_enabled = false;
+      mcu_printf("Disabled automatic exposure\n");
+    } else {
+      mcu_printf("Failed to disable automatic exposure\n");
+    }
+  } else {
+    if (!automatic_exposure_enabled) {
+      uint8_t enable = 1;
+      uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_CTRL,
+                                          (uint8_t*)&enable, sizeof(enable));
+      if (ui32Err == HM01B0_ERR_OK) {
+        automatic_exposure_enabled = true;
+        mcu_printf("Enabled automatic exposure\n");
+      } else {
+        mcu_printf("Failed to enable automatic exposure\n");
+      }
+    }
+
+    uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_TARGET_MEAN,
+                                        (uint8_t*)&value, sizeof(value));
+    if (ui32Err == HM01B0_ERR_OK) {
+      mcu_printf("Set automatic exposure target to 0x%02x\n", value);
+    } else {
+      mcu_printf("Failed to disable automatic exposure\n");
+    }
+  }
+}
+
 static void set_analog_gain(uint16_t value) {
   if (value != 0 && value != 0x10 && value != 0x20 && value != 0x30) {
     mcu_printf("Invalid analog gain. Valid values are 0, 0x10, 0x20 or 0x30\n");
@@ -477,6 +515,9 @@ int main(void) {
         break;
       case DEBUG_CMD_PRINT_CAM_GAINS:
         read_and_print_expo_gain();
+        break;
+      case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
+        set_automatic_exposure_target(cmd_arg);
         break;
       case DEBUG_CMD_NONE:
         break;
