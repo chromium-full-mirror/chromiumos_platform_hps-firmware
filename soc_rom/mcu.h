@@ -44,6 +44,7 @@ enum debug_command {
   DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS = 9,
   DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE = 10,
   DEBUG_CMD_READ_CAM_REG = 11,
+  DEBUG_CMD_PRINT_CAM_GAINS = 12,
 };
 
 // Global send and receive buffers

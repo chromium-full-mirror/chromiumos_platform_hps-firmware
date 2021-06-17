@@ -111,6 +111,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(11),
     },
     AvailableDebugCommand {
+        keyword: "print_camera_gains",
+        help_text: "Read gain settings from camera and print them",
+        command_type: CommandType::FpgaCommand(12),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

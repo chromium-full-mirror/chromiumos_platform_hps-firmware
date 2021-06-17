@@ -310,6 +310,17 @@ static void print_expo_gain(void) {
                                            (int)expo_gain_ctrl.ui8DGain_H);
 }
 
+static void read_and_print_expo_gain(void) {
+  hm01b0_snr_expo_gain_ctrl_t gains;
+  hm01b0_status_e status;
+  status = hm01b0_save_exposure_gains(&hm01b0_cfg, &gains);
+  if (status != HM01B0_ERR_OK) {
+    mcu_printf("Failed to read exposure gains\n");
+    return;
+  }
+  print_expo_gain();
+}
+
 static void set_analog_gain(uint16_t value) {
   if (value != 0 && value != 0x10 && value != 0x20 && value != 0x30) {
     mcu_printf("Invalid analog gain. Valid values are 0, 0x10, 0x20 or 0x30\n");
@@ -343,7 +354,8 @@ static void set_camera_register(uint16_t address, uint8_t value) {
   uint32_t ui32Err =
       hm01b0_write_reg(&hm01b0_cfg, address, (uint8_t*)&value, sizeof(value));
   if (ui32Err != HM01B0_ERR_OK) {
-    mcu_printf("Failed to set camera register 0x%02x to 0x%02x\n", address, value);
+    mcu_printf("Failed to set camera register 0x%02x to 0x%02x\n", address,
+               value);
   } else {
     mcu_printf("Set camera register 0x%02x to 0x%02x\n", address, value);
   }
@@ -462,6 +474,9 @@ int main(void) {
         break;
       case DEBUG_CMD_READ_CAM_REG:
         print_camera_register(cmd_arg);
+        break;
+      case DEBUG_CMD_PRINT_CAM_GAINS:
+        read_and_print_expo_gain();
         break;
       case DEBUG_CMD_NONE:
         break;
