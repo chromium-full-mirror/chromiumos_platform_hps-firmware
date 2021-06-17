@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::bail;
 use anyhow::Result;
 use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
@@ -132,20 +133,22 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
         println!("Welcome to hps-mon. Press enter to active and deactivate console.");
         editor.wait_for_enter();
         loop {
-            let mut command = None;
-            console.pause_output_while(|| command = editor.get_command());
-            if let Some(command) = command {
-                let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
-                if tx.send(command).is_err() {
-                    // Other end of channel has closed.
-                    return;
-                }
-                if is_exit {
-                    // We need to exit our loop when exit occurs, otherwise
-                    // we'll prompt the user for another line of input before we
-                    // discover that the channel has been closed by the main
-                    // thread.
-                    break;
+            let mut commands = vec![];
+            console.pause_output_while(|| commands = editor.get_commands());
+            if !commands.is_empty() {
+                for command in commands {
+                    let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
+                    if tx.send(command).is_err() {
+                        // Other end of channel has closed.
+                        return;
+                    }
+                    if is_exit {
+                        // We need to explicitly handle exit here, otherwise
+                        // we'll prompt the user for another line of input
+                        // before we discover that the channel has been closed
+                        // by the main thread.
+                        return;
+                    }
                 }
             } else {
                 editor.wait_for_enter();
@@ -166,59 +169,32 @@ impl DebugCommand {
 }
 
 impl CommandEditor {
-    fn get_command(&mut self) -> Option<Command> {
+    fn get_commands(&mut self) -> Vec<Command> {
         if self.should_exit {
-            return Some(Command::LocalOperation(LocalOperation::Exit));
+            return vec![Command::LocalOperation(LocalOperation::Exit)];
         }
         while let Some(line) = self.readline(">> ") {
+            if line.is_empty() {
+                return vec![];
+            }
             self.editor.add_history_entry(&line);
-            let mut parts = line.split(' ');
-            if let Some(keyword) = parts.next() {
-                for command in COMMANDS {
-                    if command.keyword == keyword {
-                        match command.command_type {
-                            CommandType::FpgaCommand(code) => {
-                                return Some(Command::FpgaCommand(DebugCommand { code, arg: 0 }));
-                            }
-                            CommandType::McuCommand(mcu_command) => {
-                                return Some(Command::McuCommand(DebugCommand {
-                                    code: mcu_command.into(),
-                                    arg: 0,
-                                }));
-                            }
-                            CommandType::FpgaCommandWithArg(code) => {
-                                if let Some(arg_string) = parts.next() {
-                                    if let Some(arg) = parse_value(arg_string) {
-                                        return Some(Command::FpgaCommand(DebugCommand {
-                                            code,
-                                            arg,
-                                        }));
-                                    } else {
-                                        eprintln!("The argument '{}' couldn't be parsed as a decimal or hex u16", arg_string);
-                                    }
-                                } else {
-                                    eprintln!(
-                                        "The command {} requires an argument",
-                                        command.keyword
-                                    );
-                                }
-                            }
-                            CommandType::LocalOperation(op) => {
-                                return Some(Command::LocalOperation(op));
-                            }
-                        }
+            let mut got_error = false;
+            let commands = line
+                .split(';')
+                .filter_map(|part| match parse_command(part.trim()) {
+                    Ok(x) => x,
+                    Err(error) => {
+                        eprintln!("{}", error);
+                        got_error = true;
+                        None
                     }
-                }
-                if keyword.is_empty() {
-                    return None;
-                }
-                eprintln!(
-                    "Unknown command '{}'. Type 'help' to see list of commands",
-                    keyword
-                );
+                })
+                .collect();
+            if !got_error {
+                return commands;
             }
         }
-        None
+        vec![]
     }
 
     fn readline(&mut self, prompt: &str) -> Option<String> {
@@ -241,6 +217,49 @@ impl CommandEditor {
             self.readline("");
         }
     }
+}
+
+fn parse_command(command_str: &str) -> Result<Option<Command>> {
+    let mut parts = command_str.split(' ');
+    if let Some(keyword) = parts.next() {
+        for command in COMMANDS {
+            if command.keyword == keyword {
+                match command.command_type {
+                    CommandType::FpgaCommand(code) => {
+                        return Ok(Some(Command::FpgaCommand(DebugCommand { code, arg: 0 })));
+                    }
+                    CommandType::McuCommand(mcu_command) => {
+                        return Ok(Some(Command::McuCommand(DebugCommand {
+                            code: mcu_command.into(),
+                            arg: 0,
+                        })));
+                    }
+                    CommandType::FpgaCommandWithArg(code) => {
+                        if let Some(arg_string) = parts.next() {
+                            if let Some(arg) = parse_value(arg_string) {
+                                return Ok(Some(Command::FpgaCommand(DebugCommand { code, arg })));
+                            } else {
+                                bail!(
+                                    "The argument '{}' couldn't be parsed as a decimal or hex u16",
+                                    arg_string
+                                );
+                            }
+                        } else {
+                            bail!("The command {} requires an argument", command.keyword);
+                        }
+                    }
+                    CommandType::LocalOperation(op) => {
+                        return Ok(Some(Command::LocalOperation(op)));
+                    }
+                }
+            }
+        }
+        bail!(
+            "Unknown command '{}'. Type 'help' to see list of commands",
+            keyword
+        );
+    }
+    Ok(None)
 }
 
 pub(crate) fn print_help_text() {
@@ -278,14 +297,19 @@ impl rustyline::completion::Completer for CompletionHelper {
         pos: usize,
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        let prefix = &line[..pos];
-        let mut completions = Vec::new();
-        for command in COMMANDS {
-            if command.keyword.starts_with(prefix) {
-                completions.push(command.keyword.to_owned());
+        if let Some(prefix) = &line[..pos].split(';').last() {
+            let prefix = prefix.trim();
+            let mut completions = Vec::new();
+            for command in COMMANDS {
+                if command.keyword.starts_with(prefix) {
+                    completions.push(command.keyword.to_owned());
+                }
             }
+            let prefix_offset = prefix.as_ptr() as usize - line.as_ptr() as usize;
+            Ok((prefix_offset, completions))
+        } else {
+            Ok((0, vec![]))
         }
-        Ok((0, completions))
     }
 }
 
