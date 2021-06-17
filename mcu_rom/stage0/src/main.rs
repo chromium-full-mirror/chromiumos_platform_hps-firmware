@@ -14,9 +14,9 @@ use crate::loader::*;
 use crate::premain::*;
 use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
-use hal::gpio::Output;
-use hal::gpio::PushPull;
 use hal::gpio::SignalEdge;
+use hal::gpio::{Floating, PushPull};
+use hal::gpio::{Input, Output};
 use hal::prelude::*;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
@@ -30,6 +30,7 @@ use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 extern crate bitflags;
 
 type Led = gpioa::PA1<Output<PushPull>>;
+type FwWp = gpioa::PA15<Input<Floating>>;
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -37,6 +38,7 @@ const APP: () = {
         host_interface: HostInterface<Stm32g0I2cPeripheral>,
         flash_writer: FlashWriter,
         led: Led,
+        fw_wp: FwWp,
         exti: hal::stm32::EXTI,
     }
 
@@ -63,11 +65,11 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [flash_writer, led, host_interface], capacity = 10)]
+    #[task(resources = [flash_writer, led, fw_wp, host_interface], capacity = 10)]
     fn handle_event(mut ctx: handle_event::Context, event: HostEvent) {
         match event {
             HostEvent::LoadApplication => {
-                if load_application(&mut ctx.resources.led).is_err() {
+                if load_application(&mut ctx.resources.led, &mut ctx.resources.fw_wp).is_err() {
                     defmt::error!("Failed to launch application");
                 }
             }
@@ -121,6 +123,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
     let led = gpioa.pa1.into_push_pull_output();
+    let fw_wp = gpioa.pa15.into_floating_input();
     // configure PB4 as o/p
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
@@ -173,11 +176,12 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         host_interface,
         flash_writer,
         led,
+        fw_wp,
         exti,
     }
 }
 
-fn load_application(led: &mut Led) -> Result<(), ()> {
+fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
     if let Err(e) = detect_stage1() {
         defmt::info!("{}\r", e);
         return Err(());
@@ -187,13 +191,27 @@ fn load_application(led: &mut Led) -> Result<(), ()> {
     let stage1_validation = validate_stage1();
     let _ = led.set_low();
 
-    // TODO(quasisec): Load untrusted code anyway!
-    let stage1_sig_str = match stage1_validation {
-        Ok(()) => "signature good!",
-        Err(_) => "signature bad!",
-    };
-    defmt::info!("{}", stage1_sig_str);
-    load_stage1().map_err(drop)
+    match stage1_validation {
+        Ok(()) => {
+            defmt::info!("signature good!");
+            if fw_wp.is_high().unwrap() {
+                defmt::warn!("write-protect de-asserted!");
+            }
+            load_stage1().map_err(drop)
+        }
+        Err(_) => {
+            defmt::error!("signature bad!");
+            if fw_wp.is_low().unwrap() {
+                defmt::warn!("write-protect asserted!");
+                defmt::warn!("stage 1 is untrusted, waitting for recovery.");
+                loop {} // loop until recovered and reset.
+            } else {
+                defmt::warn!("write-protect de-asserted!");
+                defmt::warn!("starting untrusted stage 1..");
+                load_stage1().map_err(drop)
+            }
+        }
+    }
 }
 
 fn banner() -> &'static str {
