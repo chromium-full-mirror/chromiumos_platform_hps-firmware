@@ -4,7 +4,6 @@
 
 #![cfg_attr(not(test), no_std)]
 
-use hal::i2c::Config;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::prelude::*;
@@ -14,6 +13,12 @@ use hal::stm32::I2C1;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+
+#[derive(Copy, Clone, Default)]
+pub struct Config {
+    /// Whether to enable i2c clock stretching.
+    pub clock_stretching: bool,
+}
 
 #[non_exhaustive]
 pub struct Stm32g0I2cPeripheral {
@@ -28,9 +33,11 @@ impl Stm32g0I2cPeripheral {
         rcc: &mut Rcc,
         sda: impl SDAPin<I2C1>,
         scl: impl SCLPin<I2C1>,
+        // TODO: Consider moving address into Config.
         address: u8,
+        config: Config,
     ) -> Self {
-        let i2c = i2c1.i2c(sda, scl, Config::new(400.khz()), rcc);
+        let i2c = i2c1.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc);
 
         // un-own p.I2C1 block to tap registers
         let (ii2c, _, _) = i2c.release();
@@ -44,7 +51,8 @@ impl Stm32g0I2cPeripheral {
         ii2c.cr1.modify(|_, w| w.stopie().set_bit());
         ii2c.cr1.modify(|_, w| w.errie().set_bit());
         // Disable clock stretching.
-        ii2c.cr1.modify(|_, w| w.nostretch().set_bit());
+        ii2c.cr1
+            .modify(|_, w| w.nostretch().bit(!config.clock_stretching));
         // Enable the I2C unit
         ii2c.cr1.modify(|_, w| w.pe().set_bit());
 

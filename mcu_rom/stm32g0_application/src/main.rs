@@ -228,6 +228,10 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
 
+    let i2c_config = stm32g0_i2c_peripheral::Config {
+        clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
+    };
+
     let mut board = board::Board::new(
         p.GPIOA.split(&mut rcc),
         p.GPIOB.split(&mut rcc),
@@ -237,6 +241,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         p.SPI1,
         p.SPI2,
         &mut rcc,
+        i2c_config,
     );
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
     let mut exti = p.EXTI;

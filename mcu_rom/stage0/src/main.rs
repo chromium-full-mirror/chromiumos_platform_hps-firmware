@@ -50,7 +50,9 @@ const APP: () = {
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface])]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
-            if matches!(event, HostEvent::WriteFlash(_)) {
+            if cfg!(feature = "no-i2c-clock-stretching")
+                && matches!(event, HostEvent::WriteFlash(_))
+            {
                 // Disable i2c ACK while we're writing flash since writing flash
                 // prevents us from responding to i2c events in time anyway. The
                 // host can then retry the request until it gets through.
@@ -82,9 +84,11 @@ const APP: () = {
                     defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
                     // TODO: Report error somewhere
                 }
-                // Reenable i2c. It was disabled above in the i2c interrupt
-                // handler.
-                ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
+                if cfg!(feature = "no-i2c-clock-stretching") {
+                    // Reenable i2c. It was disabled above in the i2c interrupt
+                    // handler.
+                    ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
+                }
             }
             HostEvent::Reset => {
                 // We want to avoid getting a WriteFlash event followed by a
@@ -167,12 +171,17 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         defmt::info!("FPGA wait\r");
     }
 
+    let i2c_config = stm32g0_i2c_peripheral::Config {
+        clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
+    };
+
     let host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
         gpiob.pb9.into_open_drain_output(),
         gpiob.pb8.into_open_drain_output(),
         mcu_common::HPS_ADDRESS,
+        i2c_config,
     ));
     let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
     init::LateResources {

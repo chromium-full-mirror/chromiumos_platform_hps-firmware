@@ -72,6 +72,7 @@ impl Board {
         spi1: SPI1,
         spi2: SPI2,
         rcc: &mut hal::rcc::Rcc,
+        i2c_config: stm32g0_i2c_peripheral::Config,
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
         fpga_programn.set_high().unwrap();
@@ -85,6 +86,7 @@ impl Board {
             b.pb9.into_open_drain_output(),
             b.pb8.into_open_drain_output(),
             mcu_common::HPS_ADDRESS,
+            i2c_config,
         );
 
         let flash_spi_cs = b.pb0.into_push_pull_output();
