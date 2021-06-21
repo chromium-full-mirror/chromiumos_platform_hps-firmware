@@ -116,8 +116,11 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // Enable DMA clock so that RTT is still handled when we're idle and the CPU
     // is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
-    // Leave clocks as defaults and let stage 1 configure them.
-    let mut rcc = p.RCC.constrain();
+    // Configure clocks so that CPU runs as full speed, otherwise we can't
+    // service I2C at 400KHz.
+    let mut rcc = p
+        .RCC
+        .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
     rcc.disable_low_power_mode();
 
     // configure PA1 as o/p
