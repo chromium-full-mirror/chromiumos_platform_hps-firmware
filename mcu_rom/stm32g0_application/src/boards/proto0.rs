@@ -16,6 +16,7 @@ use hal::i2c::Config;
 use hal::prelude::*;
 use hal::serial;
 use hal::stm32::I2C1;
+use hal::stm32::I2C2;
 use hal::stm32::SPI1;
 use hal::stm32::SPI2;
 use hal::stm32::USART2;
@@ -82,6 +83,7 @@ impl Board {
         b: gpio::gpiob::Parts,
         c: gpio::gpioc::Parts,
         i2c1: I2C1,
+        _i2c2: I2C2,
         usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,

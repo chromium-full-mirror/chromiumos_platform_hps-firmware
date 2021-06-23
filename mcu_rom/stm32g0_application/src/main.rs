@@ -237,6 +237,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         p.GPIOB.split(&mut rcc),
         p.GPIOC.split(&mut rcc),
         p.I2C1,
+        p.I2C2,
         p.USART2,
         p.SPI1,
         p.SPI2,
