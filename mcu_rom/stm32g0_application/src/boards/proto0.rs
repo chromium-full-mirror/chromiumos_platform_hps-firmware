@@ -9,8 +9,10 @@ use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
 use hal::gpio::Input;
+use hal::gpio::OpenDrain;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
+use hal::i2c::Config;
 use hal::prelude::*;
 use hal::serial;
 use hal::stm32::I2C1;
@@ -39,6 +41,8 @@ pub type FlashSpi = hal::spi::Spi<
     ),
 >;
 pub type FlashSpiCs = gpio::gpiob::PB0<Output<PushPull>>;
+pub type CameraI2c =
+    hal::i2c::I2c<I2C1, gpio::gpiob::PB7<Output<OpenDrain>>, gpio::gpiob::PB6<Output<OpenDrain>>>;
 
 /// GigaDevice
 pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
@@ -69,6 +73,7 @@ pub struct Board {
 
     pub flash_spi_cs: Option<FlashSpiCs>,
     pub flash_spi: Option<FlashSpi>,
+    pub camera_i2c: Option<CameraI2c>,
 }
 
 impl Board {
@@ -76,7 +81,7 @@ impl Board {
         a: gpio::gpioa::Parts,
         b: gpio::gpiob::Parts,
         c: gpio::gpioc::Parts,
-        _i2c1: I2C1,
+        i2c1: I2C1,
         usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,
@@ -90,12 +95,12 @@ impl Board {
         spi_ready.set_low().unwrap();
 
         let flash_spi_clk = a.pa0;
-        let flash_spi_copi = b.pb7;
-        let flash_spi_cipo = b.pb6;
-
         let flash_spi_cs;
         let flash_spi;
+        let camera_i2c;
         if SPI_FLASH_ENABLED {
+            let flash_spi_copi = b.pb7;
+            let flash_spi_cipo = b.pb6;
             flash_spi = Some(spi2.spi(
                 (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
                 hal::spi::MODE_0,
@@ -103,9 +108,16 @@ impl Board {
                 rcc,
             ));
             flash_spi_cs = Some(b.pb0.into_push_pull_output()); // J4-1 - shared with CAM_MCLK
+            camera_i2c = None;
         } else {
             flash_spi = None;
             flash_spi_cs = None;
+            camera_i2c = Some(i2c1.i2c(
+                b.pb7.into_open_drain_output(), // SDA
+                b.pb6.into_open_drain_output(), // SCL
+                Config::new(400.khz()),
+                rcc,
+            ));
         }
 
         Self {
@@ -124,6 +136,7 @@ impl Board {
 
             flash_spi_cs,
             flash_spi,
+            camera_i2c,
         }
     }
 }
