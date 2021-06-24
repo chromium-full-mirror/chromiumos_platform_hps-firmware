@@ -52,7 +52,7 @@ hps_io = [
         Subsignal('cs_n', Pins('A3')),
         Subsignal('clk', Pins('B4')),
         Subsignal('dq', Pins('B5 C4 B3 B2')),
-        IOStandard('LVCMOS18H')
+        IOStandard('LVCMOS18')
      ),
     # Interface to MCU
     ('mcu_debug', 0,
