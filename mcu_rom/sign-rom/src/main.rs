@@ -79,14 +79,7 @@ fn sign_file_bytes(
     private_key: &PrivateKey,
 ) -> Result<()> {
     let (signature_out, payload) = split_signature_and_payload(file_bytes)?;
-    let v = extend_image(&payload, region_length);
-
-    let mut hasher = Hash::new();
-    for block in v.chunks(FLASH_PAGE_SZ) {
-        hasher.update(block);
-    }
-    let hash = hasher.finalize();
-    println!("signing with digest = {:#02X?}", hash);
+    let hash = hash_file_bytes(payload, region_length)?;
     let signature = sign_hash(&hash, private_key);
     println!("injecting signature = {:#02X?}", signature.raw_bytes());
 
@@ -108,6 +101,20 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
     // more than 1.
     let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut HostImageHeader) };
     Ok((&mut header.sig, &file_bytes[..]))
+}
+
+/// Compute the digest of the payload image with the required length
+/// extention for later signing.
+fn hash_file_bytes(payload: &[u8], region_length: usize) -> Result<Hash> {
+    let v = extend_image(&payload, region_length);
+
+    let mut hasher = Hash::new();
+    for block in v.chunks(FLASH_PAGE_SZ) {
+        hasher.update(block);
+    }
+    let hash = hasher.finalize();
+    println!("signing with digest = {:#02X?}", hash);
+    Ok(hash)
 }
 
 /// Return a extended image with a provided length.
