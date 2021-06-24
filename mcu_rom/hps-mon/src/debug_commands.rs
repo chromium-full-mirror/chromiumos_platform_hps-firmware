@@ -141,6 +141,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::McuCommand(McuDebugCommand::ResetFpga),
     },
     AvailableDebugCommand {
+        keyword: "read_camera_id",
+        help_text: "Reads Camera ID over I2C",
+        command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraId),
+    },
+    AvailableDebugCommand {
         keyword: "reset_mcu",
         help_text: "Reset the MCU",
         command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),

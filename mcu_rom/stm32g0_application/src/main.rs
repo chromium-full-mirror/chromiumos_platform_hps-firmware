@@ -42,6 +42,7 @@ const APP: () = {
         mcu_debug_handler: debug::DebugCommandHandler,
         spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
         timer: Timer<hal::stm32::TIM16>,
+        camera_i2c: board::CameraI2c,
     }
 
     #[init]
@@ -104,7 +105,7 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer])]
+    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         let mut cmd_buf = [0u8; 3];
@@ -115,6 +116,7 @@ const APP: () = {
             match McuDebugCommand::try_from(cmd_buf[0]) {
                 Ok(command) => match command {
                     McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+                    McuDebugCommand::ReadCameraId => read_camera_id(ctx.resources.camera_i2c),
                 },
                 Err(_) => rprintln!("Unrecognized debug command {}", cmd_buf[0]),
             }
@@ -179,6 +181,25 @@ fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
         fpga_programn.set_low().unwrap();
     }
     fpga_programn.set_high().unwrap();
+}
+
+fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
+    let mut camera_id: u16 = 0;
+    let addr = 0x24;
+    let mut data = [0; 2];
+    match camera_i2c.write_read(addr, &[0x00, 0x00], &mut data) {
+        Ok(_) => {
+            camera_id |= u16::from_be_bytes(data) << 8;
+        }
+        Err(e) => rprintln!("Failed to read camera sensor ID {:#02x}: {:?}", addr, e),
+    }
+    match camera_i2c.write_read(addr, &[0x00, 0x01], &mut data) {
+        Ok(_) => {
+            camera_id |= u16::from_be_bytes(data);
+        }
+        Err(e) => rprintln!("Failed to read camera sensor ID {:#02x}: {:?}", addr, e),
+    }
+    rprintln!("Camera ID is {:#04x}", camera_id);
 }
 
 fn rcc_config() -> hal::rcc::Config {
@@ -271,6 +292,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         board.spi_ready,
     );
 
+    let camera_i2c = board.camera_i2c.unwrap();
+
     // Ensure FPGA and SPI flash are powered.
     board.fpga_power_gate.set_low().unwrap();
 
@@ -306,8 +329,10 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         "MCU application started. CPU is running at {}MHz",
         rcc.clocks.sys_clk.0 / 1000000
     );
+
     // Reset the FPGA on startup so that it's in a known state.
     reset_fpga(&mut board.fpga_programn);
+
     init::LateResources {
         host_interface,
         spi,
@@ -321,5 +346,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
         spi_flash,
         timer,
+        camera_i2c,
     }
 }
