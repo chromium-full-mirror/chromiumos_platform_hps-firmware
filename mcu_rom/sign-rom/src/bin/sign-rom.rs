@@ -41,10 +41,7 @@ const SECRET_KEY: PrivateKey = PrivateKey::from_bytes([
 ]);
 
 fn main() -> Result<()> {
-    run(&argh::from_env())
-}
-
-fn run(config: &Config) -> Result<()> {
+    let config: Config = argh::from_env();
     if let Some(seed) = &config.generate_keypair_seed {
         let mut sk = [0u8; sodalite::SIGN_SECRET_KEY_LEN];
         let mut pk = [0u8; sodalite::SIGN_PUBLIC_KEY_LEN];
