@@ -70,7 +70,7 @@ fn run(config: &Config) -> Result<()> {
     // that signature into the appropriate location in the header at the start of
     // `file_bytes`
     let (signature_out, payload) = split_signature_and_payload(&mut file_bytes)?;
-    let hash = hash_file_bytes(payload, config.region_length)?;
+    let hash = hash_image_bytes(payload, config.region_length)?;
     let signature = sign_hash(&hash, &SECRET_KEY);
 
     println!("injecting signature = {:#02X?}", signature.raw_bytes());
@@ -98,7 +98,7 @@ fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature,
 
 /// Compute the digest of the payload image with the required length
 /// extention for later signing.
-fn hash_file_bytes(payload: &[u8], region_length: usize) -> Result<Hash> {
+fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<Hash> {
     let v = extend_image(&payload, region_length);
 
     let mut hasher = Hash::new();
@@ -129,6 +129,27 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
 
 #[cfg(test)]
 mod test {
+    #[test]
+    fn test_hash_image_bytes() {
+        // offset image by 32+1 Bytes to simulate mis-alignment.
+        const OFFSET: usize = 32 + 1;
+        let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
+        let ext_len: usize = 4096;
+
+        let ext_img_digest = super::hash_image_bytes(&image, ext_len).unwrap();
+        assert_eq!(ext_img_digest.as_bytes().len(), 64);
+        // Confirm hash of sample data is invariant.
+        assert_eq!(
+            ext_img_digest.as_bytes(),
+            [
+                120, 205, 118, 249, 217, 204, 106, 182, 60, 233, 208, 229, 74, 235, 12, 243, 4, 10,
+                135, 89, 111, 111, 59, 202, 92, 242, 19, 239, 79, 177, 65, 70, 246, 65, 198, 226,
+                30, 240, 228, 13, 98, 117, 90, 10, 158, 75, 66, 14, 192, 82, 67, 185, 94, 107, 0,
+                193, 0, 148, 246, 212, 153, 106, 199, 60
+            ]
+        );
+    }
+
     #[test]
     fn test_extend_image() {
         // offset image by 32+1 Bytes to simulate mis-alignment.
