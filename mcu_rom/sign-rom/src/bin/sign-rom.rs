@@ -82,7 +82,9 @@ fn main() -> Result<()> {
         for (i, part) in sig.split(',').enumerate() {
             signature_bytes[i] = part.parse::<u8>()?;
         }
-        Signature::empty() // TODO(quasisec): construct a signature with provided data.
+        Signature {
+            raw_bytes: signature_bytes,
+        }
     } else {
         sign_hash(&hash, &SECRET_KEY)
     };
