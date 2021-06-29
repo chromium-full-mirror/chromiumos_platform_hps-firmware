@@ -8,6 +8,20 @@ use mcu_common::Hash;
 use mcu_common::HostImageHeader;
 use mcu_common::Signature;
 use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
+use sodalite::HASH_LEN;
+
+pub struct PrivateKey {
+    raw_bytes: [u8; 64],
+}
+
+impl PrivateKey {
+    pub const fn from_bytes(raw_bytes: [u8; 64]) -> PrivateKey {
+        PrivateKey { raw_bytes }
+    }
+    pub fn as_bytes(&self) -> [u8; 64] {
+        self.raw_bytes
+    }
+}
 
 /// Returns a mutable reference to the signature as well as the payload (the
 /// data that the signature applies to).
@@ -56,8 +70,44 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     v
 }
 
+pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
+    let mut out = [0u8; 64 + HASH_LEN]; /* sign_len=64 */
+    sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
+    let mut signature = Signature {
+        raw_bytes: [0u8; 64],
+    };
+    signature.raw_bytes.clone_from_slice(&out[..64]);
+    signature
+}
+
 #[cfg(test)]
 mod test {
+    use sodalite::SIGN_SECRET_KEY_LEN;
+
+    #[test]
+    fn test_signing() {
+        let private_key = super::PrivateKey::from_bytes([42u8; SIGN_SECRET_KEY_LEN]);
+
+        let data = [1, 2, 3];
+
+        let mut hasher = super::Hash::new();
+        for block in data.chunks(super::FLASH_PAGE_SZ) {
+            hasher.update(block);
+        }
+        let hash = hasher.finalize();
+
+        let signature = super::sign_hash(&hash, &private_key);
+        assert_eq!(
+            &signature.raw_bytes[..],
+            &[
+                3, 191, 2, 78, 224, 137, 169, 107, 177, 141, 152, 180, 238, 58, 93, 27, 179, 45,
+                190, 220, 22, 54, 207, 40, 65, 229, 229, 217, 136, 28, 162, 154, 131, 152, 194, 71,
+                9, 111, 239, 34, 57, 99, 85, 7, 5, 200, 194, 87, 49, 23, 209, 182, 187, 164, 128,
+                191, 61, 229, 130, 1, 32, 102, 25, 15
+            ]
+        );
+    }
+
     #[test]
     fn test_hash_image_bytes() {
         // Ensure data size isn't an exact multiple of the flash write size (8) so that
