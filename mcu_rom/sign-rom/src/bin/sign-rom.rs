@@ -62,6 +62,7 @@ fn main() -> Result<()> {
     // `file_bytes`
     let (signature_out, payload) = sign_rom::split_signature_and_payload(&mut file_bytes)?;
     let hash = sign_rom::hash_image_bytes(payload, config.region_length)?;
+    println!("Calculated image digest = {:?}", hash.as_bytes());
 
     let signature = if let Some(sig) = &config.signature {
         let mut signature_bytes = [0u8; 64];
