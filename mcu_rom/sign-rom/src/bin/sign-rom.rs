@@ -7,6 +7,7 @@ use anyhow::Result;
 use argh::FromArgs;
 use mcu_common::sign_hash;
 use mcu_common::PrivateKey;
+use mcu_common::Signature;
 use std::path::PathBuf;
 
 #[derive(FromArgs)]
@@ -20,6 +21,10 @@ struct Config {
     #[argh(option)]
     /// input filename region length
     region_length: usize,
+
+    #[argh(option)]
+    /// input signature
+    signature: Option<String>,
 
     #[argh(option)]
     /// output filename
@@ -58,11 +63,19 @@ fn main() -> Result<()> {
     let (signature_out, payload) = sign_rom::split_signature_and_payload(&mut file_bytes)?;
     let hash = sign_rom::hash_image_bytes(payload, config.region_length)?;
 
+    let signature = if let Some(sig) = &config.signature {
+        let mut signature_bytes = [0u8; 64];
+        for (i, part) in sig.split(',').enumerate() {
+            signature_bytes[i] = part.parse::<u8>()?;
+        }
+        Signature::empty() // TODO(quasisec): construct a signature with provided data.
+    } else {
+        sign_hash(&hash, &SECRET_KEY)
+    };
+
     // If a path to output file is provided, write out image with modified
     // header containing signature.
     if let Some(output) = &config.output {
-        let signature = sign_hash(&hash, &SECRET_KEY);
-
         println!("injecting signature = {:#02X?}", signature.raw_bytes());
         signature_out.copy_from(&signature);
 
