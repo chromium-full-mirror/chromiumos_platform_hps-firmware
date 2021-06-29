@@ -23,7 +23,7 @@ struct Config {
 
     #[argh(option)]
     /// output filename
-    output: PathBuf,
+    output: Option<PathBuf>,
 
     #[argh(option)]
     /// if set, generates and prints a keypair using the supplied seed, which is
@@ -57,12 +57,18 @@ fn main() -> Result<()> {
     // `file_bytes`
     let (signature_out, payload) = sign_rom::split_signature_and_payload(&mut file_bytes)?;
     let hash = sign_rom::hash_image_bytes(payload, config.region_length)?;
-    let signature = sign_hash(&hash, &SECRET_KEY);
 
-    println!("injecting signature = {:#02X?}", signature.raw_bytes());
-    signature_out.copy_from(&signature);
+    // If a path to output file is provided, write out image with modified
+    // header containing signature.
+    if let Some(output) = &config.output {
+        let signature = sign_hash(&hash, &SECRET_KEY);
 
-    std::fs::write(&config.output, file_bytes)?;
+        println!("injecting signature = {:#02X?}", signature.raw_bytes());
+        signature_out.copy_from(&signature);
+
+        std::fs::write(&output, file_bytes)?;
+    }
+
     Ok(())
 }
 
