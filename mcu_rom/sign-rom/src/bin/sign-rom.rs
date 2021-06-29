@@ -2,36 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use clap::Clap;
+
 use anyhow::bail;
 use anyhow::Result;
-use argh::FromArgs;
 use mcu_common::Hash;
 use mcu_common::Signature;
 use std::path::PathBuf;
 
-#[derive(FromArgs)]
 /// Hashes and signs a HPS stage1 binary. This is currently intended for
 /// development use only.
+#[derive(Clap, Debug)]
+#[clap(name = "config")]
 struct Config {
-    #[argh(option)]
     /// input filename
+    #[clap(short, long)]
     input: PathBuf,
 
-    #[argh(option)]
     /// input filename region length
+    #[clap(short, long, default_value = "65536")]
     region_length: usize,
 
-    #[argh(option)]
     /// input signature
+    #[clap(short, long)]
     signature: Option<String>,
 
-    #[argh(option)]
     /// output filename
+    #[clap(short, long)]
     output: Option<PathBuf>,
 
-    #[argh(option)]
     /// if set, generates and prints a keypair using the supplied seed, which is
     /// a comma-separated list of u8 of length up to 32
+    #[clap(short, long)]
     generate_keypair_seed: Option<String>,
 }
 
@@ -45,7 +47,7 @@ const SECRET_KEY: sign_rom::PrivateKey = sign_rom::PrivateKey::from_bytes([
 ]);
 
 fn main() -> Result<()> {
-    let config: Config = argh::from_env();
+    let config = Config::parse();
 
     // Handy debug keypair generaton.
     generate_debug_keypair(&config)?;
