@@ -60,7 +60,8 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
 mod test {
     #[test]
     fn test_hash_image_bytes() {
-        // offset image by 32+1 Bytes to simulate mis-alignment.
+        // Ensure data size isn't an exact multiple of the flash write size (8) so that
+        // zero-padding is tested.
         const OFFSET: usize = 32 + 1;
         let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
         let ext_len: usize = 4096;
@@ -81,7 +82,8 @@ mod test {
 
     #[test]
     fn test_extend_image() {
-        // offset image by 32+1 Bytes to simulate mis-alignment.
+        // Ensure data size isn't an exact multiple of the flash write size (8) so that
+        // zero-padding is tested.
         const OFFSET: usize = 32 + 1;
         let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
         let ext_len: usize = 4096;
