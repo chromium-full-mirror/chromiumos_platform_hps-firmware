@@ -5,6 +5,7 @@
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
+use mcu_common::Hash;
 use mcu_common::Signature;
 use std::path::PathBuf;
 
@@ -62,21 +63,10 @@ fn main() -> Result<()> {
     let hash = sign_rom::hash_image_bytes(payload, config.region_length)?;
     println!("Calculated image digest = {:?}", hash.as_bytes());
 
-    let signature = if let Some(sig) = &config.signature {
-        let mut signature_bytes = [0u8; 64];
-        for (i, part) in sig.split(',').enumerate() {
-            signature_bytes[i] = part.parse::<u8>()?;
-        }
-        Signature {
-            raw_bytes: signature_bytes,
-        }
-    } else {
-        sign_rom::sign_hash(&hash, &SECRET_KEY)
-    };
-
     // If a path to output file is provided, write out image with modified
     // header containing signature.
     if let Some(output) = &config.output {
+        let signature = get_signature(&config, &hash)?;
         println!("injecting signature = {:#02X?}", signature.raw_bytes());
         signature_out.copy_from(&signature);
 
@@ -84,6 +74,20 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn get_signature(config: &Config, hash: &Hash) -> Result<Signature> {
+    if let Some(sig) = &config.signature {
+        let mut signature_bytes = [0u8; 64];
+        for (i, part) in sig.split(',').enumerate() {
+            signature_bytes[i] = part.parse::<u8>()?;
+        }
+        Ok(Signature {
+            raw_bytes: signature_bytes,
+        })
+    } else {
+        Ok(sign_rom::sign_hash(&hash, &SECRET_KEY))
+    }
 }
 
 /// generate_debug_keypair allows for local development of signing debug
