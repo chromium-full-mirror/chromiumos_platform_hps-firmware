@@ -42,18 +42,10 @@ const SECRET_KEY: PrivateKey = PrivateKey::from_bytes([
 
 fn main() -> Result<()> {
     let config: Config = argh::from_env();
-    if let Some(seed) = &config.generate_keypair_seed {
-        let mut sk = [0u8; sodalite::SIGN_SECRET_KEY_LEN];
-        let mut pk = [0u8; sodalite::SIGN_PUBLIC_KEY_LEN];
-        let mut seed_bytes = [0u8; 32];
-        for (i, part) in seed.split(',').enumerate() {
-            seed_bytes[i] = part.parse::<u8>()?;
-        }
-        sodalite::sign_keypair_seed(&mut pk, &mut sk, &seed_bytes);
-        println!("Secret key: {:#02X?}", sk);
-        println!("Public key: {:#02X?}", pk);
-        return Ok(());
-    }
+
+    // Handy debug keypair generaton.
+    generate_debug_keypair(&config)?;
+
     let mut file_bytes = std::fs::read(&config.input)?;
     if config.region_length < file_bytes.len() {
         bail!("Input file is too big to fit into specified region length");
@@ -72,4 +64,23 @@ fn main() -> Result<()> {
 
     std::fs::write(&config.output, file_bytes)?;
     Ok(())
+}
+
+/// generate_debug_keypair allows for local development of signing debug
+/// images. Given a seed value as a slice a key pair is printed in return.
+fn generate_debug_keypair(config: &Config) -> Result<()> {
+    if let Some(seed) = &config.generate_keypair_seed {
+        let mut sk = [0u8; sodalite::SIGN_SECRET_KEY_LEN];
+        let mut pk = [0u8; sodalite::SIGN_PUBLIC_KEY_LEN];
+        let mut seed_bytes = [0u8; 32];
+        for (i, part) in seed.split(',').enumerate() {
+            seed_bytes[i] = part.parse::<u8>()?;
+        }
+        sodalite::sign_keypair_seed(&mut pk, &mut sk, &seed_bytes);
+        println!("Secret key: {:#02X?}", sk);
+        println!("Public key: {:#02X?}", pk);
+        return Ok(());
+    } else {
+        return Ok(());
+    }
 }
