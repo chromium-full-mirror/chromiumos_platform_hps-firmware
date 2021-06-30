@@ -12,6 +12,8 @@
 // The first byte of each transmitted packet is a command.
 enum mcu_command {
   MCU_COMMAND_POLL = 0,
+  MCU_COMMAND_READ_CAMERA_I2C = 0x10,
+  MCU_COMMAND_WRITE_CAMEREA_I2C = 0x11,
   MCU_COMMAND_READ_CONFIG_REGISTERS = 0x20,
   MCU_COMMAND_WRITE_STATUS_REGISTERS = 0x21,
   MCU_COMMAND_RESET_FPGA = 0x40,
