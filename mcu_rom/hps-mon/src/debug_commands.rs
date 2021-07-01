@@ -126,6 +126,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(14),
     },
     AvailableDebugCommand {
+        keyword: "read_camera_id_fpga",
+        help_text: "Read Camera ID FPGA <spi> MCU <i2c> Camera",
+        command_type: CommandType::FpgaCommand(15),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

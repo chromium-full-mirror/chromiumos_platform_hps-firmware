@@ -6,6 +6,9 @@
 /// it's out-of-sync.
 pub const POLL: u8 = 0;
 
+/// MCU responds with the response bytes of camera sensor request over i2c.
+pub const READ_CAMERA_I2C: u8 = 0x10;
+
 /// MCU responds with the bytes of a configuration struct that is agreed upon by
 /// both sides.
 pub const READ_CONFIG_REGISTERS: u8 = 0x20;

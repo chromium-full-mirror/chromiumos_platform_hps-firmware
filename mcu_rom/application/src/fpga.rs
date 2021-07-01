@@ -28,6 +28,7 @@ pub enum Action {
     DebugLog,
     DebugImage,
     GetDebugCommand,
+    ReadCameraI2c,
 }
 
 impl Request {
@@ -57,6 +58,9 @@ impl Request {
             }
             crate::fpga::commands::GET_DEBUG_COMMAND => {
                 action = Action::GetDebugCommand;
+            }
+            crate::fpga::commands::READ_CAMERA_I2C => {
+                action = Action::ReadCameraI2c;
             }
             _ => {
                 response_code = status::ERROR;

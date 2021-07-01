@@ -410,6 +410,13 @@ static void print_camera_register(uint16_t address) {
   }
 }
 
+static void read_camera_i2c(void) {
+  // TODO(jakubm): Send more than a command type, but also registers to read.
+  struct mcu_stream stream;
+  mcu_stream_initialize(&stream, MCU_COMMAND_READ_CAMERA_I2C);
+  mcu_stream_flush(&stream);
+}
+
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
@@ -522,6 +529,9 @@ int main(void) {
           break;
         case DEBUG_CMD_PRINT_AE_CFG:
           print_ae_cfg();
+          break;
+        case DEBUG_CMD_READ_CAMERA_I2C:
+          read_camera_i2c();
           break;
         case DEBUG_CMD_NONE:
           should_get_command = false;

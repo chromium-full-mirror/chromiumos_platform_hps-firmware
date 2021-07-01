@@ -6,6 +6,7 @@
 #![no_std]
 
 pub mod boards;
+mod camera;
 mod debug;
 mod spi_peripheral;
 
@@ -116,7 +117,9 @@ const APP: () = {
             match McuDebugCommand::try_from(cmd_buf[0]) {
                 Ok(command) => match command {
                     McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
-                    McuDebugCommand::ReadCameraId => read_camera_id(ctx.resources.camera_i2c),
+                    McuDebugCommand::ReadCameraId => {
+                        camera::read_camera_id(ctx.resources.camera_i2c)
+                    }
                     McuDebugCommand::Ping => rprintln!("Pong!"),
                 },
                 Err(_) => rprintln!("Unrecognized debug command {}", cmd_buf[0]),
@@ -125,7 +128,7 @@ const APP: () = {
     }
 
     #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel,
-        image_channel, fpga_debug_handler, mcu_debug_handler])]
+        image_channel, fpga_debug_handler, mcu_debug_handler, camera_i2c])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -161,6 +164,13 @@ const APP: () = {
                     .fpga_debug_handler
                     .get_debug_command(&mut buffer[2..]);
             }
+            fpga::Action::ReadCameraI2c => {
+                // TODO(jakubm): Replace camera ID read with a dedicated func.
+                // Which will take count of registers to read and addresses.
+                camera::read_camera_id(ctx.resources.camera_i2c);
+                camera::read_camera_reg(ctx.resources.camera_i2c, &mut [0x00, 0x00, 0x00, 0x01]);
+                // TODO(jakubm): We need to send the data back to FPGA.
+            }
             fpga::Action::None => {}
         }
         request.prepare_to_send(&mut buffer);
@@ -182,25 +192,6 @@ fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
         fpga_programn.set_low().unwrap();
     }
     fpga_programn.set_high().unwrap();
-}
-
-fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
-    let mut camera_id: u16 = 0;
-    let addr = 0x24;
-    let mut data = [0; 2];
-    match camera_i2c.write_read(addr, &[0x00, 0x00], &mut data) {
-        Ok(_) => {
-            camera_id |= u16::from_be_bytes(data) << 8;
-        }
-        Err(e) => rprintln!("Failed to read camera sensor ID {:#02x}: {:?}", addr, e),
-    }
-    match camera_i2c.write_read(addr, &[0x00, 0x01], &mut data) {
-        Ok(_) => {
-            camera_id |= u16::from_be_bytes(data);
-        }
-        Err(e) => rprintln!("Failed to read camera sensor ID {:#02x}: {:?}", addr, e),
-    }
-    rprintln!("Camera ID is {:#04x}", camera_id);
 }
 
 fn rcc_config() -> hal::rcc::Config {
