@@ -9,6 +9,7 @@ use hal::gpio;
 use hal::gpio::Analog;
 use hal::gpio::Floating;
 use hal::gpio::Input;
+use hal::gpio::OpenDrain;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
 use hal::prelude::*;
@@ -38,6 +39,8 @@ pub type FlashSpi = hal::spi::Spi<
     ),
 >;
 pub type FlashSpiCs = gpio::gpiob::PB0<Output<PushPull>>;
+pub type CameraI2c =
+    hal::i2c::I2c<I2C2, gpio::gpioa::PA12<Output<OpenDrain>>, gpio::gpioa::PA11<Output<OpenDrain>>>;
 
 /// GigaDevice
 pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
@@ -61,6 +64,7 @@ pub struct Board {
 
     pub flash_spi_cs: Option<FlashSpiCs>,
     pub flash_spi: Option<FlashSpi>,
+    pub camera_i2c: Option<CameraI2c>,
 }
 
 impl Board {
@@ -69,7 +73,7 @@ impl Board {
         b: gpio::gpiob::Parts,
         c: gpio::gpioc::Parts,
         i2c1: I2C1,
-        _i2c2: I2C2,
+        i2c2: I2C2,
         _usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,
@@ -102,6 +106,13 @@ impl Board {
             rcc,
         );
 
+        let camera_i2c = Some(i2c2.i2c(
+            a.pa12.into_open_drain_output(), // SDA
+            a.pa11.into_open_drain_output(), // SCL
+            hal::i2c::Config::new(400.khz()),
+            rcc,
+        ));
+
         Self {
             fpga_spi_cs: a.pa8,
             fpga_spi_clk: a.pa0,
@@ -118,6 +129,8 @@ impl Board {
 
             flash_spi_cs: Some(flash_spi_cs),
             flash_spi: Some(flash_spi),
+
+            camera_i2c,
         }
     }
 }
