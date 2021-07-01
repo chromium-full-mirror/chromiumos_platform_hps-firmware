@@ -65,7 +65,7 @@ class HpsSoC(LiteXSoC):
     cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug,
-                 use_camera_dma=False, litespi_flash=True):
+                 use_camera_dma=False, litespi_flash=True, litespi_quad=False):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
@@ -83,7 +83,7 @@ class HpsSoC(LiteXSoC):
 
         # SPI Flash
         if litespi_flash:
-            self.setup_litespi_flash()
+            self.setup_litespi_flash(quad=litespi_quad)
         else:
             self.setup_flash()
 
@@ -140,10 +140,12 @@ class HpsSoC(LiteXSoC):
         self.bus.add_slave('spiflash', self.spiflash.bus, self.spiflash_region)
         self.csr.add('spiflash')
 
-    def setup_litespi_flash(self):
+    def setup_litespi_flash(self, quad=False):
+        read_opcode = Codes.READ_1_1_4 if quad else Codes.READ_1_1_1
         self.submodules.spiflash_phy = LiteSPIPHY(
-            self.platform.request('spiflash'), GD25LQ128D(
-                Codes.READ_1_1_1), default_divisor=2)
+            self.platform.request('spiflash4x'),
+            GD25LQ128D(read_opcode),
+            default_divisor=2)
         self.submodules.spiflash_mmap = LiteSPI(
             phy=self.spiflash_phy,
             clk_freq=self.platform.sys_clk_freq,
@@ -249,6 +251,9 @@ def main():
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi')
+    parser.add_argument(
+        '--litespi-quad', action='store_true',
+        help='Use quad read opcode when reading from SPI flash')
 
     args = parser.parse_args()
 
@@ -256,7 +261,8 @@ def main():
         platform=Platform(args.toolchain),
         debug=args.debug,
         use_camera_dma=args.use_camera_dma,
-        litespi_flash=args.litespi_flash)
+        litespi_flash=args.litespi_flash,
+        litespi_quad=args.litespi_quad)
 
     if args.cache:
         if args.output_dir is None:
