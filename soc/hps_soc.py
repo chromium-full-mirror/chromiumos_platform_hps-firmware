@@ -65,7 +65,7 @@ class HpsSoC(LiteXSoC):
     cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug,
-                 use_camera_dma=False, litespi_flash=False):
+                 use_camera_dma=False, litespi_flash=True):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
@@ -246,8 +246,9 @@ def main():
         '--cache', default=None,
         help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w]')
     parser.add_argument(
-        '--litespi-flash', action='store_true',
-        help='Use litespi flash')
+        '--no-litespi-flash', dest='litespi_flash',
+        action='store_false', default=True,
+        help='Use Litex minimal SPI flash instead of Litespi')
 
     args = parser.parse_args()
 
