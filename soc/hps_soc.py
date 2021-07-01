@@ -142,15 +142,16 @@ class HpsSoC(LiteXSoC):
 
     def setup_litespi_flash(self):
         self.submodules.spiflash_phy = LiteSPIPHY(
-            self.platform.request("spiflash"), GD25LQ128D(
+            self.platform.request('spiflash'), GD25LQ128D(
                 Codes.READ_1_1_1), default_divisor=2)
-        self.submodules.spiflash_mmap = LiteSPI(phy=self.spiflash_phy,
-                                                clk_freq=self.platform.sys_clk_freq,
-                                                mmap_endianness=self.cpu.endianness)
-        self.csr.add("spiflash_mmap")
-        self.csr.add("spiflash_phy")
+        self.submodules.spiflash_mmap = LiteSPI(
+            phy=self.spiflash_phy,
+            clk_freq=self.platform.sys_clk_freq,
+            mmap_endianness=self.cpu.endianness)
+        self.csr.add('spiflash_mmap')
+        self.csr.add('spiflash_phy')
         self.bus.add_slave(
-            name="spiflash",
+            name='spiflash',
             slave=self.spiflash_mmap.bus,
             region=self.spiflash_region)
 
@@ -243,7 +244,7 @@ def main():
         help='Which toolchain to use, radiant (default) or oxide')
     parser.add_argument(
         '--cache', default=None,
-        help='Specify custom cache config.  Supported: 8d8i2w, 8d8i4w.   Default is 4d4i1w.')
+        help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w]')
     parser.add_argument(
         '--litespi-flash', action='store_true',
         help='Use litespi flash')
@@ -258,18 +259,19 @@ def main():
 
     if args.cache:
         if args.output_dir is None:
-            args.output_dir = ("build/hps_" + args.cache)
-            print(f"Set output dir to {args.output_dir}")
+            args.output_dir = ('build/hps_' + args.cache)
+            print(f'Set output dir to {args.output_dir}')
         assert 'full' in soc.cpu.variant
         assert 'debug' not in soc.cpu.variant    # we can add this if wanted
-        vexriscv = f"{SOC_DIR}/../third_party/python/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv"
-        var = "Full"
+        vexriscv = f'{SOC_DIR}/../third_party/python/' \
+                   f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
+        var = 'Full'
         cache = args.cache
         soc.cpu.use_external_variant(
-            f"{vexriscv}/verilog/VexRiscv_{var}{cache}.v")
+            f'{vexriscv}/verilog/VexRiscv_{var}{cache}.v')
     else:
         if args.output_dir is None:
-            args.output_dir = "build/hps_platform"
+            args.output_dir = 'build/hps_platform'
 
     builder = create_builder(soc, args)
     builder_kwargs = radiant_build_argdict(
@@ -280,11 +282,13 @@ def main():
     if not args.build:
         print('Use --build to build the bitstream, if needed')
 
-    print(f"Loading from output dir: {builder.output_dir}")
+    print(f'Loading from output dir: {builder.output_dir}')
     os.system(
-        f"scripts/prog bitstream {builder.output_dir}/gateware/hps_platform.bit")
+        f'scripts/prog bitstream '
+        f'{builder.output_dir}/gateware/hps_platform.bit')
     os.system(
-        f"scripts/prog rom {builder.output_dir}/software/bios/out/riscv-gcc/rom.bin")
+        f'scripts/prog rom '
+        f'{builder.output_dir}/software/bios/out/riscv-gcc/rom.bin')
 
 
 if __name__ == '__main__':
