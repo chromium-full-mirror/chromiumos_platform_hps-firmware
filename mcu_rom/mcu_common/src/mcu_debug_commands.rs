@@ -11,4 +11,5 @@ use num_enum::TryFromPrimitive;
 pub enum McuDebugCommand {
     ResetFpga = 1,
     ReadCameraId = 2,
+    Ping = 3,
 }

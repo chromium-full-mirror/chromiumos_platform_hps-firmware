@@ -150,6 +150,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         help_text: "Reset the MCU",
         command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),
     },
+    AvailableDebugCommand {
+        keyword: "ping_mcu",
+        help_text: "Ask the MCU to print something",
+        command_type: CommandType::McuCommand(McuDebugCommand::Ping),
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.

@@ -117,6 +117,7 @@ const APP: () = {
                 Ok(command) => match command {
                     McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
                     McuDebugCommand::ReadCameraId => read_camera_id(ctx.resources.camera_i2c),
+                    McuDebugCommand::Ping => rprintln!("Pong!"),
                 },
                 Err(_) => rprintln!("Unrecognized debug command {}", cmd_buf[0]),
             }
