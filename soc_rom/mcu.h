@@ -63,7 +63,7 @@ void spi_init(void);
 // Sends the content of spi_mcu_buf_out and waits for a response to be received
 // into spi_mcu_buf_in.
 //
-// Returns 0 on success and -1 on failure
+// Returns 0 on success and -1 on failure.
 int mcu_transaction(void);
 
 // Like printf, but the output will show up in the MCU's debug output, if there
@@ -87,7 +87,7 @@ void mcu_stream_initialize(struct mcu_stream* stream, enum mcu_command command);
 
 // Sends `data` to `stream`. Returns 0 on success or -1 on failure. Data may not
 // be sent immediately. mcu_stream_flush must be called once done to ensure that
-// all data is sent..
+// all data is sent.
 int mcu_stream_send_data(struct mcu_stream* stream,
                          const uint8_t* data,
                          size_t len);
