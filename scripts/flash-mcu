@@ -60,7 +60,7 @@ fi
 file=$(realpath "${file}")
 
 if [ "${use_ocd}" -eq 1 ]; then
-    openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/stm32g03_proto.cfg" \
+    openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto0.openocd.cfg" \
         -c "program ${file} verify reset exit"
 else
     # st-flash doesn't handle conversion from ELF, convert to a BIN file.
