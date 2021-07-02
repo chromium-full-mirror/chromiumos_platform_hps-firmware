@@ -4,8 +4,6 @@
 
 #![cfg_attr(not(test), no_std)]
 
-use sodalite::HASH_LEN;
-
 pub mod commands;
 pub mod memory_banks;
 pub mod registers;
@@ -104,7 +102,7 @@ pub const fn hps_magic_code() -> u16 {
 }
 
 #[derive(Debug)]
-pub struct Hash(pub [u8; HASH_LEN]);
+pub struct Hash(pub [u8; sodalite::HASH_LEN]);
 
 impl Hash {
     pub fn new() -> Hash {
@@ -112,11 +110,11 @@ impl Hash {
     }
 
     pub fn update(&mut self, data: &[u8]) {
-        let mut hash = [0u8; HASH_LEN];
+        let mut hash = [0u8; sodalite::HASH_LEN];
         sodalite::hash(&mut hash, data);
-        let mut hashes = [0u8; HASH_LEN * 2];
-        hashes[..HASH_LEN].clone_from_slice(&self.0);
-        hashes[HASH_LEN..].clone_from_slice(&hash);
+        let mut hashes = [0u8; sodalite::HASH_LEN * 2];
+        hashes[..sodalite::HASH_LEN].clone_from_slice(&self.0);
+        hashes[sodalite::HASH_LEN..].clone_from_slice(&hash);
         sodalite::hash(&mut self.0, &hashes);
     }
 
@@ -124,7 +122,7 @@ impl Hash {
         self
     }
 
-    pub fn as_bytes(&self) -> [u8; HASH_LEN] {
+    pub fn as_bytes(&self) -> [u8; sodalite::HASH_LEN] {
         self.0
     }
 }

@@ -8,8 +8,6 @@ use mcu_common::Hash;
 use mcu_common::HostImageHeader;
 use mcu_common::Signature;
 use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
-use sodalite::HASH_LEN;
-
 pub struct PrivateKey {
     raw_bytes: [u8; 64],
 }
@@ -71,7 +69,7 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
 }
 
 pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
-    let mut out = [0u8; 64 + HASH_LEN]; /* sign_len=64 */
+    let mut out = [0u8; 64 + sodalite::HASH_LEN]; /* sign_len=64 */
     sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
     let mut signature = Signature {
         raw_bytes: [0u8; 64],
