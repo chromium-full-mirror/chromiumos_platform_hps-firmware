@@ -30,11 +30,6 @@ struct Config {
     /// output filename
     #[clap(short, long)]
     output: Option<PathBuf>,
-
-    /// if set, generates and prints a keypair using the supplied seed, which is
-    /// a comma-separated list of u8 of length up to 32
-    #[clap(short, long)]
-    generate_keypair_seed: Option<String>,
 }
 
 // Note, this key is for development purposes only. It isn't and won't be used
@@ -48,9 +43,6 @@ const SECRET_KEY: sign_rom::PrivateKey = sign_rom::PrivateKey::from_bytes([
 
 fn main() -> Result<()> {
     let config = Config::parse();
-
-    // Handy debug keypair generaton.
-    generate_debug_keypair(&config)?;
 
     let mut file_bytes = std::fs::read(&config.input)?;
     if config.region_length < file_bytes.len() {
@@ -89,24 +81,5 @@ fn get_signature(config: &Config, hash: &Hash) -> Result<Signature> {
         })
     } else {
         Ok(sign_rom::sign_hash(&hash, &SECRET_KEY))
-    }
-}
-
-/// generate_debug_keypair allows for local development of signing debug
-/// images. Given a seed value as a slice a key pair is printed in return.
-fn generate_debug_keypair(config: &Config) -> Result<()> {
-    if let Some(seed) = &config.generate_keypair_seed {
-        let mut sk = [0u8; sodalite::SIGN_SECRET_KEY_LEN];
-        let mut pk = [0u8; sodalite::SIGN_PUBLIC_KEY_LEN];
-        let mut seed_bytes = [0u8; 32];
-        for (i, part) in seed.split(',').enumerate() {
-            seed_bytes[i] = part.parse::<u8>()?;
-        }
-        sodalite::sign_keypair_seed(&mut pk, &mut sk, &seed_bytes);
-        println!("Secret key: {:#02X?}", sk);
-        println!("Public key: {:#02X?}", pk);
-        return Ok(());
-    } else {
-        return Ok(());
     }
 }
