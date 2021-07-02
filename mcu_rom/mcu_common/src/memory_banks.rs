@@ -3,3 +3,5 @@
 // found in the LICENSE file.
 
 pub const MCU_RW: u8 = 0;
+
+pub const SPI_FLASH: u8 = 1;

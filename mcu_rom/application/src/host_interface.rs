@@ -4,7 +4,9 @@
 
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
+use i2c_protocol::WriteMemoryEvent;
 use mcu_common::commands;
+use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
@@ -19,6 +21,7 @@ pub struct HostInterface<I: I2cPeripheral> {
 #[derive(Debug, Eq, PartialEq)]
 pub enum Event {
     Reset,
+    WriteSpiFlash(WriteMemoryEvent),
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
@@ -41,8 +44,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         return Some(event);
                     }
                 }
-                i2c_protocol::Event::WriteMemory(_event) => {
-                    // The MCU application doesn't support any writable memory banks.
+                i2c_protocol::Event::WriteMemory(event) => {
+                    if event.bank == memory_banks::SPI_FLASH {
+                        return Some(Event::WriteSpiFlash(event));
+                    }
                 }
                 i2c_protocol::Event::Error(error) => {
                     self.common_interface.report_i2c_host_error(error);
@@ -64,6 +69,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 common_value | status::APPLRUN | status::APPLREADY | status::AVERIFY
             }
             registers::USER_PRESENT_STATUS => state.status.person_score as u16,
+            registers::MEMORY_BANK_AVAILABLE => {
+                if i2c_protocol::Buffer::is_available() {
+                    1 << memory_banks::SPI_FLASH
+                } else {
+                    0
+                }
+            }
             _ => common_value,
         }
     }

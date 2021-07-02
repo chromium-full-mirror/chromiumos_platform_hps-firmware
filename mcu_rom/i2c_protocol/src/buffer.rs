@@ -5,6 +5,7 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::ops::Deref;
+use core::ops::DerefMut;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 
@@ -78,6 +79,14 @@ impl Deref for Buffer {
         // safety: Safe because only a single instance of `Buffer` can exist at
         // a time, so our buffer is effectively "owned" by that instance.
         unsafe { &BUFFER_BYTES[..self.size] }
+    }
+}
+
+impl DerefMut for Buffer {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        // safety: Safe because only a single instance of `Buffer` can exist at
+        // a time, so our buffer is effectively "owned" by that instance.
+        unsafe { &mut BUFFER_BYTES[..self.size] }
     }
 }
 

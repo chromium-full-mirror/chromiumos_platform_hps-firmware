@@ -8,6 +8,7 @@
 pub mod boards;
 mod camera;
 mod debug;
+mod spi_flash;
 mod spi_peripheral;
 
 use core::convert::TryFrom;
@@ -51,7 +52,7 @@ const APP: () = {
         init_peripherals(ctx.device)
     }
 
-    #[task(binds = I2C1, resources = [host_interface, state], priority = 3)]
+    #[task(binds = I2C1, resources = [host_interface, state], spawn = [write_spi_flash], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         match ctx
             .resources
@@ -59,6 +60,9 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state)
         {
             Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
+            Some(application::Event::WriteSpiFlash(write_request)) => {
+                let _ = ctx.spawn.write_spi_flash(write_request);
+            }
             None => {}
         }
     }
@@ -185,6 +189,17 @@ const APP: () = {
         }
         request.prepare_to_send(&mut buffer);
         ctx.resources.spi.lock(|spi| spi.send(buffer));
+    }
+
+    #[task(resources = [spi_flash, fpga_programn])]
+    fn write_spi_flash(ctx: write_spi_flash::Context, mut request: i2c_protocol::WriteMemoryEvent) {
+        // Put FPGA into reset while we write SPI flash. We don't currently take
+        // it out of reset. That's should be done once we've signature-checked
+        // it.
+        if board::SPI_FLASH_ENABLED {
+            ctx.resources.fpga_programn.set_low().unwrap();
+            spi_flash::write(ctx.resources.spi_flash, request.address, &mut *request.data);
+        }
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
