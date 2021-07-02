@@ -8,5 +8,5 @@ license = "BSD-3-Clause"
 anyhow = "1.0.41"
 # https://github.com/clap-rs/clap/issues/1684
 clap = "3.0.0-alpha.1"
+ed25519-compact = "0.1.9"
 mcu_common = { path = "../mcu_common" }  # provided by ebuild
-sodalite = "0.4.0"

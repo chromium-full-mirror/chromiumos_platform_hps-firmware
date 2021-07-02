@@ -8,18 +8,6 @@ use mcu_common::Hash;
 use mcu_common::HostImageHeader;
 use mcu_common::Signature;
 use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
-pub struct PrivateKey {
-    raw_bytes: [u8; 64],
-}
-
-impl PrivateKey {
-    pub const fn from_bytes(raw_bytes: [u8; 64]) -> PrivateKey {
-        PrivateKey { raw_bytes }
-    }
-    pub fn as_bytes(&self) -> [u8; 64] {
-        self.raw_bytes
-    }
-}
 
 /// Returns a mutable reference to the signature as well as the payload (the
 /// data that the signature applies to).
@@ -68,9 +56,8 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     v
 }
 
-pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
-    let mut out = [0u8; 64 + sodalite::HASH_LEN]; /* sign_len=64 */
-    sodalite::sign_attached(&mut out, &hash.0, &private_key.raw_bytes);
+pub fn sign_hash(hash: &Hash, private_key: &ed25519_compact::SecretKey) -> Signature {
+    let out = private_key.sign(&hash.0, None); // TODO(quasisec): should not be None.
     let mut signature = Signature {
         raw_bytes: [0u8; 64],
     };
@@ -80,11 +67,9 @@ pub fn sign_hash(hash: &Hash, private_key: &PrivateKey) -> Signature {
 
 #[cfg(test)]
 mod test {
-    use sodalite::SIGN_SECRET_KEY_LEN;
-
     #[test]
     fn test_signing() {
-        let private_key = super::PrivateKey::from_bytes([42u8; SIGN_SECRET_KEY_LEN]);
+        let private_key = ed25519_compact::SecretKey::new([42u8; 64]);
 
         let data = [1, 2, 3];
 
