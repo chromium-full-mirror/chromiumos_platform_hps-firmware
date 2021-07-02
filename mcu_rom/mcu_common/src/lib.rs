@@ -15,6 +15,7 @@ mod mem_block;
 
 pub use common_host_interface::CommonHostInterface;
 pub use errors::Error;
+pub use hmac_sha256::Hash;
 pub use mcu_debug_commands::McuDebugCommand;
 pub use mem_block::MemBlock;
 
@@ -99,32 +100,6 @@ pub const fn hps_magic_code() -> u16 {
     (((((code[0] - b'A') as u16) << 5) | ((code[1] - b'A') as u16)) << 5)
         | ((code[2] - b'A') as u16)
         | (1 << 15)
-}
-
-#[derive(Debug)]
-pub struct Hash(pub [u8; sodalite::HASH_LEN]);
-
-impl Hash {
-    pub fn new() -> Hash {
-        Hash([0u8; 64])
-    }
-
-    pub fn update(&mut self, data: &[u8]) {
-        let mut hash = [0u8; sodalite::HASH_LEN];
-        sodalite::hash(&mut hash, data);
-        let mut hashes = [0u8; sodalite::HASH_LEN * 2];
-        hashes[..sodalite::HASH_LEN].clone_from_slice(&self.0);
-        hashes[sodalite::HASH_LEN..].clone_from_slice(&hash);
-        sodalite::hash(&mut self.0, &hashes);
-    }
-
-    pub fn finalize(self) -> Hash {
-        self
-    }
-
-    pub fn as_bytes(&self) -> [u8; sodalite::HASH_LEN] {
-        self.0
-    }
 }
 
 pub mod status {

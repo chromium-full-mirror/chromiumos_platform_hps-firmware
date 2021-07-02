@@ -27,7 +27,7 @@ pub fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signat
 
 /// Compute the digest of the payload image with the required length
 /// extention for later signing.
-pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<Hash> {
+pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]> {
     let v = extend_image(&payload, region_length);
 
     let mut hasher = Hash::new();
@@ -56,8 +56,8 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     v
 }
 
-pub fn sign_hash(hash: &Hash, private_key: &ed25519_compact::SecretKey) -> Signature {
-    let out = private_key.sign(&hash.0, None); // TODO(quasisec): should not be None.
+pub fn sign_hash(hash: &[u8], private_key: &ed25519_compact::SecretKey) -> Signature {
+    let out = private_key.sign(hash, None); // TODO(quasisec): should not be None.
     let mut signature = Signature {
         raw_bytes: [0u8; 64],
     };
@@ -83,10 +83,10 @@ mod test {
         assert_eq!(
             &signature.raw_bytes[..],
             &[
-                3, 191, 2, 78, 224, 137, 169, 107, 177, 141, 152, 180, 238, 58, 93, 27, 179, 45,
-                190, 220, 22, 54, 207, 40, 65, 229, 229, 217, 136, 28, 162, 154, 131, 152, 194, 71,
-                9, 111, 239, 34, 57, 99, 85, 7, 5, 200, 194, 87, 49, 23, 209, 182, 187, 164, 128,
-                191, 61, 229, 130, 1, 32, 102, 25, 15
+                140, 198, 68, 19, 74, 99, 28, 165, 111, 54, 208, 177, 31, 95, 92, 150, 227, 87,
+                153, 171, 120, 137, 65, 27, 153, 80, 10, 21, 249, 22, 71, 216, 150, 80, 25, 16,
+                181, 153, 222, 95, 252, 75, 18, 21, 240, 14, 35, 124, 41, 79, 42, 85, 190, 70, 68,
+                66, 164, 175, 17, 120, 238, 232, 248, 7
             ]
         );
     }
@@ -100,15 +100,14 @@ mod test {
         let ext_len: usize = 4096;
 
         let ext_img_digest = super::hash_image_bytes(&image, ext_len).unwrap();
-        assert_eq!(ext_img_digest.as_bytes().len(), 64);
+        assert_eq!(ext_img_digest.len(), 32);
         // Confirm hash of sample data is invariant.
         assert_eq!(
-            ext_img_digest.as_bytes(),
+            ext_img_digest,
             [
-                120, 205, 118, 249, 217, 204, 106, 182, 60, 233, 208, 229, 74, 235, 12, 243, 4, 10,
-                135, 89, 111, 111, 59, 202, 92, 242, 19, 239, 79, 177, 65, 70, 246, 65, 198, 226,
-                30, 240, 228, 13, 98, 117, 90, 10, 158, 75, 66, 14, 192, 82, 67, 185, 94, 107, 0,
-                193, 0, 148, 246, 212, 153, 106, 199, 60
+                0x75, 0x4F, 0xD9, 0x7C, 0xE5, 0x81, 0x7C, 0xF3, 0x5A, 0xA2, 0x65, 0x82, 0xB8, 0x4C,
+                0x35, 0xB9, 0x37, 0x38, 0xBA, 0x58, 0xE1, 0x7, 0x7C, 0xDC, 0xF9, 0x94, 0x95, 0x9D,
+                0x57, 0xDD, 0x77, 0xE6,
             ]
         );
     }

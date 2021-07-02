@@ -6,7 +6,6 @@ use clap::Clap;
 
 use anyhow::bail;
 use anyhow::Result;
-use mcu_common::Hash;
 use mcu_common::Signature;
 use std::path::PathBuf;
 
@@ -46,7 +45,7 @@ fn main() -> Result<()> {
     // `file_bytes`
     let (signature_out, payload) = sign_rom::split_signature_and_payload(&mut file_bytes)?;
     let hash = sign_rom::hash_image_bytes(payload, config.region_length)?;
-    println!("Calculated image digest = {:?}", hash.as_bytes());
+    println!("Calculated image digest = {:?}", hash);
 
     // If a path to output file is provided, write out image with modified
     // header containing signature.
@@ -61,7 +60,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_signature(config: &Config, hash: &Hash) -> Result<Signature> {
+fn get_signature(config: &Config, hash: &[u8]) -> Result<Signature> {
     if let Some(sig) = &config.signature {
         let mut signature_bytes = [0u8; 64];
         for (i, part) in sig.split(',').enumerate() {
@@ -80,6 +79,6 @@ fn get_signature(config: &Config, hash: &Hash) -> Result<Signature> {
             0xA8, 0x38, 0x19, 0xEB, 0x4C, 0x77, 0x22, 0x01, 0x9D, 0x3C, 0xB7, 0x27, 0x5A, 0x23,
             0xC8, 0x45, 0x0C, 0x88, 0xB3, 0xB0, 0x02, 0x6A,
         ]);
-        Ok(sign_rom::sign_hash(&hash, &secret_key))
+        Ok(sign_rom::sign_hash(hash, &secret_key))
     }
 }

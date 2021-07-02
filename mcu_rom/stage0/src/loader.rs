@@ -55,7 +55,7 @@ pub fn detect_stage1() -> Result<(), &'static str> {
     Err("Could not find stage 1")
 }
 
-fn stage1_digest() -> Hash {
+fn stage1_digest() -> [u8; 32] {
     let slot = get_stage_slot_se();
     let mut hasher = Hash::new();
 
@@ -88,7 +88,7 @@ fn stage1_digest() -> Hash {
 }
 
 pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
-    let stage1_digest = stage1_digest().as_bytes();
+    let stage1_digest = stage1_digest();
     defmt::info!("{:?}", stage1_digest);
 
     let hdr_sig = get_stage1_signature();
