@@ -22,7 +22,6 @@ from litespi.phy.generic import LiteSPIPHY
 from litespi import LiteSPI
 
 from .hps_platform import Platform
-from .patch import Patch
 from .cam_control import CameraControl, CameraControlDMA
 from .spi_controller import SpiController
 
@@ -95,12 +94,6 @@ class HpsSoC(LiteXSoC):
             pads=platform.request_all('user_led'),
             sys_clk_freq=platform.sys_clk_freq)
         self.csr.add('leds')
-
-        # MCU reset line. This avoids the need to do rework on the HPS board in
-        # order to get access to the MCU reset line. We patch it through to
-        # J8-8.
-        self.submodules.patch_mcu_reset = Patch(platform.request(
-            'mcu_reset_pin'), platform.request('mcu_debug').reset)
 
         # UART
         self.add_serial()
