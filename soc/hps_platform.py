@@ -22,12 +22,6 @@ hps_io = [
         # Subsignal('int',  Pins('E2')),  # Shared with serial rx
         IOStandard('LVCMOS18H')
      ),
-    # Connection to motherboard
-    ('i2c', 0,
-        Subsignal('scl', Pins('D1')),
-        Subsignal('sda', Pins('E3')),
-        IOStandard('LVCMOS18H')
-     ),
     ('programn', 0, Pins('A4'), IOStandard('LVCMOS18H')),
     # JTAG: not usually programatically accessible
     ('jtag', 0,
@@ -53,13 +47,6 @@ hps_io = [
         Subsignal('clk', Pins('B4')),
         Subsignal('dq', Pins('B5 C4 B3 B2')),
         IOStandard('LVCMOS18')
-     ),
-    # Interface to MCU
-    ('mcu_debug', 0,
-        Subsignal('reset', Pins('H2')),
-        Subsignal('swclk', Pins('E5')),
-        Subsignal('swdio', Pins('F4')),
-        IOStandard('LVCMOS18H')
      ),
     ('mcu_spi', 0,
         Subsignal('clk', Pins('F3')),
@@ -88,12 +75,6 @@ hps_nx17_debug_io = [
     ('serial', 0,
         Subsignal('rx', Pins('E2'), IOStandard('LVCMOS18')),
         Subsignal('tx', Pins('G1'), IOStandard('LVCMOS18H')),
-     ),
-    # 2nd UART on JTAG TDI/TDO pins - must disable JTAG to use
-    ('serial2', 0,
-        Subsignal('rx', Pins('C3')),
-        Subsignal('tx', Pins('D3')),
-        IOStandard('LVCMOS18H')
      ),
 ]
 
