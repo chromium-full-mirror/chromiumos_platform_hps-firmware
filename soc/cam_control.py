@@ -23,7 +23,6 @@ class CameraControl(Module, AutoCSR):
     def __init__(self, pads, sys_clk_freq):
         self.sys_clk_freq = sys_clk_freq
         self._w = CSRStorage(fields=[
-            CSRField('trig', size=1, offset=1),
             CSRField('dma_signed', size=1, offset=2)],
             name='w')
         self._r = CSRStatus(fields=[
@@ -37,9 +36,6 @@ class CameraControl(Module, AutoCSR):
 
     def connect_pads(self, pads):
         """Connect all the straight-through signals."""
-        self.sync += [
-            pads.trig.eq(self._w.fields.trig),
-        ]
         self.sync += [
             self._r.fields.lvld.eq(pads.lvld),
             self._r.fields.fvld.eq(pads.fvld),

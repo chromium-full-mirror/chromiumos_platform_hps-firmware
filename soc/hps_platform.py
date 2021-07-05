@@ -1,7 +1,7 @@
 # Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Platform definition file for HPS proto0"""
+"""Platform definition file for HPS proto2"""
 
 from migen import Module, ClockDomain, Signal, If, log2_int
 from migen.genlib.resetsync import AsyncResetSynchronizer
@@ -13,11 +13,10 @@ from litex.soc.cores.clock import NXOSCA
 hps_io = [
     # HM01B0 camera connection
     ('cam_control', 0,
-        Subsignal('data', Pins('E9 E8 G9 F9 G8 F8 F7 G7')),
-        Subsignal('fvld', Pins('E7')),
-        Subsignal('lvld', Pins('F6')),
-        Subsignal('pclk', Pins('G5')),
-        Subsignal('trig', Pins('G4')),
+        Subsignal('data', Pins('G8 F7 F8 E7 E8 G9 F9 E9')),
+        Subsignal('fvld', Pins('F6')),
+        Subsignal('lvld', Pins('G5')),
+        Subsignal('pclk', Pins('G7')),
         # Subsignal('int',  Pins('E2')),  # Shared with serial rx
         IOStandard('LVCMOS18H')
      ),
@@ -48,11 +47,11 @@ hps_io = [
         IOStandard('LVCMOS18')
      ),
     ('mcu_spi', 0,
-        Subsignal('clk', Pins('F3')),
-        Subsignal('cs', Pins('G3')),
-        Subsignal('cipo', Pins('E4')),
-        Subsignal('copi', Pins('F5')),
-        Subsignal('ready', Pins('A5'), IOStandard('LVCMOS18')),
+        Subsignal('clk', Pins('H1')),
+        Subsignal('cs', Pins('F2')),
+        Subsignal('cipo', Pins('G2')),
+        Subsignal('copi', Pins('H2')),
+        Subsignal('ready', Pins('F3')),
         IOStandard('LVCMOS18H')
      ),
 ]
@@ -69,10 +68,7 @@ hps_nx17_debug_io = [
 
 # Debug IO that is common to both simulation and hardware.
 hps_debug_common = [
-    # Single LED on JTAG pin - J8 pin 6
-    ('user_led', 0, Pins('D2'), IOStandard('LVCMOS18')),
-    # Provides  mcu_reset_l on JTAG pin - J8 pin 8
-    ('mcu_reset_pin', 0, Pins('B1'), IOStandard('LVCMOS18')),
+    ('user_led', 0, Pins('G3'), IOStandard('LVCMOS18H'))
 ]
 
 

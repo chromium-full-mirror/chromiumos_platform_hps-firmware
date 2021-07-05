@@ -64,13 +64,8 @@ static hm01b0_status_e mclk(hm01b0_cfg_t* psCfg, bool enable, void* arg) {
 static hm01b0_status_e trig(hm01b0_cfg_t* psCfg, bool enable, void* arg) {
   UNUSED(psCfg);
   UNUSED(arg);
-  uint8_t val = cam_control_w_read();
-  if (enable) {
-    val |= (1 << CSR_CAM_CONTROL_W_TRIG_OFFSET);
-  } else {
-    val &= ~(1 << CSR_CAM_CONTROL_W_TRIG_OFFSET);
-  }
-  cam_control_w_write(val);
+  UNUSED(enable);
+  // Hardware trigger not implemented.
   return HM01B0_ERR_OK;
 }
 
