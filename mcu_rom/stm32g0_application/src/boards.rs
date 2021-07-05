@@ -4,20 +4,13 @@
 
 #[cfg(any(
     feature = "nucleo",
-    all(not(feature = "proto0"), not(feature = "nucleo"))
+    all(not(feature = "nucleo"))
 ))]
 pub mod nucleo;
-
-#[cfg(feature = "proto0")]
-pub mod proto0;
-
-#[cfg(feature = "proto0")]
-pub use proto0 as board;
 
 #[cfg(any(
     feature = "nucleo",
     all(
-        not(feature = "proto0"),
         not(feature = "proto1"),
         not(feature = "nucleo"),
         not(feature = "proto2")
