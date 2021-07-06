@@ -298,6 +298,10 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // Ensure FPGA and SPI flash are powered.
     board.fpga_power_gate.set_low().unwrap();
 
+    // Put the FPGA into reset, otherwise we won't be able to reliably access
+    // the SPI flash.
+    board.fpga_programn.set_low().unwrap();
+
     let mut spi_flash = None;
 
     if let (Some(flash_spi), Some(flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
