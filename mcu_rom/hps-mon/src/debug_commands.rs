@@ -181,6 +181,11 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         help_text: "Erase entire SPI flash",
         command_type: CommandType::McuCommand(McuDebugCommand::EraseSpiFlash),
     },
+    AvailableDebugCommand {
+        keyword: "hash_spi_flash",
+        help_text: "Hash part of the SPI flash",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::HashSpiFlash),
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.

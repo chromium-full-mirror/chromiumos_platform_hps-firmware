@@ -19,6 +19,7 @@ use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
 use hal::prelude::*;
+use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
@@ -45,6 +46,7 @@ const APP: () = {
         spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
         timer: Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
+        stopwatch: Stopwatch<hal::stm32::TIM2>,
     }
 
     #[init]
@@ -110,7 +112,7 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash])]
+    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         let mut cmd_buf = [0u8; 3];
@@ -138,6 +140,14 @@ const APP: () = {
                             McuDebugCommand::EraseSpiFlash => {
                                 ctx.resources.fpga_programn.set_low().unwrap();
                                 spi_flash::erase(ctx.resources.spi_flash);
+                            }
+                            McuDebugCommand::HashSpiFlash => {
+                                ctx.resources.fpga_programn.set_low().unwrap();
+                                spi_flash::hash(
+                                    ctx.resources.spi_flash,
+                                    arg,
+                                    ctx.resources.stopwatch,
+                                )
                             }
                             _ => {
                                 handled = false;
@@ -340,6 +350,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         board.spi_ready,
     );
 
+    let stopwatch = p.TIM2.stopwatch(&mut rcc);
+
     let camera_i2c = board.camera_i2c.unwrap();
 
     // Ensure FPGA and SPI flash are powered.
@@ -399,5 +411,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         spi_flash,
         timer,
         camera_i2c,
+        stopwatch,
     }
 }

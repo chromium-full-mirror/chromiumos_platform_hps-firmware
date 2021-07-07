@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 use crate::board;
+use hal::timer::stopwatch::Stopwatch;
+use hmac_sha256::Hash;
 use rtt_target::rprint;
 use rtt_target::rprintln;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
+
+const SECTOR_SIZE: u32 = 4096;
+const PAGE_SIZE: u32 = 256;
 
 /// Write's `data` to `address` in the SPI flash. `data` is updated based on
 /// response from the SPI flash. We don't actually use this returned data, but
@@ -30,8 +35,6 @@ pub(crate) fn write(
     }
     // We erase the entire SPI flash prior to writing the first bit of data.
     // Host must send data in blocks that evenly divides this size.
-    const SECTOR_SIZE: u32 = 4096;
-    const PAGE_SIZE: u32 = 256;
     if address & !(PAGE_SIZE - 1) != (address + data.len() as u32 - 1) & !(PAGE_SIZE - 1) {
         rprintln!("SPI write crosses page boundary");
         return;
@@ -103,4 +106,29 @@ pub(crate) fn debug_write(
         rprintln!("Failed to write to SPI flash");
     }
     rprintln!("Successfully wrote to SPI flash");
+}
+
+pub(crate) fn hash(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    num_pages: u16,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    let elapsed_us = stopwatch.trace(|| {
+        let mut hasher = Hash::new();
+        let mut buf = [0x00; PAGE_SIZE as usize];
+        for page in 0..num_pages {
+            let _ = spi_flash.read((page as u32) * (PAGE_SIZE as u32), &mut buf);
+            hasher.update(&buf);
+        }
+        let hash = hasher.finalize();
+        rprintln!("Hash of first {} pages was: {:?}", num_pages, hash);
+    });
+    rprintln!("Hashing took {}us", elapsed_us.0);
 }
