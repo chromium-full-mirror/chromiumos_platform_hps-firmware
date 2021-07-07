@@ -12,4 +12,8 @@ pub enum McuDebugCommand {
     ResetFpga = 1,
     ReadCameraId = 2,
     Ping = 3,
+    ReadSpiFlash = 4,
+    WriteSpiFlash = 5,
+    FpgaHoldInReset = 6,
+    EraseSpiFlash = 7,
 }

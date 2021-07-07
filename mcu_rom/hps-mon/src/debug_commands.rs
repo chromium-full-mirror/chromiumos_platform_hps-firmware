@@ -27,6 +27,7 @@ enum CommandType {
     FpgaCommand(u8),
     FpgaCommandWithArg(u8),
     McuCommand(McuDebugCommand),
+    McuCommandWithArg(McuDebugCommand),
     LocalOperation(LocalOperation),
 }
 
@@ -160,6 +161,26 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         help_text: "Ask the MCU to print something",
         command_type: CommandType::McuCommand(McuDebugCommand::Ping),
     },
+    AvailableDebugCommand {
+        keyword: "read_spi_flash",
+        help_text: "Ask the MCU to read part of the spi flash and print it",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::ReadSpiFlash),
+    },
+    AvailableDebugCommand {
+        keyword: "write_spi_flash",
+        help_text: "Ask the MCU to write some tests data to part of the spi flash",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::WriteSpiFlash),
+    },
+    AvailableDebugCommand {
+        keyword: "fpga_hold_in_reset",
+        help_text: "Put the FPGA into reset and leave it that way",
+        command_type: CommandType::McuCommand(McuDebugCommand::FpgaHoldInReset),
+    },
+    AvailableDebugCommand {
+        keyword: "erase_spi_flash",
+        help_text: "Erase entire SPI flash",
+        command_type: CommandType::McuCommand(McuDebugCommand::EraseSpiFlash),
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
@@ -275,19 +296,17 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
                             arg: 0,
                         })));
                     }
+                    CommandType::McuCommandWithArg(mcu_command) => {
+                        return Ok(Some(Command::McuCommand(DebugCommand {
+                            code: mcu_command.into(),
+                            arg: get_arg(command, parts.next())?,
+                        })));
+                    }
                     CommandType::FpgaCommandWithArg(code) => {
-                        if let Some(arg_string) = parts.next() {
-                            if let Some(arg) = parse_value(arg_string) {
-                                return Ok(Some(Command::FpgaCommand(DebugCommand { code, arg })));
-                            } else {
-                                bail!(
-                                    "The argument '{}' couldn't be parsed as a decimal or hex u16",
-                                    arg_string
-                                );
-                            }
-                        } else {
-                            bail!("The command {} requires an argument", command.keyword);
-                        }
+                        return Ok(Some(Command::FpgaCommand(DebugCommand {
+                            code,
+                            arg: get_arg(command, parts.next())?,
+                        })));
                     }
                     CommandType::LocalOperation(op) => {
                         return Ok(Some(Command::LocalOperation(op)));
@@ -301,6 +320,20 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
         );
     }
     Ok(None)
+}
+
+fn get_arg(command: &AvailableDebugCommand, next_arg: Option<&str>) -> Result<u16> {
+    if let Some(arg_string) = next_arg {
+        if let Some(arg) = parse_value(arg_string) {
+            return Ok(arg);
+        } else {
+            bail!(
+                "The argument '{}' couldn't be parsed as a decimal or hex u16",
+                arg_string
+            );
+        }
+    }
+    bail!("The command {} requires an argument", command.keyword);
 }
 
 pub(crate) fn print_help_text() {

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 use crate::board;
+use rtt_target::rprint;
 use rtt_target::rprintln;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
+use spi_memory::Read;
 
 /// Write's `data` to `address` in the SPI flash. `data` is updated based on
 /// response from the SPI flash. We don't actually use this returned data, but
@@ -42,4 +44,63 @@ pub(crate) fn write(
     if spi_flash.write_bytes(address, data).is_err() {
         rprintln!("Failed to write to SPI flash");
     }
+}
+
+pub(crate) fn debug_read(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    address: u32,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    let mut buffer = [0u8; 16];
+    if spi_flash.read(address, &mut buffer).is_err() {
+        rprintln!("Failed to read SPI flash");
+        return;
+    }
+    rprintln!("SPI flash bytes");
+    for v in &buffer {
+        rprint!("{}, ", v);
+    }
+    rprintln!("===");
+}
+
+pub(crate) fn erase(spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    rprintln!("Erasing");
+    if spi_flash.erase_all().is_err() {
+        rprintln!("Failed to erase to SPI flash");
+    }
+    rprintln!("Erase complete");
+}
+
+pub(crate) fn debug_write(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    address: u32,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    let mut data = [
+        0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    ];
+    rprintln!("Writing");
+    if spi_flash.write_bytes(address, &mut data).is_err() {
+        rprintln!("Failed to write to SPI flash");
+    }
+    rprintln!("Successfully wrote to SPI flash");
 }
