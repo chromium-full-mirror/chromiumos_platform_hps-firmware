@@ -103,7 +103,7 @@ impl Board {
         let flash_spi = spi1.spi(
             (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
             hal::spi::MODE_0,
-            1.mhz(),
+            4.mhz(),
             rcc,
         );
 
