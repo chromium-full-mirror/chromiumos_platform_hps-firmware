@@ -11,8 +11,6 @@ mod debug;
 mod spi_flash;
 mod spi_peripheral;
 
-use core::convert::TryFrom;
-
 use crate::boards::board;
 use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
@@ -115,59 +113,47 @@ const APP: () = {
     #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
-        let mut cmd_buf = [0u8; 3];
-        ctx.resources
-            .mcu_debug_handler
-            .get_debug_command(&mut cmd_buf);
-        if cmd_buf[0] != 0 {
-            let arg = u16::from_le_bytes([cmd_buf[1], cmd_buf[2]]);
-            match McuDebugCommand::try_from(cmd_buf[0]) {
-                Ok(command) => {
-                    let mut handled = true;
-                    if board::SPI_FLASH_ENABLED {
-                        match command {
-                            McuDebugCommand::ReadSpiFlash => {
-                                ctx.resources.fpga_programn.set_low().unwrap();
-                                spi_flash::debug_read(ctx.resources.spi_flash, arg as u32)
-                            }
-                            McuDebugCommand::WriteSpiFlash => {
-                                ctx.resources.fpga_programn.set_low().unwrap();
-                                spi_flash::debug_write(ctx.resources.spi_flash, arg as u32)
-                            }
-                            McuDebugCommand::FpgaHoldInReset => {
-                                ctx.resources.fpga_programn.set_low().unwrap()
-                            }
-                            McuDebugCommand::EraseSpiFlash => {
-                                ctx.resources.fpga_programn.set_low().unwrap();
-                                spi_flash::erase(ctx.resources.spi_flash);
-                            }
-                            McuDebugCommand::HashSpiFlash => {
-                                ctx.resources.fpga_programn.set_low().unwrap();
-                                spi_flash::hash(
-                                    ctx.resources.spi_flash,
-                                    arg,
-                                    ctx.resources.stopwatch,
-                                )
-                            }
-                            _ => {
-                                handled = false;
-                            }
-                        }
+        if let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
+            let mut handled = true;
+            if board::SPI_FLASH_ENABLED {
+                match command.kind {
+                    McuDebugCommand::ReadSpiFlash => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::debug_read(ctx.resources.spi_flash, command.arg as u32)
                     }
-                    match command {
-                        McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
-                        McuDebugCommand::ReadCameraId => {
-                            camera::read_camera_id(ctx.resources.camera_i2c)
-                        }
-                        McuDebugCommand::Ping => rprintln!("Pong!"),
-                        _ => {
-                            if !handled {
-                                rprintln!("Unsupported MCU debug command");
-                            }
-                        }
+                    McuDebugCommand::WriteSpiFlash => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::debug_write(ctx.resources.spi_flash, command.arg as u32)
+                    }
+                    McuDebugCommand::FpgaHoldInReset => {
+                        ctx.resources.fpga_programn.set_low().unwrap()
+                    }
+                    McuDebugCommand::EraseSpiFlash => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::erase(ctx.resources.spi_flash);
+                    }
+                    McuDebugCommand::HashSpiFlash => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::hash(
+                            ctx.resources.spi_flash,
+                            command.arg,
+                            ctx.resources.stopwatch,
+                        )
+                    }
+                    _ => {
+                        handled = false;
                     }
                 }
-                Err(_) => rprintln!("Unrecognized debug command {}", cmd_buf[0]),
+            }
+            match command.kind {
+                McuDebugCommand::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+                McuDebugCommand::ReadCameraId => camera::read_camera_id(ctx.resources.camera_i2c),
+                McuDebugCommand::Ping => rprintln!("Pong!"),
+                _ => {
+                    if !handled {
+                        rprintln!("Unsupported MCU debug command");
+                    }
+                }
             }
         }
     }
