@@ -39,6 +39,7 @@ const APP: () = {
         fpga_programn: board::FpgaProgramn,
         fpga_up_channel: UpChannel,
         image_channel: UpChannel,
+        mcu_cmd_response_channel: UpChannel,
         fpga_debug_handler: debug::DebugCommandHandler,
         mcu_debug_handler: debug::DebugCommandHandler,
         spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
@@ -110,10 +111,12 @@ const APP: () = {
             .handle_interrupt(ctx.resources.state);
     }
 
-    #[task(binds = TIM16, resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch])]
+    #[task(binds = TIM16,
+        resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch,
+            mcu_cmd_response_channel])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
-        if let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
+        while let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
             let mut handled = true;
             if board::SPI_FLASH_ENABLED {
                 match command.kind {
@@ -122,8 +125,15 @@ const APP: () = {
                         spi_flash::debug_read(ctx.resources.spi_flash, command.arg as u32)
                     }
                     McuDebugCommand::WriteSpiFlash => {
-                        ctx.resources.fpga_programn.set_low().unwrap();
-                        spi_flash::debug_write(ctx.resources.spi_flash, command.arg as u32)
+                        if let Some(mut write_request) = command.write_request {
+                            ctx.resources.fpga_programn.set_low().unwrap();
+                            spi_flash::write(
+                                ctx.resources.spi_flash,
+                                write_request.address,
+                                &mut *write_request.data,
+                            );
+                            ctx.resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
+                        }
                     }
                     McuDebugCommand::FpgaHoldInReset => {
                         ctx.resources.fpga_programn.set_low().unwrap()
@@ -268,10 +278,15 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
                 mode: NoBlockSkip
                 name: "Images"
             }
+            3: {
+                size: 128
+                mode: NoBlockSkip
+                name: "McuCmdResponses"
+            }
         }
         down: {
             0: {
-                size: 16
+                size: 4096
                 mode: NoBlockSkip
                 name: "McuCommands"
             }
@@ -392,6 +407,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         fpga_programn: board.fpga_programn,
         fpga_up_channel: channels.up.1,
         image_channel: channels.up.2,
+        mcu_cmd_response_channel: channels.up.3,
         mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
         fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
         spi_flash,

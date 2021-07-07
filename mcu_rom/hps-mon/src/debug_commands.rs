@@ -36,6 +36,7 @@ pub(crate) enum LocalOperation {
     PrintHelp,
     Exit,
     ResetMcu,
+    WriteSpiFlash,
 }
 
 pub(crate) enum Command {
@@ -168,8 +169,8 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
     },
     AvailableDebugCommand {
         keyword: "write_spi_flash",
-        help_text: "Ask the MCU to write some tests data to part of the spi flash",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::WriteSpiFlash),
+        help_text: "Write SPI flash",
+        command_type: CommandType::LocalOperation(LocalOperation::WriteSpiFlash),
     },
     AvailableDebugCommand {
         keyword: "fpga_hold_in_reset",

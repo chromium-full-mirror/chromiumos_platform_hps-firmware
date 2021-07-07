@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 use core::convert::TryFrom;
+use i2c_protocol::Buffer;
+use i2c_protocol::WriteMemoryEvent;
+use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
@@ -14,11 +17,13 @@ pub struct DebugCommandHandler {
 
     buffer: [u8; DEBUG_BYTES_PER_COMMAND],
     bytes_received: usize,
+    pending: Option<McuDebugCommandInfo>,
 }
 
 pub(crate) struct McuDebugCommandInfo {
     pub(crate) kind: McuDebugCommand,
     pub(crate) arg: u16,
+    pub(crate) write_request: Option<WriteMemoryEvent>,
 }
 
 impl DebugCommandHandler {
@@ -27,6 +32,7 @@ impl DebugCommandHandler {
             channel,
             buffer: [0u8; DEBUG_BYTES_PER_COMMAND],
             bytes_received: 0,
+            pending: None,
         }
     }
 
@@ -47,6 +53,23 @@ impl DebugCommandHandler {
     }
 
     pub(crate) fn get_mcu_debug_command(&mut self) -> Option<McuDebugCommandInfo> {
+        // If we're in the process of receiving a write request, then receive
+        // bytes into the appropriate buffer.
+        if let Some(command) = self.pending.as_mut() {
+            // The following upwrap must succeed because we don't put anything
+            // into `pending` without it having a write request.
+            let write_request = command.write_request.as_mut().unwrap();
+            let r = self
+                .channel
+                .read(&mut write_request.data[self.bytes_received..]);
+            self.bytes_received += r;
+            if self.bytes_received == write_request.data.len() {
+                self.bytes_received = 0;
+                return self.pending.take();
+            }
+            return None;
+        }
+        // Receive a regular command.
         let mut cmd_buf = [0u8; 3];
         self.get_debug_command(&mut cmd_buf);
         if cmd_buf[0] == 0 {
@@ -60,6 +83,27 @@ impl DebugCommandHandler {
             }
         };
         let arg = u16::from_le_bytes([cmd_buf[1], cmd_buf[2]]);
-        Some(McuDebugCommandInfo { kind, arg })
+        let mut command = McuDebugCommandInfo {
+            kind,
+            arg,
+            write_request: None,
+        };
+        if command.kind == McuDebugCommand::WriteSpiFlash {
+            if let Some(mut buffer) = Buffer::new() {
+                buffer.resize(Buffer::CAPACITY);
+                command.write_request = Some(WriteMemoryEvent {
+                    bank: memory_banks::SPI_FLASH,
+                    address: arg as u32 * 256,
+                    data: buffer,
+                });
+            } else {
+                rprintln!("Attempt to write SPI flash when buffer is unavailable");
+                return None;
+            }
+            self.pending = Some(command);
+            None
+        } else {
+            Some(command)
+        }
     }
 }

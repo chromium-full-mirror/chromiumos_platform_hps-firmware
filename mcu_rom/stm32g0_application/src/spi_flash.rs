@@ -87,27 +87,6 @@ pub(crate) fn erase(spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSp
     rprintln!("Erase complete");
 }
 
-pub(crate) fn debug_write(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
-    address: u32,
-) {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            rprintln!("SPI flash not available");
-            return;
-        }
-    };
-    let mut data = [
-        0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    ];
-    rprintln!("Writing");
-    if spi_flash.write_bytes(address, &mut data).is_err() {
-        rprintln!("Failed to write to SPI flash");
-    }
-    rprintln!("Successfully wrote to SPI flash");
-}
-
 pub(crate) fn hash(
     spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
     num_pages: u16,

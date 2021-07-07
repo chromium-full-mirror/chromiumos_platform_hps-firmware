@@ -81,7 +81,7 @@ impl Device for OpenOcdDevice {
         )?;
         let mut from_device: Vec<Box<dyn DataSource>> = vec![];
         let mut to_device: Vec<Box<dyn DataSink>> = vec![];
-        for channel_num in 0..3 {
+        for channel_num in 0..4 {
             let channel = Box::new(self.open_rtt_channel(channel_num)?);
             from_device.push(channel.clone());
             to_device.push(channel);
@@ -121,6 +121,11 @@ impl DataSource for RttChannel {
                 }
             }
         }
+    }
+
+    fn set_read_blocking(&mut self, blocking: bool) -> Result<()> {
+        self.connection.lock().unwrap().set_nonblocking(!blocking)?;
+        Ok(())
     }
 
     fn set_blocking_mode(&mut self) -> Result<()> {

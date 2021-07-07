@@ -8,6 +8,7 @@ mod direct;
 mod image_channel;
 mod openocd;
 mod text_channel;
+mod write_spi_flash;
 
 use anyhow::Result;
 use argh::FromArgs;
@@ -64,6 +65,12 @@ trait DataSource {
     /// Reads bytes into `bytes`, returning how many bytes were read.
     fn read(&mut self, bytes: &mut [u8]) -> Result<usize>;
 
+    /// Sets whether reads should block. This is only implemented for openocd.
+    fn set_read_blocking(&mut self, _blocking: bool) -> Result<()> {
+        // Not implemented. We'll fall back to polling.
+        Ok(())
+    }
+
     /// Sets this data source so that writes to the on-device buffer will block
     /// if it fills up.
     fn set_blocking_mode(&mut self) -> Result<()>;
@@ -101,6 +108,10 @@ struct Flags {
     #[argh(option)]
     /// directory into which images should be written
     image_out: Option<PathBuf>,
+
+    #[argh(option)]
+    /// filename from which SPI flash firmware should be read
+    spi_flash_file: Option<PathBuf>,
 
     #[argh(
         option,
@@ -140,6 +151,13 @@ fn main() -> Result<()> {
     {
         let console = console_controller.console();
         let mut rtt = device.attach_rtt()?;
+        let cmd_response_channel = rtt.from_device.drain(3..=3).next().and_then(|mut channel| {
+            if channel.set_read_blocking(true).is_ok() {
+                Some(channel)
+            } else {
+                None
+            }
+        });
 
         let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
         let mut to_device = rtt.to_device.drain(..);
@@ -148,6 +166,8 @@ fn main() -> Result<()> {
             to_device.next(),
             to_device.next(),
             console,
+            cmd_response_channel,
+            &flags,
             &mut *device,
         )?;
     }
@@ -195,6 +215,8 @@ fn run_loop(
     mut mcu_command_channel: Option<Box<dyn DataSink>>,
     mut fpga_command_channel: Option<Box<dyn DataSink>>,
     console: Console,
+    mut cmd_response_channel: Option<Box<dyn DataSource>>,
+    flags: &Flags,
     device: &mut dyn Device,
 ) -> Result<()> {
     let mut backoff_ms = 0;
@@ -227,6 +249,15 @@ fn run_loop(
                 }
                 Command::LocalOperation(LocalOperation::ResetMcu) => {
                     device.reset()?;
+                }
+                Command::LocalOperation(LocalOperation::WriteSpiFlash) => {
+                    if let Err(error) = write_spi_flash::write_spi_flash(
+                        &mut mcu_command_channel,
+                        &mut cmd_response_channel,
+                        &flags.spi_flash_file,
+                    ) {
+                        eprintln!("{}", error);
+                    }
                 }
             };
         }

@@ -17,15 +17,15 @@ pub struct Buffer {
     size: usize,
 }
 
-const BUFFER_CAPACITY: usize = 256;
-
-static mut BUFFER_BYTES: [u8; BUFFER_CAPACITY] = [0u8; BUFFER_CAPACITY];
+static mut BUFFER_BYTES: [u8; Buffer::CAPACITY] = [0u8; Buffer::CAPACITY];
 static AVAILABLE: AtomicBool = AtomicBool::new(true);
 
 impl Buffer {
+    pub const CAPACITY: usize = 256;
+
     /// Attempts to construct a new instance, returning None if another instance
     /// already exists.
-    pub(crate) fn new() -> Option<Self> {
+    pub fn new() -> Option<Self> {
         if take_true(&AVAILABLE) {
             Some(Buffer { size: 0 })
         } else {
@@ -52,6 +52,15 @@ impl Buffer {
             Ok(())
         } else {
             Err(())
+        }
+    }
+
+    /// Resize to `new_size`. Must be <= Buffer::CAPACITY. Buffer contents after
+    /// a resize will be whatever was written to the buffer last time it was
+    /// used.
+    pub fn resize(&mut self, new_size: usize) {
+        if new_size <= Self::CAPACITY {
+            self.size = new_size;
         }
     }
 
@@ -111,7 +120,6 @@ fn take_true(value: &AtomicBool) -> bool {
 #[cfg(test)]
 mod tests {
     use super::Buffer;
-    use super::BUFFER_CAPACITY;
 
     #[test]
     fn test_buffer() {
@@ -132,7 +140,7 @@ mod tests {
         let mut buffer = Buffer::new().unwrap();
         assert_eq!(*buffer, []);
         // Make sure we can fill to capacity.
-        for _ in 0..BUFFER_CAPACITY {
+        for _ in 0..Buffer::CAPACITY {
             buffer.push(1).unwrap();
         }
         // Write beyond the capacity should fail.
