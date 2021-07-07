@@ -10,7 +10,7 @@ cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 embedded-hal = "0.2.4"
-hal = { package = "stm32g0xx-hal", git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt"]}
+hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt"]}
 i2c_peripheral = { path = "../i2c_peripheral" }
 i2c_protocol = { path = "../i2c_protocol" }
 mcu_common = { path = "../mcu_common" }

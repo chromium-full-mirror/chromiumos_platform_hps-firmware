@@ -16,7 +16,7 @@ hmac-sha256 = "0.1.6"
 mcu_common = { path = "../mcu_common" }
 panic-reset = "0.1.0"
 spi-memory = "0.2.0"
-stm32g0xx-hal = { git = "https://github.com/stm32-rs/stm32g0xx-hal.git", rev = "30f950ca9ae60ac178e69a38e77f05d12c4e9be4", features = ["rt", "stm32g071"] }
+stm32g0xx-hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt", "stm32g071"]}
 ufmt = "0.1.0"
 ufmt-write = "0.1.0"
 
