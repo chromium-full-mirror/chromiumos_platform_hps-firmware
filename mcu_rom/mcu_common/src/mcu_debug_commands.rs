@@ -17,4 +17,5 @@ pub enum McuDebugCommand {
     FpgaHoldInReset = 6,
     EraseSpiFlash = 7,
     HashSpiFlash = 8,
+    SpiFlashCrc = 9,
 }

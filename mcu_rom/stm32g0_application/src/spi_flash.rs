@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use crate::board;
+use crc::Crc;
 use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
 use rtt_target::rprint;
@@ -110,4 +111,30 @@ pub(crate) fn hash(
         rprintln!("Hash of first {} pages was: {:?}", num_pages, hash);
     });
     rprintln!("Hashing took {}us", elapsed_us.0);
+}
+
+const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
+
+pub(crate) fn crc_sector(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    sector: u16,
+) -> [u8; 4] {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return [0, 0, 0, 0];
+        }
+    };
+    let mut digest = CRC.digest();
+    let mut buf = [0x00; PAGE_SIZE as usize];
+    const PAGES_PER_SECTOR: u32 = SECTOR_SIZE / PAGE_SIZE;
+    for page_offset in 0..PAGES_PER_SECTOR {
+        let _ = spi_flash.read(
+            (sector as u32 * PAGES_PER_SECTOR + page_offset) * PAGE_SIZE,
+            &mut buf,
+        );
+        digest.update(&buf);
+    }
+    digest.finalize().to_le_bytes()
 }

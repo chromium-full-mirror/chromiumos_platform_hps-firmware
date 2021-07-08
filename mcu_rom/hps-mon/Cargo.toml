@@ -8,6 +8,7 @@ anyhow = "1.0.40"
 argh = "0.1.4"
 bayer = "0.1.5"
 colored = "2.0.0"
+crc = "2.0"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 mcu_common = { path  = "../mcu_common" }
 probe-rs = "0.10.1"

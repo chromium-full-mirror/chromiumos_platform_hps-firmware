@@ -150,6 +150,12 @@ const APP: () = {
                             ctx.resources.stopwatch,
                         )
                     }
+                    McuDebugCommand::SpiFlashCrc => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        ctx.resources
+                            .mcu_cmd_response_channel
+                            .write(&spi_flash::crc_sector(ctx.resources.spi_flash, command.arg));
+                    }
                     _ => {
                         handled = false;
                     }
