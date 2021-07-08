@@ -25,6 +25,7 @@ use i2c_peripheral::I2cPeripheral;
 
 /// The type of the SPI CS pin from the FPGA once configured.
 pub type FpgaSpiCsPin = gpio::gpioa::PA4<Input<Floating>>;
+pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO4;
 
 pub type HostBus = SerialHostBus;
 

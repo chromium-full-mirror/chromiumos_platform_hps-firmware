@@ -83,7 +83,7 @@ const APP: () = {
             // it, so the `handle_spi_packet` task's queue can't have it.
             let _ = ctx.spawn.handle_spi_packet(buffer);
         }
-        ctx.resources.exti.unpend(hal::exti::Event::GPIO0);
+        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
     }
 
     /// Interrupt handler for EXTI channels 4 through 15. Currently only used
@@ -96,7 +96,7 @@ const APP: () = {
             // it, so the `handle_spi_packet` task's queue can't have it.
             let _ = ctx.spawn.handle_spi_packet(buffer);
         }
-        ctx.resources.exti.unpend(hal::exti::Event::GPIO4);
+        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
     }
 
     #[task(binds = USART2, resources = [host_interface, state], priority = 3)]
