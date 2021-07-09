@@ -138,3 +138,63 @@ pub(crate) fn crc_sector(
     }
     digest.finalize().to_le_bytes()
 }
+
+pub(crate) fn test_read_speed(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    rprintln!("Reading...");
+    const READ_SIZE: u32 = 1024 * 1024;
+    let mut buf = [0u8; PAGE_SIZE as usize];
+    let elapsed_us = stopwatch.trace(|| {
+        for page in 0..(READ_SIZE / PAGE_SIZE) {
+            let _ = spi_flash.read(page * PAGE_SIZE, &mut buf);
+        }
+    });
+    rprintln!("Reading 1MB took {}us", elapsed_us.0);
+}
+
+pub(crate) fn test_write_speed(
+    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            rprintln!("SPI flash not available");
+            return;
+        }
+    };
+    rprintln!("Writing...");
+    const READ_SIZE: u32 = 1024 * 1024;
+    let mut buf = [42u8; PAGE_SIZE as usize];
+    let mut erase_time = 0;
+    let mut write_time = 0;
+    for page in 0..(READ_SIZE / PAGE_SIZE) {
+        let address = 9 * 1024 * 1024 + page * PAGE_SIZE;
+        if address % SECTOR_SIZE == 0 {
+            erase_time += stopwatch
+                .trace(|| {
+                    let _ = spi_flash.erase_sectors(address, 1);
+                })
+                .0;
+        }
+        write_time += stopwatch
+            .trace(|| {
+                let _ = spi_flash.write_bytes(address, &mut buf);
+            })
+            .0;
+    }
+    rprintln!(
+        "Erasing 1MB took {}us. Writing 1MB took {}us",
+        erase_time,
+        write_time
+    );
+}

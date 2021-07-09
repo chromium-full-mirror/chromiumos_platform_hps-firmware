@@ -18,4 +18,6 @@ pub enum McuDebugCommand {
     EraseSpiFlash = 7,
     HashSpiFlash = 8,
     SpiFlashCrc = 9,
+    SpiFlashReadSpeed = 10,
+    SpiFlashWriteSpeed = 11,
 }

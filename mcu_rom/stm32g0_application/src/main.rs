@@ -156,6 +156,20 @@ const APP: () = {
                             .mcu_cmd_response_channel
                             .write(&spi_flash::crc_sector(ctx.resources.spi_flash, command.arg));
                     }
+                    McuDebugCommand::SpiFlashReadSpeed => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::test_read_speed(
+                            ctx.resources.spi_flash,
+                            ctx.resources.stopwatch,
+                        );
+                    }
+                    McuDebugCommand::SpiFlashWriteSpeed => {
+                        ctx.resources.fpga_programn.set_low().unwrap();
+                        spi_flash::test_write_speed(
+                            ctx.resources.spi_flash,
+                            ctx.resources.stopwatch,
+                        );
+                    }
                     _ => {
                         handled = false;
                     }

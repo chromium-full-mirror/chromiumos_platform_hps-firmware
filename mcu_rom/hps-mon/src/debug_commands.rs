@@ -187,6 +187,16 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         help_text: "Hash part of the SPI flash",
         command_type: CommandType::McuCommandWithArg(McuDebugCommand::HashSpiFlash),
     },
+    AvailableDebugCommand {
+        keyword: "spi_flash_read_speed",
+        help_text: "Read 1MB of SPI flash and report speed",
+        command_type: CommandType::McuCommand(McuDebugCommand::SpiFlashReadSpeed),
+    },
+    AvailableDebugCommand {
+        keyword: "spi_flash_write_speed",
+        help_text: "Write 1MB of SPI flash and report speed",
+        command_type: CommandType::McuCommand(McuDebugCommand::SpiFlashWriteSpeed),
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
