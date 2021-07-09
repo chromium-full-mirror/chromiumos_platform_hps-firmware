@@ -197,6 +197,16 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         help_text: "Write 1MB of SPI flash and report speed",
         command_type: CommandType::McuCommand(McuDebugCommand::SpiFlashWriteSpeed),
     },
+    AvailableDebugCommand {
+        keyword: "fpga_power_off",
+        help_text: "Power off the FPGA and SPI flash",
+        command_type: CommandType::McuCommand(McuDebugCommand::FpgaPowerOff),
+    },
+    AvailableDebugCommand {
+        keyword: "fpga_power_on",
+        help_text: "Power on the FPGA and SPI flash",
+        command_type: CommandType::McuCommand(McuDebugCommand::FpgaPowerOn),
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.

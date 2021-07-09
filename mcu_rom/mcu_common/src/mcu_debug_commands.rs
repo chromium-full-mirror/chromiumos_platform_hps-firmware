@@ -20,4 +20,6 @@ pub enum McuDebugCommand {
     SpiFlashCrc = 9,
     SpiFlashReadSpeed = 10,
     SpiFlashWriteSpeed = 11,
+    FpgaPowerOff = 12,
+    FpgaPowerOn = 13,
 }

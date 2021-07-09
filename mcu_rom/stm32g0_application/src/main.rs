@@ -37,6 +37,7 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_programn: board::FpgaProgramn,
+        fpga_power_gate: board::FpgaPowerGate,
         fpga_up_channel: UpChannel,
         image_channel: UpChannel,
         mcu_cmd_response_channel: UpChannel,
@@ -113,7 +114,7 @@ const APP: () = {
 
     #[task(binds = TIM16,
         resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch,
-            mcu_cmd_response_channel])]
+            mcu_cmd_response_channel, fpga_power_gate])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         while let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
@@ -169,6 +170,14 @@ const APP: () = {
                             ctx.resources.spi_flash,
                             ctx.resources.stopwatch,
                         );
+                    }
+                    McuDebugCommand::FpgaPowerOff => {
+                        ctx.resources.fpga_power_gate.set_high().unwrap();
+                        rprintln!("FPGA and SPI flash powered off");
+                    }
+                    McuDebugCommand::FpgaPowerOn => {
+                        ctx.resources.fpga_power_gate.set_low().unwrap();
+                        rprintln!("FPGA and SPI flash powered on");
                     }
                     _ => {
                         handled = false;
@@ -425,6 +434,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_programn: board.fpga_programn,
+        fpga_power_gate: board.fpga_power_gate,
         fpga_up_channel: channels.up.1,
         image_channel: channels.up.2,
         mcu_cmd_response_channel: channels.up.3,
