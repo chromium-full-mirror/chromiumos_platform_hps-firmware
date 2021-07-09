@@ -9,5 +9,5 @@ set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
-cargo build --no-default-features --features proto0,defmt-default
+cargo build --no-default-features --features proto0
 probe-run --probe 0483:3748 --chip stm32g031 ./target/thumbv6m-none-eabi/debug/stm32g0_application
