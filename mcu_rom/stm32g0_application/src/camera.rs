@@ -40,10 +40,7 @@ pub fn read_camera_reg(camera_i2c: &mut board::CameraI2c, addrs: &mut [u8]) {
     for addr_pair in addrs.chunks_exact_mut(2) {
         let mut data: [u8; 1] = [0];
         match camera_i2c.write_read(CAMERA_I2C_ID, &addr_pair, &mut data) {
-            Ok(_) => {
-                addr_pair[0] = data[0];
-                rprintln!("0x{:02x}", addr_pair[0]);
-            }
+            Ok(_) => addr_pair[0] = data[0],
             Err(_) => rprintln!("Failed to read the address"),
         }
     }

@@ -410,11 +410,25 @@ static void print_camera_register(uint16_t address) {
   }
 }
 
-static void read_camera_i2c(void) {
-  // TODO(jakubm): Send more than a command type, but also registers to read.
-  struct mcu_stream stream;
-  mcu_stream_initialize(&stream, MCU_COMMAND_READ_CAMERA_I2C);
-  mcu_stream_flush(&stream);
+static void read_camera_i2c(uint16_t* addresses,
+                            int num_addresses,
+                            uint8_t* values) {
+  puts("Read request from camera's registers");
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_READ_CAMERA_I2C;
+  mcu_buf_out[1] = (uint8_t)num_addresses;
+  for (int i = 0; i < num_addresses; i++) {
+    mcu_buf_out[i * 2 + 2] = (uint8_t)(addresses[i] >> 8);
+    mcu_buf_out[i * 2 + 3] = (uint8_t)(addresses[i] & 0xff);
+  }
+  mcu_transaction();
+  if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
+      mcu_buf_in[1] != MCU_COMMAND_READ_CAMERA_I2C) {
+    puts("MCU did not acknowledge command");
+  }
+  for (int i = 0; i < num_addresses; i++) {
+    values[i] = mcu_buf_in[i * 2 + 2];
+  }
 }
 
 int main(void) {
@@ -481,6 +495,9 @@ int main(void) {
     poll_mcu();
     // Fetch and process debug commands until there aren't any more.
     bool should_get_command = true;
+    // Buffer to store camera register addresses and values.
+    uint16_t camera_addresses[10];
+    uint8_t camera_values[10];
     while (should_get_command) {
       uint16_t cmd_arg = 0;
       switch (get_debug_command(&cmd_arg)) {
@@ -531,7 +548,11 @@ int main(void) {
           print_ae_cfg();
           break;
         case DEBUG_CMD_READ_CAMERA_I2C:
-          read_camera_i2c();
+          // TODO(jakub): Delete static alloc in the future changes.
+          camera_addresses[0] = 0x0000;
+          camera_addresses[1] = 0x0001;
+          read_camera_i2c(camera_addresses, 2, camera_values);
+          mcu_printf("0x%02x%02x\n", camera_values[0], camera_values[1]);
           break;
         case DEBUG_CMD_NONE:
           should_get_command = false;

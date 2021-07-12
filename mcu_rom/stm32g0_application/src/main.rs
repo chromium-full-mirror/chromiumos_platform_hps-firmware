@@ -165,11 +165,11 @@ const APP: () = {
                     .get_debug_command(&mut buffer[2..]);
             }
             fpga::Action::ReadCameraI2c => {
-                // TODO(jakubm): Replace camera ID read with a dedicated func.
-                // Which will take count of registers to read and addresses.
-                camera::read_camera_id(ctx.resources.camera_i2c);
-                camera::read_camera_reg(ctx.resources.camera_i2c, &mut [0x00, 0x00, 0x00, 0x01]);
-                // TODO(jakubm): We need to send the data back to FPGA.
+                let num_addresses: usize = buffer[1] as usize;
+                camera::read_camera_reg(
+                    ctx.resources.camera_i2c,
+                    &mut buffer[2..(num_addresses * 2 + 2)],
+                );
             }
             fpga::Action::None => {}
         }
