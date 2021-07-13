@@ -28,3 +28,9 @@ void read_camera_i2c(uint16_t* addresses,
     values[i] = mcu_buf_in[i * 2 + 2];
   }
 }
+
+void print_camera_register(uint16_t address) {
+  uint8_t value = 0;
+  read_camera_i2c(&address, 1, &value);
+  mcu_printf("Camera register 0x%02x has value 0x%02x\n", address, value);
+}

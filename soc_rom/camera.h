@@ -13,4 +13,8 @@
 // The address is 2B size. The value is 1B size.
 void read_camera_i2c(uint16_t*, int, uint8_t*);
 
+// Print a value stored at a single camera register.
+// The address is 2B size. The value is 1B size.
+void print_camera_register(uint16_t);
+
 #endif

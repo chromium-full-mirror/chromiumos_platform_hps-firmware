@@ -400,17 +400,6 @@ static void set_camera_register(uint16_t address, uint8_t value) {
   }
 }
 
-static void print_camera_register(uint16_t address) {
-  uint8_t value = 0;
-  uint32_t ui32Err =
-      hm01b0_read_reg(&hm01b0_cfg, address, (uint8_t*)&value, sizeof(value));
-  if (ui32Err != HM01B0_ERR_OK) {
-    mcu_printf("Failed to read camera register 0x%02x\n", address);
-  } else {
-    mcu_printf("Camera register 0x%02x has value 0x%02x\n", address, value);
-  }
-}
-
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
