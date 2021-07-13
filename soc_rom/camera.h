@@ -1,0 +1,16 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Platform specific header file
+#ifndef _CAMERA_I2C_H_
+#define _CAMERA_I2C_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+// Read camera registers using I2C bus.
+// The address is 2B size. The value is 1B size.
+void read_camera_i2c(uint16_t*, int, uint8_t*);
+
+#endif

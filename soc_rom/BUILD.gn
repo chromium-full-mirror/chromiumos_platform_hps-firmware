@@ -76,6 +76,7 @@ executable("rom.bin") {
   sources = [
     "../third_party/python/litex/litex/soc/cores/cpu/vexriscv/crt0.S",
     "main.c",
+    "camera.c",
     "isr.c",
     "cpp_support.c",
     "hm01b0_litex.c",
