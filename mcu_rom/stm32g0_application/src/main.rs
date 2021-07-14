@@ -168,7 +168,17 @@ const APP: () = {
                 let num_addresses: usize = buffer[1] as usize;
                 camera::read_camera_reg(
                     ctx.resources.camera_i2c,
+                    // Buffer is a sequence of one or more 2B addresses.
                     &mut buffer[2..(num_addresses * 2 + 2)],
+                );
+            }
+            fpga::Action::WriteCameraI2c => {
+                let num_addresses: usize = buffer[1] as usize;
+                camera::write_camera_reg(
+                    ctx.resources.camera_i2c,
+                    // Buffer is a sequence of one or more 2B addresses
+                    // and 1B values.
+                    &mut buffer[2..(num_addresses * 3 + 3)],
                 );
             }
             fpga::Action::None => {}
