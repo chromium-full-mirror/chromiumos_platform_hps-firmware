@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
+int read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   puts("Read request from camera's registers");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_READ_CAMERA_I2C;
@@ -22,10 +22,12 @@ void read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
       mcu_buf_in[1] != MCU_COMMAND_READ_CAMERA_I2C) {
     puts("MCU did not acknowledge command");
+    return 1;
   }
   for (int i = 0; i < num_addresses; i++) {
     values[i] = mcu_buf_in[i * 2 + 2];
   }
+  return 0;
 }
 
 int write_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
@@ -42,9 +44,9 @@ int write_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
       mcu_buf_in[1] != MCU_COMMAND_WRITE_CAMERA_I2C) {
     puts("MCU did not acknowledge command");
-    return 0;
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 void print_camera_register(uint16_t address) {

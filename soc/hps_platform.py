@@ -57,16 +57,6 @@ hps_io = [
      ),
 ]
 
-# These should have equivalents defined in simulation.py.
-hps_nx17_io = [
-    # Connection to Camera
-    ('i2c', 1,
-        Subsignal('scl', Pins('H1')),
-        Subsignal('sda', Pins('G2')),
-        IOStandard('LVCMOS18H')
-     ),
-]
-
 # Debug IO that is specific to the HPS hardware. These should have equivalents
 # defined in simulation.py if they are referenced from C code.
 hps_nx17_debug_io = [
@@ -123,7 +113,7 @@ class Platform(LatticePlatform):
         # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't seem to
         # be available in Radiant 2.2, at least on Linux.
         device = 'LIFCL-17-8UWG72C'
-        ios = (hps_io + hps_nx17_io + hps_nx17_debug_io + hps_debug_common)
+        ios = (hps_io + hps_nx17_debug_io + hps_debug_common)
         LatticePlatform.__init__(
             self,
             device=device,

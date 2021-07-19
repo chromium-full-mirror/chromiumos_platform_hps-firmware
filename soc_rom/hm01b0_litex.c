@@ -6,6 +6,7 @@
 
 #include <hps_i2c.h>
 
+#include "camera.h"
 #include "hm01b0_platform.h"
 
 // We include hm01b0.c rather than compiling it separately so that we can
@@ -33,9 +34,10 @@ static hm01b0_status_e write(hm01b0_cfg_t* psCfg,
                              void* arg) {
   UNUSED(psCfg);
   UNUSED(arg);
-  bool ok =
-      i2c_write2(HM01B0_DEFAULT_ADDRESS, ui16Reg, pui8Value, ui32NumBytes);
-  return ok ? HM01B0_ERR_OK : HM01B0_ERR_I2C;
+  UNUSED(ui32NumBytes);
+  // TODO(jakubm): Extend the API to support numBytes greater than one.
+  int ret = write_camera_i2c(&ui16Reg, 1, pui8Value);
+  return ret ? HM01B0_ERR_I2C : HM01B0_ERR_OK;
 }
 
 static hm01b0_status_e read(hm01b0_cfg_t* psCfg,
@@ -45,9 +47,10 @@ static hm01b0_status_e read(hm01b0_cfg_t* psCfg,
                             void* arg) {
   UNUSED(psCfg);
   UNUSED(arg);
-  bool ok =
-      i2c_read2(HM01B0_DEFAULT_ADDRESS, ui16Reg, pui8Value, ui32NumBytes, true);
-  return ok ? HM01B0_ERR_OK : HM01B0_ERR_I2C;
+  UNUSED(ui32NumBytes);
+  // TODO(jakubm): Extend the API to support numBytes greater than one.
+  int ret = read_camera_i2c(&ui16Reg, 1, pui8Value);
+  return ret ? HM01B0_ERR_I2C : HM01B0_ERR_OK;
 }
 
 static hm01b0_status_e mclk(hm01b0_cfg_t* psCfg, bool enable, void* arg) {

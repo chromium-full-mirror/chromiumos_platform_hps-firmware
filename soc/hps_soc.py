@@ -12,7 +12,6 @@ from litex.soc.integration.soc import LiteXSoC, SoCRegion
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
-from litex.soc.cores.bitbang import I2CMaster
 from litex.build.lattice.radiant import (radiant_build_args,
                                          radiant_build_argdict)
 
@@ -111,11 +110,6 @@ class HpsSoC(LiteXSoC):
         # Camera
         self.setup_camera(use_camera_dma)
 
-        # i2c1 (Camera + MCU)
-        self.submodules.i2c = self.create_i2c_controller(
-            self.platform.request('i2c', 1))
-        self.csr.add('i2c')
-
         # SPI controller
         self.submodules.mcu_spi = self.create_spi_controller(
             self.platform.request('mcu_spi', 0))
@@ -168,9 +162,6 @@ class HpsSoC(LiteXSoC):
                 pads=self.platform.request('cam_control'),
                 sys_clk_freq=self.platform.sys_clk_freq)
         self.csr.add('cam_control')
-
-    def create_i2c_controller(self, pads):
-        return I2CMaster(pads)
 
     def create_spi_controller(self, pads):
         return SpiController(pads, self.platform.sys_clk_freq)
