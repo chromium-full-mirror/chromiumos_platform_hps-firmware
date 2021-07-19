@@ -158,11 +158,17 @@ fi
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
+rustup component add llvm-tools-preview
+
 for i in flip-link probe-run; do
     if [ ! -f "${HOME}/.cargo/bin/${i}" ]; then
         cargo install "${i}"
     fi
 done
+
+if [ ! -f "${HOME}/.cargo/bin/cargo-objcopy" ]; then
+    cargo install cargo-binutils
+fi
 
 # Warn about different versions
 if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
