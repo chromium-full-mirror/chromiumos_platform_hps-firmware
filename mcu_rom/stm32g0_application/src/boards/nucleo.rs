@@ -43,8 +43,8 @@ pub type FlashSpi = hal::spi::Spi<
     hal::stm32::SPI2,
     (
         gpio::gpioa::PA0<Analog>, // SCK
-        gpio::gpiob::PB6<Analog>, // CIPO
-        gpio::gpiob::PB7<Analog>, // COPI
+        gpio::gpioc::PC2<Analog>, // CIPO
+        gpio::gpioc::PC3<Analog>, // COPI
     ),
 >;
 pub type FlashSpiCs = gpio::gpiob::PB1<Output<PushPull>>;
@@ -92,8 +92,8 @@ impl Board {
         let host_bus = Stm32g0I2cPeripheral::new(
             i2c1,
             rcc,
-            b.pb9.into_open_drain_output(),
-            b.pb8.into_open_drain_output(),
+            b.pb7.into_open_drain_output(),
+            b.pb6.into_open_drain_output(),
             mcu_common::HPS_ADDRESS,
             i2c_config,
         );
@@ -101,8 +101,8 @@ impl Board {
         // Nucleo board doesn't have SPI flash, so we pick some arbitrary pins.
         let flash_spi_cs = b.pb1.into_push_pull_output(); // J4-1
         let flash_spi_clk = a.pa0;
-        let flash_spi_copi = b.pb7;
-        let flash_spi_cipo = b.pb6;
+        let flash_spi_copi = c.pc3;
+        let flash_spi_cipo = c.pc2;
         let flash_spi = spi2.spi(
             (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
             hal::spi::MODE_0,
