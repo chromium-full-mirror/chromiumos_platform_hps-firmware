@@ -178,8 +178,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
-        gpiob.pb9.into_open_drain_output(),
-        gpiob.pb8.into_open_drain_output(),
+        gpiob.pb7.into_open_drain_output(),
+        gpiob.pb6.into_open_drain_output(),
         mcu_common::HPS_ADDRESS,
         i2c_config,
     ));
