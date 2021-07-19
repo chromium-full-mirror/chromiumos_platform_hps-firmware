@@ -90,8 +90,8 @@ impl Board {
         let host_bus = Stm32g0I2cPeripheral::new(
             i2c1,
             rcc,
-            b.pb9.into_open_drain_output(),
-            b.pb8.into_open_drain_output(),
+            b.pb7.into_open_drain_output(),
+            b.pb6.into_open_drain_output(),
             mcu_common::HPS_ADDRESS,
             i2c_config,
         );
