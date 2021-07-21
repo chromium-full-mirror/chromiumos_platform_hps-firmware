@@ -22,8 +22,8 @@ use hal::stm32::USART2;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 /// The type of the SPI CS pin from the FPGA once configured.
-pub type FpgaSpiCsPin = hal::gpio::gpiob::PB0<Input<Floating>>;
-pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO0;
+pub type FpgaSpiCsPin = gpio::gpioa::PA8<Input<Floating>>;
+pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO8;
 
 pub type HostBus = Stm32g0I2cPeripheral;
 
@@ -60,7 +60,7 @@ pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
 pub const SPI_FLASH_ENABLED: bool = true;
 
 pub struct Board {
-    pub fpga_spi_cs: gpio::gpiob::PB0<Analog>,
+    pub fpga_spi_cs: gpio::gpioa::PA8<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
     pub fpga_spi_cipo: gpio::gpioa::PA6<Analog>,
     pub fpga_spi_copi: gpio::gpioa::PA7<Analog>,
@@ -119,7 +119,7 @@ impl Board {
         );
 
         Self {
-            fpga_spi_cs: b.pb0,
+            fpga_spi_cs: a.pa8,
             fpga_spi_clk: a.pa5,
             fpga_spi_cipo: a.pa6,
             fpga_spi_copi: a.pa7,

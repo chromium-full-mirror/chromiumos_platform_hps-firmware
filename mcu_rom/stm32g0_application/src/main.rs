@@ -79,19 +79,6 @@ const APP: () = {
         ctx.resources.spi.handle_rx_dma_interrupt();
     }
 
-    /// Interrupt handler for EXTI channels 0 through 1. Currently only used for
-    /// FPGA SPI CS changes.
-    #[task(binds = EXTI0_1, resources = [spi, exti], spawn = [handle_spi_packet],
-        priority = 2)]
-    fn exti0_1_event(ctx: exti0_1_event::Context) {
-        if let Some(buffer) = ctx.resources.spi.cs_changed() {
-            // This should never fail since there's only one buffer and we have
-            // it, so the `handle_spi_packet` task's queue can't have it.
-            let _ = ctx.spawn.handle_spi_packet(buffer);
-        }
-        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
-    }
-
     /// Interrupt handler for EXTI channels 4 through 15. Currently only used
     /// for FPGA SPI CS changes.
     #[task(binds = EXTI4_15, resources = [spi, exti], spawn = [handle_spi_packet],
