@@ -29,6 +29,7 @@ cargo +stable build
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
 cargo +stable build
 for board in proto0 proto1 nucleo proto2; do
+    echo "===== Building application for board $board ====="
     cargo +stable build --no-default-features --features $board
 done
 
