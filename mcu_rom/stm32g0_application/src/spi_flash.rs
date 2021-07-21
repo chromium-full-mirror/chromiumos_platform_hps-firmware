@@ -4,6 +4,7 @@
 
 use crate::board;
 use crc::Crc;
+use hal::prelude::OutputPin;
 use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
 use rtt_target::rprint;
@@ -197,4 +198,90 @@ pub(crate) fn test_write_speed(
         erase_time,
         write_time
     );
+}
+
+pub(crate) enum SpiFlashError {
+    Gpio,
+    TransferFailed,
+    FailedToEnableQuadSpi,
+}
+
+pub(crate) struct SpiFlash {
+    pub(crate) spi: board::FlashSpi,
+    pub(crate) cs: board::FlashSpiCs,
+}
+
+enum Command {
+    WriteStatusRegister = 0x1,
+    ReadStatusRegisterLow = 0x5,
+    WriteEnable = 0x6,
+    ReadStatusRegisterHigh = 0x35,
+}
+
+enum StatusLow {
+    WriteInProgress = 0x1,
+}
+
+enum StatusHigh {
+    QuadEnable = 0x2,
+}
+
+impl SpiFlash {
+    pub(crate) fn enable_quad_spi(&mut self) -> Result<(), SpiFlashError> {
+        let high = self.read_reg(Command::ReadStatusRegisterHigh)?;
+        if high & StatusHigh::QuadEnable as u8 != 0 {
+            // Already enabled
+            return Ok(());
+        }
+
+        let low = self.read_reg(Command::ReadStatusRegisterLow)?;
+
+        self.write_enable()?;
+        let mut buf = [
+            Command::WriteStatusRegister as u8,
+            low,
+            high | StatusHigh::QuadEnable as u8,
+        ];
+        self.transfer(&mut buf)?;
+
+        self.wait_write_complete()?;
+
+        // Read back to verify that the bit is now set.
+        let high = self.read_reg(Command::ReadStatusRegisterHigh)?;
+
+        if high & StatusHigh::QuadEnable as u8 == 0 {
+            return Err(SpiFlashError::FailedToEnableQuadSpi);
+        }
+
+        Ok(())
+    }
+
+    /// Waits until the SPI flash stops reporting that a write is in progress.
+    fn wait_write_complete(&mut self) -> Result<(), SpiFlashError> {
+        while self.read_reg(Command::ReadStatusRegisterLow)? & (StatusLow::WriteInProgress as u8)
+            != 0
+        {}
+        Ok(())
+    }
+
+    /// Reads a single byte register.
+    fn read_reg(&mut self, command: Command) -> Result<u8, SpiFlashError> {
+        let mut buf = [command as u8, 0];
+        self.transfer(&mut buf)?;
+        Ok(buf[1])
+    }
+
+    fn write_enable(&mut self) -> Result<(), SpiFlashError> {
+        self.transfer(&mut [Command::WriteEnable as u8])
+    }
+
+    fn transfer(&mut self, buf: &mut [u8]) -> Result<(), SpiFlashError> {
+        use embedded_hal::blocking::spi::Transfer;
+        self.cs.set_low().map_err(|_| SpiFlashError::Gpio)?;
+        self.spi
+            .transfer(buf)
+            .map_err(|_| SpiFlashError::TransferFailed)?;
+        self.cs.set_high().map_err(|_| SpiFlashError::Gpio)?;
+        Ok(())
+    }
 }

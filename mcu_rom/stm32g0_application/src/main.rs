@@ -394,6 +394,19 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let mut spi_flash = None;
 
     if let (Some(flash_spi), Some(flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
+        // Enable quad SPI. This setting is non-volatile, so in theory we only
+        // need do this once, however the cost of doing it every boot is only a
+        // single read, which is very cheap.
+        let mut f = spi_flash::SpiFlash {
+            spi: flash_spi,
+            cs: flash_spi_cs,
+        };
+        if f.enable_quad_spi().is_err() {
+            rprintln!("Failed to enable quad SPI");
+        }
+        let flash_spi = f.spi;
+        let flash_spi_cs = f.cs;
+
         match Flash::init(flash_spi, flash_spi_cs) {
             Ok(mut flash) => match flash.read_jedec_id() {
                 Ok(id) => {
