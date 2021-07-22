@@ -16,7 +16,6 @@ hps_io = [
         Subsignal('data', Pins('E9 E8 G9 F9 G8 F8 F7 G7')),
         Subsignal('fvld', Pins('E7')),
         Subsignal('lvld', Pins('F6')),
-        Subsignal('mclk', Pins('G6')),
         Subsignal('pclk', Pins('G5')),
         Subsignal('trig', Pins('G4')),
         # Subsignal('int',  Pins('E2')),  # Shared with serial rx

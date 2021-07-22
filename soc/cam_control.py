@@ -11,9 +11,6 @@ from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
 from litex.soc.cores import dma
 
 
-# Camera clock
-CAM_MCLK_FREQ = 10e6
-
 # Depth of FIFO used for the camera data DMA, in 8-bit bytes.
 # Note that this is in addition to the words stored elsewhere in the pipeline.
 # Specifically, 4 bit bytes are buffered in the converter.
@@ -27,8 +24,7 @@ class CameraControl(Module, AutoCSR):
         self.sys_clk_freq = sys_clk_freq
         self._w = CSRStorage(fields=[
             CSRField('trig', size=1, offset=1),
-            CSRField('mclk_en', size=1, offset=2),
-            CSRField('dma_signed', size=1, offset=3)],
+            CSRField('dma_signed', size=1, offset=2)],
             name='w')
         self._r = CSRStatus(fields=[
             CSRField('lvld', size=1, offset=0),
@@ -37,27 +33,7 @@ class CameraControl(Module, AutoCSR):
             name='r')
         self._dat = CSRStatus(fields=[CSRField('data', size=8, offset=0)],
                               name='dat')
-        self.connect_mclk(pads)
         self.connect_pads(pads)
-
-    def connect_mclk(self, pads):
-        """Handles the MCLK signal."""
-        # Only change enabled state while clock is low - prevents
-        # short clock pulses.
-        clk = Signal()
-        enabled = Signal()
-        self.sync += If(~clk, enabled.eq(self._w.fields.mclk_en))
-
-        # Clock divider - always running
-        # TODO: Use a PLL to generate clock
-        # Divide sys_clk by constant to get master clock
-        div = int(self.sys_clk_freq / CAM_MCLK_FREQ)
-        count = Signal((div - 1).bit_length())
-        self.sync += clk.eq(count < (div // 2))
-        self.sync += If(count == 0, count.eq(div - 1)
-                        ).Else(count.eq(count - 1))
-        # output clock only when enabled.
-        self.sync += pads.mclk.eq(enabled & clk)
 
     def connect_pads(self, pads):
         """Connect all the straight-through signals."""
