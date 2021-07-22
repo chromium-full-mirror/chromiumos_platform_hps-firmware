@@ -66,13 +66,10 @@ impl Device for OpenOcdDevice {
 
     fn attach_rtt(&mut self) -> anyhow::Result<RttChannels> {
         // Initialize RTT. OpenOCD will scan the specified memory range looking
-        // for the RTT controll block. We tell it the entire RAM for the
-        // smallest MCU we run on (the STM32G0). In practice the RTT controll
-        // block is usually very near to the start of RAM, so this should still
-        // work even on larger MCUs. "SEGGER RTT" is the magic prefix that the
-        // RTT control block starts with.
+        // for the RTT controll block. With flip-link active, this will likely
+        // be towards the end of RAM.
         const MCU_RAM_BASE_ADDRESS: u32 = 0x20000000;
-        const MCU_RAM_SIZE: u32 = 8192;
+        const MCU_RAM_SIZE: u32 = 36 * 1024;
         self.connection.write_all(
             format!(
                 r#"rtt setup {} {} "SEGGER RTT"
