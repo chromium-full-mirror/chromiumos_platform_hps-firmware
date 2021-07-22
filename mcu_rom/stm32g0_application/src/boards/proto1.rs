@@ -17,6 +17,8 @@ use hal::stm32::I2C1;
 use hal::stm32::I2C2;
 use hal::stm32::SPI1;
 use hal::stm32::SPI2;
+use hal::stm32::TIM1;
+use hal::stm32::TIM3;
 use hal::stm32::USART2;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
@@ -68,6 +70,8 @@ pub struct Board {
     pub flash_spi_cs: Option<FlashSpiCs>,
     pub flash_spi: Option<FlashSpi>,
     pub camera_i2c: Option<CameraI2c>,
+    pub camera_mclk: gpio::gpiob::PB6<Analog>,
+    pub camera_mclk_tim: TIM1,
 }
 
 impl Board {
@@ -80,6 +84,8 @@ impl Board {
         _usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,
+        tim1: TIM1,
+        _tim3: TIM3,
         rcc: &mut hal::rcc::Rcc,
         i2c_config: stm32g0_i2c_peripheral::Config,
     ) -> Self {
@@ -134,6 +140,8 @@ impl Board {
             flash_spi: Some(flash_spi),
 
             camera_i2c,
+            camera_mclk: b.pb6,
+            camera_mclk_tim: tim1,
         }
     }
 }

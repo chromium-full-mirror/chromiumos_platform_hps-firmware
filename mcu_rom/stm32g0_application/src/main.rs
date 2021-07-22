@@ -273,7 +273,22 @@ fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
 }
 
 fn rcc_config() -> hal::rcc::Config {
-    hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default())
+    // Clock our CPU at 60MHz. This is as close as we can get to the maximum
+    // supported clock speed of 64MHz, while still being a multiple of 12MHz,
+    // which is required in order to drive the camera at 6MHz. Once we have the
+    // camera's clock connected to a pin supported by TIM1, then we can if we
+    // want separate these and run the CPU at the full 64MHz.
+
+    // Changing this back to 64MHz is blocked on an update to stm32g0xx-hal. See
+    // TODO in proto2.rs regarding camera_mclk_tim being TIM3 instead of TIM1.
+    let pll_cfg = hal::rcc::PllConfig {
+        m: 1,
+        n: 15,
+        r: 4,
+        ..hal::rcc::PllConfig::default()
+    };
+
+    hal::rcc::Config::pll().pll_cfg(pll_cfg)
 }
 
 fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
@@ -337,6 +352,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         p.USART2,
         p.SPI1,
         p.SPI2,
+        p.TIM1,
+        p.TIM3,
         &mut rcc,
         i2c_config,
     );
@@ -370,6 +387,11 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
 
     let camera_i2c = board.camera_i2c.unwrap();
+
+    let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
+    let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
+    pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
+    pwm_channel.enable();
 
     // Ensure FPGA and SPI flash are powered.
     board.fpga_power_gate.set_low().unwrap();

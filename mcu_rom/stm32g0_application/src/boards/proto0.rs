@@ -19,6 +19,8 @@ use hal::stm32::I2C1;
 use hal::stm32::I2C2;
 use hal::stm32::SPI1;
 use hal::stm32::SPI2;
+use hal::stm32::TIM1;
+use hal::stm32::TIM3;
 use hal::stm32::USART2;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cPeripheral;
@@ -42,7 +44,7 @@ pub type FlashSpi = hal::spi::Spi<
         gpio::gpiob::PB7<Analog>, // COPI: J4-17 - shared with CAM_SDA
     ),
 >;
-pub type FlashSpiCs = gpio::gpiob::PB0<Output<PushPull>>;
+pub type FlashSpiCs = gpio::gpiob::PB9<Output<PushPull>>;
 pub type CameraI2c =
     hal::i2c::I2c<I2C1, gpio::gpiob::PB7<Output<OpenDrain>>, gpio::gpiob::PB6<Output<OpenDrain>>>;
 
@@ -76,6 +78,8 @@ pub struct Board {
     pub flash_spi_cs: Option<FlashSpiCs>,
     pub flash_spi: Option<FlashSpi>,
     pub camera_i2c: Option<CameraI2c>,
+    pub camera_mclk: gpio::gpiob::PB0<Analog>,
+    pub camera_mclk_tim: TIM3,
 }
 
 impl Board {
@@ -88,6 +92,8 @@ impl Board {
         usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,
+        _tim1: TIM1,
+        tim3: TIM3,
         rcc: &mut hal::rcc::Rcc,
         _i2c_config: stm32g0_i2c_peripheral::Config,
     ) -> Self {
@@ -111,7 +117,7 @@ impl Board {
                 1.mhz(),
                 rcc,
             ));
-            flash_spi_cs = Some(b.pb0.into_push_pull_output()); // J4-1 - shared with CAM_MCLK
+            flash_spi_cs = Some(b.pb9.into_push_pull_output());
             camera_i2c = None;
         } else {
             flash_spi = None;
@@ -141,6 +147,8 @@ impl Board {
             flash_spi_cs,
             flash_spi,
             camera_i2c,
+            camera_mclk: b.pb0,
+            camera_mclk_tim: tim3,
         }
     }
 }
