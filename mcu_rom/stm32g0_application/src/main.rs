@@ -8,6 +8,7 @@
 pub mod boards;
 mod camera;
 mod debug;
+mod header;
 mod spi_flash;
 mod spi_peripheral;
 

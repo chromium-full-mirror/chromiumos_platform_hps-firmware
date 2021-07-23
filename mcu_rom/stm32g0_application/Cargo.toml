@@ -11,6 +11,7 @@ cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 crc = "2.0"
 embedded-hal = "0.2.4"
+git-version = "0.3.4"
 hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt"]}
 hmac-sha256 = "0.1.6"
 i2c_peripheral = { path = "../i2c_peripheral" }
@@ -33,6 +34,9 @@ proto1 = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
 proto2 = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
 
 no-i2c-clock-stretching = []
+
+# Build application to be loaded in the second part of flash as stage1.
+stage1 = []
 
 # Optimize all dependencies
 [profile.dev.package."*"]
