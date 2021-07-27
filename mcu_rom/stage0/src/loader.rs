@@ -43,6 +43,19 @@ pub fn load_stage1() -> Result<(), &'static str> {
         defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
         defmt::info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
 
+        // The application will want to configure the PLL itself, however the
+        // PLL cannot be reconfigured while it's active. The HAL code that
+        // configures the PLL turns it off before it configures it. If our CPU
+        // is being clocked by the PLL then the PLL will refuse to shut down, so
+        // the code will loop forever. So we need to switch the system clock
+        // back to using the HSI. The application can then reconfigure the PLL
+        // as it sees fit. See RM0444 Rev 5 section 5.2.4.
+        let p = hal::stm32::Peripherals::steal();
+        // Reset clock configuration to default. In particular, the clock source
+        // is set back to the HSI. The HSI is still turned on, since it is what
+        // is clocking the PLL.
+        p.RCC.cfgr.write(|w| w);
+
         // Switch to the application's vector table.
         let cp = cortex_m::Peripherals::steal();
         let vector_table_address = _hdr.vector_addr as *const _ as u32;
