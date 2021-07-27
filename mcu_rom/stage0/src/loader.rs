@@ -42,6 +42,12 @@ pub fn load_stage1() -> Result<(), &'static str> {
         );
         defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
         defmt::info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
+
+        // Switch to the application's vector table.
+        let cp = cortex_m::Peripherals::steal();
+        let vector_table_address = _hdr.vector_addr as *const _ as u32;
+        cp.SCB.vtor.write(vector_table_address);
+
         cortex_m::asm::bootload(_hdr.vector_addr);
     }
 }
