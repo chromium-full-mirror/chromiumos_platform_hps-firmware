@@ -159,13 +159,16 @@ fn main() -> Result<()> {
     {
         let console = console_controller.console();
         let mut rtt = device.attach_rtt()?;
-        let cmd_response_channel = rtt.from_device.drain(3..=3).next().and_then(|mut channel| {
-            if channel.set_read_blocking(true).is_ok() {
-                Some(channel)
-            } else {
-                None
-            }
-        });
+        let mut cmd_response_channel = None;
+        if rtt.from_device.len() >= 4 {
+            cmd_response_channel = rtt.from_device.drain(3..=3).next().and_then(|mut channel| {
+                if channel.set_read_blocking(true).is_ok() {
+                    Some(channel)
+                } else {
+                    None
+                }
+            });
+        }
 
         let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
         let mut to_device = rtt.to_device.drain(..);
