@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -e
+
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+"${PROJECT_ROOT}/scripts/hps-mon" \
+    --openocd-port 4444 \
+    --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
+    --soc-rom "${PROJECT_ROOT}/build/hps_platform/software/bios/bios.bin" \
+    "$@"
