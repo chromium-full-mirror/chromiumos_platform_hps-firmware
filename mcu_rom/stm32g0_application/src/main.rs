@@ -332,9 +332,12 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     rtt_target::set_print_channel(channels.up.0);
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
+    p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
     // Reset SPI peripheral.
     p.RCC.apbrstr2.write(|w| w.spi1rst().set_bit());
     p.RCC.apbrstr2.write(|w| w.spi1rst().clear_bit());
+    p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
+    p.RCC.apbrstr1.write(|w| w.spi2rst().clear_bit());
     // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
     // is still handled when we're idle and the CPU is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
