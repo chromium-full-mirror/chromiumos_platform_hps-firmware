@@ -25,6 +25,8 @@ use text_channel::TextChannel;
 use crate::debug_commands::Command;
 use crate::debug_commands::LocalOperation;
 
+const SOC_ROM_OFFSET: usize = 2 * 1024 * 1024;
+
 struct Channel {
     up_channel: Box<dyn DataSource>,
     handler: Box<dyn ChannelHandler>,
@@ -110,8 +112,14 @@ struct Flags {
     image_out: Option<PathBuf>,
 
     #[argh(option)]
-    /// filename from which SPI flash firmware should be read
-    spi_flash_file: Option<PathBuf>,
+    /// filename from which gateware should be read when write_gateware command
+    /// is run
+    gateware: Option<PathBuf>,
+
+    #[argh(option)]
+    /// filename from which SOC ROM should be read when write_soc_rom command is
+    /// run
+    soc_rom: Option<PathBuf>,
 
     #[argh(
         option,
@@ -250,13 +258,32 @@ fn run_loop(
                 Command::LocalOperation(LocalOperation::ResetMcu) => {
                     device.reset()?;
                 }
-                Command::LocalOperation(LocalOperation::WriteSpiFlash) => {
-                    if let Err(error) = write_spi_flash::write_spi_flash(
-                        &mut mcu_command_channel,
-                        &mut cmd_response_channel,
-                        &flags.spi_flash_file,
-                    ) {
-                        eprintln!("{}", error);
+                Command::LocalOperation(LocalOperation::WriteGateware) => {
+                    if let Some(file) = &flags.gateware {
+                        if let Err(error) = write_spi_flash::write_spi_flash(
+                            &mut mcu_command_channel,
+                            &mut cmd_response_channel,
+                            0,
+                            file,
+                        ) {
+                            eprintln!("{}", error);
+                        }
+                    } else {
+                        eprintln!("--gateware must be specified on startup");
+                    }
+                }
+                Command::LocalOperation(LocalOperation::WriteSocRom) => {
+                    if let Some(file) = &flags.soc_rom {
+                        if let Err(error) = write_spi_flash::write_spi_flash(
+                            &mut mcu_command_channel,
+                            &mut cmd_response_channel,
+                            SOC_ROM_OFFSET,
+                            file,
+                        ) {
+                            eprintln!("{}", error);
+                        }
+                    } else {
+                        eprintln!("--soc-rom must be specified on startup");
                     }
                 }
             };

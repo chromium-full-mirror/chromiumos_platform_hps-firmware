@@ -10,7 +10,7 @@ use anyhow::Result;
 use crc::Crc;
 use mcu_common::McuDebugCommand;
 use std::collections::VecDeque;
-use std::path::PathBuf;
+use std::path::Path;
 use std::time::Duration;
 
 const PAGE_SIZE: usize = 256;
@@ -23,12 +23,10 @@ const MAX_OUTSTANDING_COMMANDS: usize = 10;
 pub(crate) fn write_spi_flash(
     command_channel: &mut Option<Box<dyn DataSink>>,
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
-    spi_flash_file: &Option<PathBuf>,
+    start_offset: usize,
+    spi_flash_file: &Path,
 ) -> Result<()> {
-    let spi_flash_file = match spi_flash_file {
-        Some(x) => x,
-        None => bail!("--spi-flash-file must be specified on startup"),
-    };
+    assert!(start_offset % PAGE_SIZE == 0);
     if let (Some(command_channel), Some(cmd_response_channel)) =
         (command_channel.as_mut(), cmd_response_channel.as_mut())
     {
@@ -45,6 +43,7 @@ pub(crate) fn write_spi_flash(
             sectors_to_write.len(),
             total_sectors
         );
+        let start_page = (start_offset / PAGE_SIZE) as u16;
 
         let start = std::time::Instant::now();
         let mut pages_written = 0;
@@ -56,7 +55,7 @@ pub(crate) fn write_spi_flash(
                 let chunk = &file_bytes[page_num * PAGE_SIZE..(page_num + 1) * PAGE_SIZE];
                 let command = debug_commands::DebugCommand {
                     code: McuDebugCommand::WriteSpiFlash.into(),
-                    arg: page_num as u16,
+                    arg: page_num as u16 + start_page,
                 };
                 command_channel.write(&command.to_bytes())?;
                 command_channel.write(chunk)?;
