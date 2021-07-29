@@ -47,7 +47,7 @@ impl DebugCommandHandler {
             self.bytes_received += self.channel.read(&mut self.buffer[self.bytes_received..]);
         }
         if self.bytes_received == DEBUG_BYTES_PER_COMMAND {
-            buffer.clone_from_slice(&self.buffer[1..4]);
+            buffer[..3].clone_from_slice(&self.buffer[1..4]);
             self.bytes_received = 0;
         }
     }
