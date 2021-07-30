@@ -29,10 +29,7 @@ pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO8;
 
 pub type HostBus = Stm32g0I2cPeripheral;
 
-// The LED on the Nucleo board is actually PA5, however that's already used for
-// the SPI clock, so we arbitrarily use some other pin so that the code
-// compiles.
-pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
+pub type DebugLed = gpio::gpioa::PA5<Output<PushPull>>;
 
 // The nucleo board doesn't have an FPGA hooked up to it, so we arbitrarily pick
 // some pins.
@@ -63,7 +60,7 @@ pub const SPI_FLASH_ENABLED: bool = true;
 
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA8<Analog>,
-    pub fpga_spi_clk: gpio::gpioa::PA5<Analog>,
+    pub fpga_spi_clk: gpio::gpioa::PA1<Analog>,
     pub fpga_spi_cipo: gpio::gpioa::PA6<Analog>,
     pub fpga_spi_copi: gpio::gpioa::PA7<Analog>,
 
@@ -126,13 +123,13 @@ impl Board {
 
         Self {
             fpga_spi_cs: a.pa8,
-            fpga_spi_clk: a.pa5,
+            fpga_spi_clk: a.pa1,
             fpga_spi_cipo: a.pa6,
             fpga_spi_copi: a.pa7,
 
             host_bus,
 
-            debug_led: a.pa1.into_push_pull_output(),
+            debug_led: a.pa5.into_push_pull_output(),
             fpga_programn: c.pc15.into_push_pull_output(),
             fpga_power_gate: b.pb4.into_push_pull_output(),
             spi_ready: c.pc14.into_push_pull_output(),
