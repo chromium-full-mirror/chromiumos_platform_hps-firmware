@@ -210,7 +210,7 @@ fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
             if fw_wp.is_high().unwrap() {
                 defmt::warn!("write-protect de-asserted!");
             }
-            load_stage1().map_err(drop)
+            load_stage1();
         }
         Err(_) => {
             defmt::error!("signature bad!");
@@ -221,7 +221,7 @@ fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
             } else {
                 defmt::warn!("write-protect de-asserted!");
                 defmt::warn!("starting untrusted stage 1..");
-                load_stage1().map_err(drop)
+                load_stage1();
             }
         }
     }

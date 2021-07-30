@@ -25,7 +25,8 @@ fn get_stage1_signature() -> [u8; 64] {
     unsafe { _hdr.sig.unwrap() }
 }
 
-pub fn load_stage1() -> Result<(), &'static str> {
+/// Loads stage1. This function never returns.
+pub fn load_stage1() -> ! {
     // The following is safe provided stage1 sets git_hash_ptr and
     // git_hash_length to refer to valid UTF-8.
     let git_hash = unsafe {
