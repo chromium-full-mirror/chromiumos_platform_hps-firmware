@@ -129,6 +129,10 @@ const APP: () = {
     fn button_click(ctx: button_click::Context) {
         // TODO: Remove this. We don't want this in production.
         ctx.resources.exti.unpend(hal::exti::Event::GPIO13);
+        // Don't listen for any further button-presses. If we boot into the
+        // application and the button gets pressed, the application won't know
+        // to clear the interrupt, so it will keep triggering indefinitely.
+        ctx.resources.exti.unlisten(hal::exti::Event::GPIO13);
         defmt::info!("Button pressed, booting...");
         let _ = ctx.spawn.handle_event(HostEvent::LoadApplication);
     }
