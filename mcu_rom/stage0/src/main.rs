@@ -12,6 +12,8 @@ mod premain;
 
 use crate::loader::*;
 use crate::premain::*;
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::Ordering;
 use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::SignalEdge;
@@ -31,6 +33,9 @@ extern crate bitflags;
 
 type Led = gpioa::PA1<Output<PushPull>>;
 type FwWp = gpioa::PA15<Input<Floating>>;
+
+/// Whether we're done running stage0 and we should now load stage1.
+static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
 
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
@@ -71,8 +76,12 @@ const APP: () = {
     fn handle_event(mut ctx: handle_event::Context, event: HostEvent) {
         match event {
             HostEvent::LoadApplication => {
-                if load_application(&mut ctx.resources.led, &mut ctx.resources.fw_wp).is_err() {
+                if detect_and_validate_stage1(&mut ctx.resources.led, &mut ctx.resources.fw_wp)
+                    .is_err()
+                {
                     defmt::error!("Failed to launch application");
+                } else {
+                    BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
             }
             HostEvent::WriteFlash(event) => {
@@ -97,6 +106,21 @@ const APP: () = {
                 // reset here in the same task as WriteFlash, which means they
                 // queue and get processed in order.
                 cortex_m::peripheral::SCB::sys_reset()
+            }
+        }
+    }
+
+    #[idle]
+    fn idle(_ctx: idle::Context) -> ! {
+        loop {
+            // The decision to load stage1 is made in response to an interrupt
+            // (e.g. an i2c interrupt), however we can't jump to the application
+            // from the interrupt handler, otherwise the CPU will consider that
+            // the interrupt to still be running and won't run any more
+            // interrupts at that priority or lower. So instead we jump to
+            // stage1 from here in the idle loop.
+            if BOOTLOAD_TRIGGER.load(Ordering::Relaxed) {
+                load_stage1();
             }
         }
     }
@@ -194,7 +218,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     }
 }
 
-fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
+/// Checks whether it's OK to load the application, returning an error if not.
+fn detect_and_validate_stage1(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
     if let Err(e) = detect_stage1() {
         defmt::info!("{}\r", e);
         return Err(());
@@ -210,7 +235,7 @@ fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
             if fw_wp.is_high().unwrap() {
                 defmt::warn!("write-protect de-asserted!");
             }
-            load_stage1();
+            return Ok(());
         }
         Err(_) => {
             defmt::error!("signature bad!");
@@ -221,7 +246,7 @@ fn load_application(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
             } else {
                 defmt::warn!("write-protect de-asserted!");
                 defmt::warn!("starting untrusted stage 1..");
-                load_stage1();
+                return Ok(()); // unconditionally load in dev mode.
             }
         }
     }
