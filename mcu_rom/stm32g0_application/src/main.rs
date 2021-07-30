@@ -102,9 +102,15 @@ const APP: () = {
 
     #[task(binds = TIM16,
         resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch,
-            mcu_cmd_response_channel, fpga_power_gate])]
+            mcu_cmd_response_channel, fpga_power_gate, debug_led])]
     fn timer_tick(ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
+        let led = ctx.resources.debug_led;
+        if led.is_high().unwrap_or_default() {
+            led.set_low().unwrap();
+        } else {
+            led.set_high().unwrap();
+        }
         while let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
             let mut handled = true;
             if board::SPI_FLASH_ENABLED {
