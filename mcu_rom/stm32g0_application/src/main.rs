@@ -17,6 +17,7 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
+use hal::delay::Delay;
 use hal::prelude::*;
 use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
@@ -52,7 +53,7 @@ const APP: () = {
 
     #[init]
     fn init(ctx: init::Context) -> init::LateResources {
-        init_peripherals(ctx.device)
+        init_peripherals(ctx.device, ctx.core)
     }
 
     #[task(binds = I2C1, resources = [host_interface, state], spawn = [write_spi_flash], priority = 3)]
@@ -298,7 +299,10 @@ fn rcc_config() -> hal::rcc::Config {
     hal::rcc::Config::pll().pll_cfg(pll_cfg)
 }
 
-fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
+fn init_peripherals(
+    p: hal::stm32::Peripherals,
+    cp: rtic::export::Peripherals,
+) -> init::LateResources {
     let channels = rtt_init!(
         up: {
             0: {
@@ -348,6 +352,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // is still handled when we're idle and the CPU is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p.RCC.freeze(rcc_config());
+    let mut delay = Delay::syst(cp.SYST, &rcc);
 
     let i2c_config = stm32g0_i2c_peripheral::Config {
         clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
@@ -409,6 +414,11 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     // Put the FPGA into reset, otherwise we won't be able to reliably access
     // the SPI flash.
     board.fpga_programn.set_low().unwrap();
+
+    // Give the SPI flash chip a chance to start after we powered it on. The
+    // datasheet says minimum time is 2.5ms. To be generous, we give it double
+    // that.
+    delay.delay(5.ms());
 
     let mut spi_flash = None;
 
