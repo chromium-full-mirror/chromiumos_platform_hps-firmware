@@ -26,7 +26,7 @@ pub(crate) fn write_spi_flash(
     start_offset: usize,
     spi_flash_file: &Path,
 ) -> Result<()> {
-    assert!(start_offset % PAGE_SIZE == 0);
+    assert!(start_offset % SECTOR_SIZE == 0);
     if let (Some(command_channel), Some(cmd_response_channel)) =
         (command_channel.as_mut(), cmd_response_channel.as_mut())
     {
@@ -35,27 +35,31 @@ pub(crate) fn write_spi_flash(
         // Pad with 0 up to end of current sector boundary.
         file_bytes.resize((file_bytes.len() + SECTOR_SIZE - 1) & !(SECTOR_SIZE - 1), 0);
 
-        let sectors_to_write =
-            get_sectors_to_write(&file_bytes, command_channel, cmd_response_channel)?;
+        let sectors_to_write = get_sectors_to_write(
+            &file_bytes,
+            command_channel,
+            start_offset / SECTOR_SIZE,
+            cmd_response_channel,
+        )?;
         let total_sectors = file_bytes.len() / SECTOR_SIZE;
         println!(
             "Need to write {} of {} sectors",
             sectors_to_write.len(),
             total_sectors
         );
-        let start_page = (start_offset / PAGE_SIZE) as u16;
 
         let start = std::time::Instant::now();
         let mut pages_written = 0;
         let mut outstanding_commands = 0;
         let total_pages = sectors_to_write.len() * PAGES_PER_SECTOR;
-        for sector_num in sectors_to_write {
+        for sector_info in sectors_to_write {
             for page_offset in 0..PAGES_PER_SECTOR {
-                let page_num = sector_num * PAGES_PER_SECTOR + page_offset;
-                let chunk = &file_bytes[page_num * PAGE_SIZE..(page_num + 1) * PAGE_SIZE];
+                let page_num = sector_info.sector_num * PAGES_PER_SECTOR + page_offset;
+                let chunk =
+                    &sector_info.bytes[page_offset * PAGE_SIZE..(page_offset + 1) * PAGE_SIZE];
                 let command = debug_commands::DebugCommand {
                     code: McuDebugCommand::WriteSpiFlash.into(),
-                    arg: page_num as u16 + start_page,
+                    arg: page_num as u16,
                 };
                 command_channel.write(&command.to_bytes())?;
                 command_channel.write(chunk)?;
@@ -98,16 +102,18 @@ pub(crate) fn write_spi_flash(
     Ok(())
 }
 
-struct SectorInfo {
+struct SectorInfo<'a> {
     sector_num: usize,
     desired_crc: u32,
+    bytes: &'a [u8],
 }
 
-fn get_sectors_to_write(
-    file_bytes: &[u8],
+fn get_sectors_to_write<'a>(
+    file_bytes: &'a [u8],
     command_channel: &mut Box<dyn DataSink>,
+    start_sector: usize,
     cmd_response_channel: &mut Box<dyn DataSource>,
-) -> Result<Vec<usize>> {
+) -> Result<Vec<SectorInfo<'a>>> {
     let mut need_to_write = Vec::new();
     let mut outstanding_sectors = VecDeque::new();
     let mut work_iter = file_bytes.chunks_exact(SECTOR_SIZE).enumerate();
@@ -115,7 +121,8 @@ fn get_sectors_to_write(
     let mut sectors_checked = 0;
     loop {
         let work_exhausted;
-        if let Some((sector_num, sector_bytes)) = work_iter.next() {
+        if let Some((sector_offset, sector_bytes)) = work_iter.next() {
+            let sector_num = start_sector + sector_offset;
             let command = debug_commands::DebugCommand {
                 code: McuDebugCommand::SpiFlashCrc.into(),
                 arg: sector_num as u16,
@@ -126,6 +133,7 @@ fn get_sectors_to_write(
             outstanding_sectors.push_back(SectorInfo {
                 sector_num,
                 desired_crc: digest.finalize(),
+                bytes: sector_bytes,
             });
             work_exhausted = false;
         } else {
@@ -145,7 +153,7 @@ fn get_sectors_to_write(
                     );
                 }
                 if crc != info.desired_crc {
-                    need_to_write.push(info.sector_num);
+                    need_to_write.push(info);
                 }
             }
         }
