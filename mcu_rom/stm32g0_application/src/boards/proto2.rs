@@ -30,7 +30,7 @@ pub type HostBus = Stm32g0I2cPeripheral;
 
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
-pub type FpgaPowerGate = gpio::gpiob::PB4<Output<PushPull>>;
+pub type FpgaPowerGate = gpio::gpiob::PB5<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
 pub type FlashSpi = hal::spi::Spi<
@@ -95,7 +95,7 @@ impl Board {
     ) -> Self {
         let mut fpga_programn = c.pc15.into_push_pull_output();
         fpga_programn.set_high().unwrap();
-        let fpga_power_gate = b.pb4.into_push_pull_output();
+        let fpga_power_gate = b.pb5.into_push_pull_output();
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
 
