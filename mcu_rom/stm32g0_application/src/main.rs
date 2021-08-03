@@ -317,7 +317,7 @@ fn init_peripherals(
             }
             2: {
                 size: 1024
-                mode: NoBlockSkip
+                mode: BlockIfFull
                 name: "Images"
             }
             3: {
