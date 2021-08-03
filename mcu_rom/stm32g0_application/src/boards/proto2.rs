@@ -41,7 +41,7 @@ pub type FlashSpi = hal::spi::Spi<
         gpio::gpioa::PA7<Analog>,
     ),
 >;
-pub type FlashSpiCs = gpio::gpiob::PB0<Output<PushPull>>;
+pub type FlashSpiCs = gpio::gpiob::PB0<Output<OpenDrain>>;
 pub type CameraI2c =
     hal::i2c::I2c<I2C2, gpio::gpioa::PA12<Output<OpenDrain>>, gpio::gpioa::PA11<Output<OpenDrain>>>;
 
@@ -108,7 +108,7 @@ impl Board {
             i2c_config,
         );
 
-        let flash_spi_cs = b.pb0.into_push_pull_output();
+        let flash_spi_cs = b.pb0.into_open_drain_output();
         let flash_spi_clk = a.pa5;
         let flash_spi_copi = a.pa7;
         let flash_spi_cipo = a.pa6;
