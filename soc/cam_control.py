@@ -4,7 +4,7 @@
 
 """Gateware for receiving data from the HM01B0 camera."""
 
-from migen import If, Module, Mux, Signal
+from migen import If, Module, Mux, Signal, Record
 
 from litex.soc.interconnect import stream
 from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
@@ -32,17 +32,36 @@ class CameraControl(Module, AutoCSR):
             name='r')
         self._dat = CSRStatus(fields=[CSRField('data', size=8, offset=0)],
                               name='dat')
-        self.connect_pads(pads)
+        self.buffered = self.cross_domains(pads)
+        self.connect_pads(self.buffered)
 
-    def connect_pads(self, pads):
+    def cross_domains(self, pads):
+        _LAYOUT = [
+            ('lvld', 1),
+            ('fvld', 1),
+            ('pclk', 1),
+            ('data', 8),
+        ]
+
+        sigs = Record(_LAYOUT)
+        self.comb += [
+            sigs.lvld.eq(pads.lvld),
+            sigs.fvld.eq(pads.fvld),
+            sigs.pclk.eq(pads.pclk),
+            sigs.data.eq(pads.data)]
+        for _ in range(2):
+            sigs_next = Record(_LAYOUT)
+            self.sync += sigs_next.eq(sigs)
+            sigs = sigs_next
+        return sigs
+
+    def connect_pads(self, buffered):
         """Connect all the straight-through signals."""
         self.sync += [
-            self._r.fields.lvld.eq(pads.lvld),
-            self._r.fields.fvld.eq(pads.fvld),
-            self._r.fields.pclk.eq(pads.pclk),
-        ]
-        self.sync += [
-            self._dat.fields.data.eq(pads.data)
+            self._r.fields.lvld.eq(buffered.lvld),
+            self._r.fields.fvld.eq(buffered.fvld),
+            self._r.fields.pclk.eq(buffered.pclk),
+            self._dat.fields.data.eq(buffered.data)
         ]
 
 
@@ -54,9 +73,9 @@ class CameraControlDMA(CameraControl):
             pads=pads,
             sys_clk_freq=sys_clk_freq)
         self.bus = bus
-        self.connect_dma(pads)
+        self.connect_dma(self.buffered)
 
-    def connect_dma(self, pads):
+    def connect_dma(self, buffered):
         """Connect incoming data and clock to DMA."""
         # TODO: more sophisticated reset/begin/end/timeout logic for writer.
         # NOTE: the writer writes 32bit words to the bus, each of which
@@ -72,8 +91,8 @@ class CameraControlDMA(CameraControl):
 
         # Detect pixel clock rising edge
         last_pclk = Signal()
-        self.sync += last_pclk.eq(pads.pclk)
-        pclk_rising = pads.pclk & ~last_pclk
+        self.sync += last_pclk.eq(buffered.pclk)
+        pclk_rising = buffered.pclk & ~last_pclk
 
         # When dma is enabled, and line clock (lvld) is high, and pclk is at a
         # rising edge, then capture data.
@@ -83,8 +102,8 @@ class CameraControlDMA(CameraControl):
         # RAM via DMA.
         self.sync += [
             # pylint: disable=protected-access
-            If(self.dma._enable.storage & pads.lvld & pclk_rising, [
-                self.fifo.sink.data.eq(pads.data -
+            If(self.dma._enable.storage & buffered.lvld & pclk_rising, [
+                self.fifo.sink.data.eq(buffered.data -
                                        Mux(self._w.fields.dma_signed, 128, 0)),
                 self.fifo.sink.valid.eq(1),
             ]).Else([
