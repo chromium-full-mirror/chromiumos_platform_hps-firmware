@@ -122,11 +122,15 @@ if [ ! -d "${RISCV_DIR}" ]; then
     fi
 fi
 
-if ! which rustc >/dev/null; then
+if ! which rustup >/dev/null; then
     echo -n "Install Rust [y]/n?" >&2
     read -r answer
     if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        if ! which rustup >/dev/null; then
+            echo "restart your shell and then re-run this script"
+            exit 1
+        fi
     fi
 fi
 
