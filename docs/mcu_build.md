@@ -46,6 +46,30 @@ verify the I2C connection to the HPS board:
 hps -f status
 ```
 
+## proto2
+
+Run `./scripts/proto2-run`
+
+```
+** Programming Finished **
+** Verify Started **
+** Verified OK **
+** Resetting Target **
+```
+
+Once it has run. Control-C, unplug your board then plug it back in again (you only need to do that the first time you program it).
+Run `./scripts/proto2-run` again.
+In a separate terminal, run `./scripts/proto2-mon`.
+Press enter to activate the console, then type a command like `reset_mcu`.
+You should see various debug outputs get printed.
+
+```
+>> reset_mcu
+MCU> Found expected flash chip
+MCU> MCU application started. CPU is running at 60MHz
+MCU> Resetting FPGA
+```
+
 ## proto0
 
 ### Connecting proto0
@@ -106,3 +130,4 @@ cargo run --features mcu_common/dev
 ```
 
 This enables features that we don't want in production, but which can be useful for testing. e.g. a register that is slow to read and causes an i2c underrun.
+
