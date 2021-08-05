@@ -13,9 +13,41 @@ use mcu_common::CommonHostInterface;
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 
+pub enum Stage1OkState {
+    ValidSignature,
+    InvalidSignatureWpDeassert,
+}
+
+pub struct StageZContext {
+    signature_check_pass: bool, // true indicate a validate signature.
+    stage1_present: bool,       // true when a stage 1 magic is found.
+}
+
+impl StageZContext {
+    fn new() -> Self {
+        StageZContext {
+            signature_check_pass: false,
+            stage1_present: false,
+        }
+    }
+    pub fn set_signature_passed_flag(&mut self) {
+        self.signature_check_pass = true;
+    }
+    pub fn set_stage1_present_flag(&mut self) {
+        self.stage1_present = true;
+    }
+    pub fn can_stage1_jmp(&self) -> bool {
+        self.stage1_present && self.signature_check_pass
+    }
+    fn get_system_status(&self) -> u16 {
+        self.signature_check_pass as u16 // TODO(quasisec): correct encoding?
+    }
+}
+
 pub struct HostInterface<I: I2cPeripheral> {
     i2c: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
+    pub stage0_ctx: StageZContext,
 }
 
 pub(crate) enum HostEvent {
@@ -34,6 +66,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             i2c: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
+            stage0_ctx: StageZContext::new(),
         }
     }
 
@@ -45,6 +78,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .read_register(event.register)
                     .unwrap_or_else(|| match event.register {
                         registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
+                        registers::SYSTEM_STATUS => self.stage0_ctx.get_system_status(),
                         registers::MEMORY_BANK_AVAILABLE => {
                             if Buffer::is_available() {
                                 1 << memory_banks::MCU_RW

@@ -22,6 +22,7 @@ use hal::gpio::{Input, Output};
 use hal::prelude::*;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
+use host_interface::Stage1OkState;
 use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 use panic_halt as _;
@@ -33,6 +34,11 @@ extern crate bitflags;
 
 type Led = gpioa::PA1<Output<PushPull>>;
 type FwWp = gpioa::PA15<Input<Floating>>;
+
+enum Stage1Error {
+    Missing,
+    InvalidSignature,
+}
 
 /// Whether we're done running stage0 and we should now load stage1.
 static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
@@ -73,14 +79,10 @@ const APP: () = {
     }
 
     #[task(resources = [flash_writer, led, fw_wp, host_interface], capacity = 10)]
-    fn handle_event(mut ctx: handle_event::Context, event: HostEvent) {
+    fn handle_event(ctx: handle_event::Context, event: HostEvent) {
         match event {
             HostEvent::LoadApplication => {
-                if detect_and_validate_stage1(&mut ctx.resources.led, &mut ctx.resources.fw_wp)
-                    .is_err()
-                {
-                    defmt::error!("Failed to launch application");
-                } else {
+                if ctx.resources.host_interface.stage0_ctx.can_stage1_jmp() {
                     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
             }
@@ -158,8 +160,8 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
 
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
-    let led = gpioa.pa1.into_push_pull_output();
-    let fw_wp = gpioa.pa15.into_floating_input();
+    let mut led = gpioa.pa1.into_push_pull_output();
+    let mut fw_wp = gpioa.pa15.into_floating_input();
     // configure PB4 as o/p
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
@@ -204,7 +206,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
     };
 
-    let host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
+    let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
         gpiob.pb7.into_open_drain_output(),
@@ -212,6 +214,31 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         mcu_common::HPS_ADDRESS,
         i2c_config,
     ));
+
+    match detect_and_validate_stage1(&mut led, &mut fw_wp) {
+        Ok(oks) => {
+            host_interface.stage0_ctx.set_stage1_present_flag();
+            match oks {
+                Stage1OkState::ValidSignature => {
+                    host_interface.stage0_ctx.set_signature_passed_flag()
+                }
+                Stage1OkState::InvalidSignatureWpDeassert => {
+                    host_interface.stage0_ctx.set_signature_passed_flag()
+                }
+            }
+        }
+        Err(e) => {
+            defmt::error!("Failed to launch application");
+            match e {
+                Stage1Error::Missing => defmt::error!("missing stage 1/app"),
+                Stage1Error::InvalidSignature => {
+                    host_interface.stage0_ctx.set_stage1_present_flag();
+                    defmt::error!("invalid stage 1/app signature");
+                }
+            };
+        }
+    };
+
     let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
     init::LateResources {
         host_interface,
@@ -223,10 +250,13 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
 }
 
 /// Checks whether it's OK to load the application, returning an error if not.
-fn detect_and_validate_stage1(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()> {
+fn detect_and_validate_stage1(
+    led: &mut Led,
+    fw_wp: &mut FwWp,
+) -> Result<Stage1OkState, Stage1Error> {
     if let Err(e) = detect_stage1() {
         defmt::info!("{}\r", e);
-        return Err(());
+        return Err(Stage1Error::Missing);
     }
 
     let _ = led.set_high();
@@ -239,18 +269,18 @@ fn detect_and_validate_stage1(led: &mut Led, fw_wp: &mut FwWp) -> Result<(), ()>
             if fw_wp.is_high().unwrap() {
                 defmt::warn!("write-protect de-asserted!");
             }
-            return Ok(());
+            return Ok(Stage1OkState::ValidSignature);
         }
         Err(_) => {
             defmt::error!("signature bad!");
             if fw_wp.is_low().unwrap() {
                 defmt::warn!("write-protect asserted!");
                 defmt::warn!("stage 1 is untrusted, waitting for recovery.");
-                loop {} // loop until recovered and reset.
+                return Err(Stage1Error::InvalidSignature);
             } else {
                 defmt::warn!("write-protect de-asserted!");
                 defmt::warn!("starting untrusted stage 1..");
-                return Ok(()); // unconditionally load in dev mode.
+                return Ok(Stage1OkState::InvalidSignatureWpDeassert); // unconditionally load in dev mode.
             }
         }
     }
