@@ -58,11 +58,10 @@ toolchain("riscv-gcc") {
   }
 
   tool("link") {
-    linker_script = rebase_path("../third_party/python/litex/litex/soc/software/bios/linker.ld", "", ".")
     exename = "{{target_output_name}}{{output_extension}}"
     outfile = "{{output_dir}}/$exename"
     rspfile = "$outfile.rsp"
-    command = "${tool_prefix}gcc {{ldflags}} -Wl,--script=${linker_script} -o $outfile.elf -Wl,--start-group {{inputs}} -Wl,--end-group {{libs}} && ${tool_prefix}objcopy -O binary $outfile.elf $outfile"
+    command = "${tool_prefix}gcc {{ldflags}} -o $outfile.elf -Wl,--start-group {{inputs}} -Wl,--end-group {{libs}} && ${tool_prefix}objcopy -O binary $outfile.elf $outfile"
     description = "LINK $outfile"
     default_output_dir = "{{root_out_dir}}"
     rspfile_content = "N/A"
