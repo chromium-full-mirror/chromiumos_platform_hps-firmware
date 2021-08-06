@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import serial.tools.list_ports
+from litex.tools.litex_term import LiteXTerm
+
+def find_ports():
+    """Returns a list of serial port devices which look like proto2 FPGA UART.
+    """
+    return [port_info.device for port_info in serial.tools.list_ports.comports()
+            # 0403:6011 is FTDI FT4232H
+            if port_info.vid == 0x0403
+            and port_info.pid == 0x6011
+            # Interface number 2 is the C channel
+            and port_info.location.endswith(':1.2')]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('port', nargs='?')
+    parser.add_argument('--speed', metavar='BAUD', default=460800,
+                        help='Set serial port to BAUD rate')
+    args = parser.parse_args()
+
+    if args.port is None:
+        candidate_ports = find_ports()
+        if len(candidate_ports) == 1:
+            port = candidate_ports[0]
+        elif len(candidate_ports) == 0:
+            parser.error('FT4232H not found, is proto2 connected?')
+        elif len(candidate_ports) > 1:
+            parser.error('Multiple FT4232H devices found, '
+                         'specify the port argument to choose one')
+    else:
+        port = args.port
+
+    term = LiteXTerm(serial_boot=False, kernel_image=None,
+                     kernel_address=None, json_images=None)
+    term.open(port, args.speed)
+    # Set C channel pin 4 high, to enable the level shifter for the FPGA UART
+    term.port.dtr = False
+    term.console.configure()
+    term.start()
+    term.join(True)
+
+if __name__ == "__main__":
+    main()
