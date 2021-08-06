@@ -55,24 +55,24 @@ All writes and reads are 16 bits.
 
 ## Common System Status
 
-| BIT | NAME    | DESCRIPTION                                         |
-|:----|:--------|:----------------------------------------------------|
-| 15  |         |                                                     |
-| 14  |         |                                                     |
-| 13  |         |                                                     |
-| 12  |         |                                                     |
-| 11  |         |                                                     |
-| 10  |         |                                                     |
-| 9   |         |                                                     |
-| 8   | APPLRUN | Post stage 0 has been launched, and is now running. |
-| 7   |         |                                                     |
-| 6   |         |                                                     |
-| 5   | WPOFF   | Write protect pin off.                              |
-| 4   | WPON    | Write protect pin on.                               |
-| 3   | ANONVER | The stage 1 image has failed to verify.             |
-| 2   | AVERIFY | The stage 1 image is verified                       |
-| 1   | FAULT   | System has an unrecoverable fault.                  |
-| 0   | OK      | System is operational.                              |
+| BIT | NAME      | DESCRIPTION                                         |
+|:----|:----------|:----------------------------------------------------|
+| 15  |           |                                                     |
+| 14  |           |                                                     |
+| 13  |           |                                                     |
+| 12  |           |                                                     |
+| 11  | SPINOTVER | FPGA SPI flash has failed verification.             |
+| 10  | SPIVERIFY | FPGA SPI flash is verified.                         |
+| 9   |           |                                                     |
+| 8   | APPLRUN   | Post stage 0 has been launched, and is now running. |
+| 7   |           |                                                     |
+| 6   |           |                                                     |
+| 5   | WPOFF     | Write protect pin off.                              |
+| 4   | WPON      | Write protect pin on.                               |
+| 3   | ANONVER   | The stage 1 image has failed to verify.             |
+| 2   | AVERIFY   | The stage 1 image is verified                       |
+| 1   | FAULT     | System has an unrecoverable fault.                  |
+| 0   | OK        | System is operational.                              |
 
 ## Common System Commands
 
@@ -91,7 +91,7 @@ All writes and reads are 16 bits.
 | 5   |        |                        |
 | 4   |        |                        |
 | 3   |        |                        |
-| 2   |        |                        |
+| 2   | ENABLE | Enable the next stage. |
 | 1   | LAUNCH | Launch stage1          |
 | 0   | RESET  | Reset module to stage0 |
 
@@ -124,4 +124,3 @@ The host should poll this register before issuing a Memory Write command.
 | 2   | PANIC    | A panic occurred           |
 | 1   | MCUFLASH | Error writing to MCU flash |
 | 0   | I2CURUN  | I2C Underrun               |
-
