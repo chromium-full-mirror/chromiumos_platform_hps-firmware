@@ -44,6 +44,9 @@ All writes and reads are 16 bits.
 | 4        | RO     | All   | Application Version    |
 | 5        | RO     | All   | Memory Bank Status     |
 | 6        | RO     | All   | Common Error Status    |
+| 7        | RW     | Appl  | Feature Enable         |
+| 8        | RO     | Appl  | Feature 1 Status Bits  |
+| 9        | RO     | Appl  | Feature 2 Status Bits  |
 
 ## Magic Number
 
@@ -55,24 +58,24 @@ All writes and reads are 16 bits.
 
 ## Common System Status
 
-| BIT | NAME      | DESCRIPTION                                         |
-|:----|:----------|:----------------------------------------------------|
-| 15  |           |                                                     |
-| 14  |           |                                                     |
-| 13  |           |                                                     |
-| 12  |           |                                                     |
-| 11  | SPINOTVER | FPGA SPI flash has failed verification.             |
-| 10  | SPIVERIFY | FPGA SPI flash is verified.                         |
-| 9   |           |                                                     |
-| 8   | APPLRUN   | Post stage 0 has been launched, and is now running. |
-| 7   |           |                                                     |
-| 6   |           |                                                     |
-| 5   | WPOFF     | Write protect pin off.                              |
-| 4   | WPON      | Write protect pin on.                               |
-| 3   | ANONVER   | The stage 1 image has failed to verify.             |
-| 2   | AVERIFY   | The stage 1 image is verified                       |
-| 1   | FAULT     | System has an unrecoverable fault.                  |
-| 0   | OK        | System is operational.                              |
+| BIT | NAME      | DESCRIPTION                                          |
+|:----|:----------|:-----------------------------------------------------|
+| 15  |           |                                                      |
+| 14  |           |                                                      |
+| 13  |           |                                                      |
+| 12  |           |                                                      |
+| 11  | SPINOTVER | FPGA SPI flash has failed verification.              |
+| 10  | SPIVERIFY | FPGA SPI flash is verified.                          |
+| 9   | APPLREADY | Application is running, and features may be enabled. |
+| 8   | APPLRUN   | Stage 0 has been launched, and is now running.       |
+| 7   |           |                                                      |
+| 6   |           |                                                      |
+| 5   | WPOFF     | Write protect pin off.                               |
+| 4   | WPON      | Write protect pin on.                                |
+| 3   | ANONVER   | The stage 1 image has failed to verify.              |
+| 2   | AVERIFY   | The stage 1 image is verified                        |
+| 1   | FAULT     | System has an unrecoverable fault.                   |
+| 0   | OK        | System is operational.                               |
 
 ## Common System Commands
 
@@ -124,3 +127,40 @@ The host should poll this register before issuing a Memory Write command.
 | 2   | PANIC    | A panic occurred           |
 | 1   | MCUFLASH | Error writing to MCU flash |
 | 0   | I2CURUN  | I2C Underrun               |
+
+## Feature Enable
+
+| BIT | NAME     | DESCRIPTION      |
+|:----|:---------|:-----------------|
+| 15  |          |                  |
+| 14  |          |                  |
+| 13  |          |                  |
+| 12  |          |                  |
+| 11  |          |                  |
+| 10  |          |                  |
+| 9   |          |                  |
+| 8   |          |                  |
+| 7   |          |                  |
+| 6   |          |                  |
+| 5   |          |                  |
+| 4   |          |                  |
+| 3   |          |                  |
+| 2   |          |                  |
+| 1   | FEATURE2 | Enable feature 2 |
+| 0   | FEATURE1 | Enable feature 2 |
+
+## Feature 1
+
+| BIT | NAME  | DESCRIPTION                         |
+|:----|:------|:------------------------------------|
+| 15  | VALID | The feature result is valid to use. |
+
+Bits 7-0 are the feature result.
+
+## Feature 2
+
+| BIT | NAME  | DESCRIPTION                         |
+|:----|:------|:------------------------------------|
+| 15  | VALID | The feature result is valid to use. |
+
+Bits 7-0 are the feature result.
