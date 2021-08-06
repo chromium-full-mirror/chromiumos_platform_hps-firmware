@@ -18,6 +18,12 @@ SECTIONS
   {
     /* Place crt0.S first so that _start is at the beginning of rom. */
     *crt0.o(.text .text.*)
+    /* Next place our application code: */
+    riscv-gcc/obj/soc_rom/rom.bin.*.o(.text .text.*)
+    /* Then place the rest of the code at a fixed offset. We expect this code
+     * to change less frequently, and by placing it at a fixed offset we can
+     * reduce churn when writing to SPI flash during development. */
+    . = ORIGIN(rom) + 0x00040000;
     *(.text .text.*)
   } > rom
 
