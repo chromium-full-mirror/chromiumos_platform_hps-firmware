@@ -162,3 +162,35 @@ echo "BUILDING FLASHROM"
     cd "${PROJECT_ROOT}/third_party/flashrom"
     make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no
 )
+
+# Build yosys
+echo "BUILDING YOSYS"
+(
+    cd "${PROJECT_ROOT}/third_party/yosys"
+    make -j
+    make DESTDIR="${PROJECT_ROOT}/third_party/installed" PREFIX="" install
+)
+
+# Build prjoxide
+echo "BUILDING PRJOXIDE"
+(
+    cd "${PROJECT_ROOT}/third_party/prjoxide/libprjoxide"
+    cargo install --path prjoxide --root "${PROJECT_ROOT}/third_party/installed"
+)
+
+# Build nextpnr
+echo "BUILDING NEXTPNR-NEXUS"
+(
+    cd "${PROJECT_ROOT}/third_party/nextpnr"
+    mkdir -p build
+    cd build
+    if [ ! -f Makefile ] ; then
+        cmake \
+            -DARCH=nexus \
+            -DOXIDE_INSTALL_PREFIX="${PROJECT_ROOT}/third_party/installed" \
+            -DCMAKE_INSTALL_PREFIX="${PROJECT_ROOT}/third_party/installed" \
+            ..
+    fi
+    make -j
+    make install
+)

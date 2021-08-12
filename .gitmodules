@@ -43,3 +43,12 @@
 [submodule "third_party/python/litespi"]
 	path = third_party/python/litespi
 	url = https://github.com/litex-hub/litespi.git
+[submodule "third_party/yosys"]
+	path = third_party/yosys
+	url = https://github.com/YosysHQ/yosys.git
+[submodule "third_party/prjoxide"]
+	path = third_party/prjoxide
+	url = https://github.com/gatecat/prjoxide.git
+[submodule "third_party/nextpnr"]
+	path = third_party/nextpnr
+	url = https://github.com/YosysHQ/nextpnr.git
