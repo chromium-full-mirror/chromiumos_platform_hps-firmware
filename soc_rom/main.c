@@ -313,7 +313,7 @@ static void print_expo_gain(void) {
                                               << 8 |
                                           (int)expo_gain_ctrl.ui8IntegrationL);
   mcu_printf("Digital gain: 0x%02x\n", ((int)expo_gain_ctrl.ui8DGain_H) << 8 |
-                                           (int)expo_gain_ctrl.ui8DGain_H);
+                                           (int)expo_gain_ctrl.ui8DGain_L);
 }
 
 static void read_and_print_expo_gain(void) {
