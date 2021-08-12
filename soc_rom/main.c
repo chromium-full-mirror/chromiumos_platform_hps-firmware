@@ -216,12 +216,22 @@ void run_classify() {
   write_mcu_status(person, not_person);
 }
 
+// Overwrites camera init scripts with HPS specific enhancements.
+static void hps_camera_init_overwrite() {
+  // Frame length (HB, LB) reduced from 3194 to 375 to increase FPS.
+  // Improving FPS from 5 to 42 Hz reduces the exposure calibration time.
+  uint16_t addresses[2] = {0x0340, 0x0341};
+  uint8_t values[2] = {0x01, 0x77};
+  write_camera_i2c(addresses, 2, values);
+}
+
 // Initializes the camera
 static void camera_init() {
   hm01b0_status_e status;
   puts("Camera: Normal mode init");
   hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)sHM01B0InitScript,
                      sizeof(sHM01B0InitScript) / sizeof(hm_script_t));
+  hps_camera_init_overwrite();
   status = hm01b0_save_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
   CAM_CHECK(status, "save_exposure");
 }
