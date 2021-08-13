@@ -89,12 +89,28 @@ class CameraControlDMA(CameraControl):
             self.converter.source.connect(self.dma.sink),
         ]
 
+        running = Signal()
+        last_fvld = Signal()
+        self.sync += last_fvld.eq(buffered.fvld)
+        fvld_rising = buffered.fvld & ~last_fvld
+        self.sync += [
+            # Start capturing when DMA is enabled and we see a rising edge on
+            # FVLD.
+            If(self.dma._enable.storage & fvld_rising, [
+                running.eq(1),
+            ]),
+            # Stop capturing if FVLD goes low or DMA is disabled.
+            If(~buffered.fvld | ~self.dma._enable.storage, [
+                running.eq(0)
+            ])
+        ]
+
         # Detect pixel clock rising edge
         last_pclk = Signal()
         self.sync += last_pclk.eq(buffered.pclk)
         pclk_rising = buffered.pclk & ~last_pclk
 
-        # When dma is enabled, and line clock (lvld) is high, and pclk is at a
+        # When we're running, and line clock (lvld) is high, and pclk is at a
         # rising edge, then capture data.
         # NOTE: Ignores the fifo "ready" signal since we are unable to apply
         # back pressure to the camera data interface. Instead, we set the FIFO
@@ -102,7 +118,7 @@ class CameraControlDMA(CameraControl):
         # RAM via DMA.
         self.sync += [
             # pylint: disable=protected-access
-            If(self.dma._enable.storage & buffered.lvld & pclk_rising, [
+            If(running & buffered.lvld & pclk_rising, [
                 self.fifo.sink.data.eq(buffered.data -
                                        Mux(self._w.fields.dma_signed, 128, 0)),
                 self.fifo.sink.valid.eq(1),
