@@ -193,22 +193,41 @@ class HpsSoC(LiteXSoC):
         self.integrated_rom_initialized = False
 
 
+class HpsBuilder(Builder):
+    """Object which coordinates the build process, with HPS customizations."""
+
+    def __init__(self, soc, **kwargs):
+        super().__init__(soc, **kwargs)
+        # TODO(dcallagh): we need to stop pretending our application is a BIOS,
+        # this is getting too messy...
+        litex_soc_dir = f'{SOC_DIR}/../third_party/python/litex/litex/soc'
+        self.software_packages = [
+            ('libcompiler_rt', f'{litex_soc_dir}/software/libcompiler_rt'),
+            ('libbase', f'{litex_soc_dir}/software/libbase'),
+            ('bios', f'{SOC_DIR}/software/bios'),
+        ]
+        self.software_libraries = [
+            'libcompiler_rt',
+            'libbase-nofloat',
+        ]
+
+    def add_software_package(self, name, src_dir=None):
+        # Discard it, we specify our own in __init__
+        pass
+
+    def add_software_library(self, name):
+        # Discard it, we specify our own in __init__
+        pass
+
+
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     radiant_build_args(parser)
 
 
 def create_builder(soc, args):
-    builder = Builder(soc, **builder_argdict(args))
+    builder = HpsBuilder(soc, **builder_argdict(args))
     builder.output_dir = args.output_dir
-    required_packages = {'libcompiler_rt', 'libbase'}
-    # Select required packages. Of most importance is to exclude the "bios"
-    # package, which is LiteX's BIOS, since we're using our own.
-    builder.software_packages = [
-        (name, dir) for (name, dir) in builder.software_packages
-        if name in required_packages]
-    # "bios" gets loaded automatically by the builder.
-    builder.add_software_package('bios', f'{SOC_DIR}/software/bios')
     return builder
 
 
