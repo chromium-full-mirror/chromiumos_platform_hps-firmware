@@ -137,6 +137,10 @@ struct Flags {
     /// if specified, connects to openocd on this port instead of using an
     /// st-link
     openocd_port: Option<u16>,
+
+    #[argh(option, default = "String::new()")]
+    /// commands to run on startup
+    cmd: String,
 }
 
 fn main() -> Result<()> {
@@ -232,7 +236,7 @@ fn run_loop(
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
-    let command_source = debug_commands::create_command_source(console)?;
+    let command_source = debug_commands::create_command_source(console, &flags.cmd)?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {

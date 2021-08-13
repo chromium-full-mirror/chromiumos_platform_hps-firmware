@@ -217,7 +217,10 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
 /// Terminates when the returned receiver gets closed.
-pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<Command>> {
+pub(crate) fn create_command_source(
+    console: Console,
+    initial_commands: &str,
+) -> Result<mpsc::Receiver<Command>> {
     let mut editor = CommandEditor {
         editor: rustyline::Editor::<CompletionHelper>::new(),
         should_exit: false,
@@ -227,6 +230,14 @@ pub(crate) fn create_command_source(console: Console) -> Result<mpsc::Receiver<C
         .editor
         .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
+    if let Ok(commands) = parse_commands(&initial_commands) {
+        for command in commands {
+            let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
+            if tx.send(command).is_err() || is_exit {
+                return Ok(rx);
+            }
+        }
+    }
     std::thread::spawn(move || {
         println!("Welcome to hps-mon. Press enter to activate console.");
         loop {
@@ -272,19 +283,7 @@ impl CommandEditor {
                 return vec![];
             }
             self.editor.add_history_entry(&line);
-            let mut got_error = false;
-            let commands = line
-                .split(';')
-                .filter_map(|part| match parse_command(part.trim()) {
-                    Ok(x) => x,
-                    Err(error) => {
-                        eprintln!("{}", error);
-                        got_error = true;
-                        None
-                    }
-                })
-                .collect();
-            if !got_error {
+            if let Ok(commands) = parse_commands(&line) {
                 return commands;
             }
         }
@@ -310,6 +309,29 @@ impl CommandEditor {
         if !self.should_exit {
             self.readline("");
         }
+    }
+}
+
+fn parse_commands(commands_str: &str) -> Result<Vec<Command>, ()> {
+    if commands_str.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut got_error = false;
+    let commands = commands_str
+        .split(';')
+        .filter_map(|part| match parse_command(part.trim()) {
+            Ok(x) => x,
+            Err(error) => {
+                eprintln!("{}", error);
+                got_error = true;
+                None
+            }
+        })
+        .collect();
+    if got_error {
+        Err(())
+    } else {
+        Ok(commands)
     }
 }
 
