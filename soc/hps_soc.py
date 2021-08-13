@@ -245,8 +245,8 @@ def main():
         '--build', action='store_true',
         help='Whether to do a full build, including the bitstream')
     parser.add_argument(
-        '--toolchain', default='radiant',
-        help='Which toolchain to use, radiant (default) or oxide')
+        '--toolchain', default='oxide',
+        help='Which toolchain to use, oxide (default) or radiant')
     parser.add_argument(
         '--cache', default=None,
         help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w]')
