@@ -4,6 +4,7 @@
 members = [
     "application",
     "fake_i2c",
+    "hm01b0",
     "hps_interface",
     "hps-util",
     "hps-mon",
