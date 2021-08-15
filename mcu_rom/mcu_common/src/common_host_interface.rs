@@ -62,10 +62,10 @@ mod dev {
     /// Computes a fibonacci number. This is just intended to be a somewhat slow
     /// operation that the compiler hopefully won't optimize away.
     pub(crate) fn fib(n: u16) -> u16 {
-        if n <= 1 {
-            0
-        } else {
-            fib(n - 1) + fib(n - 2)
+        match n {
+            0 => 0,
+            1 => 1,
+            n => fib(n - 1) + fib(n - 2),
         }
     }
 }
