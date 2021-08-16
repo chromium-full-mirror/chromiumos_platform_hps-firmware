@@ -10,6 +10,7 @@ use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::stm32;
 use hal::stm32::I2C1;
+use hal::time::Hertz;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
@@ -37,7 +38,12 @@ impl Stm32g0I2cPeripheral {
         address: u8,
         config: Config,
     ) -> Self {
-        let i2c = i2c1.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc);
+        let i2c = i2c1.i2c(
+            sda,
+            scl,
+            hal::i2c::Config::with_timing(timing(rcc, 400.khz())),
+            rcc,
+        );
 
         // un-own p.I2C1 block to tap registers
         let (ii2c, _, _) = i2c.release();
@@ -134,4 +140,60 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
     fn write_byte(&mut self, byte: u8) {
         self.i2c1.txdr.write(|w| unsafe { w.txdata().bits(byte) });
     }
+}
+
+/// Returns the timing configuration in order to run i2c at the specified speed.
+fn timing(rcc: &mut Rcc, i2c_speed: Hertz) -> u32 {
+    // The examples in RM0444 section 32.4.11 divide the APB clock by different
+    // values in order to achieve 8MHz, so we do the same.
+    const TARGET_CLOCK: u32 = 8_000_000;
+
+    // RM0444 says that the period of SCL is longer than scl_low + scl_high, but
+    // it doesn't say by how much. It's likely that the exact value depends on a
+    // range of factors such as rise and fall times as well as delays introduced
+    // by the analog and digital filters. We don't currently take any of that
+    // into account though. This value is calculated based on the examples in
+    // section 32.4.11 such that `t(SCL) = t(SCL_LOW) + t(SCL_HIGH)
+    // + SCL_READ_DELAY_NS`.
+    const SCL_READ_DELAY_NS: u32 = 750;
+
+    // The low and high timings for SCL are shorter than in the i2c spec,
+    // presumably because actual scl_low and scl_high will be longer due to the
+    // above read delay. These values are the values used in the examples in
+    // RM0444 section 32.4.11.
+    const MIN_SCL_LOW_NS: u32 = 1_250;
+    const MIN_SCL_HIGH_NS: u32 = 500;
+
+    // Time from the falling edge of SCL to when we update SDA with the next bit
+    // of data.
+    const DATA_HOLD_NS: u32 = 375;
+    // Time from when we set SDA to when we allow SCL to rise.
+    const DATA_SETUP_NS: u32 = 500;
+
+    // The I2C peripheral is clocked by the APB clock.
+    let apb_freq = rcc.clocks.apb_clk;
+    // Compute the duration of a cycle of SCL sans the read delays.
+    let scl_cycle_ns = 1_000_000_000 / i2c_speed.0 - SCL_READ_DELAY_NS;
+    // Allocate 5/7ths of the cycle to having SCL high and 2/7ths to low, with
+    // each being at least their minimum duration. 5/7ths is chosen based on the
+    // minimum values.
+    let scl_low_ns = core::cmp::max(scl_cycle_ns * 5 / 7, MIN_SCL_LOW_NS);
+    let scl_high_ns = core::cmp::max(scl_cycle_ns - scl_low_ns, MIN_SCL_HIGH_NS);
+    let prescaler = apb_freq.0 / TARGET_CLOCK - 1;
+    let presc_ns = 1_000_000_000 / (apb_freq.0 / (prescaler + 1));
+    // SCL will be low for presc_ns * (scl_low + 1). When computing scl_low, we
+    // add `presc_ns - 1` so that we in effect round up, as it's better for
+    // times to be slightly longer than the spec says than slightly shorter.
+    let scl_low = ((scl_low_ns + presc_ns - 1) / presc_ns) - 1;
+    let scl_high = (scl_high_ns + presc_ns - 1) / presc_ns - 1;
+    let scldel = (DATA_SETUP_NS + presc_ns - 1) / presc_ns - 1;
+    // RM0444 shows the time for SDADEL as `SDADEL * presc_ns + t(apb_freq)`.
+    // i.e. unlike SCLDEL, it doesn't add 1 before multiplying by presc_ns. So
+    // we don't subtract 1 here when computing SDADEL. We don't take into
+    // consideration the single cycle of the APB clock in this time.
+    let sdadel = (DATA_HOLD_NS + presc_ns - 1) / presc_ns;
+
+    // Pack the configuration values as specified in RM0444 section 32.7.5,
+    // suitable for putting into the I2C timing register.
+    prescaler << 28 | scldel << 20 | sdadel << 16 | scl_high << 8 | scl_low
 }
