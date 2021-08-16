@@ -9,6 +9,6 @@ set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
 openocd \
-    -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto1.openocd.cfg" \
+    -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" \
     --search tcl \
     -c "init; halt; flash erase_address 0x08000000 0x20000; exit"

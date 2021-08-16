@@ -11,5 +11,4 @@ PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
 cargo build --no-default-features --features proto2
 BINARY="target/thumbv6m-none-eabi/debug/stm32g0_application"
-# proto1 and proto2 currently share an openocd config
-openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto1.openocd.cfg" --search tcl -c "program $BINARY verify reset"
+openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" --search tcl -c "program $BINARY verify reset"
