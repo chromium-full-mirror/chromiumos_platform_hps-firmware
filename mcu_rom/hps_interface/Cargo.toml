@@ -6,7 +6,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.38"
 embedded-hal = "0.2.4"
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../mcu_common" }  # provided by ebuild
 
 [dev-dependencies]
 fake_i2c = { path = "../fake_i2c" }

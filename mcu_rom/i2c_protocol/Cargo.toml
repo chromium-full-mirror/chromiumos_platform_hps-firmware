@@ -6,7 +6,7 @@ authors = ["Google"]
 license = "BSD-3-Clause"
 
 [dependencies]
-i2c_peripheral = { path = "../i2c_peripheral" }
+i2c_peripheral = { path = "../i2c_peripheral" }  # provided by ebuild
 
 [dev-dependencies]
 embedded-hal = "0.2.4"
