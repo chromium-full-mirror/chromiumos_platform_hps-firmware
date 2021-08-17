@@ -2,6 +2,7 @@
 name = "i2c_peripheral"
 version = "0.1.0"
 edition = "2018"
+authors = ["Google"]
 license = "BSD-3-Clause"
 
 [dependencies]
