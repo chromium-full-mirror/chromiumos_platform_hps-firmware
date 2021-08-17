@@ -8,7 +8,7 @@ PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 source "${PROJECT_ROOT}/environment"
 
 set -e
-git submodule update --init
+git submodule update --init --recursive
 
 # Verify dependencies that can be installed with apt (if available)
 missing=()
