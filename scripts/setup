@@ -93,6 +93,27 @@ if [ ! -f /usr/include/libudev.h ]; then
     missing+=(libudev-dev)
 fi
 
+# The following dependencies are for building the FPGA tools below,
+# not for HPS itself:
+if [ ! -f /usr/include/tcl/tcl.h ]; then
+    missing+=(tcl-dev)
+fi
+if ! command -v bison >/dev/null; then
+    missing+=(bison)
+fi
+if ! command -v flex >/dev/null; then
+    missing+=(flex)
+fi
+if ! command -v cmake >/dev/null; then
+    missing+=(cmake)
+fi
+if [ ! -f /usr/include/boost/version.hpp ]; then
+    missing+=(libboost-all-dev)
+fi
+if [ ! -f /usr/include/eigen3/Eigen/Core ]; then
+    missing+=(libeigen3-dev)
+fi
+
 if [ ${#missing[@]} -gt 0 ]; then
     echo "Missing packages: ${missing[*]}" >&2
     if which apt >/dev/null; then
