@@ -544,7 +544,7 @@ int main(void) {
     }
     write_ae_cfg();
     if (do_run_exposure_calibration) {
-      calibration_frames = 5;
+      calibration_frames = 15;
       do_run_exposure_calibration = false;
     }
     if (calibration_frames > 0) {
