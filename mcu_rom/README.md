@@ -29,6 +29,11 @@ Primary responsibilities are:
 The `fake_i2c` crate provides an implementation of the I2C bus that allows tests
 to send and receive data over a fake bus.
 
+### Crate: gateware_compress
+
+A simple no-std compression algorithm designed specifically for the patterns we
+see in Nexus gateware bitstreams.
+
 ### Crate: hps_interface
 
 This crate defines an interface for talking to a HPS over I2C from the host
