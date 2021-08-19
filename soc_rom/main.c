@@ -30,6 +30,9 @@ static hm01b0_ae_cfg_t aecfg;
 static uint8_t ae_target = 100;
 static hm01b0_snr_expo_gain_ctrl_t expo_gain_ctrl;
 static bool automatic_exposure_enabled = true;
+static int recalibration_threshold = 0;
+
+#define CALIBRATION_FRAMES 15
 
 #define HM01B0_REG_AE_CTRL (0x2100)
 
@@ -105,6 +108,23 @@ static void calibrate(int nframes) {
   }
   print_ae_cfg();
   hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STANDBY, 0);
+}
+
+// Recalibration is required when AE mean is far from the AE target
+static int calibration_required(void) {
+  if (recalibration_threshold < 5) {
+    recalibration_threshold++;
+  }
+  hm01b0_get_ae(&hm01b0_cfg, &aecfg);
+  // If the autoexposure mean value is 20 steps away from the target there was
+  // a major light change in the environment and the recalibration is required.
+  // Threshold makes sure that we don't trigger recalibration on every single cycle.
+  // Both values are set based on the experiments.
+  if (abs(ae_target - aecfg.ui8AEMean) > 20 && recalibration_threshold == 5) {
+    recalibration_threshold = 0;
+    return 1;
+  }
+  return 0;
 }
 
 // Fetches a pixel from the TFLite input vector location.
@@ -444,7 +464,7 @@ int main(void) {
 
   // Calibrate autoexposure
   write_ae_cfg();
-  int calibration_frames = 15;
+  int calibration_frames = CALIBRATION_FRAMES;
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
@@ -549,13 +569,13 @@ int main(void) {
     }
     write_ae_cfg();
     if (do_run_exposure_calibration) {
-      calibration_frames = 15;
+      calibration_frames = CALIBRATION_FRAMES;
       do_run_exposure_calibration = false;
     }
     if (calibration_frames > 0) {
       if (automatic_exposure_enabled) {
         calibrate(calibration_frames);
-        mcu_printf("Camera calibration complete\n");
+        mcu_printf("Camera calibration completed\n");
       } else {
         mcu_printf("Skipping calibration since AE is disabled\n");
       }
@@ -563,6 +583,10 @@ int main(void) {
     }
     mcu_printf("Capturing image\n");
     capture();
+    if (calibration_required()) {
+      calibrate(CALIBRATION_FRAMES);
+      mcu_printf("Automatic re-calibration completed\n");
+    }
     if (do_show_raw_frame) {
       show_raw_frame();
     }
