@@ -52,6 +52,21 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
             .map_err(|_| Error::I2cError)
     }
 
+    pub fn read_reg(&mut self, register: u16) -> Result<u8> {
+        let mut result = [0u8; 1];
+        self.i2c
+            .write_read(CAMERA_I2C_ID, &register.to_be_bytes(), &mut result)
+            .map_err(|_| Error::I2cError)?;
+        Ok(result[0])
+    }
+
+    pub fn get_camera_id(&mut self) -> Result<u16> {
+        Ok(u16::from_be_bytes([
+            self.read_reg(0x0000)?,
+            self.read_reg(0x0001)?,
+        ]))
+    }
+
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
     }
