@@ -105,6 +105,11 @@ host. Its responsibilities are:
 Responsible for validating the SPI flash then launching the application, which
 most likely will be part of the same binary.
 
+### Crate: stm32_bootloader_client
+
+A library for communicating with the factory bootloader on stm32
+microcontrollers. Allows writing to flash/RAM.
+
 ### Crate: stm32g0_application
 
 A stand-alone MCU binary that runs the application. This crate mostly just

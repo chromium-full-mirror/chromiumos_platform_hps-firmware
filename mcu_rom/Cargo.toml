@@ -15,6 +15,7 @@ members = [
     "mcu_common",
     "mcu_common_testing",
     "sign-rom",
+    "stm32_bootloader_client",
 ]
 # Crates that can only run on the MCU go here. The MCU binaries can't go into a
 # workspace since they each have their own memory.x. If we get more than one
