@@ -11,4 +11,4 @@ PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_application"
 cargo build --no-default-features --features proto2
 BINARY="target/thumbv6m-none-eabi/debug/stm32g0_application"
-openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" --search tcl -c "program $BINARY verify reset"
+openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" -c "gdb_port 3333" -c "telnet_port 4444" -c "tcl_port 6666" --search tcl -c "program $BINARY verify reset"
