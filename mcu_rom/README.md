@@ -24,6 +24,12 @@ Primary responsibilities are:
  * Taking requests to read/write registers from the host and producing
    responses, updating internal state as appropriate.
 
+### Crate: delayed_i2c
+
+Wraps an i2c controller implementation and adds a delay to each operation. This
+can be necessary to ensure that a START isn't such a short time after a STOP
+that it violates the timing in the I2C spec.
+
 ### Crate: fake_i2c
 
 The `fake_i2c` crate provides an implementation of the I2C bus that allows tests

@@ -1,0 +1,11 @@
+[package]
+name = "delayed_i2c"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+embedded-hal = "0.2.6"
+
+[dev-dependencies]
+embedded-hal-mock = "0.8.0"

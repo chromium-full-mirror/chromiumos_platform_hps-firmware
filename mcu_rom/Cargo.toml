@@ -3,6 +3,7 @@
 # Crates that are arch-independent go here.
 members = [
     "application",
+    "delayed_i2c",
     "fake_i2c",
     "gateware_compress",
     "hm01b0",
