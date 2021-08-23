@@ -138,6 +138,11 @@ struct Flags {
     /// st-link
     openocd_port: Option<u16>,
 
+    #[argh(option, default = "9000")]
+    /// base port to use for RTT channels. This port and the subsequent
+    /// 4 ports must not already be in use.
+    base_port: u16,
+
     #[argh(option, default = "String::new()")]
     /// commands to run on startup
     cmd: String,
@@ -147,7 +152,7 @@ fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
     let mut device;
     if let Some(openocd_port) = flags.openocd_port {
-        device = openocd::OpenOcdDevice::new(openocd_port)?;
+        device = openocd::OpenOcdDevice::new(openocd_port, flags.base_port)?;
     } else {
         device = direct::DirectDevice::new(&flags)?;
     }

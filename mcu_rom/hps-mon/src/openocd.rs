@@ -29,10 +29,10 @@ struct RttChannel {
 }
 
 impl OpenOcdDevice {
-    pub(crate) fn new(port: u16) -> Result<Box<dyn Device>> {
+    pub(crate) fn new(port: u16, base_port: u16) -> Result<Box<dyn Device>> {
         Ok(Box::new(Self {
             connection: connect_local(port)?,
-            next_port: 9000,
+            next_port: base_port,
         }))
     }
 
