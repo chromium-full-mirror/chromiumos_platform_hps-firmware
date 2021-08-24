@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs the factory tester MCU code directly on proto2. Doesn't require factory
+# tester hardware.
+
+set -e
+
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+cd "${PROJECT_ROOT}/mcu_rom/factory_tester_mcu"
+cargo build --features dev
+BINARY="target/thumbv6m-none-eabi/debug/factory_tester_mcu"
+openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" --search tcl -c "program $BINARY verify reset"

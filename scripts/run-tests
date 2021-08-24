@@ -33,6 +33,10 @@ for board in proto1 nucleo proto2; do
     cargo +stable build --no-default-features --features $board
 done
 
+cd "${PROJECT_ROOT}/mcu_rom/factory_tester_mcu"
+cargo +stable build --no-default-features
+cargo +stable build --no-default-features --features dev
+
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
 cargo +stable build
 

@@ -1,0 +1,9 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = 'probe-run --probe 0483:374b --chip stm32g071'
+
+rustflags = [
+  "-C", "link-arg=-Tlink.x",
+]
+
+[build]
+target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+

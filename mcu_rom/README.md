@@ -30,6 +30,10 @@ Wraps an i2c controller implementation and adds a delay to each operation. This
 can be necessary to ensure that a START isn't such a short time after a STOP
 that it violates the timing in the I2C spec.
 
+### Crate: factory_tester_mcu
+
+Code that runs on the MCU for the purposes of factory testing.
+
 ### Crate: fake_i2c
 
 The `fake_i2c` crate provides an implementation of the I2C bus that allows tests
