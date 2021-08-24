@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <SparkFun_HM01B0_Camera_ArduinoLibrary/src/hm01b0.h>
-#include <SparkFun_HM01B0_Camera_ArduinoLibrary/src/hm01b0_raw8_qvga_8bits_lsb_5fps.h>
 #include <console.h>
 #include <generated/csr.h>
 #include <hps_i2c.h>
@@ -240,21 +239,6 @@ void run_classify() {
 static void camera_init() {
   hm01b0_status_e status;
   puts("Camera: Normal mode init");
-  // TODO(b/196113557): Camera configuration should be moved to MCU.
-  // Minimal HM01B0 configuration (ref. b/196113557#comment9).
-  const hm_script_t hps_init[] = {
-    {0x0103, 0x00,}, // Software reset.
-    {0x0100, 0x00,}, // Power up.
-    {0x1012, 0x01,}, // Enable VSYNC.
-    {0x0340, 0x01,}, // Frame length 376 (0x0178).
-    {0x0341, 0x78,},
-    {0x0342, 0x01,}, // Line length 376 (0x0178).
-    {0x0343, 0x78,},
-    {0x3010, 0x01,}, // Enable QVGA.
-    {0x3060, 0x20,}, // (optional) Enable gated CLK (default: VT reg/sys div).
-    {0x0101, 0x01,}, // (optional) Enable vertical flip.
-    {0x0100, 0x01,}, // (optional) Streaming mode (default: standby).
-  };
   hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)hps_init,
                      sizeof(hps_init) / sizeof(hm_script_t));
   status = hm01b0_save_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
