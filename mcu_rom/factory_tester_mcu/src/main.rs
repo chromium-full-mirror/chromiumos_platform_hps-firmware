@@ -6,8 +6,14 @@
 #![no_std]
 
 use cortex_m_rt::entry;
+use hal::gpio::gpioa::PA11;
+use hal::gpio::gpioa::PA12;
+use hal::gpio::OpenDrain;
+use hal::gpio::Output;
+use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::stm32;
+use hal::stm32::I2C2;
 
 use stm32g0 as _;
 
@@ -30,6 +36,17 @@ macro_rules! rprintln {
     };
 }
 
+type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
+
+struct Tester<'a> {
+    camera: hm01b0::Camera<'a, CameraI2c>,
+}
+
+#[derive(Debug)]
+enum Error {
+    I2cError,
+}
+
 #[entry]
 fn main() -> ! {
     #[cfg(feature = "dev")]
@@ -44,14 +61,41 @@ fn main() -> ! {
     // HSI, then we'll go into an infinite loop while we wait for the PLL to
     // disable, which it will never do, since it's being used.
     p.RCC.cfgr.write(|w| w);
-    p.RCC
+    let mut rcc = p
+        .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
 
     rprintln!("HPS tester starting");
 
-    // TODO: Insert some testing code here
+    let gpioa = p.GPIOA.split(&mut rcc);
+    let gpiob = p.GPIOB.split(&mut rcc);
 
-    rprintln!("Test complete");
+    let mut led = gpioa.pa1.into_push_pull_output();
+
+    // Enable a clock for the camera.
+    let pwm = p.TIM3.pwm(6.mhz(), &mut rcc);
+    let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
+    pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
+    pwm_channel.enable();
+
+    let mut camera_i2c = p.I2C2.i2c(
+        gpioa.pa12.into_open_drain_output(), // SDA
+        gpioa.pa11.into_open_drain_output(), // SCL
+        hal::i2c::Config::new(400.khz()),
+        &mut rcc,
+    );
+    let mut tester = Tester {
+        camera: hm01b0::Camera::new(&mut camera_i2c),
+    };
+    match tester.run_test() {
+        Ok(_) => {
+            rprintln!("Test successful");
+            led.set_high().unwrap();
+        }
+        Err(error) => {
+            rprintln!("Test failed: {:?}", error);
+        }
+    }
 
     // Force reentry into system bootloader, but only in non-dev mode, since it
     // would be annoying to have that happen if dev mode.
@@ -64,4 +108,42 @@ fn main() -> ! {
     }
     #[cfg(feature = "dev")]
     loop {}
+}
+
+impl<'a> Tester<'a> {
+    fn run_test(&mut self) -> Result<(), Error> {
+        self.configure_camera()
+    }
+
+    fn configure_camera(&mut self) -> Result<(), Error> {
+        // Sometimes the first i2c access to the camera fails (camera doesn't
+        // ACK), so we do a few reads until it succeeds.
+        for _ in 0..10 {
+            if self.camera.get_camera_id().is_ok() {
+                break;
+            }
+        }
+        self.camera.reset()?;
+        self.camera.set_advance_vsync(1)?;
+        self.camera.set_shift_config(hm01b0::ShiftConfig {
+            pixel_shift_enabled: false,
+            hsync_shift_enabled: false,
+            vsync_shift_enabled: true,
+        })?;
+        self.camera.set_qvga_enable(true)?;
+        self.camera.set_line_length(0x0178)?;
+        self.camera.set_frame_length(0x172)?;
+        self.camera
+            .set_test_pattern(Some(hm01b0::TestPattern::Walking1s))?;
+        self.camera.set_mode(hm01b0::Mode::Streaming)?;
+        Ok(())
+    }
+}
+
+impl From<hm01b0::Error> for Error {
+    fn from(e: hm01b0::Error) -> Self {
+        match e {
+            hm01b0::Error::I2cError => Error::I2cError,
+        }
+    }
 }
