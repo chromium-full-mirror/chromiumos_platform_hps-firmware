@@ -4,12 +4,15 @@
 
 mod console;
 mod debug_commands;
-mod direct;
 mod image_channel;
 mod openocd;
 mod text_channel;
 mod write_spi_flash;
 
+#[cfg(feature = "direct")]
+mod direct;
+
+use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
@@ -99,6 +102,7 @@ struct RttChannels {
 #[derive(FromArgs)]
 /// Monitors the HPS for debug output via SWD.
 struct Flags {
+    #[cfg(feature = "direct")]
     #[argh(option)]
     /// CPU model
     cpu: Option<String>,
@@ -129,6 +133,7 @@ struct Flags {
     /// image type that we expect from the camera
     image_type: ImageType,
 
+    #[cfg(feature = "direct")]
     #[argh(option, default = "0")]
     /// which probe number to use, starting from 0.
     probe_num: usize,
@@ -154,7 +159,14 @@ fn main() -> Result<()> {
     if let Some(openocd_port) = flags.openocd_port {
         device = openocd::OpenOcdDevice::new(openocd_port, flags.base_port)?;
     } else {
-        device = direct::DirectDevice::new(&flags)?;
+        #[cfg(feature = "direct")]
+        {
+            device = direct::DirectDevice::new(&flags)?;
+        }
+        #[cfg(not(feature = "direct"))]
+        {
+            bail!("probe-rs feature is not enabled and you didn't specify --openocd-port");
+        }
     }
 
     if flags.reset {

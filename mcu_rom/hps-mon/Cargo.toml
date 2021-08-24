@@ -11,6 +11,9 @@ colored = "2.0.0"
 crc = "2.0"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 mcu_common = { path  = "../mcu_common" }
-probe-rs = "0.10.1"
-probe-rs-rtt = "0.10.1"
+probe-rs = { version = "0.10.1", optional = true }
+probe-rs-rtt = { version = "0.10.1", optional = true }
 rustyline = "8.2.0"
+
+[features]
+direct  = [ "probe-rs", "probe-rs-rtt" ]
