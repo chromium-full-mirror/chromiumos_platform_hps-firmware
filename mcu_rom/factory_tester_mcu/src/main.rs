@@ -11,13 +11,18 @@ use core::convert::Infallible;
 use cortex_m::delay::Delay;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
+use hal::gpio::gpioa::PA3;
 use hal::gpio::gpioa::PA5;
 use hal::gpio::gpioa::PA6;
 use hal::gpio::gpioa::PA7;
 use hal::gpio::gpiob::PB0;
+use hal::gpio::gpioc::PC15;
 use hal::gpio::Analog;
+use hal::gpio::Input;
 use hal::gpio::OpenDrain;
 use hal::gpio::Output;
+use hal::gpio::PullUp;
+use hal::gpio::PushPull;
 use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::spi::Spi;
@@ -57,7 +62,12 @@ pub struct Tester {
     camera_i2c: CameraI2c,
     flash_spi: Option<FlashSpi>,
     flash_spi_cs: Option<FlashSpiCs>,
+    fpga_programn: PC15<Output<PushPull>>,
     stopwatch: Stopwatch<TIM2>,
+    delay: Delay,
+
+    // Data sources from the FPGA
+    heartbeat: PA3<Input<PullUp>>,
 }
 
 #[derive(Debug)]
@@ -68,6 +78,7 @@ enum Error {
     SpiFlashError,
     UnexpectedSpiFlashId,
     SpiFlashValidateFailed,
+    NoSignalFromFpga,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -143,6 +154,8 @@ fn init_peripherals(
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
     let mut delay = Delay::new(cp.SYST, rcc.clocks.ahb_clk.0);
 
+    let heartbeat = gpioa.pa3.into_pull_up_input();
+
     // Enable a clock for the camera.
     let pwm = p.TIM3.pwm(6.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
@@ -185,7 +198,10 @@ fn init_peripherals(
         camera_i2c,
         flash_spi,
         flash_spi_cs,
+        fpga_programn,
         stopwatch,
+        delay,
+        heartbeat,
     };
 
     init::LateResources {
@@ -208,6 +224,11 @@ impl Tester {
             rprintln!("run_test called multiple times?");
             return Err(Error::InternalError);
         }
+
+        // Start FPGA
+        self.fpga_programn.set_high()?;
+
+        check_heartbeat(&self.heartbeat, &mut self.delay)?;
 
         self.configure_camera()
     }
@@ -235,6 +256,25 @@ impl Tester {
         camera.set_mode(hm01b0::Mode::Streaming)?;
         Ok(())
     }
+}
+
+/// Waits until the pin `heartbeat` is observed both high and low.
+fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>, delay: &mut Delay) -> Result<(), Error> {
+    let mut got_high = false;
+    let mut got_low = false;
+    for x in 0..5000 {
+        if heartbeat.is_high()? {
+            got_high = true;
+        } else {
+            got_low = true;
+        }
+        if got_high && got_low {
+            rprintln!("Got signal from FPGA after {} iterations", x);
+            return Ok(());
+        }
+        delay.delay_ms(1u32);
+    }
+    Err(Error::NoSignalFromFpga)
 }
 
 impl From<hm01b0::Error> for Error {
