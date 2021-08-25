@@ -12,6 +12,9 @@ panic-halt = "0.2.0"
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"], optional = true }
 stm32g0 = "0.13.0"
 
+[build-dependencies]
+gateware_compress = { path = "../gateware_compress" }
+
 [features]
 default = ["dev"]
 # Targets STM32 flash instead of RAM. Enables debugging features.
