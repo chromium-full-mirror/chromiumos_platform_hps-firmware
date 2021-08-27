@@ -9,7 +9,6 @@ mod gateware_writer;
 
 use core::convert::Infallible;
 use cortex_m::delay::Delay;
-use cortex_m_rt::entry;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
 use hal::gpio::gpioa::PA5;
@@ -22,13 +21,13 @@ use hal::gpio::Output;
 use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::spi::Spi;
-use hal::stm32;
 use hal::stm32::I2C2;
+use hal::stm32::SPI1;
+use hal::stm32::SYSCFG_VREFBUF;
+use hal::stm32::TIM2;
 use hal::timer::stopwatch::Stopwatch;
 use spi_memory::series25::Flash;
 use stm32g0 as _;
-use stm32g0::stm32g071::SPI1;
-use stm32g0::stm32g071::TIM2;
 
 #[cfg(feature = "dev")]
 use panic_rtt_target as _;
@@ -70,15 +69,56 @@ enum Error {
     UnexpectedSpiFlashId,
 }
 
-#[entry]
-fn main() -> ! {
+#[rtic::app(device = hal::stm32, peripherals = true)]
+const APP: () = {
+    struct Resources {
+        tester: Tester,
+        syscfg_vrefbuf: SYSCFG_VREFBUF,
+    }
+
+    #[init(spawn = [run_test])]
+    fn init(ctx: init::Context) -> init::LateResources {
+        ctx.spawn.run_test().unwrap();
+        init_peripherals(ctx.device, ctx.core)
+    }
+
+    #[task(resources = [tester, syscfg_vrefbuf])]
+    fn run_test(ctx: run_test::Context) {
+        match ctx.resources.tester.run_test() {
+            Ok(_) => {
+                rprintln!("Test successful");
+            }
+            Err(error) => {
+                rprintln!("Test failed: {:?}", error);
+            }
+        }
+        // Force reentry into system bootloader, but only in non-dev mode, since it
+        // would be annoying to have that happen if dev mode.
+        #[cfg(not(feature = "dev"))]
+        {
+            ctx.resources
+                .syscfg_vrefbuf
+                .cfgr1
+                .modify(|_, w| unsafe { w.mem_mode().bits(1) });
+            cortex_m::peripheral::SCB::sys_reset();
+        }
+    }
+
+    // Interrupts that we're not using that can be used by RTIC for spawning
+    // software tasks.
+    extern "C" {
+        fn TIM17();
+    }
+};
+
+fn init_peripherals(
+    p: hal::stm32::Peripherals,
+    cp: rtic::export::Peripherals,
+) -> init::LateResources {
     #[cfg(feature = "dev")]
     {
         rtt_target::rtt_init_print!();
     }
-
-    let p = stm32::Peripherals::take().unwrap();
-    let cp = cortex_m::Peripherals::take().unwrap();
 
     // Reset system clock source to the HSI. The factory bootloader (which we
     // are run from without a CPU reset), will have set the clock source to the
@@ -86,6 +126,9 @@ fn main() -> ! {
     // HSI, then we'll go into an infinite loop while we wait for the PLL to
     // disable, which it will never do, since it's being used.
     p.RCC.cfgr.write(|w| w);
+    // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
+    // is still handled when we're idle and the CPU is put to sleep.
+    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
     let mut rcc = p
         .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
@@ -96,7 +139,6 @@ fn main() -> ! {
     let gpiob = p.GPIOB.split(&mut rcc);
     let gpioc = p.GPIOC.split(&mut rcc);
 
-    let mut led = gpioa.pa1.into_push_pull_output();
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
     let mut delay = Delay::new(cp.SYST, rcc.clocks.ahb_clk.0);
 
@@ -144,27 +186,11 @@ fn main() -> ! {
         flash_spi_cs,
         stopwatch,
     };
-    match tester.run_test() {
-        Ok(_) => {
-            rprintln!("Test successful");
-            led.set_high().unwrap();
-        }
-        Err(error) => {
-            rprintln!("Test failed: {:?}", error);
-        }
-    }
 
-    // Force reentry into system bootloader, but only in non-dev mode, since it
-    // would be annoying to have that happen if dev mode.
-    #[cfg(not(feature = "dev"))]
-    {
-        p.SYSCFG_VREFBUF
-            .cfgr1
-            .modify(|_, w| unsafe { w.mem_mode().bits(1) });
-        cortex_m::peripheral::SCB::sys_reset();
+    init::LateResources {
+        tester,
+        syscfg_vrefbuf: p.SYSCFG_VREFBUF,
     }
-    #[cfg(feature = "dev")]
-    loop {}
 }
 
 impl Tester {
