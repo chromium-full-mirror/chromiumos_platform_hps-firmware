@@ -6,6 +6,7 @@
 #![no_std]
 
 mod gateware_writer;
+mod image_receiver;
 
 use cortex_m::delay::Delay;
 use factory_tester_common::Error;
@@ -57,10 +58,12 @@ pub struct Tester {
     flash_spi_cs: Option<FlashSpiCs>,
     fpga_programn: PC15<Output<PushPull>>,
     stopwatch: Stopwatch<TIM2>,
-    delay: Delay,
 
     // Data sources from the FPGA
     heartbeat: PA3<Input<PullUp>>,
+    fpga_spi: hal::stm32::SPI2,
+    fpga_spi_sck: hal::gpio::gpioa::PA0<Analog>,
+    fpga_spi_copi: hal::gpio::gpioa::PA4<Analog>,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -103,6 +106,11 @@ fn init_peripherals(
     // SAFETY: Must be called during initialization while interrupts are
     // disabled.
     unsafe { debug_logger::initialize_logging() };
+
+    // Enable, then reset SPI2.
+    p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
+    p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
+    p.RCC.apbrstr1.write(|w| w.spi2rst().clear_bit());
 
     // Reset system clock source to the HSI. The factory bootloader (which we
     // are run from without a CPU reset), will have set the clock source to the
@@ -190,8 +198,10 @@ fn init_peripherals(
         flash_spi_cs,
         fpga_programn,
         stopwatch,
-        delay,
         heartbeat,
+        fpga_spi: p.SPI2,
+        fpga_spi_sck: gpioa.pa0,
+        fpga_spi_copi: gpioa.pa4,
     };
 
     init::LateResources {
@@ -221,7 +231,13 @@ impl Tester {
 
         check_heartbeat(&self.heartbeat)?;
 
-        self.configure_camera().map_err(convert_camera_error)
+        self.configure_camera().map_err(convert_camera_error)?;
+
+        image_receiver::validate_image_data(
+            &mut self.fpga_spi,
+            &mut self.fpga_spi_sck,
+            &mut self.fpga_spi_copi,
+        )
     }
 
     fn configure_camera(&mut self) -> Result<(), hm01b0::Error> {
@@ -243,7 +259,7 @@ impl Tester {
         camera.set_qvga_enable(true)?;
         camera.set_line_length(0x0178)?;
         camera.set_frame_length(0x178)?;
-        camera.set_test_pattern(Some(hm01b0::TestPattern::Walking1s))?;
+        camera.set_test_pattern(Some(hm01b0::TestPattern::ColorBar))?;
         camera.set_mode(hm01b0::Mode::Streaming)?;
         Ok(())
     }
