@@ -67,6 +67,7 @@ enum Error {
     InternalError,
     SpiFlashError,
     UnexpectedSpiFlashId,
+    SpiFlashValidateFailed,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -180,7 +181,7 @@ fn init_peripherals(
         &mut rcc,
     ));
 
-    let mut tester = Tester {
+    let tester = Tester {
         camera_i2c,
         flash_spi,
         flash_spi_cs,
@@ -202,14 +203,7 @@ impl Tester {
                 rprintln!("Failed to initialize SPI flash: {:?}", error);
                 Error::SpiFlashError
             })?;
-            let start_time = self.stopwatch.now();
-            gateware_writer::write_gateware(&mut flash)?;
-            let elapsed = self.stopwatch.elapsed(start_time);
-            rprintln!("Wrote gateware to SPI flash in {}ms", elapsed.0 / 1000);
-            let start_time = self.stopwatch.now();
-            gateware_writer::verify_spi_flash(&mut flash)?;
-            let elapsed = self.stopwatch.elapsed(start_time);
-            rprintln!("Verified gateware in {}ms", elapsed.0 / 1000);
+            gateware_writer::write_gateware(&mut flash, &mut self.stopwatch)?;
         } else {
             rprintln!("run_test called multiple times?");
             return Err(Error::InternalError);
