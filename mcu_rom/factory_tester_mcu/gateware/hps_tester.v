@@ -66,7 +66,12 @@ module top(
 
   always @(posedge clk) begin
     last_pclk <= pclk_b2;
-    if (pclk_b2 & ~last_pclk) begin
+    // Receive next byte, but only if we've finished sending the previous byte.
+    // If we haven't finished sending the previous byte, then we drop the new
+    // byte. We don't care about dropped bytes. We do however care that data pin
+    // 0 is always bit 0, data pin 1 is always bit 1 etc when the data is
+    // received by the MCU.
+    if (pclk_b2 != 0 && last_pclk == 0 && sr_count == 0) begin
       sr <= data_b2;
       sr_count <= 8;
     end
