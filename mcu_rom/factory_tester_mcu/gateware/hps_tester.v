@@ -73,13 +73,13 @@ module top(
 
     // Mode 0: normally low, output on falling edge
     if (sr_count >= 0) begin
-      if (hb_count[2:0] == 0) begin
+      if (hb_count[1:0] == 0) begin
         sclk_out <= 0;
         sr[6:0] <= sr[7:1];
         copi_out <= sr[0];
         sr_count <= sr_count - 1;
       end
-      if (hb_count[2:0] == 4) begin
+      if (hb_count[1:0] == 2) begin
         sclk_out <= 1;
       end
     end
