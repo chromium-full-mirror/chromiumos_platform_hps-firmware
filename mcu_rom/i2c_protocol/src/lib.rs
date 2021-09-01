@@ -114,15 +114,15 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     pub fn next_event(&mut self) -> Event {
         loop {
             match self.i2c.next_event() {
-                I2cEvent::StartRead => {
+                Ok(I2cEvent::StartRead) => {
                     if let State::AccessingRegister(register) = self.state {
                         return Event::ReadRegister(ReadRegisterEvent { register });
                     }
                 }
-                I2cEvent::StartWrite => {
+                Ok(I2cEvent::StartWrite) => {
                     self.state = State::Initial;
                 }
-                I2cEvent::Stop => {
+                Ok(I2cEvent::Stop) => {
                     if let State::MemoryBankWrite(state) = core::mem::take(&mut self.state) {
                         return Event::WriteMemory(WriteMemoryEvent {
                             bank: state.bank,
@@ -131,11 +131,11 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         });
                     }
                 }
-                I2cEvent::NeedByte => match self.state {
+                Ok(I2cEvent::NeedByte) => match self.state {
                     State::SendByteQueued(byte) => self.i2c.write_byte(byte),
                     _ => self.i2c.write_byte(0),
                 },
-                I2cEvent::ByteReceived(byte) => match &mut self.state {
+                Ok(I2cEvent::ByteReceived(byte)) => match &mut self.state {
                     State::Initial => {
                         // We've received our first byte. Determine if it's a
                         // register access or a memory bank access.
@@ -200,8 +200,8 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                     _ => {}
                 },
-                I2cEvent::None => return Event::None,
-                I2cEvent::Error(error) => return Event::Error(error),
+                Ok(I2cEvent::None) => return Event::None,
+                Err(error) => return Event::Error(error),
                 _ => {}
             }
         }

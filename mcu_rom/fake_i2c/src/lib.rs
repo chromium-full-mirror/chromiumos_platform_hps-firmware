@@ -4,6 +4,7 @@
 
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
+use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 use std::fmt::Display;
@@ -26,7 +27,7 @@ impl Display for Error {
 /// A fake I2C bus as seen from the peripheral side.
 pub struct FakeI2cPeripheral {
     // Only `None` while dropping.
-    events_from_host: Option<mpsc::Receiver<I2cEvent>>,
+    events_from_host: Option<mpsc::Receiver<Result<I2cEvent, I2cError>>>,
     bytes_to_host: mpsc::Sender<u8>,
     // This is optional so that we can release ownership when we join in drop.
     host_thread: Option<JoinHandle<()>>,
@@ -34,7 +35,7 @@ pub struct FakeI2cPeripheral {
 
 /// A fake I2C bus as seen from the controller side.
 pub struct FakeI2cController {
-    events_to_device: mpsc::Sender<I2cEvent>,
+    events_to_device: mpsc::Sender<Result<I2cEvent, I2cError>>,
     bytes_from_device: mpsc::Receiver<u8>,
 }
 
@@ -80,21 +81,22 @@ impl WriteRead for FakeI2cController {
         bytes_to_write: &[u8],
         bytes_to_read: &mut [u8],
     ) -> Result<(), Error> {
-        self.events_to_device.send(I2cEvent::StartWrite)?;
+        self.events_to_device.send(Ok(I2cEvent::StartWrite))?;
         for byte in bytes_to_write {
-            self.events_to_device.send(I2cEvent::ByteReceived(*byte))?;
+            self.events_to_device
+                .send(Ok(I2cEvent::ByteReceived(*byte)))?;
         }
         if bytes_to_read.len() > 0 {
-            self.events_to_device.send(I2cEvent::StartRead)?;
+            self.events_to_device.send(Ok(I2cEvent::StartRead))?;
             for out in bytes_to_read {
-                self.events_to_device.send(I2cEvent::NeedByte)?;
+                self.events_to_device.send(Ok(I2cEvent::NeedByte))?;
                 *out = self.bytes_from_device.recv()?;
             }
         }
         // Our protocol handler doesn't wait for STOP, so the test may have
         // already finished and disconnected the host side. If the host side has
         // finished, then sending STOP will fail, which can be safely ignored.
-        let _ = self.events_to_device.send(I2cEvent::Stop);
+        let _ = self.events_to_device.send(Ok(I2cEvent::Stop));
         Ok(())
     }
 }
@@ -108,12 +110,12 @@ impl Write for FakeI2cController {
 }
 
 impl I2cPeripheral for FakeI2cPeripheral {
-    fn next_event(&mut self) -> I2cEvent {
+    fn next_event(&mut self) -> Result<I2cEvent, I2cError> {
         self.events_from_host
             .as_mut()
             .unwrap()
             .recv()
-            .unwrap_or(I2cEvent::None)
+            .unwrap_or(Ok(I2cEvent::None))
     }
 
     fn write_byte(&mut self, byte: u8) {
@@ -140,11 +142,11 @@ mod tests {
     #[test]
     fn test_write() {
         let mut peripheral = FakeI2cPeripheral::new(|mut device| device.write(1, &[7, 8]).unwrap());
-        assert_eq!(peripheral.next_event(), I2cEvent::StartWrite);
-        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(7));
-        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(8));
-        assert_eq!(peripheral.next_event(), I2cEvent::Stop);
-        assert_eq!(peripheral.next_event(), I2cEvent::None);
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::StartWrite));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(7)));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(8)));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::Stop));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::None));
     }
 
     #[test]
@@ -154,15 +156,15 @@ mod tests {
             device.write_read(1, &[10], &mut out).unwrap();
             assert_eq!(out, [14, 15]);
         });
-        assert_eq!(peripheral.next_event(), I2cEvent::StartWrite);
-        assert_eq!(peripheral.next_event(), I2cEvent::ByteReceived(10));
-        assert_eq!(peripheral.next_event(), I2cEvent::StartRead);
-        assert_eq!(peripheral.next_event(), I2cEvent::NeedByte);
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::StartWrite));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(10)));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::StartRead));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::NeedByte));
         peripheral.write_byte(14);
-        assert_eq!(peripheral.next_event(), I2cEvent::NeedByte);
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::NeedByte));
         peripheral.write_byte(15);
-        assert_eq!(peripheral.next_event(), I2cEvent::Stop);
-        assert_eq!(peripheral.next_event(), I2cEvent::None);
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::Stop));
+        assert_eq!(peripheral.next_event(), Ok(I2cEvent::None));
     }
 
     #[test]

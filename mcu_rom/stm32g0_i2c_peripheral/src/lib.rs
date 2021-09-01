@@ -98,20 +98,20 @@ impl Drop for Stm32g0I2cPeripheral {
 }
 
 impl I2cPeripheral for Stm32g0I2cPeripheral {
-    fn next_event(&mut self) -> I2cEvent {
+    fn next_event(&mut self) -> Result<I2cEvent, I2cError> {
         let isr = self.i2c1.isr.read();
         if isr.txis().bit_is_set() {
-            return I2cEvent::NeedByte;
+            return Ok(I2cEvent::NeedByte);
         }
         if isr.rxne().bit_is_set() {
-            return I2cEvent::ByteReceived(self.i2c1.rxdr.read().bits() as u8);
+            return Ok(I2cEvent::ByteReceived(self.i2c1.rxdr.read().bits() as u8));
         }
         if isr.addr().bit_is_set() {
             self.i2c1.icr.write(|w| w.addrcf().set_bit());
             if isr.dir().bit_is_set() {
-                return I2cEvent::StartRead;
+                return Ok(I2cEvent::StartRead);
             } else {
-                return I2cEvent::StartWrite;
+                return Ok(I2cEvent::StartWrite);
             }
         }
         if isr.stopf().bit_is_set() {
@@ -120,21 +120,21 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
             // txrd. This is important if the previous read was terminated early
             // by the controller.
             self.i2c1.isr.write(|w| w.txe().set_bit());
-            return I2cEvent::Stop;
+            return Ok(I2cEvent::Stop);
         }
         if isr.ovr().bit_is_set() {
             self.i2c1.icr.write(|w| w.ovrcf().set_bit());
-            return I2cEvent::Error(if isr.dir().bit_is_set() {
-                I2cError::Underrun
+            if isr.dir().bit_is_set() {
+                return Err(I2cError::Underrun);
             } else {
-                I2cError::Overrun
-            });
+                return Err(I2cError::Overrun);
+            };
         }
         if isr.berr().bit_is_set() {
             self.i2c1.icr.write(|w| w.berrcf().set_bit());
-            return I2cEvent::Error(I2cError::BusError);
+            return Err(I2cError::BusError);
         }
-        I2cEvent::None
+        Ok(I2cEvent::None)
     }
 
     fn write_byte(&mut self, byte: u8) {
