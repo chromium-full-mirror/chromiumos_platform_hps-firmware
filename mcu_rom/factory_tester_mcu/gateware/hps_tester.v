@@ -76,15 +76,17 @@ module top(
       sr_count <= 8;
     end
 
-    // Mode 0: normally low, output on falling edge
+    // CPHA=1, CPOL=0. SCL is normally low then is set high when we emit a bit
+    // and low when the peripheral should read that bit. Data is sent
+    // least-significant bit first.
     if (sr_count >= 0 && hb_count[1:0] == 0) begin
-      sclk_out <= 0;
+      sclk_out <= 1;
       sr[6:0] <= sr[7:1];
       copi_out <= sr[0];
       sr_count <= sr_count - 1;
     end
     if (hb_count[1:0] == 2) begin
-      sclk_out <= 1;
+      sclk_out <= 0;
     end
   end
 
