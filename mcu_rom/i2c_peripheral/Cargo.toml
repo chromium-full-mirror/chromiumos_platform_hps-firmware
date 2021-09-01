@@ -6,3 +6,4 @@ authors = ["Google"]
 license = "BSD-3-Clause"
 
 [dependencies]
+nb = "1.0.0"

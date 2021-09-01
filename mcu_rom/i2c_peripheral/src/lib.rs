@@ -6,7 +6,7 @@
 
 pub trait I2cPeripheral {
     /// Returns the next event that needs to be handled.
-    fn next_event(&mut self) -> Result<I2cEvent, I2cError>;
+    fn next_event(&mut self) -> nb::Result<I2cEvent, I2cError>;
 
     /// Write a byte to I2C. Should only be called when `I2cEvent::NeedByte` is
     /// received.
@@ -16,7 +16,6 @@ pub trait I2cPeripheral {
 #[derive(Eq, PartialEq, Debug)]
 #[non_exhaustive]
 pub enum I2cEvent {
-    None,
     /// Emitted when the I2C controller addresses us in read mode.
     StartRead,
 

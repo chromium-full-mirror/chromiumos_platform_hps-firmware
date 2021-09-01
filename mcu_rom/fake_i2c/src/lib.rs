@@ -27,7 +27,7 @@ impl Display for Error {
 /// A fake I2C bus as seen from the peripheral side.
 pub struct FakeI2cPeripheral {
     // Only `None` while dropping.
-    events_from_host: Option<mpsc::Receiver<Result<I2cEvent, I2cError>>>,
+    events_from_host: Option<mpsc::Receiver<nb::Result<I2cEvent, I2cError>>>,
     bytes_to_host: mpsc::Sender<u8>,
     // This is optional so that we can release ownership when we join in drop.
     host_thread: Option<JoinHandle<()>>,
@@ -35,7 +35,7 @@ pub struct FakeI2cPeripheral {
 
 /// A fake I2C bus as seen from the controller side.
 pub struct FakeI2cController {
-    events_to_device: mpsc::Sender<Result<I2cEvent, I2cError>>,
+    events_to_device: mpsc::Sender<nb::Result<I2cEvent, I2cError>>,
     bytes_from_device: mpsc::Receiver<u8>,
 }
 
@@ -110,12 +110,12 @@ impl Write for FakeI2cController {
 }
 
 impl I2cPeripheral for FakeI2cPeripheral {
-    fn next_event(&mut self) -> Result<I2cEvent, I2cError> {
+    fn next_event(&mut self) -> nb::Result<I2cEvent, I2cError> {
         self.events_from_host
             .as_mut()
             .unwrap()
             .recv()
-            .unwrap_or(Ok(I2cEvent::None))
+            .unwrap_or(Err(nb::Error::WouldBlock))
     }
 
     fn write_byte(&mut self, byte: u8) {
@@ -146,7 +146,7 @@ mod tests {
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(7)));
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(8)));
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::Stop));
-        assert_eq!(peripheral.next_event(), Ok(I2cEvent::None));
+        assert_eq!(peripheral.next_event(), Err(nb::Error::WouldBlock));
     }
 
     #[test]
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::NeedByte));
         peripheral.write_byte(15);
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::Stop));
-        assert_eq!(peripheral.next_event(), Ok(I2cEvent::None));
+        assert_eq!(peripheral.next_event(), Err(nb::Error::WouldBlock));
     }
 
     #[test]

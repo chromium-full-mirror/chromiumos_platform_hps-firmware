@@ -98,7 +98,7 @@ impl Drop for Stm32g0I2cPeripheral {
 }
 
 impl I2cPeripheral for Stm32g0I2cPeripheral {
-    fn next_event(&mut self) -> Result<I2cEvent, I2cError> {
+    fn next_event(&mut self) -> nb::Result<I2cEvent, I2cError> {
         let isr = self.i2c1.isr.read();
         if isr.txis().bit_is_set() {
             return Ok(I2cEvent::NeedByte);
@@ -125,16 +125,16 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
         if isr.ovr().bit_is_set() {
             self.i2c1.icr.write(|w| w.ovrcf().set_bit());
             if isr.dir().bit_is_set() {
-                return Err(I2cError::Underrun);
+                return Err(nb::Error::Other(I2cError::Underrun));
             } else {
-                return Err(I2cError::Overrun);
+                return Err(nb::Error::Other(I2cError::Overrun));
             };
         }
         if isr.berr().bit_is_set() {
             self.i2c1.icr.write(|w| w.berrcf().set_bit());
-            return Err(I2cError::BusError);
+            return Err(nb::Error::Other(I2cError::BusError));
         }
-        Ok(I2cEvent::None)
+        Err(nb::Error::WouldBlock)
     }
 
     fn write_byte(&mut self, byte: u8) {

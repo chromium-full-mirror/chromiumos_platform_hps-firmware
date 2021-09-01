@@ -200,8 +200,8 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                     _ => {}
                 },
-                Ok(I2cEvent::None) => return Event::None,
-                Err(error) => return Event::Error(error),
+                Err(nb::Error::WouldBlock) => return Event::None,
+                Err(nb::Error::Other(error)) => return Event::Error(error),
                 _ => {}
             }
         }
