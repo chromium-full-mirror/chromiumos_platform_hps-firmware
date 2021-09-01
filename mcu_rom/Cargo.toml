@@ -25,6 +25,7 @@ members = [
 # library, then we might want to consider moving the stm32 libraries into a
 # workspace.
 exclude = [
+    "factory_tester",
     "factory_tester_mcu",
     "stage0",
     "stage1",

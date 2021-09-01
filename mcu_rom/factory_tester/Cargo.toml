@@ -1,0 +1,36 @@
+[package]
+name = "factory_tester"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+cortex-m = "0.7.1"
+cortex-m-rt = "0.6.13"
+cortex-m-rtic = "0.5.5"
+factory_tester_common = { path = "../factory_tester_common" }
+# Awaiting release of https://github.com/stm32-rs/stm32l4xx-hal/commit/c62164b71af0a98d7f7d0920de131d99102fc931
+hal = { git = "https://github.com/stm32-rs/stm32l4xx-hal.git", rev = "8b7f4ee08", package = "stm32l4xx-hal", features = ["rt", "stm32l4x2"]}
+log = {version = "0.4.14" }
+panic-probe = "0.2.0"
+rtt-target = { version = "0.3.1", features = ["cortex-m"] }
+stm32l4 = "0.13.0"
+
+# Optimize all dependencies
+[profile.dev.package."*"]
+opt-level = "z"
+codegen-units = 1
+
+[profile.release.package."*"]
+opt-level = "z"
+codegen-units = 1
+
+[profile.dev]
+lto = true
+opt-level = "z"
+panic = "abort"
+
+[profile.release]
+debug = true
+lto = true
+opt-level = "z"
+panic = "abort"

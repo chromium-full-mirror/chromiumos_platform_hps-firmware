@@ -39,6 +39,10 @@ cargo +stable build --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --features dev
 
+echo "===== factory_tester ====="
+cd "${PROJECT_ROOT}/mcu_rom/factory_tester"
+cargo +stable build
+
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
 cargo +stable build
 
