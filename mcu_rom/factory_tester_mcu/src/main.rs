@@ -54,8 +54,8 @@ type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
 type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
 
-struct Tester<'a> {
-    camera: hm01b0::Camera<'a, CameraI2c>,
+pub struct Tester {
+    camera_i2c: CameraI2c,
     flash_spi: Option<FlashSpi>,
     flash_spi_cs: Option<FlashSpiCs>,
     stopwatch: Stopwatch<TIM2>,
@@ -106,7 +106,7 @@ fn main() -> ! {
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
 
-    let mut camera_i2c = p.I2C2.i2c(
+    let camera_i2c = p.I2C2.i2c(
         gpioa.pa12.into_open_drain_output(), // SDA
         gpioa.pa11.into_open_drain_output(), // SCL
         hal::i2c::Config::new(400.khz()),
@@ -139,7 +139,7 @@ fn main() -> ! {
     ));
 
     let mut tester = Tester {
-        camera: hm01b0::Camera::new(&mut camera_i2c),
+        camera_i2c,
         flash_spi,
         flash_spi_cs,
         stopwatch,
@@ -167,7 +167,7 @@ fn main() -> ! {
     loop {}
 }
 
-impl<'a> Tester<'a> {
+impl Tester {
     fn run_test(&mut self) -> Result<(), Error> {
         if let (Some(flash_spi), Some(flash_spi_cs)) =
             (self.flash_spi.take(), self.flash_spi_cs.take())
@@ -193,26 +193,26 @@ impl<'a> Tester<'a> {
     }
 
     fn configure_camera(&mut self) -> Result<(), Error> {
+        let mut camera = hm01b0::Camera::new(&mut self.camera_i2c);
         // Sometimes the first i2c access to the camera fails (camera doesn't
         // ACK), so we do a few reads until it succeeds.
         for _ in 0..10 {
-            if self.camera.get_camera_id().is_ok() {
+            if camera.get_camera_id().is_ok() {
                 break;
             }
         }
-        self.camera.reset()?;
-        self.camera.set_advance_vsync(1)?;
-        self.camera.set_shift_config(hm01b0::ShiftConfig {
+        camera.reset()?;
+        camera.set_advance_vsync(1)?;
+        camera.set_shift_config(hm01b0::ShiftConfig {
             pixel_shift_enabled: false,
             hsync_shift_enabled: false,
             vsync_shift_enabled: true,
         })?;
-        self.camera.set_qvga_enable(true)?;
-        self.camera.set_line_length(0x0178)?;
-        self.camera.set_frame_length(0x172)?;
-        self.camera
-            .set_test_pattern(Some(hm01b0::TestPattern::Walking1s))?;
-        self.camera.set_mode(hm01b0::Mode::Streaming)?;
+        camera.set_qvga_enable(true)?;
+        camera.set_line_length(0x0178)?;
+        camera.set_frame_length(0x172)?;
+        camera.set_test_pattern(Some(hm01b0::TestPattern::Walking1s))?;
+        camera.set_mode(hm01b0::Mode::Streaming)?;
         Ok(())
     }
 }
