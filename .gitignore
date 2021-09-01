@@ -7,4 +7,4 @@ build
 target
 Cargo.lock
 .vscode/**
-third_party/installed/
+third_party/installed
