@@ -230,7 +230,7 @@ impl Tester {
         })?;
         camera.set_qvga_enable(true)?;
         camera.set_line_length(0x0178)?;
-        camera.set_frame_length(0x172)?;
+        camera.set_frame_length(0x178)?;
         camera.set_test_pattern(Some(hm01b0::TestPattern::Walking1s))?;
         camera.set_mode(hm01b0::Mode::Streaming)?;
         Ok(())
