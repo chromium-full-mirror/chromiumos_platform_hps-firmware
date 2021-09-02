@@ -81,8 +81,8 @@ static const init_script hps_init[] = {
     {0x0341, 0x78,},
     {0x0342, 0x01,}, // Line length 376 (0x0178).
     {0x0343, 0x78,},
-    // Resolution QVGA 324x244.
-    {0x3010, 0x01,}, // Enable QVGA.
+    // Image configuration.
+    {0x3010, 0x00,}, // Full QVGA frame (324x324).
     {0x0383, 0x01,},
     {0x0387, 0x01,},
     {0x0390, 0x00,},
