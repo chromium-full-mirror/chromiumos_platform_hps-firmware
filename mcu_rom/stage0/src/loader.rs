@@ -25,6 +25,13 @@ fn get_stage1_signature() -> [u8; 64] {
     unsafe { _hdr.sig.unwrap() }
 }
 
+fn decode_version(hdr_sig: &[u8; 64]) -> [u16; 2] {
+    [
+        u16::from_be_bytes([hdr_sig[0], hdr_sig[1]]),
+        u16::from_be_bytes([hdr_sig[2], hdr_sig[3]]),
+    ]
+}
+
 /// Loads stage1. This function never returns.
 pub fn load_stage1() -> ! {
     // The following is safe provided stage1 sets git_hash_ptr and
@@ -107,7 +114,7 @@ fn stage1_digest() -> [u8; 32] {
     hasher.finalize()
 }
 
-pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
+pub fn validate_stage1() -> Result<[u16; 2], ed25519_compact::Error> {
     let stage1_digest = stage1_digest();
     defmt::info!("{:?}", stage1_digest);
 
@@ -115,7 +122,8 @@ pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
     let sign = ed25519_compact::Signature::new(hdr_sig);
     let vkey = ed25519_compact::PublicKey::new(PUBLIC_KEY);
 
-    vkey.verify(&stage1_digest, &sign)
+    vkey.verify(&stage1_digest, &sign)?;
+    Ok(decode_version(&hdr_sig))
 }
 
 pub(crate) fn get_stage_slot_se() -> Range<usize> {

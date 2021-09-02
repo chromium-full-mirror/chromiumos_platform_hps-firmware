@@ -29,6 +29,10 @@ pub const ENABLED_FEATURES: u8 = 7;
 /// RO: If the user present feature is disabled implied by 0.
 pub const USER_PRESENT_STATUS: u8 = 8;
 
+/// RO: Version register for hpsd.
+pub const FIRMWARE_VERSION_HIGH: u8 = 10;
+pub const FIRMWARE_VERSION_LOW: u8 = 11;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

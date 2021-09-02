@@ -215,7 +215,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
         i2c_config,
     ));
 
-    match detect_and_validate_stage1(&mut led, &mut fw_wp) {
+    match detect_and_validate_stage1(&mut host_interface, &mut led, &mut fw_wp) {
         Ok(oks) => {
             host_interface.stage0_ctx.set_stage1_present_flag();
             match oks {
@@ -251,6 +251,7 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
 
 /// Checks whether it's OK to load the application, returning an error if not.
 fn detect_and_validate_stage1(
+    host_interface: &mut HostInterface<Stm32g0I2cPeripheral>,
     led: &mut Led,
     fw_wp: &mut FwWp,
 ) -> Result<Stage1OkState, Stage1Error> {
@@ -264,11 +265,12 @@ fn detect_and_validate_stage1(
     let _ = led.set_low();
 
     match stage1_validation {
-        Ok(()) => {
+        Ok(version) => {
             defmt::info!("signature good!");
             if fw_wp.is_high().unwrap() {
                 defmt::warn!("write-protect de-asserted!");
             }
+            host_interface.stage0_ctx.set_firmware_version(version);
             return Ok(Stage1OkState::ValidSignature);
         }
         Err(_) => {

@@ -35,18 +35,20 @@ The host either requests data from the register,
 or data to be written to the register follows the command.
 All writes and reads are 16 bits.
 
-| Register | Access | Stage | Description            |
-|:---------|:-------|:------|:-----------------------|
-| 0        | RO     | All   | Magic Number           |
-| 1        | RO     | All   | Hardware Version       |
-| 2        | RO     | All   | Common System Status   |
-| 3        | WO     | All   | Common System Commands |
-| 4        | RO     | All   | Application Version    |
-| 5        | RO     | All   | Memory Bank Status     |
-| 6        | RO     | All   | Common Error Status    |
-| 7        | RW     | Appl  | Feature Enable         |
-| 8        | RO     | Appl  | Feature 1 Status Bits  |
-| 9        | RO     | Appl  | Feature 2 Status Bits  |
+| Register | Access | Stage  | Description            |
+|:---------|:-------|:-------|:-----------------------|
+| 0        | RO     | All    | Magic Number           |
+| 1        | RO     | All    | Hardware Version       |
+| 2        | RO     | All    | Common System Status   |
+| 3        | WO     | All    | Common System Commands |
+| 4        | RO     | All    | Application Version    |
+| 5        | RO     | All    | Memory Bank Status     |
+| 6        | RO     | All    | Common Error Status    |
+| 7        | RW     | Appl   | Feature Enable         |
+| 8        | RO     | Appl   | Feature 1 Status Bits  |
+| 9        | RO     | Appl   | Feature 2 Status Bits  |
+| 10       | RO     | Stage0 | Firmware Version HIGH  |
+| 11       | RO     | Stage0 | Firmware Version LOW   |
 
 ## Magic Number
 

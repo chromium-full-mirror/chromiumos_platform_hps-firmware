@@ -21,6 +21,7 @@ pub enum Stage1OkState {
 pub struct StageZContext {
     signature_check_pass: bool, // true indicate a validate signature.
     stage1_present: bool,       // true when a stage 1 magic is found.
+    firmware_version: [u16; 2], // Contains first 4B of validated signature.
 }
 
 impl StageZContext {
@@ -28,6 +29,7 @@ impl StageZContext {
         StageZContext {
             signature_check_pass: false,
             stage1_present: false,
+            firmware_version: [0xFFFF, 0xFFFF],
         }
     }
     pub fn set_signature_passed_flag(&mut self) {
@@ -36,11 +38,21 @@ impl StageZContext {
     pub fn set_stage1_present_flag(&mut self) {
         self.stage1_present = true;
     }
+    pub fn set_firmware_version(&mut self, version: [u16; 2]) {
+        self.firmware_version = version;
+    }
     pub fn can_stage1_jmp(&self) -> bool {
         self.stage1_present && self.signature_check_pass
     }
     fn get_system_status(&self) -> u16 {
         self.signature_check_pass as u16 // TODO(quasisec): correct encoding?
+    }
+    pub fn get_firmware_version(&self, register: u8) -> u16 {
+        match register {
+            registers::FIRMWARE_VERSION_HIGH => self.firmware_version[0],
+            registers::FIRMWARE_VERSION_LOW => self.firmware_version[1],
+            _ => 0xFFFF,
+        }
     }
 }
 
@@ -79,6 +91,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .unwrap_or_else(|| match event.register {
                         registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
                         registers::SYSTEM_STATUS => self.stage0_ctx.get_system_status(),
+                        registers::FIRMWARE_VERSION_HIGH => self
+                            .stage0_ctx
+                            .get_firmware_version(registers::FIRMWARE_VERSION_HIGH),
+                        registers::FIRMWARE_VERSION_LOW => self
+                            .stage0_ctx
+                            .get_firmware_version(registers::FIRMWARE_VERSION_LOW),
                         registers::MEMORY_BANK_AVAILABLE => {
                             if Buffer::is_available() {
                                 1 << memory_banks::MCU_RW
