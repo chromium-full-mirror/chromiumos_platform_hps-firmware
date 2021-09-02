@@ -63,7 +63,7 @@ class HpsSoC(LiteXSoC):
     cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug,
-                 use_camera_dma=False, litespi_flash=True, litespi_quad=False):
+                 litespi_flash=True, litespi_quad=False):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
@@ -108,7 +108,7 @@ class HpsSoC(LiteXSoC):
         self.timer0.add_uptime()
 
         # Camera
-        self.setup_camera(use_camera_dma)
+        self.setup_camera()
 
         # SPI controller
         self.submodules.mcu_spi = self.create_spi_controller(
@@ -147,20 +147,15 @@ class HpsSoC(LiteXSoC):
     def add_serial(self):
         self.add_uart('serial', baudrate=UART_SPEED)
 
-    def setup_camera(self, use_dma):
-        if use_dma:
-            bus = wishbone.Interface(
-                data_width=self.bus.data_width,
-                adr_width=self.bus.address_width)
-            self.submodules.cam_control = CameraControlDMA(
-                bus=bus,
-                pads=self.platform.request('cam_control'),
-                sys_clk_freq=self.platform.sys_clk_freq)
-            self.bus.add_master('cam_control', master=bus)
-        else:
-            self.submodules.cam_control = CameraControl(
-                pads=self.platform.request('cam_control'),
-                sys_clk_freq=self.platform.sys_clk_freq)
+    def setup_camera(self):
+        bus = wishbone.Interface(
+            data_width=self.bus.data_width,
+            adr_width=self.bus.address_width)
+        self.submodules.cam_control = CameraControlDMA(
+            bus=bus,
+            pads=self.platform.request('cam_control'),
+            sys_clk_freq=self.platform.sys_clk_freq)
+        self.bus.add_master('cam_control', master=bus)
         self.csr.add('cam_control')
 
     def create_spi_controller(self, pads):
@@ -238,10 +233,6 @@ def main():
         '--debug', action='store_true',
         help='Enable debug mode')
     parser.add_argument(
-        '--no-camera-dma', dest='use_camera_dma',
-        action='store_false', default=True,
-        help='Do not generate DMA writer interface for camera')
-    parser.add_argument(
         '--build', action='store_true',
         help='Whether to do a full build, including the bitstream')
     parser.add_argument(
@@ -263,7 +254,6 @@ def main():
     soc = HpsSoC(
         platform=Platform(args.toolchain),
         debug=args.debug,
-        use_camera_dma=args.use_camera_dma,
         litespi_flash=args.litespi_flash,
         litespi_quad=args.litespi_quad)
 
