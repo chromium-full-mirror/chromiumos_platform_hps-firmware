@@ -371,9 +371,11 @@ fn init_peripherals(
     let host_interface = HostInterface::new(board.host_bus);
 
     // Set up a periodic timer. This is only needed for polling our debug
-    // channels, so won't be needed in production.
+    // channels, so won't be needed in production. 100Hz is chosen in order to
+    // maximize the speed of writing to SPI flash from hps-mon. Going faster
+    // than 100Hz gives little to no gain in write speed.
     let mut timer = p.TIM16.timer(&mut rcc);
-    timer.start(10.hz());
+    timer.start(100.hz());
     timer.listen();
 
     // Trigger an interrupt when the SPI CS line changes.
