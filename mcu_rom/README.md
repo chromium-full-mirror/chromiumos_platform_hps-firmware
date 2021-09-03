@@ -34,6 +34,10 @@ Wraps an i2c controller implementation and adds a delay to each operation. This
 can be necessary to ensure that a START isn't such a short time after a STOP
 that it violates the timing in the I2C spec.
 
+### Crate: mcp2221
+
+A library for using the MCP2221 USB. Supports i2c and GPIO.
+
 ### Crate: factory_tester_mcu
 
 Code that runs on the MCU for the purposes of factory testing.

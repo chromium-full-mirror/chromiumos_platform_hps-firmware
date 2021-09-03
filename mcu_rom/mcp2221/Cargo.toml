@@ -1,0 +1,9 @@
+[package]
+name = "mcp2221"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+embedded-hal = "0.2.6"
+rusb = "0.8.1"
