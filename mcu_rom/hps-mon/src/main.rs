@@ -18,10 +18,14 @@ use argh::FromArgs;
 use colored::*;
 use console::Console;
 use console::ConsoleController;
+use hps_interface::Hps;
+use hps_interface::HpsAdapter;
 use image_channel::image_type_from_str;
 use image_channel::ImageType;
 use std::path::PathBuf;
 use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::time::Duration;
 use text_channel::TextChannel;
 
@@ -151,6 +155,10 @@ struct Flags {
     #[argh(option, default = "String::new()")]
     /// commands to run on startup
     cmd: String,
+
+    #[argh(switch)]
+    /// don't use i2c via MCP2221 for sending SPI flash data to HPS
+    no_mcp_i2c: bool,
 }
 
 fn main() -> Result<()> {
@@ -172,6 +180,12 @@ fn main() -> Result<()> {
     if flags.reset {
         device.reset()?;
     }
+
+    let hps = if flags.no_mcp_i2c {
+        None
+    } else {
+        Some(open_hps_i2c()?)
+    };
 
     let console_controller = ConsoleController::new();
     // Probably not strictly necessary, but we have an explicit scope to make
@@ -201,10 +215,24 @@ fn main() -> Result<()> {
             cmd_response_channel,
             &flags,
             &mut *device,
+            hps,
         )?;
     }
     console_controller.shutdown();
     Ok(())
+}
+
+fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps>>> {
+    let mut config = mcp2221::I2cConfig::default();
+    config.speed_hz = 400_000;
+    let mut dev = mcp2221::I2c::open_first(&config)?;
+    let mut gpio_config = mcp2221::GpioConfig::default();
+    gpio_config.set_direction(0, mcp2221::Direction::Output);
+    gpio_config.set_value(0, true);
+    dev.configure_gpio(&gpio_config)?;
+
+    let hps = HpsAdapter::new(dev)?;
+    Ok(Arc::new(Mutex::new(hps)))
 }
 
 /// Create channels. The channels here must match the channel definitions in
@@ -250,6 +278,7 @@ fn run_loop(
     mut cmd_response_channel: Option<Box<dyn DataSource>>,
     flags: &Flags,
     device: &mut dyn Device,
+    hps: Option<Arc<Mutex<dyn Hps>>>,
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
@@ -287,6 +316,7 @@ fn run_loop(
                         if let Err(error) = write_spi_flash::write_spi_flash(
                             &mut mcu_command_channel,
                             &mut cmd_response_channel,
+                            hps.clone(),
                             0,
                             file,
                         ) {
@@ -301,6 +331,7 @@ fn run_loop(
                         if let Err(error) = write_spi_flash::write_spi_flash(
                             &mut mcu_command_channel,
                             &mut cmd_response_channel,
+                            hps.clone(),
                             SOC_ROM_OFFSET,
                             file,
                         ) {

@@ -5,12 +5,19 @@
 use crate::debug_commands;
 use crate::DataSink;
 use crate::DataSource;
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use crc::Crc;
+use hps_interface::Hps;
+use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
 use std::collections::VecDeque;
 use std::path::Path;
+use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread::JoinHandle;
 use std::time::Duration;
 
 const PAGE_SIZE: usize = 256;
@@ -23,10 +30,12 @@ const MAX_OUTSTANDING_COMMANDS: usize = 28;
 pub(crate) fn write_spi_flash(
     command_channel: &mut Option<Box<dyn DataSink>>,
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
+    hps: Option<Arc<Mutex<dyn Hps>>>,
     start_offset: usize,
     spi_flash_file: &Path,
 ) -> Result<()> {
     assert!(start_offset % BLOCK_SIZE == 0);
+    let mut hps_writer = hps.map(HpsWriter::new);
     if let (Some(command_channel), Some(cmd_response_channel)) =
         (command_channel.as_mut(), cmd_response_channel.as_mut())
     {
@@ -50,6 +59,7 @@ pub(crate) fn write_spi_flash(
 
         let start = std::time::Instant::now();
         let mut pages_written = 0;
+        let mut i2c_pages = 0;
         let mut outstanding_commands = 0;
         let total_pages = blocks_to_write.len() * PAGES_PER_BLOCK;
         for block_info in blocks_to_write {
@@ -57,16 +67,38 @@ pub(crate) fn write_spi_flash(
                 let page_num = block_info.block_num * PAGES_PER_BLOCK + page_offset;
                 let chunk =
                     &block_info.bytes[page_offset * PAGE_SIZE..(page_offset + 1) * PAGE_SIZE];
-                let command = debug_commands::DebugCommand {
-                    code: McuDebugCommand::WriteSpiFlash.into(),
-                    arg: page_num as u16,
-                };
-                command_channel.write(&command.to_bytes())?;
-                command_channel.write(chunk)?;
-                outstanding_commands += 1;
-                if outstanding_commands >= MAX_OUTSTANDING_COMMANDS {
-                    wait_cmd_response(cmd_response_channel)?;
-                    outstanding_commands -= 1;
+
+                let mut written_via_i2c = false;
+                if let Some(hps) = hps_writer.as_mut() {
+                    let page_within_block = page_num % PAGES_PER_BLOCK;
+                    // Blocks get erased when we write the first page of the
+                    // block. We need to avoid the situation where we send a
+                    // page of data over I2C that is mid-way through a block
+                    // that hasn't yet been erased. We take the somewhat crude
+                    // approach of only allowing I2C writes to parts of the
+                    // block beyond MAX_OUTSTANDING_COMMANDS pages. That way the
+                    // first page of the block is guaranteed to have been
+                    // processed by the time we do the I2C write.
+                    if page_within_block > MAX_OUTSTANDING_COMMANDS
+                        && hps.try_write((page_num * PAGE_SIZE) as u32, chunk)
+                    {
+                        written_via_i2c = true;
+                        i2c_pages += 1;
+                    }
+                }
+
+                if !written_via_i2c {
+                    let command = debug_commands::DebugCommand {
+                        code: McuDebugCommand::WriteSpiFlash.into(),
+                        arg: page_num as u16,
+                    };
+                    command_channel.write(&command.to_bytes())?;
+                    command_channel.write(chunk)?;
+                    outstanding_commands += 1;
+                    if outstanding_commands >= MAX_OUTSTANDING_COMMANDS {
+                        wait_cmd_response(cmd_response_channel)?;
+                        outstanding_commands -= 1;
+                    }
                 }
                 pages_written += 1;
                 if pages_written % 10 == 0 {
@@ -85,21 +117,86 @@ pub(crate) fn write_spi_flash(
             outstanding_commands
         );
 
+        if let Some(hps) = hps_writer.take() {
+            hps.wait_done()?;
+        }
+
         for _ in 0..outstanding_commands {
             wait_cmd_response(cmd_response_channel)?;
         }
 
         let seconds = start.elapsed().as_secs_f64();
         println!(
-            "Wrote {} pages to SPI flash in {:0.1} seconds ({:0.1}KiB/s)",
+            "Wrote {} pages to SPI flash in {:0.1} seconds ({:0.1}KiB/s). {} pages via I2C",
             pages_written,
             seconds,
-            ((total_pages * PAGE_SIZE) as f64 / seconds) / 1024f64
+            ((total_pages * PAGE_SIZE) as f64 / seconds) / 1024f64,
+            i2c_pages,
         );
     } else {
         bail!("No command channel available, command not sent.");
     }
     Ok(())
+}
+
+/// Write data to the HPS over I2C.
+struct HpsWriter {
+    join_handle: JoinHandle<Result<()>>,
+    sender: mpsc::SyncSender<BlockToWrite>,
+}
+
+impl HpsWriter {
+    fn new(hps: Arc<Mutex<dyn Hps>>) -> Self {
+        // I2C via MCP2221 is really slow on account of USB protocol that it
+        // uses. It ends up not transmitting data continuously. So we don't want
+        // to put too much in the queue, otherwise we'll end up having to wait a
+        // while at the end for the queue to clear. However we want a large
+        // enough queue that we can keep the I2C bus busy while RTT is writing
+        // the first MAX_OUTSTANDING_COMMANDS pages of each block.
+        // Experimentally, 4 seems to give reasonable results.
+        const QUEUE_SIZE: usize = 4;
+        let (sender, receiver) = mpsc::sync_channel::<BlockToWrite>(QUEUE_SIZE);
+        let join_handle = std::thread::spawn(move || -> Result<()> {
+            let mut hps = hps.lock().unwrap();
+            let bank = memory_banks::SPI_FLASH;
+
+            while let Ok(work) = receiver.recv() {
+                hps.write_memory(bank, work.address, &work.bytes)?;
+                hps.wait_memory_bank_available(bank)?;
+            }
+            Ok(())
+        });
+        Self {
+            join_handle,
+            sender,
+        }
+    }
+
+    /// Tries to queue writing of `bytes` at `address`. Returns false if the
+    /// queue is already full.
+    fn try_write(&mut self, address: u32, bytes: &[u8]) -> bool {
+        self.sender
+            .try_send(BlockToWrite {
+                bytes: bytes.to_owned(),
+                address,
+            })
+            .is_ok()
+    }
+
+    /// Blocks until any outstanding writes are complete.
+    fn wait_done(self) -> Result<()> {
+        // Drop sender to let thread know that we're done.
+        drop(self.sender);
+        self.join_handle
+            .join()
+            .map_err(|_| anyhow!("Failed to join thread"))??;
+        Ok(())
+    }
+}
+
+struct BlockToWrite {
+    bytes: Vec<u8>,
+    address: u32,
 }
 
 struct BlockInfo<'a> {
