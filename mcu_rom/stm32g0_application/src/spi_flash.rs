@@ -13,8 +13,8 @@ use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
 
-const SECTOR_SIZE: u32 = 4096;
 const PAGE_SIZE: u32 = 256;
+const BLOCK_SIZE: u32 = 64 * 1024;
 
 /// Write's `data` to `address` in the SPI flash. `data` is updated based on
 /// response from the SPI flash. We don't actually use this returned data, but
@@ -37,12 +37,17 @@ pub(crate) fn write(
     }
     // We erase the entire SPI flash prior to writing the first bit of data.
     // Host must send data in blocks that evenly divides this size.
-    if address & !(PAGE_SIZE - 1) != (address + data.len() as u32 - 1) & !(PAGE_SIZE - 1) {
-        rprintln!("SPI write crosses page boundary");
+    if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
+        rprintln!("SPI write crosses block boundary");
         return;
     }
-    if address % SECTOR_SIZE == 0 && spi_flash.erase_sectors(address, 1).is_err() {
-        rprintln!("Failed to erase to sector");
+    if address % BLOCK_SIZE == 0 {
+        // The spi-memory crate doesn't support erasing blocks, so we do it
+        // ourselves. https://github.com/jonas-schievink/spi-memory/issues/37
+        let mut spi = unsafe { SpiFlash::steal() };
+        if spi.erase_block(address).is_err() {
+            rprintln!("Failed to erase to block");
+        }
     }
     if spi_flash.write_bytes(address, data).is_err() {
         rprintln!("Failed to write to SPI flash");
@@ -116,7 +121,7 @@ const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
 
 pub(crate) fn crc_sector(
     spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
-    sector: u16,
+    block: u16,
 ) -> [u8; 4] {
     let spi_flash = match spi_flash {
         Some(x) => x,
@@ -127,10 +132,10 @@ pub(crate) fn crc_sector(
     };
     let mut digest = CRC.digest();
     let mut buf = [0x00; PAGE_SIZE as usize];
-    const PAGES_PER_SECTOR: u32 = SECTOR_SIZE / PAGE_SIZE;
-    for page_offset in 0..PAGES_PER_SECTOR {
+    const PAGES_PER_BLOCK: u32 = BLOCK_SIZE / PAGE_SIZE;
+    for page_offset in 0..PAGES_PER_BLOCK {
         let _ = spi_flash.read(
-            (sector as u32 * PAGES_PER_SECTOR + page_offset) * PAGE_SIZE,
+            (block as u32 * PAGES_PER_BLOCK + page_offset) * PAGE_SIZE,
             &mut buf,
         );
         digest.update(&buf);
@@ -178,10 +183,13 @@ pub(crate) fn test_write_speed(
     let mut write_time = 0;
     for page in 0..(READ_SIZE / PAGE_SIZE) {
         let address = 9 * 1024 * 1024 + page * PAGE_SIZE;
-        if address % SECTOR_SIZE == 0 {
+        if address % BLOCK_SIZE == 0 {
             erase_time += stopwatch
                 .trace(|| {
-                    let _ = spi_flash.erase_sectors(address, 1);
+                    // safety: We hold a mutable reference to Flash, which owns
+                    // the same peripheral.
+                    let mut spi = unsafe { SpiFlash::steal() };
+                    let _ = spi.erase_block(address);
                 })
                 .0;
         }
@@ -192,9 +200,9 @@ pub(crate) fn test_write_speed(
             .0;
     }
     rprintln!(
-        "Erasing 1MB took {}us. Writing 1MB took {}us",
-        erase_time,
-        write_time
+        "Erasing 1MB took {}ms. Writing 1MB took {}ms",
+        erase_time / 1000,
+        write_time / 1000
     );
 }
 
@@ -214,6 +222,7 @@ enum Command {
     ReadStatusRegisterLow = 0x5,
     WriteEnable = 0x6,
     ReadStatusRegisterHigh = 0x35,
+    EraseBlock = 0xd8,
 }
 
 enum StatusLow {
@@ -254,6 +263,18 @@ impl SpiFlash {
         Ok(())
     }
 
+    /// safety: You must hold a mutable reference Spi and must not use it while
+    /// you're using the returned result. i.e. SPI must already be initialized
+    /// and you must not access it via other means concurrently with using the
+    /// returned interface.
+    unsafe fn steal() -> Self {
+        // safety: We're transmuting a zero-sized type, so there's no state to
+        // initialize in the returned value. All initialization lives in the
+        // peripheral itself and it's up to the caller to ensure that has
+        // already occurred.
+        core::mem::transmute(())
+    }
+
     /// Waits until the SPI flash stops reporting that a write is in progress.
     fn wait_write_complete(&mut self) -> Result<(), SpiFlashError> {
         while self.read_reg(Command::ReadStatusRegisterLow)? & (StatusLow::WriteInProgress as u8)
@@ -280,6 +301,19 @@ impl SpiFlash {
             .transfer(buf)
             .map_err(|_| SpiFlashError::TransferFailed)?;
         self.cs.set_high().map_err(|_| SpiFlashError::Gpio)?;
+        Ok(())
+    }
+
+    fn erase_block(&mut self, address: u32) -> Result<(), SpiFlashError> {
+        self.write_enable()?;
+        let mut buf = [
+            Command::EraseBlock as u8,
+            (address >> 16) as u8,
+            (address >> 8) as u8,
+            (address & 0xff) as u8,
+        ];
+        self.transfer(&mut buf)?;
+        self.wait_write_complete()?;
         Ok(())
     }
 }
