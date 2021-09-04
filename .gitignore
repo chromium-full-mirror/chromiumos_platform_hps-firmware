@@ -8,3 +8,4 @@ target
 Cargo.lock
 .vscode/**
 third_party/installed
+.env
