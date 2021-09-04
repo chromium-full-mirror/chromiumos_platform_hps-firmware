@@ -21,7 +21,7 @@ from litespi.phy.generic import LiteSPIPHY
 from litespi import LiteSPI
 
 from .hps_platform import Platform
-from .cam_control import CameraControl, CameraControlDMA
+from .cam_control import CameraControl
 from .spi_controller import SpiController
 
 
@@ -151,10 +151,9 @@ class HpsSoC(LiteXSoC):
         bus = wishbone.Interface(
             data_width=self.bus.data_width,
             adr_width=self.bus.address_width)
-        self.submodules.cam_control = CameraControlDMA(
+        self.submodules.cam_control = CameraControl(
             bus=bus,
-            pads=self.platform.request('cam_control'),
-            sys_clk_freq=self.platform.sys_clk_freq)
+            pads=self.platform.request('cam_control'))
         self.bus.add_master('cam_control', master=bus)
         self.csr.add('cam_control')
 

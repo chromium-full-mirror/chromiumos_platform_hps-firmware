@@ -13,6 +13,7 @@
 #include <uart.h>
 
 #include "camera.h"
+#include "generated/csr.h"
 #include "hm01b0_platform.h"
 #include "hps_version.h"
 #include "mcu.h"
@@ -35,22 +36,38 @@ static int recalibration_threshold = 0;
 
 #define HM01B0_REG_AE_CTRL (0x2100)
 
-#define FB_SIZE ((size_t)HM01B0_PIXEL_X_NUM * (size_t)HM01B0_PIXEL_Y_NUM)
+#define CAM_IMAGE_WIDTH 320
+#define CAM_IMAGE_HEIGHT 240
+
+#define FB_SIZE ((size_t)CAM_IMAGE_WIDTH * (size_t)CAM_IMAGE_HEIGHT)
 uint8_t frame_buffer[FB_SIZE];
+
+// Wait for DMA to finish
+static void cam_dma_wait(void) {
+  while (cam_control_running_read()) {
+    /* wait */;
+  }
+}
 
 // Start camera DMA
 static void cam_dma_enable(void) {
-  cam_control_dma_base_write((uint32_t)frame_buffer);
-  cam_control_dma_length_write(HM01B0_PIXEL_Y_NUM * HM01B0_PIXEL_X_NUM);
-  cam_control_w_dma_signed_write(1);
-  cam_control_dma_enable_write(1);
-}
+  // Force a reset
+  cam_control_control_stop_write(1);
+  cam_control_control_stop_write(0);
 
-// Wait for DMA to finish, then turn it off
-static void cam_dma_wait(void) {
-  while (!cam_control_dma_done_read())
+  // Configure with 320x240 window
+  cam_control_column_start_write(2);
+  cam_control_column_count_write(CAM_IMAGE_WIDTH);
+  cam_control_row_start_write(2);
+  cam_control_row_count_write(CAM_IMAGE_HEIGHT);
+  cam_control_base_address_write((uint32_t)frame_buffer);
+
+  // Wait for camera to be not busy, then start signed dma
+  while (cam_control_busy_read()) {
     /* wait */;
-  cam_control_dma_enable_write(0);
+  }
+  cam_control_control_write((1 << CSR_CAM_CONTROL_CONTROL_START_OFFSET) |
+                            (1 << CSR_CAM_CONTROL_CONTROL_DMA_SIGNED_OFFSET));
 }
 
 static void capture(void) {
@@ -131,7 +148,7 @@ static int calibration_required(void) {
 // Since values are stored in the TFLite vector as signed ints, this function
 // adds 128 to recreate the original unsigned value.
 inline uint8_t get_pixel(size_t x, size_t y) {
-  size_t index = HM01B0_PIXEL_X_NUM * y + x;
+  size_t index = CAM_IMAGE_WIDTH * y + x;
   return 128 + frame_buffer[index];
 }
 
@@ -141,16 +158,19 @@ static inline char b64_lookup(uint8_t n) {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   return b64_table[0x3f & n];
 }
-#define b64_line_len (HM01B0_PIXEL_X_NUM / 3 * 4 + 1)
+#define b64_line_len (CAM_IMAGE_WIDTH / 3 * 4 + 1)
 static char b64_buf[b64_line_len + 1];
 
 // Outputs a base64 representation of each of line the camera image.
 void show_raw_frame(void) {
-  puts("+++ base64 +++");
   b64_buf[b64_line_len] = 0;
-  for (size_t y = 0; y < HM01B0_PIXEL_Y_NUM; y++) {
+  puts("+++ base64 +++");
+#if 0
+  // TODO: fix this code so images can be transferred out by UART
+  b64_buf[b64_line_len] = 0;
+  for (size_t y = 0; y < CAM_IMAGE_HEIGHT; y++) {
     size_t j = 0;
-    for (size_t x = 0; x < HM01B0_PIXEL_X_NUM; x += 3) {
+    for (size_t x = 0; x < CAM_IMAGE_WIDTH; x += 3) {
       uint8_t p0 = get_pixel(x + 0, y);
       uint8_t p1 = get_pixel(x + 1, y);
       uint8_t p2 = get_pixel(x + 2, y);
@@ -161,6 +181,7 @@ void show_raw_frame(void) {
     }
     puts(b64_buf);
   }
+#endif
   puts("--- base64 ---");
 }
 
@@ -187,11 +208,11 @@ void extract_input_from_frame_buffer() {
   int8_t* input = tflite_get_input();
   // Resize to 96x96 by copying a 192*192 square from the middle
   for (size_t in_y = 0; in_y < 96; in_y++) {
-    size_t tl_y = (HM01B0_PIXEL_Y_NUM - 96 * 2) / 2 + 2 * in_y;
+    size_t tl_y = (CAM_IMAGE_HEIGHT - 96 * 2) / 2 + 2 * in_y;
     for (size_t in_x = 0; in_x < 96; in_x++) {
       // average 2x2 sqaure
       // Calculate top left frame x, y positions
-      size_t tl_x = (HM01B0_PIXEL_X_NUM - 96 * 2) / 2 + 2 * in_x;
+      size_t tl_x = (CAM_IMAGE_WIDTH - 96 * 2) / 2 + 2 * in_x;
       int val = 0;
       val += get_pixel(tl_x + 0, tl_y + 0);
       val += get_pixel(tl_x + 1, tl_y + 0);
@@ -224,11 +245,11 @@ void run_classify() {
   uint32_t t = timer0_value_read();
   if (t == 0) {
     mcu_printf("Classification took longer than %u cycles (%ums)\n", UINT32_MAX,
-           UINT32_MAX / (CONFIG_CLOCK_FREQUENCY / 1000));
+               UINT32_MAX / (CONFIG_CLOCK_FREQUENCY / 1000));
   } else {
     uint32_t elapsed_cycles = UINT32_MAX - t;
     mcu_printf("Classification took %u cycles (%ums)\n", elapsed_cycles,
-           elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
+               elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
   mcu_printf("Person: %d, Not person %d\n", person, not_person);
@@ -308,7 +329,7 @@ const uint8_t kEndImage[] = {227, 114, 212, 105, 101, 111, 21, 193};
 static void transfer_image(void) {
   struct mcu_stream stream;
   mcu_stream_initialize(&stream, MCU_COMMAND_SEND_IMAGE);
-  size_t image_size = HM01B0_PIXEL_X_NUM * HM01B0_PIXEL_Y_NUM;
+  size_t image_size = CAM_IMAGE_WIDTH * CAM_IMAGE_HEIGHT;
   mcu_stream_send_data(&stream, kStartImage, sizeof(kStartImage));
   mcu_stream_send_data(&stream, (const uint8_t*)frame_buffer, image_size);
   mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
