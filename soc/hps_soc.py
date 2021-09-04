@@ -248,6 +248,9 @@ def main():
     parser.add_argument(
         '--litespi-quad', action='store_true',
         help='Use quad read opcode when reading from SPI flash')
+    parser.add_argument(
+        '--prog', action='store_true',
+        help='Program the FPGA bitstream and software.')
 
     args = parser.parse_args()
 
@@ -282,13 +285,16 @@ def main():
     if not args.build:
         print('Use --build to build the bitstream, if needed')
 
-    print(f'Loading from output dir: {builder.output_dir}')
-    os.system(
-        f'scripts/prog bitstream '
-        f'{builder.output_dir}/gateware/hps_platform.bit')
-    os.system(
-        f'scripts/prog rom '
-        f'{builder.output_dir}/software/bios/out/riscv-gcc/rom.bin')
+    if args.prog:
+        print(f'Loading from output dir: {builder.output_dir}')
+        os.system(
+            f'scripts/prog bitstream '
+            f'{builder.output_dir}/gateware/hps_platform.bit')
+        os.system(
+            f'scripts/prog rom '
+            f'{builder.output_dir}/software/bios/out/riscv-gcc/rom.bin')
+    else:
+        print(f'Build outputs at {builder.output_dir}')
 
 
 if __name__ == '__main__':
