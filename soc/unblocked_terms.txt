@@ -1,0 +1,9 @@
+# LiteX still uses the unfortunate terms "master" and "slave" to describe
+# bus controllers and periherals.
+#
+# See repohooks/README.md for more details.
+#
+# Tracked in b/198859874
+
+master
+slave
