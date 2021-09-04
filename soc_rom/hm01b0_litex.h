@@ -14,20 +14,19 @@
 extern hm01b0_cfg_t hm01b0_cfg;
 
 // High speed interface - macros
+// These are no longer used
+// TODO(avg): remove Sparkfun library altogether
 
 // (currently unused)
-#define HM01B0_READ_VSYNC \
-  (!!(cam_control_r_read() & (1 << CSR_CAM_CONTROL_R_FVLD_OFFSET)))
+#define HM01B0_READ_VSYNC 0
 
 // Evaluate to either 0 or 1 indicating the level of the HSYNC pin
-#define HM01B0_READ_HSYNC \
-  (!!(cam_control_r_read() & (1 << CSR_CAM_CONTROL_R_LVLD_OFFSET)))
+#define HM01B0_READ_HSYNC 0
 
 // Evaluate to either 0 or 1 indicating the level of the PCLK pin
-#define HM01B0_READ_PCLK \
-  (!!(cam_control_r_read() & (1 << CSR_CAM_CONTROL_R_PCLK_OFFSET)))
+#define HM01B0_READ_PCLK 0
 
 // Evaluate to an 8-bit quantity describing logic levels on data lines D0-7
-#define HM01B0_READ_BYTE (cam_control_dat_read())
+#define HM01B0_READ_BYTE 0
 
 #endif  // _HM01B0_LITEX_H_
