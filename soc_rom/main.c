@@ -117,8 +117,8 @@ static int calibration_required(void) {
   hm01b0_get_ae(&hm01b0_cfg, &aecfg);
   // If the autoexposure mean value is 20 steps away from the target there was
   // a major light change in the environment and the recalibration is required.
-  // Threshold makes sure that we don't trigger recalibration on every single cycle.
-  // Both values are set based on the experiments.
+  // Threshold makes sure that we don't trigger recalibration on every single
+  // cycle. Both values are set based on the experiments.
   if (abs(ae_target - aecfg.ui8AEMean) > 20 && recalibration_threshold == 5) {
     recalibration_threshold = 0;
     return 1;
