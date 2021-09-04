@@ -152,39 +152,6 @@ inline uint8_t get_pixel(size_t x, size_t y) {
   return 128 + frame_buffer[index];
 }
 
-// Looks up a conversion from a 6 bit integer and a base 64 character
-static inline char b64_lookup(uint8_t n) {
-  static const char* b64_table =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  return b64_table[0x3f & n];
-}
-#define b64_line_len (CAM_IMAGE_WIDTH / 3 * 4 + 1)
-static char b64_buf[b64_line_len + 1];
-
-// Outputs a base64 representation of each of line the camera image.
-void show_raw_frame(void) {
-  b64_buf[b64_line_len] = 0;
-  puts("+++ base64 +++");
-#if 0
-  // TODO: fix this code so images can be transferred out by UART
-  b64_buf[b64_line_len] = 0;
-  for (size_t y = 0; y < CAM_IMAGE_HEIGHT; y++) {
-    size_t j = 0;
-    for (size_t x = 0; x < CAM_IMAGE_WIDTH; x += 3) {
-      uint8_t p0 = get_pixel(x + 0, y);
-      uint8_t p1 = get_pixel(x + 1, y);
-      uint8_t p2 = get_pixel(x + 2, y);
-      b64_buf[j++] = b64_lookup(p0 >> 2);
-      b64_buf[j++] = b64_lookup((p0 << 4) | (0xf & (p1 >> 4)));
-      b64_buf[j++] = b64_lookup((p1 << 2) | (0x3 & (p2 >> 6)));
-      b64_buf[j++] = b64_lookup(p2);
-    }
-    puts(b64_buf);
-  }
-#endif
-  puts("--- base64 ---");
-}
-
 // Sends status register content to the mcu
 static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
   puts("Updating status in MCU");
@@ -300,7 +267,6 @@ static enum debug_command get_debug_command(uint16_t* arg_out) {
 
 // Sets the state of the MCU debug LED
 static void set_mcu_led(uint8_t ledstate) {
-  printf("Setting MCU debug LED %s\n", ledstate != 0 ? "on" : "off");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LED;
   mcu_buf_out[1] = ledstate;
@@ -478,7 +444,6 @@ int main(void) {
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
-  bool do_show_raw_frame = false;
   bool do_run_classify = true;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
@@ -491,8 +456,6 @@ int main(void) {
       int c = uart_read();
       bool recognized = false;
       recognized |= user_toggle(c, 's', "SPI Transfer", &do_spi_transfer);
-      recognized |=
-          user_toggle(c, 'r', "Raw frame display", &do_show_raw_frame);
       recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
       recognized |= user_toggle(c, 't', "Transfer image to host",
                                 &do_transfer_image_to_host);
@@ -596,9 +559,6 @@ int main(void) {
     if (calibration_required()) {
       calibrate(CALIBRATION_FRAMES);
       mcu_printf("Automatic re-calibration completed\n");
-    }
-    if (do_show_raw_frame) {
-      show_raw_frame();
     }
     if (do_transfer_image_to_host) {
       transfer_image();
