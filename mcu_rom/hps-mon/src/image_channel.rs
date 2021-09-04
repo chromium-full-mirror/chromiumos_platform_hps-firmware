@@ -15,8 +15,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::mpsc;
 
-const IMAGE_WIDTH: u32 = 324;
-const IMAGE_HEIGHT: u32 = 244;
+const IMAGE_WIDTH: u32 = 320;
+const IMAGE_HEIGHT: u32 = 240;
 
 // These constants are randomly generated to reduce the chances of them
 // appearing by chance in actual image data. They are duplicated in the C code
