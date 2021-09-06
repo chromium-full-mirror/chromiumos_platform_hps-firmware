@@ -24,10 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
 #include "keras_324_244_1.h"
-#include "tensorflow/lite/micro/examples/person_detection_experimental/model_settings.h"
-#include "tensorflow/lite/micro/examples/person_detection_experimental/person_detect_model_data.h"
-
-#include "tensorflow/lite/version.h"
+#include "tensorflow/lite/micro/examples/person_detection/model_settings.h"
+#include "person_detect_model_data.h"
 
 // Globals
 namespace {

@@ -32,7 +32,6 @@ constexpr int kSizeTensor = 1;
 constexpr int kOutputTensor = 0;
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
-#if defined(DEBUG)
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
@@ -53,7 +52,6 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     TF_LITE_KERNEL_LOG(context, "Dynamic tensors are unsupported in tfmicro.");
     return kTfLiteError;
   }
-#endif
   return kTfLiteOk;
 }
 
@@ -80,14 +78,6 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         tflite::micro::GetTensorData<int32_t>(size),
         tflite::micro::GetTensorShape(output),
         tflite::micro::GetTensorData<int32_t>(output));
-  } else if (output->type == kTfLiteUInt8) {
-    reference_ops::ResizeNearestNeighbor(
-        op_params, tflite::micro::GetTensorShape(input),
-        tflite::micro::GetTensorData<uint8_t>(input),
-        tflite::micro::GetTensorShape(size),
-        tflite::micro::GetTensorData<int32_t>(size),
-        tflite::micro::GetTensorShape(output),
-        tflite::micro::GetTensorData<uint8_t>(output));
   } else if (output->type == kTfLiteInt8) {
     reference_ops::ResizeNearestNeighbor(
         op_params, tflite::micro::GetTensorShape(input),
