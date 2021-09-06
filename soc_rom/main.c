@@ -40,7 +40,6 @@ static int recalibration_threshold = 0;
 #define CAM_IMAGE_HEIGHT 240
 
 #define FB_SIZE ((size_t)CAM_IMAGE_WIDTH * (size_t)CAM_IMAGE_HEIGHT)
-uint8_t frame_buffer[FB_SIZE];
 
 // Wait for DMA to finish
 static void cam_dma_wait(void) {
@@ -60,7 +59,7 @@ static void cam_dma_enable(void) {
   cam_control_column_count_write(CAM_IMAGE_WIDTH);
   cam_control_row_start_write(2);
   cam_control_row_count_write(CAM_IMAGE_HEIGHT);
-  cam_control_base_address_write((uint32_t)frame_buffer);
+  cam_control_base_address_write((uint32_t)tflite_get_input());
 
   // Wait for camera to be not busy, then start signed dma
   while (cam_control_busy_read()) {
@@ -149,7 +148,7 @@ static int calibration_required(void) {
 // adds 128 to recreate the original unsigned value.
 inline uint8_t get_pixel(size_t x, size_t y) {
   size_t index = CAM_IMAGE_WIDTH * y + x;
-  return 128 + frame_buffer[index];
+  return 128 + tflite_get_input()[index];
 }
 
 // Sends status register content to the mcu
@@ -164,31 +163,6 @@ static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
       mcu_buf_in[1] != MCU_COMMAND_WRITE_STATUS_REGISTERS) {
     puts("MCU did not acknowledge command");
   }
-}
-
-// Extracts a 96x96 square from the frame buffer into the TfLM input
-//
-// It does this by averaging 2x2 pixel groups over a 192x192 area in the center
-// of the frame.
-void extract_input_from_frame_buffer() {
-  puts("extract start");
-  int8_t* input = tflite_get_input();
-  // Resize to 96x96 by copying a 192*192 square from the middle
-  for (size_t in_y = 0; in_y < 96; in_y++) {
-    size_t tl_y = (CAM_IMAGE_HEIGHT - 96 * 2) / 2 + 2 * in_y;
-    for (size_t in_x = 0; in_x < 96; in_x++) {
-      // average 2x2 sqaure
-      // Calculate top left frame x, y positions
-      size_t tl_x = (CAM_IMAGE_WIDTH - 96 * 2) / 2 + 2 * in_x;
-      int val = 0;
-      val += get_pixel(tl_x + 0, tl_y + 0);
-      val += get_pixel(tl_x + 1, tl_y + 0);
-      val += get_pixel(tl_x + 0, tl_y + 1);
-      val += get_pixel(tl_x + 1, tl_y + 1);
-      *input++ = ((val + 2) / 4);
-    }
-  }
-  puts("extract end");
 }
 
 // Performs the classification.
@@ -297,7 +271,7 @@ static void transfer_image(void) {
   mcu_stream_initialize(&stream, MCU_COMMAND_SEND_IMAGE);
   size_t image_size = CAM_IMAGE_WIDTH * CAM_IMAGE_HEIGHT;
   mcu_stream_send_data(&stream, kStartImage, sizeof(kStartImage));
-  mcu_stream_send_data(&stream, (const uint8_t*)frame_buffer, image_size);
+  mcu_stream_send_data(&stream, (const uint8_t*)tflite_get_input(), image_size);
   mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
   mcu_stream_flush(&stream);
 }
@@ -436,7 +410,7 @@ int main(void) {
   camera_init();
 
   // Initialize TFLite
-  tflite_init(model_pdti8, tflite_error_callback);
+  tflite_init(tflite_error_callback);
 
   // Calibrate autoexposure
   write_ae_cfg();
@@ -567,7 +541,6 @@ int main(void) {
       print_ae_cfg();
     }
     if (do_run_classify) {
-      extract_input_from_frame_buffer();
       run_classify();
     }
     set_mcu_led(loop_counter % 2);

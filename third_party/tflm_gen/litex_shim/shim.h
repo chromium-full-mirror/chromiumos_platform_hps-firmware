@@ -26,16 +26,10 @@ extern "C" {
 
 typedef void (*report_error_callback_t)(const char*, va_list);
 
-// Which model to use
-enum Model {
-    model_keras,
-    model_pdti8,
-};
-
 // In this version, the only model evaluated is pdti8
 //
 // Set up TfLM environment
-void tflite_init(enum Model model, report_error_callback_t error_callback);
+void tflite_init(report_error_callback_t error_callback);
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 96x96 greyscale image.

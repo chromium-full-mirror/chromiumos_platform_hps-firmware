@@ -23,9 +23,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#include "keras_324_244_1.h"
-#include "tensorflow/lite/micro/examples/person_detection/model_settings.h"
-#include "person_detect_model_data.h"
+#include "hps_model_2021_07_05_tiled.h"
 
 // Globals
 namespace {
@@ -37,7 +35,7 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 160 * 1024;
+constexpr int kTensorArenaSize = 310 * 1024;
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
 }  // namespace
 
@@ -55,16 +53,14 @@ class CallbackErrorReporter : public tflite::ErrorReporter {
   report_error_callback_t error_callback_;
 };
 
-void tflite_init(enum Model model_enum,
-                 report_error_callback_t error_callback) {
+void tflite_init(report_error_callback_t error_callback) {
   static CallbackErrorReporter error_reporter_instance(error_callback);
   error_reporter = &error_reporter_instance;
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  model = tflite::GetModel(
-      model_enum == model_keras ? keras_324_244_1 : g_person_detect_model_data
-      );
+  const unsigned char* model_data = hps_model_2021_07_05_tiled;
+  model = tflite::GetModel(model_data);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     TF_LITE_REPORT_ERROR(error_reporter,
                          "Model provided is schema version %d not equal "
@@ -76,18 +72,18 @@ void tflite_init(enum Model model_enum,
   // Pull in only the operation implementations we need.
   // Alternatively, we could pull in all the operations with:
   //   tflite::AllOpsResolver resolver;
-  static tflite::MicroMutableOpResolver<7> micro_op_resolver;
-  micro_op_resolver.AddAveragePool2D();
-  micro_op_resolver.AddConv2D();
-  micro_op_resolver.AddDepthwiseConv2D();
-  micro_op_resolver.AddFullyConnected();
-  micro_op_resolver.AddMaxPool2D();
-  micro_op_resolver.AddReshape();
-  micro_op_resolver.AddSoftmax();
+  static tflite::MicroMutableOpResolver<7> resolver;
+  resolver.AddConcatenation();
+  resolver.AddConv2D();
+  resolver.AddFullyConnected();
+  resolver.AddLogistic();
+  resolver.AddMaxPool2D();
+  resolver.AddReshape();
+  resolver.AddStridedSlice();
 
   // Build an interpreter to run the model with.
   static tflite::MicroInterpreter static_interpreter(
-      model, micro_op_resolver, tensor_arena, kTensorArenaSize, error_reporter);
+      model, resolver, tensor_arena, kTensorArenaSize, error_reporter);
   interpreter = &static_interpreter;
 
   // Allocate memory from the tensor_arena for the model's tensors.
@@ -113,6 +109,6 @@ void tflite_classify(int8_t* person_score, int8_t* no_person_score) {
 
   // Fetch output
   TfLiteTensor* output = interpreter->output(0);
-  *person_score = output->data.uint8[kPersonIndex];
-  *no_person_score = output->data.uint8[kNotAPersonIndex];
+  *person_score = output->data.uint8[1];
+  *no_person_score = output->data.uint8[0];
 }
