@@ -119,6 +119,13 @@ void mcu_printf(const char* format, ...) {
   mcu_transaction();
 }
 
+void mcu_vprintf(const char* format, va_list args) {
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  vsnprintf((char*)&mcu_buf_out[1], MCU_BUFFER_LEN - 1, format, args);
+  mcu_buf_out[0] = MCU_COMMAND_SET_DEBUG_LOG;
+  mcu_transaction();
+}
+
 void mcu_stream_initialize(struct mcu_stream* stream,
                            enum mcu_command command) {
   stream->out = mcu_buf_out + 1;

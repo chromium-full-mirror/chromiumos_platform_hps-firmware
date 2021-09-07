@@ -419,6 +419,11 @@ static void set_camera_register(uint16_t address, uint8_t value) {
   }
 }
 
+void tflite_error_callback(const char* format, va_list args) {
+  mcu_vprintf(format, args);
+  mcu_printf("\n");
+}
+
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
@@ -444,7 +449,7 @@ int main(void) {
   camera_init();
 
   // Initialize TFLite
-  tflite_init(model_pdti8);
+  tflite_init(model_pdti8, tflite_error_callback);
 
   // Calibrate autoexposure
   write_ae_cfg();

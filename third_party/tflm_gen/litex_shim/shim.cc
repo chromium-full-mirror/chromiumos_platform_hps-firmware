@@ -43,9 +43,24 @@ constexpr int kTensorArenaSize = 160 * 1024;
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
 }  // namespace
 
-void tflite_init(enum Model model_enum) {
-  static tflite::MicroErrorReporter micro_error_reporter;
-  error_reporter = &micro_error_reporter;
+class CallbackErrorReporter : public tflite::ErrorReporter {
+ public:
+  CallbackErrorReporter(report_error_callback_t error_callback)
+      : error_callback_(error_callback) {}
+  virtual ~CallbackErrorReporter() {}
+  virtual int Report(const char* format, va_list args) {
+    error_callback_(format, args);
+    return 0;
+  }
+
+ private:
+  report_error_callback_t error_callback_;
+};
+
+void tflite_init(enum Model model_enum,
+                 report_error_callback_t error_callback) {
+  static CallbackErrorReporter error_reporter_instance(error_callback);
+  error_reporter = &error_reporter_instance;
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.

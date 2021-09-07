@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -72,6 +73,7 @@ int mcu_transaction(void);
 // Like printf, but the output will show up in the MCU's debug output, if there
 // is a debug probe connected to the MCU.
 void mcu_printf(const char* format, ...) __attribute__((format(printf, 1, 2)));
+void mcu_vprintf(const char* format, va_list args);
 
 // Number of times the controller will poll the MCU for a response before
 // giving up.

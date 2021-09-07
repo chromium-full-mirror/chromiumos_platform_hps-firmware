@@ -16,12 +16,15 @@ limitations under the License.
 // Access to TfLM functions for evaluating models
 //
 #include <stdint.h>
+#include <stdarg.h>
 #ifndef _TFLITE_LITEX_H_
 #define _TFLITE_LITEX_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef void (*report_error_callback_t)(const char*, va_list);
 
 // Which model to use
 enum Model {
@@ -32,7 +35,7 @@ enum Model {
 // In this version, the only model evaluated is pdti8
 //
 // Set up TfLM environment
-void tflite_init(enum Model model);
+void tflite_init(enum Model model, report_error_callback_t error_callback);
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 96x96 greyscale image.
