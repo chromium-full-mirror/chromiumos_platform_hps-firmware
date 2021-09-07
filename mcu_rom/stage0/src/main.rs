@@ -156,7 +156,6 @@ fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
     let mut rcc = p
         .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
-    rcc.disable_low_power_mode();
 
     // configure PA1 as o/p
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
