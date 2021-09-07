@@ -34,6 +34,7 @@ export RUST_VERSION=stable
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+PATH="${HPS_ROOT}/third_party/gn/out:${PATH}"
 PATH="${HPS_ROOT}/third_party/installed/bin:${PATH}"
 PATH="${RUST_DIR}:${PATH}"
 PATH="${HOSTPATH}:${PATH}"
