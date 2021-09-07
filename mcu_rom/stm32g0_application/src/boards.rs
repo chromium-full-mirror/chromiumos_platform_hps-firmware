@@ -3,21 +3,13 @@
 // found in the LICENSE file.
 
 pub mod nucleo;
-pub mod proto1;
 pub mod proto2;
 
 #[cfg(any(
     feature = "nucleo",
-    all(
-        not(feature = "proto1"),
-        not(feature = "nucleo"),
-        not(feature = "proto2")
-    )
+    all(not(feature = "nucleo"), not(feature = "proto2"))
 ))]
 pub use nucleo as board;
-
-#[cfg(feature = "proto1")]
-pub use proto1 as board;
 
 #[cfg(feature = "proto2")]
 pub use proto2 as board;

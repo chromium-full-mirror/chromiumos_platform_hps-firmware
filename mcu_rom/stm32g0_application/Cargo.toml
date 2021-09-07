@@ -29,7 +29,6 @@ default = [
 ]
 
 nucleo = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
-proto1 = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
 proto2 = ["hal/stm32g071", "stm32g0_i2c_peripheral/stm32g071"]
 
 no-i2c-clock-stretching = []
