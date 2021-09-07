@@ -14,6 +14,16 @@ const BOOTLOADER_ACK: u8 = 0x79;
 const BOOTLOADER_NACK: u8 = 0x1f;
 const BOOTLOADER_BUSY: u8 = 0x76;
 
+/// Configuration for communication with stm32 system bootloader.
+#[derive(Debug, Clone, Copy)]
+#[non_exhaustive]
+pub struct Config {
+    /// See AN2606 for the i2c address for the specific chip you're talking to.
+    /// The i2c address will also depend on which i2c bus on the chip you're
+    /// connected to.
+    i2c_address: u8,
+}
+
 #[repr(u8)]
 enum Command {
     GetVersion = 0x01,
@@ -45,7 +55,7 @@ pub enum Error {
 
 pub struct Stm32<'a, I2c: Write + Read> {
     dev: &'a mut I2c,
-    i2c_address: u8,
+    config: Config,
 }
 
 #[derive(Debug, Clone)]
@@ -53,12 +63,13 @@ pub struct Progress {
     pub percent_complete: u32,
 }
 
-impl<'a, E: core::fmt::Debug, I2c: Write<Error = E> + Read<Error = E>> Stm32<'a, I2c> {
-    /// See AN2606 for the i2c address for the specific chip you're talking to.
-    /// The i2c address will also depend on which i2c bus on the chip you're
-    /// connected to.
-    pub fn new(dev: &'a mut I2c, i2c_address: u8) -> Stm32<I2c> {
-        Self { dev, i2c_address }
+impl<'a, E, I2c> Stm32<'a, I2c>
+where
+    E: core::fmt::Debug,
+    I2c: Write<Error = E> + Read<Error = E>,
+{
+    pub fn new(dev: &'a mut I2c, config: Config) -> Stm32<'a, I2c> {
+        Self { dev, config }
     }
 
     pub fn get_chip_id(&mut self) -> Result<u16> {
@@ -177,17 +188,21 @@ impl<'a, E: core::fmt::Debug, I2c: Write<Error = E> + Read<Error = E>> Stm32<'a,
     }
 
     fn write(&mut self, bytes: &[u8]) -> Result<()> {
-        self.dev.write(self.i2c_address, bytes).map_err(|error| {
-            log_error(&error);
-            Error::TransportError
-        })
+        self.dev
+            .write(self.config.i2c_address, bytes)
+            .map_err(|error| {
+                log_error(&error);
+                Error::TransportError
+            })
     }
 
     fn read(&mut self, out: &mut [u8]) -> Result<()> {
-        self.dev.read(self.i2c_address, out).map_err(|error| {
-            log_error(&error);
-            Error::TransportError
-        })
+        self.dev
+            .read(self.config.i2c_address, out)
+            .map_err(|error| {
+                log_error(&error);
+                Error::TransportError
+            })
     }
 
     fn read_with_timeout(&mut self, out: &mut [u8]) -> Result<()> {
@@ -256,6 +271,12 @@ impl core::fmt::Display for Error {
     }
 }
 
+impl Config {
+    pub const fn i2c_address(i2c_address: u8) -> Self {
+        Self { i2c_address }
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
@@ -273,6 +294,7 @@ mod tests {
     use embedded_hal_mock::i2c;
 
     const I2C_ADDRESS: u8 = 0x51;
+    const CONFIG: Config = Config::i2c_address(I2C_ADDRESS);
 
     fn mock_write_with_checksum(bytes: &[u8]) -> i2c::Transaction {
         let mut with_checksum = Vec::with_capacity(bytes.len() + 1);
@@ -294,7 +316,7 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         assert_eq!(stm32.get_chip_id().unwrap(), 0xabcd);
         i2c.done();
     }
@@ -308,7 +330,7 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         assert_eq!(stm32.get_bootloader_version().unwrap(), 0xef);
         i2c.done();
     }
@@ -325,7 +347,7 @@ mod tests {
             mock_read(&[0xab, 0xcd, 0xef]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         let mut out = [0u8; 3];
         stm32.read_memory(0x12345678, &mut out).unwrap();
         assert_eq!(&out, &[0xab, 0xcd, 0xef]);
@@ -343,7 +365,7 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         stm32
             .write_memory(0x12345678, &[0xab, 0xcd, 0xef, 0x12])
             .unwrap();
@@ -359,7 +381,7 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         stm32.go(0x12345678).unwrap();
         i2c.done();
     }
@@ -388,7 +410,7 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         let mut callback_count = 0;
         stm32
             .write_bulk(0x12345678, &to_write, |_| {
@@ -419,7 +441,7 @@ mod tests {
             mock_read(&to_verify[128..]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
         let mut callback_count = 0;
         stm32
             .verify(0x12345678, &to_verify, |_| {
