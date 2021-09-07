@@ -23,6 +23,10 @@ hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt", "stm32g0
 ed25519-compact = { version = "0.1.9", default-features = false }
 
 [features]
+# If enabled, the first 1KB of flash will be left empty. The system bootloader
+# will still run on startup and commands will need to be sent to the system
+# bootloader into order to jump to stage0.
+sys_bootloader = []
 # set logging levels here
 default = [
   "defmt-default",

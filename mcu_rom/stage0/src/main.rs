@@ -35,6 +35,10 @@ extern crate bitflags;
 type Led = gpioa::PA1<Output<PushPull>>;
 type FwWp = gpioa::PA15<Input<Floating>>;
 
+extern "C" {
+    pub static VECTOR_TABLE: u32;
+}
+
 enum Stage1Error {
     Missing,
     InvalidSignature,
@@ -55,7 +59,7 @@ const APP: () = {
 
     #[init]
     fn init(ctx: init::Context) -> init::LateResources {
-        init_peripherals(ctx.device)
+        init_peripherals(ctx.device, ctx.core)
     }
 
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface])]
@@ -146,10 +150,23 @@ const APP: () = {
     }
 };
 
-fn init_peripherals(p: hal::stm32::Peripherals) -> init::LateResources {
+fn init_peripherals(
+    p: hal::stm32::Peripherals,
+    cp: rtic::export::Peripherals,
+) -> init::LateResources {
     // Enable DMA clock so that RTT is still handled when we're idle and the CPU
     // is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
+    if cfg!(feature = "sys_bootloader") {
+        // Reset clock source to HSI. This allows us to be loaded directly from the
+        // system bootloader without a reset, since the system bootloader will have
+        // already configured the clock source to be the PLL.
+        p.RCC.cfgr.write(|w| w);
+        // Under reset, our vector table will already have been configured,
+        // however if we're loaded from the system bootloader without a reset,
+        // it won't be. We have to configure it ourselves.
+        unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+    }
     // Configure clocks so that CPU runs as full speed, otherwise we can't
     // service I2C at 400KHz. Note, we switch this back prior to loading the
     // application.

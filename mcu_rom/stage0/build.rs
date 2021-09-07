@@ -1,8 +1,29 @@
+#[cfg(not(feature = "sys_bootloader"))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
 /*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
+    HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
+    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K - LENGTH(HDR)
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+}
+
+PROVIDE(_hdr = ORIGIN(HDR));
+PROVIDE(_slot_start = ORIGIN(SLOT));
+PROVIDE(_slot_end   = ORIGIN(SLOT) + LENGTH(SLOT));
+"#
+}
+
+/// Configuration if we're being loaded by the system bootloader. In this case,
+/// we leave the first 1KB of flash empty so that the system bootloader still
+/// runs.
+#[cfg(feature = "sys_bootloader")]
+fn memory_x_contents() -> &'static str {
+    r#"MEMORY
+{
+/*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
+    FLASH (rx) : ORIGIN = 0x08000400, LENGTH = 63K
     HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
     SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K - LENGTH(HDR)
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
