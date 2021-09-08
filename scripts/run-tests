@@ -34,7 +34,9 @@ for board in nucleo proto2; do
 done
 
 cd "${PROJECT_ROOT}/mcu_rom/factory_tester_mcu"
-cargo +stable build --no-default-features
+echo "===== Release build of factory_tester_mcu ====="
+cargo +stable build --no-default-features --release
+echo "===== Dev build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --features dev
 
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
