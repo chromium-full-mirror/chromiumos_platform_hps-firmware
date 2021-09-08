@@ -19,7 +19,6 @@ use hal::stm32::SPI1;
 use hal::stm32::SPI2;
 use hal::stm32::TIM1;
 use hal::stm32::TIM3;
-use hal::stm32::USART2;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 /// The type of the SPI CS pin from the FPGA once configured.
@@ -85,7 +84,6 @@ impl Board {
         c: gpio::gpioc::Parts,
         i2c1: I2C1,
         i2c2: I2C2,
-        _usart2: USART2,
         spi1: SPI1,
         spi2: SPI2,
         _tim1: TIM1,

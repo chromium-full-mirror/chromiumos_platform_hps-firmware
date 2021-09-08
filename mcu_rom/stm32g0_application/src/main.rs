@@ -95,13 +95,6 @@ const APP: () = {
         ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
     }
 
-    #[task(binds = USART2, resources = [host_interface, state], priority = 3)]
-    fn handle_usart2(ctx: handle_usart2::Context) {
-        ctx.resources
-            .host_interface
-            .handle_interrupt(ctx.resources.state);
-    }
-
     #[task(binds = TIM16,
         resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch,
             mcu_cmd_response_channel, fpga_power_gate, debug_led])]
@@ -357,7 +350,6 @@ fn init_peripherals(
         p.GPIOC.split(&mut rcc),
         p.I2C1,
         p.I2C2,
-        p.USART2,
         p.SPI1,
         p.SPI2,
         p.TIM1,
