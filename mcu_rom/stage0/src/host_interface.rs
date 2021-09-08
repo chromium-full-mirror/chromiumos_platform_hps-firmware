@@ -19,8 +19,8 @@ pub enum Stage1OkState {
 }
 
 pub struct StageZContext {
-    signature_check_pass: bool, // true indicate a validate signature.
-    stage1_present: bool,       // true when a stage 1 magic is found.
+    signature_check_pass: bool, // True indicates a validate signature.
+    stage1_present: bool,       // True indicates that stage 1 magic was found.
     firmware_version: [u16; 2], // Contains first 4B of validated signature.
 }
 

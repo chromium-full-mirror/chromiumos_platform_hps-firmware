@@ -14,13 +14,13 @@ bitflags! {
 pub struct TransientNVMem {
     magic: u32,
     count: u8,
-    // TODO: Use this field
+    // TODO: Use this field.
     #[allow(unused)]
     flags: TransientNVMemFlags,
 }
 
-// Note, the initial value assigned here is just to make the compiler happy. It
-// is never actually used, since our crt0 doesn't copy into the uninit section.
+// The initial value assigned here is just to make the compiler happy.
+// It's never actually used, since our crt0 doesn't copy into the uninit section.
 // We could use MaybeUnit here, except that MaybeUnit::assume_init_ref isn't
 // stable.
 #[link_section = ".uninit.BOOT0STATE"]
@@ -32,7 +32,7 @@ static mut BOOT0STATE: TransientNVMem = TransientNVMem {
 
 #[pre_init]
 unsafe fn init_boot0_state() {
-    // cold on, previous state unknown!
+    // Cold on, previous state unknown!
     let magic = BOOT0STATE.magic;
     if magic != 0xC0FFEE {
         BOOT0STATE.count = 0;

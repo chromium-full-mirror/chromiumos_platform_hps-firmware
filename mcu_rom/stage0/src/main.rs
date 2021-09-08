@@ -68,9 +68,9 @@ const APP: () = {
             if cfg!(feature = "no-i2c-clock-stretching")
                 && matches!(event, HostEvent::WriteFlash(_))
             {
-                // Disable i2c ACK while we're writing flash since writing flash
-                // prevents us from responding to i2c events in time anyway. The
-                // host can then retry the request until it gets through.
+                // Disable I2C ACK while writing flash, since writing flash
+                // prevents us from responding to I2C events in time.
+                // The host can then retry the request until it gets through.
                 ctx.resources
                     .host_interface
                     .i2c_mut()
@@ -100,7 +100,7 @@ const APP: () = {
                     // TODO: Report error somewhere
                 }
                 if cfg!(feature = "no-i2c-clock-stretching") {
-                    // Reenable i2c. It was disabled above in the i2c interrupt
+                    // Reenable I2C. It was disabled above in the I2C interrupt
                     // handler.
                     ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
                 }
@@ -120,11 +120,10 @@ const APP: () = {
     fn idle(_ctx: idle::Context) -> ! {
         loop {
             // The decision to load stage1 is made in response to an interrupt
-            // (e.g. an i2c interrupt), however we can't jump to the application
-            // from the interrupt handler, otherwise the CPU will consider that
-            // the interrupt to still be running and won't run any more
-            // interrupts at that priority or lower. So instead we jump to
-            // stage1 from here in the idle loop.
+            // (e.g. an I2C interrupt) and the decision to execeute stage1 load
+            // is made in the idle loop.
+            // Loading stage1 from any interrupt handler, would stop CPU from
+            // handling any more interrupts at the handler's priority or lower.
             if BOOTLOAD_TRIGGER.load(Ordering::Relaxed) {
                 load_stage1();
             }
@@ -174,17 +173,17 @@ fn init_peripherals(
         .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
 
-    // configure PA1 as o/p
+    // Configure PA1 as output pin.
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
     let mut led = gpioa.pa1.into_push_pull_output();
     let mut fw_wp = gpioa.pa15.into_floating_input();
-    // configure PB4 as o/p
+    // Configure PB4 as output pin.
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
-    // configure PC14 as i/p
+    // Configure PC14 as input pin.
     let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
     let fpga_done = gpioc.pc14.into_floating_input();
-    // configure PC15 as o/p
+    // Configure PC15 as output pin.
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
     let mut exti = p.EXTI;
@@ -201,15 +200,15 @@ fn init_peripherals(
             &mut rcc,
         )
         .unwrap();
-    defmt::info!("booting..\r");
+    defmt::info!("Booting...\r");
 
-    // the art of implementing a stm32 bootloader in rust.
+    // The art of implementing a stm32 bootloader in rust.
     defmt::info!("{}\n", banner());
 
     let boot_count = boot_count();
     defmt::info!("boot count = {}\r", boot_count);
 
-    // stop FPGA running and taking SPI flash from us.
+    // Stop FPGA running and taking SPI flash from us.
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {

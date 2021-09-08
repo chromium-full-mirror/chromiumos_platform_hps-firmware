@@ -61,7 +61,7 @@ impl FlashWriter {
             }
         }
         defmt::info!(
-            "Successfully wrote {} bytes to MCU flash at address {:x}",
+            "Successfully wrote {} bytes to MCU flash at address {:x}.",
             data.len(),
             address
         );
