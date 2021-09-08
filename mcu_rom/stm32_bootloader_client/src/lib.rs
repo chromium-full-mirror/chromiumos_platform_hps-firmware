@@ -22,6 +22,11 @@ pub struct Config {
     /// The i2c address will also depend on which i2c bus on the chip you're
     /// connected to.
     i2c_address: u8,
+
+    /// The maximum number of milliseconds that a full flash erase can take.
+    /// Search the datasheet for your specific STM32 for "mass erase time". If
+    /// in doubt, round up.
+    pub mass_erase_max_ms: u32,
 }
 
 #[repr(u8)]
@@ -53,8 +58,9 @@ pub enum Error {
     EraseFailed,
 }
 
-pub struct Stm32<'a, I2c: Write + Read> {
+pub struct Stm32<'a, I2c: Write + Read, DelayMs> {
     dev: &'a mut I2c,
+    delay: &'a mut DelayMs,
     config: Config,
 }
 
@@ -63,13 +69,14 @@ pub struct Progress {
     pub percent_complete: u32,
 }
 
-impl<'a, E, I2c> Stm32<'a, I2c>
+impl<'a, E, I2c, Delay> Stm32<'a, I2c, Delay>
 where
     E: core::fmt::Debug,
     I2c: Write<Error = E> + Read<Error = E>,
+    Delay: embedded_hal::blocking::delay::DelayMs<u32>,
 {
-    pub fn new(dev: &'a mut I2c, config: Config) -> Stm32<'a, I2c> {
-        Self { dev, config }
+    pub fn new(dev: &'a mut I2c, delay: &'a mut Delay, config: Config) -> Stm32<'a, I2c, Delay> {
+        Self { dev, delay, config }
     }
 
     pub fn get_chip_id(&mut self) -> Result<u16> {
@@ -167,7 +174,9 @@ where
         self.send_command(Command::Erase)?;
         let mut buffer = [0u8; 3];
         buffer[0..2].copy_from_slice(&SPECIAL_ERASE_ALL);
+        buffer[2] = checksum(&buffer[..2]);
         self.write(&buffer)?;
+        self.delay.delay_ms(self.config.mass_erase_max_ms);
         self.get_ack().map_err(|_| Error::EraseFailed)
     }
 
@@ -273,7 +282,12 @@ impl core::fmt::Display for Error {
 
 impl Config {
     pub const fn i2c_address(i2c_address: u8) -> Self {
-        Self { i2c_address }
+        Self {
+            i2c_address,
+            // A moderately conservative default. stm32g071 has 40.1ms.
+            // stm32l452 has 24.59ms
+            mass_erase_max_ms: 200,
+        }
     }
 }
 
@@ -307,6 +321,12 @@ mod tests {
         i2c::Transaction::read(I2C_ADDRESS, bytes.to_owned())
     }
 
+    struct Delay;
+
+    impl embedded_hal::blocking::delay::DelayMs<u32> for Delay {
+        fn delay_ms(&mut self, _ms: u32) {}
+    }
+
     #[test]
     fn test_get_chip_id() {
         let expectations = [
@@ -316,7 +336,8 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         assert_eq!(stm32.get_chip_id().unwrap(), 0xabcd);
         i2c.done();
     }
@@ -330,7 +351,8 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         assert_eq!(stm32.get_bootloader_version().unwrap(), 0xef);
         i2c.done();
     }
@@ -347,7 +369,8 @@ mod tests {
             mock_read(&[0xab, 0xcd, 0xef]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         let mut out = [0u8; 3];
         stm32.read_memory(0x12345678, &mut out).unwrap();
         assert_eq!(&out, &[0xab, 0xcd, 0xef]);
@@ -365,7 +388,8 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         stm32
             .write_memory(0x12345678, &[0xab, 0xcd, 0xef, 0x12])
             .unwrap();
@@ -381,7 +405,8 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         stm32.go(0x12345678).unwrap();
         i2c.done();
     }
@@ -410,7 +435,8 @@ mod tests {
             mock_read(&[BOOTLOADER_ACK]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         let mut callback_count = 0;
         stm32
             .write_bulk(0x12345678, &to_write, |_| {
@@ -441,7 +467,8 @@ mod tests {
             mock_read(&to_verify[128..]),
         ];
         let mut i2c = i2c::Mock::new(&expectations);
-        let mut stm32 = Stm32::new(&mut i2c, CONFIG);
+        let mut delay = Delay;
+        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
         let mut callback_count = 0;
         stm32
             .verify(0x12345678, &to_verify, |_| {
