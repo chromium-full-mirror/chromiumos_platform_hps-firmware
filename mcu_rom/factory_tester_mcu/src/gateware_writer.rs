@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::rprintln;
 use crate::Error;
 use crate::FlashSpi;
 use crate::FlashSpiCs;
 use hal::stm32::TIM2;
 use hal::timer::stopwatch::Stopwatch;
+use log::error;
+use log::info;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
@@ -34,11 +35,11 @@ pub(crate) fn write_gateware(
     // and the SPI flash already has the correct contents, then this saves us
     // rewriting and more importantly erasing, which is quite time consuming.
     if verify_spi_flash(flash).is_ok() {
-        rprintln!("SPI flash already has correct contents. Skipping write");
+        info!("SPI flash already has correct contents. Skipping write");
         return Ok(());
     }
 
-    rprintln!("Writing SPI flash");
+    info!("Writing SPI flash");
     let mut address = 0;
     let mut gateware = gateware_compress::Decompressor::new(COMPRESSED_GATEWARE);
     let mut buffer = [0u8; PAGE_SIZE as usize];
@@ -60,7 +61,7 @@ pub(crate) fn write_gateware(
         address += PAGE_SIZE;
     }
 
-    rprintln!(
+    info!(
         "Wrote {} bytes to SPI flash in {}ms",
         address,
         stopwatch.elapsed(start_time).0 / 1000
@@ -68,7 +69,7 @@ pub(crate) fn write_gateware(
 
     let start_time = stopwatch.now();
     verify_spi_flash(flash)?;
-    rprintln!(
+    info!(
         "Verified SPI flash in {}ms",
         stopwatch.elapsed(start_time).0 / 1000
     );
@@ -97,7 +98,7 @@ pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Resul
 
 impl From<spi_memory::Error<FlashSpi, FlashSpiCs>> for Error {
     fn from(error: spi_memory::Error<FlashSpi, FlashSpiCs>) -> Self {
-        rprintln!("SPI flash error: {:?}", error);
+        error!("SPI flash error: {:?}", error);
         Error::SpiFlashError
     }
 }

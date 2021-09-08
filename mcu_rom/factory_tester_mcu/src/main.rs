@@ -31,28 +31,16 @@ use hal::stm32::SPI1;
 use hal::stm32::SYSCFG_VREFBUF;
 use hal::stm32::TIM2;
 use hal::timer::stopwatch::Stopwatch;
+use log::error;
+use log::info;
 use spi_memory::series25::Flash;
 use stm32g0 as _;
 
 #[cfg(feature = "dev")]
 use panic_rtt_target as _;
 
-#[cfg(feature = "dev")]
-use rtt_target::rprintln;
-
 #[cfg(not(feature = "dev"))]
 use panic_halt as _;
-
-// If we're in non-dev mode, then all uses of rprintln dissapear. We use
-// format_args so that we don't get warnings about arguments to rprintln being
-// unused.
-#[cfg(not(feature = "dev"))]
-#[macro_export]
-macro_rules! rprintln {
-    ($($x:tt)*) => {
-        format_args!($($x)*);
-    };
-}
 
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
@@ -98,10 +86,10 @@ const APP: () = {
     fn run_test(ctx: run_test::Context) {
         match ctx.resources.tester.run_test() {
             Ok(_) => {
-                rprintln!("Test successful");
+                info!("Test successful");
             }
             Err(error) => {
-                rprintln!("Test failed: {:?}", error);
+                error!("Test failed: {:?}", error);
             }
         }
         // Force reentry into system bootloader, but only in non-dev mode, since it
@@ -127,10 +115,9 @@ fn init_peripherals(
     p: hal::stm32::Peripherals,
     cp: rtic::export::Peripherals,
 ) -> init::LateResources {
-    #[cfg(feature = "dev")]
-    {
-        rtt_target::rtt_init_print!();
-    }
+    // SAFETY: Must be called during initialization while interrupts are
+    // disabled.
+    unsafe { debug_logger::initialize_logging()};
 
     // Reset system clock source to the HSI. The factory bootloader (which we
     // are run from without a CPU reset), will have set the clock source to the
@@ -145,7 +132,7 @@ fn init_peripherals(
         .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
 
-    rprintln!("HPS tester starting");
+    info!("HPS tester starting");
 
     let gpioa = p.GPIOA.split(&mut rcc);
     let gpiob = p.GPIOB.split(&mut rcc);
@@ -216,12 +203,12 @@ impl Tester {
             (self.flash_spi.take(), self.flash_spi_cs.take())
         {
             let mut flash = Flash::init(flash_spi, flash_spi_cs).map_err(|error| {
-                rprintln!("Failed to initialize SPI flash: {:?}", error);
+                error!("Failed to initialize SPI flash: {:?}", error);
                 Error::SpiFlashError
             })?;
             gateware_writer::write_gateware(&mut flash, &mut self.stopwatch)?;
         } else {
-            rprintln!("run_test called multiple times?");
+            error!("run_test called multiple times?");
             return Err(Error::InternalError);
         }
 
@@ -269,7 +256,7 @@ fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>, delay: &mut Delay) -> Result<
             got_low = true;
         }
         if got_high && got_low {
-            rprintln!("Got signal from FPGA after {} iterations", x);
+            info!("Got signal from FPGA after {} iterations", x);
             return Ok(());
         }
         delay.delay_ms(1u32);
