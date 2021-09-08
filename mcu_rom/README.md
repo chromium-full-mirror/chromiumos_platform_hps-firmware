@@ -24,6 +24,10 @@ Primary responsibilities are:
  * Taking requests to read/write registers from the host and producing
    responses, updating internal state as appropriate.
 
+### Crate: debug_logger
+
+A logger implementation for use in HPS.
+
 ### Crate: delayed_i2c
 
 Wraps an i2c controller implementation and adds a delay to each operation. This
