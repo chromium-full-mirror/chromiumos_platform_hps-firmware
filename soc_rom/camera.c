@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define HM01B0_MODE_SELECT 0x0100
+
 int read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_READ_CAMERA_I2C;
@@ -45,6 +47,14 @@ int write_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
     return 1;
   }
   return 0;
+}
+
+void wait_for_camera_standby(void) {
+  uint8_t value;
+  uint16_t address = HM01B0_MODE_SELECT;
+  do {
+    read_camera_i2c(&address, 1, &value);
+  } while (value != 0);
 }
 
 void print_camera_register(uint16_t address) {
