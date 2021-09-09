@@ -3,6 +3,8 @@ runner = 'probe-run --probe 0483:374b --chip stm32g071'
 
 rustflags = [
   "-C", "link-arg=-Tlink.x",
+  # We need this so that we have a symbol for the start of our vector table.
+  "-C", "link-arg=-T../hps-common-link.x",
 ]
 
 [build]

@@ -43,6 +43,10 @@ use panic_rtt_target as _;
 #[cfg(not(feature = "dev"))]
 use panic_halt as _;
 
+extern "C" {
+    pub static VECTOR_TABLE: u32;
+}
+
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
 type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
@@ -117,6 +121,9 @@ fn init_peripherals(
     // HSI, then we'll go into an infinite loop while we wait for the PLL to
     // disable, which it will never do, since it's being used.
     p.RCC.cfgr.write(|w| w);
+    // The system bootloader doesn't configure the vector table for us, so we do
+    // it ourselves.
+    unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
     // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
     // is still handled when we're idle and the CPU is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
