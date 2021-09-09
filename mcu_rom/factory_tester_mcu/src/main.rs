@@ -9,6 +9,7 @@ mod gateware_writer;
 
 use core::convert::Infallible;
 use cortex_m::delay::Delay;
+use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
 use hal::gpio::gpioa::PA3;
@@ -74,6 +75,7 @@ const APP: () = {
     struct Resources {
         tester: Tester,
         syscfg_vrefbuf: SYSCFG_VREFBUF,
+        debug_led: PA1<Output<PushPull>>,
     }
 
     #[init(spawn = [run_test])]
@@ -82,7 +84,7 @@ const APP: () = {
         init_peripherals(ctx.device, ctx.core)
     }
 
-    #[task(resources = [tester, syscfg_vrefbuf])]
+    #[task(resources = [tester, syscfg_vrefbuf, debug_led])]
     fn run_test(ctx: run_test::Context) {
         match ctx.resources.tester.run_test() {
             Ok(_) => {
@@ -140,6 +142,8 @@ fn init_peripherals(
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
     let mut delay = Delay::new(cp.SYST, rcc.clocks.ahb_clk.0);
+    let mut debug_led = gpioa.pa1.into_push_pull_output();
+    debug_led.set_high().unwrap();
 
     let heartbeat = gpioa.pa3.into_pull_up_input();
 
@@ -194,6 +198,7 @@ fn init_peripherals(
     init::LateResources {
         tester,
         syscfg_vrefbuf: p.SYSCFG_VREFBUF,
+        debug_led,
     }
 }
 
