@@ -94,16 +94,6 @@ const APP: () = {
                 error!("Test failed: {:?}", error);
             }
         }
-        // Force reentry into system bootloader, but only in non-dev mode, since it
-        // would be annoying to have that happen if dev mode.
-        #[cfg(not(feature = "dev"))]
-        {
-            ctx.resources
-                .syscfg_vrefbuf
-                .cfgr1
-                .modify(|_, w| unsafe { w.mem_mode().bits(1) });
-            cortex_m::peripheral::SCB::sys_reset();
-        }
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
