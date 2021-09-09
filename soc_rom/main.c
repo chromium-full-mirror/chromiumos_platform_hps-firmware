@@ -444,7 +444,7 @@ int main(void) {
 
   uint32_t loop_counter = 0;
   bool do_spi_transfer = false;
-  bool do_run_classify = true;
+  bool do_run_classify = false;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
