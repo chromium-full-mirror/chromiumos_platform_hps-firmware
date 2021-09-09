@@ -113,16 +113,13 @@ void write_ae_cfg(void) {
 
 // Stream nframes to allow calibration
 static void calibrate(int nframes) {
+  wait_for_camera_standby();
   mcu_printf("Calibrating with %d frames\n", nframes);
-  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES,
-                  nframes);
-  for (int i = 0; i < nframes; i++) {
-    cam_dma_enable();
-    mcu_printf("  - frame %d\n", i + 1);
-    cam_dma_wait();
-  }
+  hm01b0_status_e status = hm01b0_set_mode(
+      &hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, nframes);
+  CAM_CHECK(status, "set_mode");
+  wait_for_camera_standby();
   print_ae_cfg();
-  hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STANDBY, 0);
 }
 
 // Recalibration is required when AE mean is far from the AE target
