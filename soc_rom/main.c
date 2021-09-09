@@ -50,23 +50,23 @@ static void cam_dma_wait(void) {
 
 // Start camera DMA
 static void cam_dma_enable(void) {
-  // Force a reset
-  cam_control_control_stop_write(1);
-  cam_control_control_stop_write(0);
+  // Force a reset, then wait to get to an idle state
+  cam_control_reset_write(1);
+  while (!cam_control_idle_read()) {
+    /* wait */;
+  }
 
   // Configure with 320x240 window
   cam_control_column_start_write(2);
   cam_control_column_count_write(CAM_IMAGE_WIDTH);
-  cam_control_row_start_write(2);
+  cam_control_row_start_write((324 - CAM_IMAGE_HEIGHT) / 2);
   cam_control_row_count_write(CAM_IMAGE_HEIGHT);
+  cam_control_signed_dma_write(1);
   cam_control_base_address_write((uint32_t)tflite_get_input());
+  cam_control_signed_dma_write(1);
+  cam_control_base_address_write((uint32_t)frame_buffer);
 
-  // Wait for camera to be not busy, then start signed dma
-  while (cam_control_busy_read()) {
-    /* wait */;
-  }
-  cam_control_control_write((1 << CSR_CAM_CONTROL_CONTROL_START_OFFSET) |
-                            (1 << CSR_CAM_CONTROL_CONTROL_DMA_SIGNED_OFFSET));
+  cam_control_start_run_write(1);
 }
 
 static void capture(void) {
@@ -79,6 +79,7 @@ static void capture(void) {
   CAM_CHECK(status, "status");
 
   // Command camera to take a frame
+  wait_for_camera_standby();
   cam_dma_enable();
   status =
       hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);

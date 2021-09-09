@@ -4,11 +4,12 @@
 
 """Gateware for receiving data from the HM01B0 camera."""
 
-from migen import (If, Module, Mux, Signal, Record, ResetInserter, Cat, FSM,
-                   NextState, NextValue)
+from migen import (
+    Cat, FSM, If, Module, Mux, NextState, NextValue,
+    Signal, Record, ResetInserter)
 
 from litex.soc.interconnect import stream
-from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
 from litex.soc.cores import dma
 
 
@@ -21,7 +22,9 @@ PAD_LAYOUT = [
 ]
 
 # Layouts for various streams
-_PIXEL_STREAM_LAYOUT = stream.EndpointDescription([('data', 8)])
+_PIXEL_STREAM_LAYOUT = stream.EndpointDescription([
+    ('data', 8),  # The pixel value
+])
 _WORD_STREAM_LAYOUT = stream.EndpointDescription([('data', 32)])
 _DMA_LAYOUT = [
     ('address', 30),
@@ -31,36 +34,49 @@ _DMA_LAYOUT = [
 # Raw camera image dimensions
 # Must match camera configuration - eg 324x244 (QVGA) or 324x324
 _RAW_IMAGE_COLUMNS = 324
-_RAW_IMAGE_ROWS = 244
+_RAW_IMAGE_ROWS = 324
+_NUM_PIXELS = _RAW_IMAGE_COLUMNS * _RAW_IMAGE_ROWS
 
 
 class PixelProducer(Module):
-    """Receives data from camera I/O lines and puts it on a stream
+    """Receives pixels from camera puts them on a stream.
 
-    Produces one data item per pixel received
+    Also signals the first and last pixel of a frame.
+
+    Assumes exactly num_pixels per valid frame, but will resynchronize
+    on start of frame.
 
     Does not respect backpressure from the output stream.
     """
 
-    def __init__(self, *, pads):
+    def __init__(self, *, pads, num_pixels=_NUM_PIXELS):
         self.output = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self.busy = Signal()
+        self.index = Signal(max=num_pixels)
         sigs = Record(PAD_LAYOUT)
         self.comb += sigs.eq(self._cross_domain(pads))
-        self.comb += self.busy.eq(sigs.fvld)
 
+        # Find rising edge of pixel clock
         last_pclk = Signal()
         self.sync += last_pclk.eq(sigs.pclk)
         pclk_rising = sigs.pclk & ~last_pclk
 
-        # Set Data out when pclk rising
+        # On pclk rising, while frame valid
+        # Send item on output stream and increment index
         self.sync += If(sigs.fvld & pclk_rising,
+                        self.output.valid.eq(1),
                         self.output.data.eq(sigs.data),
-                        self.output.valid.eq(1))
+                        self.output.first.eq(self.index == 0),
+                        self.output.last.eq(self.index == num_pixels - 1),
+                        self.index.eq(self.index + 1),
+                        )
 
-        # Lower valid after transfer
+        # Lower valid after a transfer
         self.sync += If(self.output.ready & self.output.valid,
                         self.output.valid.eq(0))
+
+        # While frame is not valid, reset pixel index
+        self.sync += If(~sigs.fvld,
+                        self.index.eq(0))
 
     def _cross_domain(self, pads):
         """Bring signals save across from I/O Domain"""
@@ -75,6 +91,60 @@ class PixelProducer(Module):
             self.sync += cross_next.eq(cross)
             cross = cross_next
         return cross
+
+
+class FrameGate(Module):
+    """Allows full frames to pass, on request.
+
+    input: Endpoint() in
+      The input pixels
+
+    output: Endpoint() out
+      The output pixels
+
+    request: Signal() in
+      Pulse high for a single cycle to request that next frame be passed
+      through the gate.
+    """
+
+    def __init__(self):
+        self.input = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
+        self.output = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
+        self.request = Signal()
+        self.last = Signal()
+        self._get_requested = Signal()
+        self._getting = Signal()
+        self._in_frame = Signal()
+
+        # Always ready to receive
+        self.comb += self.input.ready.eq(1)
+
+        # The conditions under which getting will start and stop
+        start_getting = (
+            self.input.valid & self.input.first & self._get_requested)
+        self.comb += self.last.eq(self.input.valid & self.input.last)
+
+        # When "getting", comb input to output
+        self.comb += If(
+            start_getting | self._getting,
+            self.output.valid.eq(self.input.valid),
+            self.output.first.eq(self.input.first),
+            self.output.last.eq(self.input.last),
+            self.output.data.eq(self.input.data),
+        )
+
+        # Start and stop "getting"
+        self.sync += If(
+            start_getting,
+            self._getting.eq(1),
+            self._get_requested.eq(0),
+        ).Elif(
+            self.last,
+            self._getting.eq(0),
+        )
+
+        # Set _get_requested when requested
+        self.sync += If(self.request, self._get_requested.eq(1))
 
 
 class Cropper(Module):
@@ -144,7 +214,7 @@ class Add128Pipeline(stream.PipelinedActor):
 
 
 class WordPacker(Module):
-    """Packs pixel values into a word.
+    """Packs 4 8 bit pixel values into a 32 bit word.
 
     Similar to stream.Gearbox. Passes on last signal if last is set on
     last byte of a word.
@@ -193,14 +263,16 @@ class WordPacker(Module):
 
 
 class AddressGenerator(Module):
-    """Generates incrementing addresses.
+    """Generates incrementing addresses for DMA.
 
-    Adds addresses to a piece of data, allowing the data to be written
-    to memory via DMA.
+    Adds addresses an address to an incoming data stream, allowing it to be
+    written to memory via DMA. Resets to base address when a payload marked
+    "last" is received.
     """
 
     def __init__(self):
-        self.address = Signal(30)  # Word address, not byte address
+        self.base = Signal(30)  # Word address, not byte address
+        self.index = Signal(30)  # Word Index after base
         self.done = Signal()
         self.input = stream.Endpoint(_WORD_STREAM_LAYOUT)
         self.output = stream.Endpoint(_DMA_LAYOUT)
@@ -209,16 +281,16 @@ class AddressGenerator(Module):
         self.comb += [
             self.output.valid.eq(self.input.valid),
             self.output.data.eq(self.input.data),
-            self.output.address.eq(self.address),
+            self.output.address.eq(self.base + self.index),
             self.input.ready.eq(self.output.ready),
         ]
-
         transferring = self.output.valid & self.output.ready
 
-        # Increment address on transfer out
-        self.sync += If(transferring, self.address.eq(self.address + 1))
+        # Increment address on transfer out, and reset to zero on last
+        self.sync += If(transferring,
+                        self.index.eq(Mux(self.input.last, 0, self.index + 1)))
 
-        # Signal done when last input transferred out
+        # Signal done when last input is being transferred out
         self.comb += self.done.eq(self.input.last & transferring)
 
 
@@ -236,34 +308,37 @@ class ItemCounter(stream.CombinatorialActor):
 
 
 class CameraControl(Module, AutoCSR):
-    """Handles outputs from the camera and outputs bytes of data to memory."""
+    """Handles outputs from the camera and outputs bytes of data to memory.
+
+    Device has three state:
+    - idle: may be started
+    - running: DMA started but not yet finished
+    - not running and not idle: DMA complete, but device still busy
+    """
 
     def __init__(self, *, pads, bus, raw_columns=_RAW_IMAGE_COLUMNS,
                  raw_rows=_RAW_IMAGE_ROWS):
-        self._running = CSRStatus(1, description='Set while DMA is running.')
-        self._busy = CSRStatus(
+        self._running = CSRStatus(
             1,
-            description='Set while camera is busy sending data.')
-        self._control = CSRStorage(fields=[
-            CSRField(
-                'start',
-                size=1,
-                offset=0,
-                description='Writing a 1 to this field while not ' +
-                'running and not busy starts a DMA.'),
-            CSRField(
-                'dma_signed',
-                size=1,
-                offset=1,
-                description='Set to adjust pixel values to ' +
-                'signed representation.'),
-            CSRField(
-                'stop',
-                size=1,
-                offset=2,
-                description='Writing a 1 bit to this field will ' +
-                'force the peripheral to stop running.'),
-        ], name='control')
+            description='Set when DMA start is requested and reset when ' +
+            'DMA is complete.')
+        self._idle = CSRStatus(
+            1, description='Device may be started only when idle.')
+        self._wait_frame_end = CSRStatus(
+            1, description='waiting for end of frame')
+        self._pixel_index = CSRStatus(
+            20, description='Current pixel index of sensor.')
+        self._reset = CSRStorage(
+            1,
+            description='Write a 1 to this field to force the device ' +
+            'to reset')
+        self._start_run = CSRStorage(
+            1,
+            description='Writing a 1 to this field while idle starts a DMA.')
+        self._signed_dma = CSRStorage(
+            1,
+            description='Set to adjust pixel values to ' +
+            'signed representation.')
         self._column_start = CSRStorage(
             9, description='Index of column on which to start')
         self._column_count = CSRStorage(
@@ -277,25 +352,32 @@ class CameraControl(Module, AutoCSR):
         self._pixels_read = CSRStatus(
             32, description='Number of pixels read from camera')
         self._pixels_cropped = CSRStatus(
-            32, description='Number of pixels cropped from image')
+            32, description='Number of pixels cropped from images')
 
         # Contruct all modules
-        self.submodules.producer = PixelProducer(pads=pads)
-        self.submodules.read_counter = ResetInserter()(
-            ItemCounter(_PIXEL_STREAM_LAYOUT))
-        self.submodules.cropper = ResetInserter()(
-            Cropper(raw_columns, raw_rows))
-        self.submodules.crop_counter = ResetInserter()(
-            ItemCounter(_PIXEL_STREAM_LAYOUT))
-        self.submodules.adder = Add128Pipeline()
-        self.submodules.fifo = stream.SyncFIFO(_PIXEL_STREAM_LAYOUT, depth=4)
-        self.submodules.packer = WordPacker()
-        self.submodules.addresser = AddressGenerator()
-        self.submodules.writer = dma.WishboneDMAWriter(bus=bus)
+        modules_reset = Signal()
+        modules = [
+            ('producer', PixelProducer(pads=pads,
+                                       num_pixels=raw_columns * raw_rows)),
+            ('frame_gate', FrameGate()),
+            ('read_counter', ItemCounter(_PIXEL_STREAM_LAYOUT)),
+            ('cropper', Cropper(raw_columns, raw_rows)),
+            ('crop_counter', ItemCounter(_PIXEL_STREAM_LAYOUT)),
+            ('adder', Add128Pipeline()),
+            ('fifo', stream.SyncFIFO(_PIXEL_STREAM_LAYOUT, depth=4)),
+            ('packer', WordPacker()),
+            ('addresser', AddressGenerator()),
+            ('writer', dma.WishboneDMAWriter(bus=bus)),
+        ]
+        for (name, module) in modules:
+            wrapped = ResetInserter()(module)
+            setattr(self.submodules, name, wrapped)
+            self.comb += wrapped.reset.eq(modules_reset)
 
-        # Connect streams
+        # Connect streams between modules
         self.comb += [
-            self.producer.output.connect(self.read_counter.sink),
+            self.producer.output.connect(self.frame_gate.input),
+            self.frame_gate.output.connect(self.read_counter.sink),
             self.read_counter.source.connect(self.cropper.input),
             self.cropper.output.connect(self.crop_counter.sink),
             self.crop_counter.source.connect(self.adder.sink),
@@ -305,50 +387,59 @@ class CameraControl(Module, AutoCSR):
             self.addresser.output.connect(self.writer.sink),
         ]
 
-        # Track sensor busy status
-        busy = self._busy.status
-        self.comb += busy.eq(self.producer.busy)
+        column_start = self._column_start.storage
+        column_end = self._column_start.storage + self._column_count.storage - 1
+        row_start = self._row_start.storage
+        row_end = self._row_start.storage + self._row_count.storage - 1
 
-        # Transition out of running state as soon as the addresser is
-        # done. We do this here instead of at frame end in order to
-        # allow processing of the received data to begin.
-        running = self._running.status
-        self.sync += If(running & self.addresser.done, running.eq(0))
-
-        # Transition into running when (a) not already running, (b) the
-        # sensor is not mid-frame and (c) a start is requested. A start
-        # requested while already running or the sensor is busy will
-        # fail.
-        # On start, transfer values from control registers to the cores
-        # that use those values.
-        self.sync += If(
-            ~running & ~busy & self._control.re & self._control.fields.start,
-            running.eq(1),
-            self.cropper.column_start.eq(
-                self._column_start.storage),
-            self.cropper.column_end.eq(
-                self._column_start.storage + self._column_count.storage - 1),
-            self.cropper.row_start.eq(
-                self._row_start.storage),
-            self.cropper.row_end.eq(
-                self._row_start.storage + self._row_count.storage - 1),
-            self.adder.enable_add.eq(
-                self._control.fields.dma_signed),
-            self.addresser.address.eq(self._base_address.storage[2:]))
-
-        # Forced stop in any circumstance
-        self.sync += If(self._control.re & self._control.fields.stop,
-                        running.eq(0))
-
-        # While not running, holds the cropper in reset so no new values
-        # are sent downstream to be DMAed.
-        # Also resets pipeline elements that have counters.
-        self.comb += self.cropper.reset.eq(~running)
-        self.comb += self.read_counter.reset.eq(~running)
-        self.comb += self.crop_counter.reset.eq(~running)
+        seen_frame_last = Signal()
+        reset_requested = self._reset.re & self._reset.storage
+        self.submodules.fsm = FSM(reset_state='fsm_reset')
+        self.fsm.act(
+            'fsm_reset',
+            modules_reset.eq(1),
+            NextValue(seen_frame_last, False),
+            NextState('idle')
+        )
+        self.fsm.act(
+            'idle',
+            self._idle.status.eq(True),
+            # Peripheral is not running, so config allowed to change
+            NextValue(self.cropper.column_start, column_start),
+            NextValue(self.cropper.column_end, column_end),
+            NextValue(self.cropper.row_start, row_start),
+            NextValue(self.cropper.row_end, row_end),
+            NextValue(self.adder.enable_add, self._signed_dma.storage),
+            NextValue(self.addresser.base, self._base_address.storage[2:]),
+            # When requested, start
+            If(self._start_run.re & self._start_run.storage,
+               NextState('running'),
+               self.frame_gate.request.eq(1),
+               ),
+            # When requested, reset
+            If(reset_requested, NextState('fsm_reset'))
+        )
+        self.fsm.act(
+            'running',
+            self._running.status.eq(True),
+            If(self.frame_gate.last, NextValue(seen_frame_last, True)),
+            If(self.addresser.done, NextState('wait_frame_end')),
+            # When requested, reset
+            If(reset_requested, NextState('fsm_reset'))
+        )
+        self.fsm.act(
+            'wait_frame_end',
+            self._wait_frame_end.status.eq(True),
+            # Can't reset until we've seen frame end as well as addresser done
+            # We don't know what order this will happen in,
+            If(self.frame_gate.last | seen_frame_last,
+               NextState('fsm_reset')
+               ),
+            # When requested, reset
+            If(reset_requested, NextState('fsm_reset'))
+        )
 
         # Transfer debug counter values to registers
-        self.sync += If(running,
-                        self._pixels_read.status.eq(self.read_counter.counter),
-                        self._pixels_cropped.status.eq(
-                            self.crop_counter.counter))
+        self.sync += self._pixels_read.status.eq(self.read_counter.counter)
+        self.sync += self._pixels_cropped.status.eq(self.crop_counter.counter)
+        self.sync += self._pixel_index.status.eq(self.producer.index)
