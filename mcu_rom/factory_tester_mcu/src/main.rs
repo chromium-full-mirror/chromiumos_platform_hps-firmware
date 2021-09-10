@@ -10,6 +10,7 @@ mod image_receiver;
 
 use cortex_m::asm;
 use factory_tester_common::Error;
+use factory_tester_common::TEST_CONTROLLER_I2C_ADDRESS;
 use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
@@ -18,6 +19,8 @@ use hal::gpio::gpioa::PA5;
 use hal::gpio::gpioa::PA6;
 use hal::gpio::gpioa::PA7;
 use hal::gpio::gpiob::PB0;
+use hal::gpio::gpiob::PB6;
+use hal::gpio::gpiob::PB7;
 use hal::gpio::gpioc::PC15;
 use hal::gpio::Analog;
 use hal::gpio::Input;
@@ -29,6 +32,7 @@ use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::spi::Spi;
+use hal::stm32::I2C1;
 use hal::stm32::I2C2;
 use hal::stm32::SPI1;
 use hal::stm32::SYSCFG_VREFBUF;
@@ -51,6 +55,11 @@ extern "C" {
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
 type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
+type HostI2c = I2c<I2C1, PB7<Output<OpenDrain>>, PB6<Output<OpenDrain>>>;
+
+// I2C bus speed = 400KHz. This value was computed by STM32CubeMX with APB clock
+// at 64MHz, rise time of 190ns and a fall time of 20ns.
+const I2C_TIMING_BITS: u32 = 0x10901032;
 
 const CPU_MHZ: u32 = 64;
 const CYCLES_PER_US: u32 = CPU_MHZ;
@@ -82,6 +91,7 @@ const APP: () = {
         tester: Tester,
         syscfg_vrefbuf: SYSCFG_VREFBUF,
         debug_led: PA1<Output<PushPull>>,
+        host_i2c: HostI2c,
     }
 
     #[init(spawn = [run_test])]
@@ -90,13 +100,19 @@ const APP: () = {
         init_peripherals(ctx.device, ctx.core)
     }
 
-    #[task(resources = [tester, syscfg_vrefbuf, debug_led])]
+    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c])]
     fn run_test(ctx: run_test::Context) {
         match ctx.resources.tester.run_test() {
             Ok(_) => {
+                if cfg!(not(feature = "dev")) {
+                    report_result(ctx.resources.host_i2c, &[0]);
+                }
                 info!("Test successful");
             }
             Err(error) => {
+                if cfg!(not(feature = "dev")) {
+                    report_result(ctx.resources.host_i2c, &[error as u8]);
+                }
                 error!("Test failed: {:?}", error);
             }
         }
@@ -200,6 +216,15 @@ fn init_peripherals(
         &mut rcc,
     );
 
+    let sda = gpiob.pb7.into_floating_input();
+    let scl = gpiob.pb6.into_floating_input();
+    let host_i2c = p.I2C1.i2c(
+        sda.into_open_drain_output(),
+        scl.into_open_drain_output(),
+        hal::i2c::Config::with_timing(I2C_TIMING_BITS),
+        &mut rcc,
+    );
+
     // Put FPGA into reset before we power it on to ensure that it doesn't try
     // to access the SPI flash at the same time as us.
     let mut fpga_programn = gpioc.pc15.into_push_pull_output();
@@ -243,6 +268,7 @@ fn init_peripherals(
         tester,
         syscfg_vrefbuf: p.SYSCFG_VREFBUF,
         debug_led,
+        host_i2c,
     }
 }
 
@@ -319,6 +345,21 @@ fn convert_camera_error(e: hm01b0::Error) -> Error {
         hm01b0::Error::I2cError => Error::CameraI2c,
     }
 }
+
+fn report_result(i2c: &mut HostI2c, result: &[u8]) {
+    use embedded_hal::blocking::i2c::Write;
+    // If we failed really quickly, the test controller might not have had a
+    // chance to reconfigure its I2C to receive our response, so we give it a
+    // few tries, with a delay between each.
+    for _ in 0..10 {
+        if i2c.write(TEST_CONTROLLER_I2C_ADDRESS, result).is_ok() {
+            return;
+        }
+        asm::delay(10 * CYCLES_PER_MS);
+    }
+    error!("Failed to send data back to tester");
+}
+
 /// A null implementation of a stopwatch. This is used in non-dev mode when we
 /// don't measure times in order to save space in the compiled binary.
 

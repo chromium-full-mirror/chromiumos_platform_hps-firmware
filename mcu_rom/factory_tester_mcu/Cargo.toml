@@ -8,6 +8,7 @@ cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 debug_logger = { path = "../debug_logger" }
+embedded-hal = "0.2.6"
 factory_tester_common = { path = "../factory_tester_common" }
 gateware_compress = { path = "../gateware_compress" }
 hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt", "stm32g071"]}
