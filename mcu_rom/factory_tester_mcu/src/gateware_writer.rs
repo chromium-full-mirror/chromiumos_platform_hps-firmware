@@ -23,7 +23,7 @@ pub(crate) fn write_gateware(
     flash: &mut Flash<FlashSpi, FlashSpiCs>,
     stopwatch: &mut Stopwatch<TIM2>,
 ) -> Result<(), Error> {
-    let id = flash.read_jedec_id()?;
+    let id = flash.read_jedec_id().map_err(convert_spi_flash_error)?;
     if id.mfr_code() != 0xC8 || id.device_id() != [0x60, 0x18] {
         return Err(Error::UnexpectedSpiFlashId);
     }
@@ -55,9 +55,13 @@ pub(crate) fn write_gateware(
         });
         // Erase sector when we reach the start of each sector.
         if address % SECTOR_SIZE == 0 {
-            flash.erase_sectors(address, 1)?;
+            flash
+                .erase_sectors(address, 1)
+                .map_err(convert_spi_flash_error)?;
         }
-        flash.write_bytes(address, &mut buffer)?;
+        flash
+            .write_bytes(address, &mut buffer)
+            .map_err(convert_spi_flash_error)?;
         address += PAGE_SIZE;
     }
 
@@ -82,11 +86,13 @@ pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Resul
     let mut gateware = gateware_compress::Decompressor::new(COMPRESSED_GATEWARE);
     let mut buffer = [0u8; PAGE_SIZE as usize];
     loop {
-        flash.read(address, &mut buffer)?;
+        flash
+            .read(address, &mut buffer)
+            .map_err(convert_spi_flash_error)?;
         for actual in buffer {
             if let Some(expected) = gateware.next() {
                 if actual != expected {
-                    return Err(Error::SpiFlashValidateFailed);
+                    return Err(Error::SpiFlashCommunication);
                 }
             } else {
                 return Ok(());
@@ -96,9 +102,7 @@ pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Resul
     }
 }
 
-impl From<spi_memory::Error<FlashSpi, FlashSpiCs>> for Error {
-    fn from(error: spi_memory::Error<FlashSpi, FlashSpiCs>) -> Self {
-        error!("SPI flash error: {:?}", error);
-        Error::SpiFlashError
-    }
+fn convert_spi_flash_error(error: spi_memory::Error<FlashSpi, FlashSpiCs>) -> Error {
+    error!("SPI flash error: {:?}", error);
+    Error::SpiFlashCommunication
 }

@@ -7,8 +7,8 @@
 
 mod gateware_writer;
 
-use core::convert::Infallible;
 use cortex_m::delay::Delay;
+use factory_tester_common::Error;
 use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
@@ -63,17 +63,6 @@ pub struct Tester {
     heartbeat: PA3<Input<PullUp>>,
 }
 
-#[derive(Debug)]
-enum Error {
-    I2cError,
-    /// Reported if there is a bug in the test software.
-    InternalError,
-    SpiFlashError,
-    UnexpectedSpiFlashId,
-    SpiFlashValidateFailed,
-    NoSignalFromFpga,
-}
-
 #[rtic::app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
@@ -113,7 +102,7 @@ fn init_peripherals(
 ) -> init::LateResources {
     // SAFETY: Must be called during initialization while interrupts are
     // disabled.
-    unsafe { debug_logger::initialize_logging()};
+    unsafe { debug_logger::initialize_logging() };
 
     // Reset system clock source to the HSI. The factory bootloader (which we
     // are run from without a CPU reset), will have set the clock source to the
@@ -206,12 +195,12 @@ impl Tester {
         {
             let mut flash = Flash::init(flash_spi, flash_spi_cs).map_err(|error| {
                 error!("Failed to initialize SPI flash: {:?}", error);
-                Error::SpiFlashError
+                Error::SpiFlashCommunication
             })?;
             gateware_writer::write_gateware(&mut flash, &mut self.stopwatch)?;
         } else {
             error!("run_test called multiple times?");
-            return Err(Error::InternalError);
+            return Err(Error::Internal);
         }
 
         // Start FPGA
@@ -219,10 +208,10 @@ impl Tester {
 
         check_heartbeat(&self.heartbeat)?;
 
-        self.configure_camera()
+        self.configure_camera().map_err(convert_camera_error)
     }
 
-    fn configure_camera(&mut self) -> Result<(), Error> {
+    fn configure_camera(&mut self) -> Result<(), hm01b0::Error> {
         let mut camera = hm01b0::Camera::new(&mut self.camera_i2c);
         // Sometimes the first i2c access to the camera fails (camera doesn't
         // ACK), so we do a few reads until it succeeds.
@@ -258,19 +247,11 @@ fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>) -> Result<(), Error> {
             return Ok(());
         }
     }
-    Err(Error::NoSignalFromFpga)
+    Err(Error::FpgaNotStarted)
 }
 
-impl From<hm01b0::Error> for Error {
-    fn from(e: hm01b0::Error) -> Self {
-        match e {
-            hm01b0::Error::I2cError => Error::I2cError,
-        }
-    }
-}
-
-impl From<Infallible> for Error {
-    fn from(_: Infallible) -> Self {
-        Error::InternalError
+fn convert_camera_error(e: hm01b0::Error) -> Error {
+    match e {
+        hm01b0::Error::I2cError => Error::CameraI2c,
     }
 }
