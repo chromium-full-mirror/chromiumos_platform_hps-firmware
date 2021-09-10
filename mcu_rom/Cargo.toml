@@ -5,6 +5,7 @@ members = [
     "application",
     "debug_logger",
     "delayed_i2c",
+    "factory_tester_common",
     "fake_i2c",
     "gateware_compress",
     "hm01b0",

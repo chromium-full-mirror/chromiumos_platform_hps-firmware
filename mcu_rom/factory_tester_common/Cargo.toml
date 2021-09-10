@@ -1,0 +1,8 @@
+[package]
+name = "factory_tester_common"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+num_enum = { version = "0.5.1", default-features = false }
