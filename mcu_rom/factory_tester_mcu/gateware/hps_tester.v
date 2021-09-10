@@ -47,12 +47,16 @@ module top(
   reg [7:0] data_b2;
   reg pclk_b1;
   reg pclk_b2;
+  reg lvld_b1;
+  reg lvld_b2;
 
   always @(posedge clk) begin
     data_b1 <= data;
     data_b2 <= data_b1;
     pclk_b1 <= pclk;
     pclk_b2 <= pclk_b1;
+    lvld_b1 <= lvld;
+    lvld_b2 <= lvld_b1;
   end
 
   reg [7:0] sr; // shift register
@@ -71,7 +75,7 @@ module top(
     // byte. We don't care about dropped bytes. We do however care that data pin
     // 0 is always bit 0, data pin 1 is always bit 1 etc when the data is
     // received by the MCU.
-    if (pclk_b2 != 0 && last_pclk == 0 && sr_count == 0) begin
+    if (lvld_b2 != 0 && pclk_b2 != 0 && last_pclk == 0 && sr_count == 0) begin
       sr <= data_b2;
       sr_count <= 8;
     end
