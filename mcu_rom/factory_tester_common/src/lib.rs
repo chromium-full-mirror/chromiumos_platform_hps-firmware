@@ -38,6 +38,7 @@ pub enum Error {
     InterruptLine = 10,
     FwwpLine = 11,
     FirmwareAlreadyLoaded = 12,
+    NoCameraData = 13,
 }
 
 impl From<Infallible> for Error {

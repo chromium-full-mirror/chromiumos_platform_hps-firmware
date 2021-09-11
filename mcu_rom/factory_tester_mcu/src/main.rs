@@ -85,6 +85,12 @@ pub struct Tester {
     fpga_spi_copi: hal::gpio::gpioa::PA4<Analog>,
 }
 
+#[derive(Clone, Copy, Default)]
+pub struct EventCounts {
+    lvld_pulse_count: u32,
+    fvld_pulse_count: u32,
+}
+
 #[rtic::app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
@@ -92,6 +98,8 @@ const APP: () = {
         syscfg_vrefbuf: SYSCFG_VREFBUF,
         debug_led: PA1<Output<PushPull>>,
         host_i2c: HostI2c,
+        exti: hal::stm32::EXTI,
+        event_counts: EventCounts,
     }
 
     #[init(spawn = [run_test])]
@@ -100,9 +108,9 @@ const APP: () = {
         init_peripherals(ctx.device, ctx.core)
     }
 
-    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c])]
+    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts])]
     fn run_test(ctx: run_test::Context) {
-        match ctx.resources.tester.run_test() {
+        match ctx.resources.tester.run_test(ctx.resources.event_counts) {
             Ok(_) => {
                 if cfg!(not(feature = "dev")) {
                     report_result(ctx.resources.host_i2c, &[0]);
@@ -132,6 +140,19 @@ const APP: () = {
             asm::delay(100 * CYCLES_PER_US);
         }
         cortex_m::peripheral::SCB::sys_reset();
+    }
+
+    #[task(binds = EXTI4_15, resources = [exti, event_counts], priority = 2)]
+    fn exti4_15_event(ctx: exti4_15_event::Context) {
+        let exti = ctx.resources.exti;
+        if exti.is_pending(hal::exti::Event::GPIO8, hal::gpio::SignalEdge::Rising) {
+            exti.unpend(hal::exti::Event::GPIO8);
+            ctx.resources.event_counts.fvld_pulse_count += 1;
+        }
+        if exti.is_pending(hal::exti::Event::GPIO14, hal::gpio::SignalEdge::Rising) {
+            exti.unpend(hal::exti::Event::GPIO14);
+            ctx.resources.event_counts.lvld_pulse_count += 1;
+        }
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
@@ -185,10 +206,16 @@ fn init_peripherals(
     let gpioa = p.GPIOA.split(&mut rcc);
     let gpiob = p.GPIOB.split(&mut rcc);
     let gpioc = p.GPIOC.split(&mut rcc);
+    let mut exti = p.EXTI;
 
     let stopwatch = create_stopwatch(p.TIM2, &mut rcc);
     let mut debug_led = gpioa.pa1.into_push_pull_output();
     debug_led.set_high().unwrap();
+
+    // Listen for camera's FVLD signal on the CS line from the FPGA.
+    gpioa.pa8.listen(hal::gpio::SignalEdge::Rising, &mut exti);
+    // Listen for camera's LVLD signal on the interrupt pin from the FPGA.
+    gpioc.pc14.listen(hal::gpio::SignalEdge::Rising, &mut exti);
 
     let heartbeat = gpioa.pa3.into_pull_up_input();
 
@@ -269,11 +296,13 @@ fn init_peripherals(
         syscfg_vrefbuf: p.SYSCFG_VREFBUF,
         debug_led,
         host_i2c,
+        exti,
+        event_counts: EventCounts::default(),
     }
 }
 
 impl Tester {
-    fn run_test(&mut self) -> Result<(), Error> {
+    fn run_test(&mut self, mut event_counts: resources::event_counts) -> Result<(), Error> {
         if let (Some(flash_spi), Some(flash_spi_cs)) =
             (self.flash_spi.take(), self.flash_spi_cs.take())
         {
@@ -294,11 +323,22 @@ impl Tester {
 
         self.configure_camera().map_err(convert_camera_error)?;
 
-        image_receiver::validate_image_data(
+        let image_data_result = image_receiver::validate_image_data(
             &mut self.fpga_spi,
             &mut self.fpga_spi_sck,
             &mut self.fpga_spi_copi,
-        )
+        );
+
+        let event_counts = rtic::Mutex::lock(&mut event_counts, |x| *x);
+        info!(
+            "FVLD pulses: {} LVLD pulses: {}",
+            event_counts.fvld_pulse_count, event_counts.lvld_pulse_count
+        );
+        if event_counts.fvld_pulse_count <= 1 || event_counts.lvld_pulse_count <= 1 {
+            return Err(Error::NoCameraData);
+        }
+
+        image_data_result
     }
 
     fn configure_camera(&mut self) -> Result<(), hm01b0::Error> {
