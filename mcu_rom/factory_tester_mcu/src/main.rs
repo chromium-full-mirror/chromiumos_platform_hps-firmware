@@ -217,7 +217,7 @@ impl Tester {
         // Start FPGA
         self.fpga_programn.set_high()?;
 
-        check_heartbeat(&self.heartbeat, &mut self.delay)?;
+        check_heartbeat(&self.heartbeat)?;
 
         self.configure_camera()
     }
@@ -248,20 +248,15 @@ impl Tester {
 }
 
 /// Waits until the pin `heartbeat` is observed both high and low.
-fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>, delay: &mut Delay) -> Result<(), Error> {
-    let mut got_high = false;
-    let mut got_low = false;
-    for x in 0..5000 {
-        if heartbeat.is_high()? {
-            got_high = true;
-        } else {
-            got_low = true;
-        }
-        if got_high && got_low {
+fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>) -> Result<(), Error> {
+    let start_state = heartbeat.is_high()?;
+    // Generally it takes about 2.94M iterations before we get a signal, so we
+    // double that to 6M.
+    for x in 0..6_000_000 {
+        if heartbeat.is_high()? != start_state {
             info!("Got signal from FPGA after {} iterations", x);
             return Ok(());
         }
-        delay.delay_ms(1u32);
     }
     Err(Error::NoSignalFromFpga)
 }
