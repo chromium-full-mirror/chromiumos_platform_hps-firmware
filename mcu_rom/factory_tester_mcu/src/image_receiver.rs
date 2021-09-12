@@ -9,14 +9,9 @@ use log::error;
 use log::info;
 
 /// Receives image data from the FPGA over SPI and performs some basic checks of
-/// that data.
-pub(crate) fn validate_image_data(
-    spi: &mut hal::stm32::SPI2,
-    sck: &mut gpio::gpioa::PA0<Analog>,
-    copi: &mut gpio::gpioa::PA4<Analog>,
-) -> Result<(), Error> {
-    initialize_spi(sck, copi, &spi);
-
+/// that data. `spi` must have already been initialized by calling
+/// `initialize_spi`.
+pub(crate) fn validate_image_data(spi: &mut hal::stm32::SPI2) -> Result<(), Error> {
     // Check that all pins (bits) can be observed with both a high and a low
     // value.
     let mut high_bits = 0;
@@ -36,10 +31,10 @@ pub(crate) fn validate_image_data(
     Err(Error::IncorrectImageData)
 }
 
-fn initialize_spi(
+pub(crate) fn initialize_spi(
+    spi: &mut stm32g0::stm32g071::SPI2,
     sck: &mut gpio::gpioa::PA0<Analog>,
     copi: &mut gpio::gpioa::PA4<Analog>,
-    spi: &&mut stm32g0::stm32g071::SPI2,
 ) {
     hal::spi::PinSck::setup(sck);
     hal::spi::PinMosi::setup(copi);

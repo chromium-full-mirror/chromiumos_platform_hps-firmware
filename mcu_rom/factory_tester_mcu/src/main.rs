@@ -39,6 +39,7 @@ use hal::stm32::SYSCFG_VREFBUF;
 use hal::stm32::TIM2;
 use log::error;
 use log::info;
+use log::warn;
 use spi_memory::series25::Flash;
 use stm32g0 as _;
 
@@ -116,13 +117,13 @@ const APP: () = {
                 if cfg!(not(feature = "dev")) {
                     report_result(ctx.resources.host_i2c, mlb_int, 0);
                 }
-                info!("Test successful");
+                info!("============== Test successful");
             }
             Err(error) => {
                 if cfg!(not(feature = "dev")) {
                     report_result(ctx.resources.host_i2c, mlb_int, error as u8);
                 }
-                error!("Test failed: {:?}", error);
+                error!("============= Test failed: {:?}", error);
             }
         }
         if cfg!(feature = "dev") {
@@ -370,6 +371,16 @@ impl Tester {
             self.stopwatch.elapsed(start).0 / 1000
         );
 
+        // TODO: Figure out why the test fails consistently with NoCameraData if
+        // we don't have this delay before initializing SPI.
+        asm::delay(10 * CYCLES_PER_MS);
+
+        image_receiver::initialize_spi(
+            &mut self.fpga_spi,
+            &mut self.fpga_spi_sck,
+            &mut self.fpga_spi_copi,
+        );
+
         let start = self.stopwatch.now();
         self.configure_camera().map_err(convert_camera_error)?;
         info!(
@@ -378,11 +389,16 @@ impl Tester {
         );
 
         let start = self.stopwatch.now();
-        let image_data_result = image_receiver::validate_image_data(
-            &mut self.fpga_spi,
-            &mut self.fpga_spi_sck,
-            &mut self.fpga_spi_copi,
-        );
+        let mut image_data_result = image_receiver::validate_image_data(&mut self.fpga_spi);
+        // TODO: Figure out why the camera is stopping streaming and fix it.
+        if image_data_result.is_err()
+            && self
+                .resume_camera_streaming()
+                .map_err(convert_camera_error)?
+        {
+            // Try again, now that we've resumed streaming.
+            image_data_result = image_receiver::validate_image_data(&mut self.fpga_spi);
+        }
         info!(
             "Receiving image data took {}ms",
             self.stopwatch.elapsed(start).0 / 1000
@@ -422,6 +438,19 @@ impl Tester {
         camera.set_test_pattern(Some(hm01b0::TestPattern::ColorBar))?;
         camera.set_mode(hm01b0::Mode::Streaming)?;
         Ok(())
+    }
+
+    /// Checks if the camera has stopped streaming and if it has, start it
+    /// streaming again. Returns whether it had stopped.
+    fn resume_camera_streaming(&mut self) -> Result<bool, hm01b0::Error> {
+        let mut camera = hm01b0::Camera::new(&mut self.camera_i2c);
+        if camera.read_reg(0x0100)? == 0 {
+            warn!("Camera stopped streaming by itself, retrying");
+            camera.set_mode(hm01b0::Mode::Streaming)?;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
 }
 
