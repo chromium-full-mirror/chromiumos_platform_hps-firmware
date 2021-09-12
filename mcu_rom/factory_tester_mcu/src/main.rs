@@ -100,6 +100,22 @@ const APP: () = {
                 error!("Test failed: {:?}", error);
             }
         }
+        if cfg!(feature = "dev") {
+            // In dev mode, we wait 100ms before we reset. This is to give the
+            // RTT channel a chance to be read, otherwise the test status won't
+            // be visible. This reset is useful in dev mode as it results in the
+            // test repeating.
+            asm::delay(100 * CYCLES_PER_MS);
+        } else {
+            // In non-dev mode, need make sure I2C has a chance to finish
+            // sending the test result back to the controller. We want to wait a
+            // short time here, since the test controller needs to write the
+            // test log using the system bootloader before the test finishes, so
+            // we're still on-the-clock. With I2C running at 400KHz, a byte plus
+            // ack and stop bits takes 25us, so we allow 4x that.
+            asm::delay(100 * CYCLES_PER_US);
+        }
+        cortex_m::peripheral::SCB::sys_reset();
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
