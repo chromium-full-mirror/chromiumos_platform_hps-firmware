@@ -133,6 +133,17 @@ fn init_peripherals(
 
     let heartbeat = gpioa.pa3.into_pull_up_input();
 
+    // Set the MLB interrupt line low. It has a pull-up resistor, so should have
+    // been high before. The test controller can then check that it's high when
+    // it starts and that it then goes low.
+    let mut mlb_int = gpiob.pb8.into_open_drain_output();
+    mlb_int.set_low().unwrap();
+
+    // FW_WP has no pull-up resistor. We set it high now then low later on. The
+    // test controller can count the transitions.
+    let mut fwwp = gpioa.pa15.into_push_pull_output();
+    fwwp.set_high().unwrap();
+
     // Enable a clock for the camera.
     let pwm = p.TIM3.pwm(6.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
@@ -159,6 +170,8 @@ fn init_peripherals(
     // datasheet says minimum time is 2.5ms. To be generous, we give it double
     // that.
     delay.delay_ms(5u32);
+
+    fwwp.set_low().unwrap();
 
     let flash_spi_cs = Some(gpiob.pb0.into_open_drain_output());
     let flash_spi_clk = gpioa.pa5;
