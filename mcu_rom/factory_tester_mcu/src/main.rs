@@ -267,7 +267,7 @@ fn init_peripherals(
     fwwp.set_high().unwrap();
 
     // Enable a clock for the camera.
-    let pwm = p.TIM3.pwm(6.mhz(), &mut rcc);
+    let pwm = p.TIM3.pwm(8.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
