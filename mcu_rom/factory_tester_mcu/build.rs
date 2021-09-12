@@ -15,13 +15,12 @@ fn main() {
 // upstream-provided linker script. The factory bootloader uses the first 0x2700
 // bytes of RAM, so our "FLASH" cannot overlap with this space. Our RAM can
 // overlap wit the space, since we don't write it until after we've started, at
-// which point the factory bootloader doesn't need whatever it wrote there. We
-// round 0x2700 up to the next whole KB and start our "FLASH" at 0x2800.
+// which point the factory bootloader doesn't need whatever it wrote there.
 #[cfg(not(feature = "dev"))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x20002800, LENGTH = 26K
+    FLASH (rx) : ORIGIN = 0x20002700, LENGTH = 26880
     RAM  (rw) : ORIGIN = 0x20000000, LENGTH = 10K
 }
 "#
