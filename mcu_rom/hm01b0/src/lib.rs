@@ -36,6 +36,13 @@ pub struct ShiftConfig {
     pub vsync_shift_enabled: bool,
 }
 
+pub struct BlackLevelConfig {
+    pub blc_enabled: bool,
+    pub blc_target: u8,
+    pub blc2_enabled: bool,
+    pub blc2_target: u8,
+}
+
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
@@ -122,6 +129,80 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
                 | bit(1, config.hsync_shift_enabled)
                 | bit(2, config.pixel_shift_enabled),
         )
+    }
+
+    // Configures the camera with recommended initial configuration provided
+    // by the manufacturer (HIMAX).
+    pub fn set_analog_default_config(&mut self) -> Result<()> {
+        self.write_reg(0x1003, 0x08)?; // BLC target :8 at 8 bit mode.
+        self.write_reg(0x1007, 0x08)?; // BLI target :8 at 8 bit mode.
+        self.write_reg(0x3044, 0x0A)?; // Increase CDS time for settling.
+        self.write_reg(0x3045, 0x00)?; // Make symetric for cds_tg and rst_tg.
+        self.write_reg(0x3047, 0x0A)?; // Increase CDS time for settling.
+        self.write_reg(0x3050, 0xC0)?; // Make negative offset up to 4x.
+        self.write_reg(0x3051, 0x42)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x3052, 0x50)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x3053, 0x00)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x3054, 0x03)?; // Tuning sf sig clamping as lowest.
+        self.write_reg(0x3055, 0xF7)?; // Tuning dsun.
+        self.write_reg(0x3056, 0xF8)?; // Increase adc nonoverlap clk.
+        self.write_reg(0x3057, 0x29)?; // Increase adc pwr for missing code.
+        self.write_reg(0x3058, 0x1F)?; // Turn on dsun.
+        self.write_reg(0x3059, 0x1E)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x3064, 0x00)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x3065, 0x04) // Pad pull 0.
+    }
+
+    // Sets the camera auto-exposure (AE).
+    pub fn set_ae(&mut self, ae_enabled: bool) -> Result<()> {
+        self.write_reg(0x2100, bit(0, ae_enabled))
+    }
+
+    // Enables the camera auto-exposure (AE).
+    // Setting the camera auto-exposure comes with configuration of multiple
+    // reserved registers, which are a part of i initial configuration
+    // provided by the manufacturer (HIMAX).
+    pub fn set_ae_default_config(&mut self) -> Result<()> {
+        self.write_reg(0x2100, 0x01)?; // AE enabled.
+        self.write_reg(0x2104, 0x07)?; // Converge out threshold.
+        self.write_reg(0x2105, 0x02)?; // Maximum INTG HB.
+        self.write_reg(0x2106, 0x14)?; // Maximum INTG LB.
+        self.write_reg(0x2108, 0x03)?; // Maximum analog gain in full frame mode.
+        self.write_reg(0x2109, 0x03)?; // Maximum analog gain in BIN2 mode.
+        self.write_reg(0x210B, 0x80)?; // Maximum digital gain.
+        self.write_reg(0x210F, 0x00)?; // Flicker step 60Hz HB.
+        self.write_reg(0x2110, 0x85)?; // Flicker step 60Hz LB.
+        self.write_reg(0x2111, 0x00)?; // Flicker step 50Hz HB.
+        self.write_reg(0x2112, 0xA0) // Flicker step 50Hz LB.
+    }
+
+    // Enables the Black Level Correction (BLC) and Black Level Indicator (BLC2).
+    // Setting BLC and BLC2 comes with configuration of multiple reserved
+    // registers, which are a part of initial configuration provided by
+    // the manufacturer (HIMAX).
+    pub fn set_blc_config(&mut self, config: BlackLevelConfig) -> Result<()> {
+        // BLC configuration.
+        self.write_reg(0x1000, bit(0, config.blc_enabled))?;
+        self.write_reg(0x1001, 0x40)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x1002, 0x32)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x1003, config.blc_target)?;
+        // BLC2 configuration.
+        self.write_reg(0x1006, bit(0, config.blc2_enabled))?;
+        self.write_reg(0x1007, config.blc2_target)?;
+        self.write_reg(0x1008, 0x00)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x1009, 0xA0)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x100A, 0x60)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x100B, 0x90)?; // Reserved. Initial HIMAX config.
+        self.write_reg(0x100C, 0x40) // Reserved. Initial HIMAX config.
+    }
+
+    // Configures the camera binning with the recommended intial configuration
+    // provided by the manufacturer (HIMAX).
+    pub fn set_binning_default_config(&mut self) -> Result<()> {
+        self.write_reg(0x0350, 0x7F)?; // Reserved. Digital gain control.
+        self.write_reg(0x0383, 0x00)?; // Full X readout.
+        self.write_reg(0x0387, 0x01)?; // Full Y readout.
+        self.write_reg(0x0390, 0x00) // Horizontal binning.
     }
 }
 
