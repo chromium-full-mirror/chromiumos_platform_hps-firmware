@@ -212,9 +212,7 @@ fn configure_dma_channel(
     channel.set_memory_address(buffer.as_ptr() as u32, true);
     channel.set_transfer_length(buffer.len() as u16);
     channel.set_peripheral_address(spi_dr_address, false);
-    // Note, the type parameter to `set_word_size` seems to be unused.
-    // TODO: See if we can clean this up in the HAL crate.
-    channel.set_word_size::<usize>(hal::dma::WordSize::BITS8);
+    channel.set_word_size(hal::dma::WordSize::BITS8);
     channel.select_peripheral(peripheral);
     channel.enable();
 }
