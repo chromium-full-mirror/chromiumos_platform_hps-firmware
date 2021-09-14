@@ -8,7 +8,7 @@
 mod gateware_writer;
 mod image_receiver;
 
-use cortex_m::delay::Delay;
+use cortex_m::asm;
 use factory_tester_common::Error;
 use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
@@ -51,6 +51,10 @@ extern "C" {
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
 type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
+
+const CPU_MHZ: u32 = 64;
+const CYCLES_PER_US: u32 = CPU_MHZ;
+const CYCLES_PER_MS: u32 = CYCLES_PER_US * 1000;
 
 pub struct Tester {
     camera_i2c: CameraI2c,
@@ -135,7 +139,6 @@ fn init_peripherals(
     let gpioc = p.GPIOC.split(&mut rcc);
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
-    let mut delay = Delay::new(cp.SYST, rcc.clocks.ahb_clk.0);
     let mut debug_led = gpioa.pa1.into_push_pull_output();
     debug_led.set_high().unwrap();
 
@@ -177,7 +180,7 @@ fn init_peripherals(
     // Give the SPI flash chip a chance to start after we powered it on. The
     // datasheet says minimum time is 2.5ms. To be generous, we give it double
     // that.
-    delay.delay_ms(5u32);
+    asm::delay(5 * CYCLES_PER_MS);
 
     fwwp.set_low().unwrap();
 
