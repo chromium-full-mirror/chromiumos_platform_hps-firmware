@@ -9,6 +9,7 @@ mod gateware_writer;
 mod image_receiver;
 
 use cortex_m::asm;
+use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
 use factory_tester_common::TEST_CONTROLLER_I2C_ADDRESS;
 use hal::gpio::gpioa::PA1;
@@ -54,7 +55,7 @@ extern "C" {
 
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
-type CameraI2c = I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>;
+type CameraI2c = DelayedI2c<I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>, Delay>;
 type HostI2c = I2c<I2C1, PB7<Output<OpenDrain>>, PB6<Output<OpenDrain>>>;
 
 // I2C bus speed = 400KHz. This value was computed by STM32CubeMX with APB clock
@@ -242,6 +243,14 @@ fn init_peripherals(
         hal::i2c::Config::new(400.khz()),
         &mut rcc,
     );
+    // If we don't delay between I2C operations, then if the camera is not
+    // ready, we end up getting stuck forever. Something about having two
+    // operations too close together means we don't ever get a second NACK.
+    let camera_i2c = DelayedI2c {
+        i2c: camera_i2c,
+        delay: Delay,
+        duration_us: 10,
+    };
 
     let sda = gpiob.pb7.into_floating_input();
     let scl = gpiob.pb6.into_floating_input();
@@ -425,4 +434,12 @@ fn create_stopwatch(tim2: TIM2, rcc: &mut Rcc) -> Stopwatch {
 #[cfg(not(feature = "dev"))]
 fn create_stopwatch(_tim2: TIM2, _rcc: &mut Rcc) -> Stopwatch {
     NullStopwatch
+}
+
+struct Delay;
+
+impl embedded_hal::blocking::delay::DelayUs<u32> for Delay {
+    fn delay_us(&mut self, us: u32) {
+        asm::delay(us * CYCLES_PER_US)
+    }
 }
