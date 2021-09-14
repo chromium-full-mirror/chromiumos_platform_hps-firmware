@@ -18,6 +18,7 @@
 #include "hps_version.h"
 #include "mcu.h"
 #include "litex_shim/shim.h"
+#include "transpose.h"
 
 #define CAM_CHECK(status, msg)     \
   {                                \
@@ -39,8 +40,6 @@ static int recalibration_threshold = 0;
 #define CAM_IMAGE_WIDTH 320
 #define CAM_IMAGE_HEIGHT 240
 
-#define FB_SIZE ((size_t)CAM_IMAGE_WIDTH * (size_t)CAM_IMAGE_HEIGHT)
-
 // Wait for DMA to finish
 static void cam_dma_wait(void) {
   while (cam_control_running_read()) {
@@ -49,7 +48,10 @@ static void cam_dma_wait(void) {
 }
 
 // Start camera DMA
-static void cam_dma_enable(void) {
+static void cam_dma_enable(uint16_t column_start,
+                           uint16_t column_count,
+                           uint16_t row_start,
+                           uint16_t row_count) {
   // Force a reset, then wait to get to an idle state
   cam_control_reset_write(1);
   while (!cam_control_idle_read()) {
@@ -57,17 +59,17 @@ static void cam_dma_enable(void) {
   }
 
   // Configure with 320x240 window
-  cam_control_column_start_write(2);
-  cam_control_column_count_write(CAM_IMAGE_WIDTH);
-  cam_control_row_start_write((324 - CAM_IMAGE_HEIGHT) / 2);
-  cam_control_row_count_write(CAM_IMAGE_HEIGHT);
+  cam_control_column_start_write(column_start);
+  cam_control_column_count_write(column_count);
+  cam_control_row_start_write(row_start);
+  cam_control_row_count_write(row_count);
   cam_control_signed_dma_write(1);
   cam_control_base_address_write((uint32_t)tflite_get_input());
 
   cam_control_start_run_write(1);
 }
 
-static void capture(void) {
+static void capture(bool rotate_image) {
   hm01b0_status_e status;
   if (!automatic_exposure_enabled) {
     status = hm01b0_restore_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
@@ -78,11 +80,23 @@ static void capture(void) {
 
   // Command camera to take a frame
   wait_for_camera_standby();
-  cam_dma_enable();
+  if (rotate_image) {
+    // Clips 240x320 image from X = [42, 282], Y = [2, 322].
+    cam_dma_enable((324 - CAM_IMAGE_HEIGHT) / 2, CAM_IMAGE_HEIGHT, 2,
+                   CAM_IMAGE_WIDTH);
+  } else {
+    // Clips 320x240 image from X = [2, 322], Y = [42, 282].
+    cam_dma_enable(2, CAM_IMAGE_WIDTH, (324 - CAM_IMAGE_HEIGHT) / 2,
+                   CAM_IMAGE_HEIGHT);
+  }
   status =
       hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
   CAM_CHECK(status, "set_mode");
   cam_dma_wait();
+  if (rotate_image) {
+    // Rotates 240x320 image to an expected 320x240 format.
+    rotate_240_320_clockwise((uint8_t*)tflite_get_input());
+  }
 }
 
 static void print_ae_cfg(void) {
@@ -418,6 +432,8 @@ int main(void) {
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
+  // TODO(jakubm): Expose the attribute to hps-mon.
+  bool rotate_image = true;
   uint16_t custom_register_address = 0;
   while (1) {
     // Accept input to configure which functions are run
@@ -495,7 +511,7 @@ int main(void) {
           print_ae_cfg();
           break;
         case DEBUG_CMD_READ_CAMERA_I2C:
-          // TODO(jakub): Delete static alloc in the future changes.
+          // TODO(jakubm): Delete static alloc in the future changes.
           camera_addresses[0] = 0x0000;
           camera_addresses[1] = 0x0001;
           read_camera_i2c(camera_addresses, 2, camera_values);
@@ -525,7 +541,7 @@ int main(void) {
       calibration_frames = 0;
     }
     mcu_printf("Capturing image\n");
-    capture();
+    capture(rotate_image);
     if (calibration_required()) {
       calibrate(CALIBRATION_FRAMES);
       mcu_printf("Automatic re-calibration completed\n");
