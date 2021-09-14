@@ -5,8 +5,7 @@
 use crate::Error;
 use crate::FlashSpi;
 use crate::FlashSpiCs;
-use hal::stm32::TIM2;
-use hal::timer::stopwatch::Stopwatch;
+use crate::Stopwatch;
 use log::error;
 use log::info;
 use spi_memory::series25::Flash;
@@ -20,7 +19,7 @@ const PAGE_SIZE: u32 = 256;
 
 pub(crate) fn write_gateware(
     flash: &mut Flash<FlashSpi, FlashSpiCs>,
-    stopwatch: &mut Stopwatch<TIM2>,
+    stopwatch: &mut Stopwatch,
 ) -> Result<(), Error> {
     let id = flash.read_jedec_id().map_err(convert_spi_flash_error)?;
     if id.mfr_code() != 0xC8 || id.device_id() != [0x60, 0x18] {

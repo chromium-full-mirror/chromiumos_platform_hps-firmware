@@ -27,12 +27,12 @@ use hal::gpio::PullUp;
 use hal::gpio::PushPull;
 use hal::i2c::I2c;
 use hal::prelude::*;
+use hal::rcc::Rcc;
 use hal::spi::Spi;
 use hal::stm32::I2C2;
 use hal::stm32::SPI1;
 use hal::stm32::SYSCFG_VREFBUF;
 use hal::stm32::TIM2;
-use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
 use spi_memory::series25::Flash;
@@ -56,12 +56,18 @@ const CPU_MHZ: u32 = 64;
 const CYCLES_PER_US: u32 = CPU_MHZ;
 const CYCLES_PER_MS: u32 = CYCLES_PER_US * 1000;
 
+#[cfg(feature = "dev")]
+type Stopwatch = hal::timer::stopwatch::Stopwatch<TIM2>;
+
+#[cfg(not(feature = "dev"))]
+type Stopwatch = NullStopwatch;
+
 pub struct Tester {
     camera_i2c: CameraI2c,
     flash_spi: Option<FlashSpi>,
     flash_spi_cs: Option<FlashSpiCs>,
     fpga_programn: PC15<Output<PushPull>>,
-    stopwatch: Stopwatch<TIM2>,
+    stopwatch: Stopwatch,
 
     // Data sources from the FPGA
     heartbeat: PA3<Input<PullUp>>,
@@ -138,7 +144,7 @@ fn init_peripherals(
     let gpiob = p.GPIOB.split(&mut rcc);
     let gpioc = p.GPIOC.split(&mut rcc);
 
-    let stopwatch = p.TIM2.stopwatch(&mut rcc);
+    let stopwatch = create_stopwatch(p.TIM2, &mut rcc);
     let mut debug_led = gpioa.pa1.into_push_pull_output();
     debug_led.set_high().unwrap();
 
@@ -286,4 +292,30 @@ fn convert_camera_error(e: hm01b0::Error) -> Error {
     match e {
         hm01b0::Error::I2cError => Error::CameraI2c,
     }
+}
+/// A null implementation of a stopwatch. This is used in non-dev mode when we
+/// don't measure times in order to save space in the compiled binary.
+
+#[cfg(not(feature = "dev"))]
+struct NullStopwatch;
+
+#[cfg(not(feature = "dev"))]
+impl NullStopwatch {
+    fn now(&self) -> u32 {
+        0
+    }
+
+    fn elapsed(&self, _: u32) -> hal::time::MicroSecond {
+        hal::time::MicroSecond(0)
+    }
+}
+
+#[cfg(feature = "dev")]
+fn create_stopwatch(tim2: TIM2, rcc: &mut Rcc) -> Stopwatch {
+    tim2.stopwatch(rcc)
+}
+
+#[cfg(not(feature = "dev"))]
+fn create_stopwatch(_tim2: TIM2, _rcc: &mut Rcc) -> Stopwatch {
+    NullStopwatch
 }
