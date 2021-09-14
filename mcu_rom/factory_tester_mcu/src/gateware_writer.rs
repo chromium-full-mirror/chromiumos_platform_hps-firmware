@@ -16,7 +16,6 @@ use spi_memory::Read;
 const COMPRESSED_GATEWARE: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/compressed_gateware.bit"));
 
-const SECTOR_SIZE: u32 = 4096;
 const PAGE_SIZE: u32 = 256;
 
 pub(crate) fn write_gateware(
@@ -39,6 +38,32 @@ pub(crate) fn write_gateware(
         return Ok(());
     }
 
+    // Most of the time, the SPI flash will be empty, so we optimistically
+    // assume it is and just write without erasing. Then if validation fails, we
+    // do a full erase and write again.
+    let bytes_written = write_without_erase(flash)?;
+
+    info!(
+        "Wrote {} bytes to SPI flash in {}ms",
+        bytes_written,
+        stopwatch.elapsed(start_time).0 / 1000
+    );
+
+    let start_time = stopwatch.now();
+    if verify_spi_flash(flash).is_err() {
+        flash.erase_all().map_err(convert_spi_flash_error)?;
+        write_without_erase(flash)?;
+        verify_spi_flash(flash)?;
+    }
+    info!(
+        "Verified SPI flash in {}ms",
+        stopwatch.elapsed(start_time).0 / 1000
+    );
+
+    Ok(())
+}
+
+fn write_without_erase(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<u32, Error> {
     info!("Writing SPI flash");
     let mut address = 0;
     let mut gateware = gateware_compress::Decompressor::new(COMPRESSED_GATEWARE);
@@ -53,32 +78,12 @@ pub(crate) fn write_gateware(
                 0
             }
         });
-        // Erase sector when we reach the start of each sector.
-        if address % SECTOR_SIZE == 0 {
-            flash
-                .erase_sectors(address, 1)
-                .map_err(convert_spi_flash_error)?;
-        }
         flash
             .write_bytes(address, &mut buffer)
             .map_err(convert_spi_flash_error)?;
         address += PAGE_SIZE;
     }
-
-    info!(
-        "Wrote {} bytes to SPI flash in {}ms",
-        address,
-        stopwatch.elapsed(start_time).0 / 1000
-    );
-
-    let start_time = stopwatch.now();
-    verify_spi_flash(flash)?;
-    info!(
-        "Verified SPI flash in {}ms",
-        stopwatch.elapsed(start_time).0 / 1000
-    );
-
-    Ok(())
+    Ok(address)
 }
 
 pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<(), Error> {
