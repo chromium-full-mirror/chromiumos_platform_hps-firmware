@@ -63,8 +63,6 @@ static void cam_dma_enable(void) {
   cam_control_row_count_write(CAM_IMAGE_HEIGHT);
   cam_control_signed_dma_write(1);
   cam_control_base_address_write((uint32_t)tflite_get_input());
-  cam_control_signed_dma_write(1);
-  cam_control_base_address_write((uint32_t)frame_buffer);
 
   cam_control_start_run_write(1);
 }
