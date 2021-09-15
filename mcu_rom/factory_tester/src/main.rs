@@ -7,6 +7,7 @@
 
 use hal::gpio::Edge;
 use hal::gpio::Floating;
+use hal::gpio::PC3;
 use panic_probe as _;
 
 use delayed_i2c::DelayedI2c;
@@ -56,6 +57,11 @@ const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
 // I2C is going via isolation FETs that assume open drain.
 const I2C_TIMING_BITS: u32 = 0x0050081E;
 
+// How long we'll wait for the MCU to send us a signal on the interrupt line
+// after we tell it to start. This timeout is very generous, since the actual
+// time is <1ms.
+const MCU_START_TIMEOUT_MS: u32 = 100;
+
 type I2cToDut = I2c<
     I2C3,
     (
@@ -68,6 +74,7 @@ pub struct Tester {
     rtc: Rtc,
     i2c: DelayedI2c<I2cToDut, DelayCM>,
     delay: DelayCM,
+    mlb_int: PC3<Input<Floating>>,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -142,6 +149,12 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
     button.enable_interrupt(&mut exti);
     button.trigger_on_edge(&mut exti, Edge::Falling);
 
+    // Monitor MLB_INT pin. This pin has a pull-up resistor, so should initially
+    // be high. The MCU test firmware once it starts should pull it low.
+    let mlb_int = gpioc
+        .pc3
+        .into_floating_input(&mut gpioc.moder, &mut gpioc.pupdr);
+
     let sda = gpioc.pc1;
     let scl = gpioc.pc0;
 
@@ -164,6 +177,7 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
         rtc,
         i2c: delayed_i2c,
         delay: DelayCM::new(clocks),
+        mlb_int,
     };
 
     init::LateResources { tester, button }
@@ -172,6 +186,11 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
 impl Tester {
     fn run_test(&mut self) -> Result<()> {
         info!("Starting test");
+
+        if self.mlb_int.is_low().unwrap_or_default() {
+            error!("MLB_INT line is low at start of test, when it is supposed to be pulled high");
+            return Err(Error::InterruptLine);
+        }
 
         // Check to see if we're connected to a HPS that already has firmware
         // loaded. For now, we don't support testing devices that already have
@@ -220,6 +239,17 @@ impl Tester {
             error!("Failed to start MCU program: {}", &error);
             Error::SystemBootloader
         })?;
+
+        let mcu_start_ms = self.get_millis();
+        while self.mlb_int.is_high().unwrap_or_default() {
+            if self.get_millis() - mcu_start_ms > MCU_START_TIMEOUT_MS {
+                error!(
+                    "MCU failed to pull MLB_INT low after {}ms",
+                    MCU_START_TIMEOUT_MS
+                );
+                return Err(Error::InterruptLine);
+            }
+        }
 
         Ok(())
     }
