@@ -5,16 +5,15 @@
 #![no_main]
 #![no_std]
 
-use hal::gpio::Edge;
-use hal::gpio::Floating;
-use hal::gpio::PC3;
-use panic_probe as _;
-
+use core::convert::TryFrom;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
+use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
 use hal::delay::DelayCM;
 use hal::device::I2C3;
 use hal::gpio::Alternate;
+use hal::gpio::Edge;
+use hal::gpio::Floating;
 use hal::gpio::Input;
 use hal::gpio::OpenDrain;
 use hal::gpio::Output;
@@ -24,6 +23,7 @@ use hal::gpio::PB13;
 use hal::gpio::PC0;
 use hal::gpio::PC1;
 use hal::gpio::PC13;
+use hal::gpio::PC3;
 use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::rcc::PllConfig;
@@ -35,6 +35,7 @@ use hal::stm32;
 use log::error;
 use log::info;
 use mcu_common::HPS_ADDRESS;
+use panic_probe as _;
 use stm32_bootloader_client::Stm32;
 
 type Result<T, E = Error> = core::result::Result<T, E>;
@@ -281,7 +282,34 @@ impl Tester {
         // TODO: Add a timeout.
         while self.mlb_int.is_low().unwrap_or_default() {}
 
-        Ok(())
+        let mut result = [0u8; 1];
+
+        // For some reason when we issue the the GO command, the I2C bus gets
+        // stuck. Possibly the system bootloader doesn't ack the last transfer
+        // prior to when it transfers control out. The I2C ISR register
+        // indicates that the bus is BUSY. If we leave it like this, then our
+        // attempt to read the test status from the HPS MCU blocks indefinitely.
+        // Disabling then reenabling the I2C peripheral fixes this.
+        {
+            let p = unsafe { stm32::Peripherals::steal() };
+            let i2c = p.I2C3;
+            i2c.cr1.modify(|_, w| w.pe().clear_bit());
+            i2c.cr1.modify(|_, w| w.pe().set_bit());
+        }
+
+        self.i2c
+            .read(MCU_TESTER_I2C_ADDRESS, &mut result)
+            .map_err(|e| {
+                error!("Failed to read test result from MCU: {:?}", e);
+                Error::Internal
+            })?;
+        let test_result = result[0];
+
+        if test_result == factory_tester_common::TEST_STATUS_OK {
+            return Ok(());
+        }
+
+        Err(Error::try_from(test_result).unwrap_or(Error::Internal))
     }
 
     /// Returns the current time as milliseconds. Provided the the time hasn't been
