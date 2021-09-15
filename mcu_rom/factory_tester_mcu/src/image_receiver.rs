@@ -21,7 +21,7 @@ pub(crate) fn validate_image_data(
     // value.
     let mut high_bits = 0;
     let mut low_bits = 0;
-    for _ in 0..50000 {
+    for _ in 0..200_000 {
         let byte = read_byte(spi)?;
         high_bits |= byte;
         low_bits |= !byte;
