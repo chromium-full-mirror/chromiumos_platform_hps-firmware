@@ -18,7 +18,9 @@ use hal::gpio::Alternate;
 use hal::gpio::Input;
 use hal::gpio::OpenDrain;
 use hal::gpio::Output;
+use hal::gpio::PushPull;
 use hal::gpio::AF4;
+use hal::gpio::PB13;
 use hal::gpio::PC0;
 use hal::gpio::PC1;
 use hal::gpio::PC13;
@@ -82,6 +84,7 @@ const APP: () = {
     struct Resources {
         tester: Tester,
         button: PC13<Input<Floating>>,
+        led: PB13<Output<PushPull>>,
     }
 
     #[init]
@@ -97,16 +100,35 @@ const APP: () = {
         loop {}
     }
 
-    #[task(binds = EXTI15_10, resources = [tester, button])]
+    #[task(binds = EXTI15_10, resources = [tester, button, led])]
     fn exti15_10(ctx: exti15_10::Context) {
         let tester = ctx.resources.tester;
         let start_ms = tester.get_millis();
+        let led = ctx.resources.led;
+        led.set_low().unwrap();
         match tester.run_test() {
             Ok(_) => {
                 let end_ms = tester.get_millis();
+                // Set the LED to be on to indicate that the test passed.
+                led.set_high().unwrap();
                 info!("Test passed in {}ms", end_ms - start_ms);
             }
-            Err(error) => error!("Test failed: {:?}", error),
+            Err(error) => {
+                error!("Test failed: {:?}", error);
+                // Blink the LED N times to indicate failure code N. We repeat
+                // this 3 times to give the user a chance to count the blinks.
+                // Longer term, we probably want an easier way to read the test
+                // status - e.g. a small numeric display.
+                for _ in 0..3 {
+                    for _ in 0..error.into() {
+                        led.set_high().unwrap();
+                        tester.delay.delay_ms(150u32);
+                        led.set_low().unwrap();
+                        tester.delay.delay_ms(150u32);
+                    }
+                    tester.delay.delay_ms(1200u32);
+                }
+            }
         }
         ctx.resources.button.clear_interrupt_pending_bit();
     }
@@ -180,7 +202,11 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
         mlb_int,
     };
 
-    init::LateResources { tester, button }
+    init::LateResources {
+        tester,
+        button,
+        led,
+    }
 }
 
 impl Tester {
