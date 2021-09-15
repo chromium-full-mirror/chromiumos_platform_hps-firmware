@@ -9,9 +9,19 @@ use hal::gpio::Edge;
 use hal::gpio::Floating;
 use panic_probe as _;
 
+use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
+use hal::delay::DelayCM;
+use hal::device::I2C3;
+use hal::gpio::Alternate;
 use hal::gpio::Input;
+use hal::gpio::OpenDrain;
+use hal::gpio::Output;
+use hal::gpio::AF4;
+use hal::gpio::PC0;
+use hal::gpio::PC1;
 use hal::gpio::PC13;
+use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::rcc::PllConfig;
 use hal::rcc::PllDivider;
@@ -21,11 +31,42 @@ use hal::rtc::RtcConfig;
 use hal::stm32;
 use log::error;
 use log::info;
+use stm32_bootloader_client::Stm32;
 
 type Result<T, E = Error> = core::result::Result<T, E>;
 
+const MCU_CODE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
+/// The address at which we load our MCU code. This needs to be after the memory
+/// used by the factory bootloader. This address must be the same as what get
+/// written to memory.x by build.rs for the factory_test_mcu crate.
+const MCU_LOAD_ADDRESS: u32 = 0x20002700;
+
+/// The ID of the MCU used in the HPS. STM32G07xxx/08xxx - see AN2606 rev 49,
+/// table 152.
+const EXPECTED_CHIP_ID: u16 = 0x460;
+
+/// See AN2606 for the I2C address for each chip. 0x51 is STM32G07xxx/08xxx.
+const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
+
+// I2C timing configuration bits. This value was computed by STM32CubeMX with
+// mode set to "Fast Mode" and frequency set to 400KHz and PCLK at 20MHz. Using
+// fast mode plus (e.g 1MHz) works when two STM32s are linked directly, but
+// doesn't work with proto2, presumably because fast mode plus is driven and the
+// I2C is going via isolation FETs that assume open drain.
+const I2C_TIMING_BITS: u32 = 0x0050081E;
+
+type I2cToDut = I2c<
+    I2C3,
+    (
+        PC0<Alternate<AF4, Output<OpenDrain>>>,
+        PC1<Alternate<AF4, Output<OpenDrain>>>,
+    ),
+>;
+
 pub struct Tester {
     rtc: Rtc,
+    i2c: DelayedI2c<I2cToDut, DelayCM>,
+    delay: DelayCM,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -68,7 +109,7 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
     let mut flash = p.FLASH.constrain();
     let mut rcc = p.RCC.constrain();
     let mut pwr = p.PWR.constrain(&mut rcc.apb1r1);
-    rcc
+    let clocks = rcc
         .cfgr
         .sysclk_with_pll(40.mhz(), PllConfig::new(1, 10, PllDivider::Div4))
         .pclk1(20.mhz())
@@ -100,7 +141,29 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
     button.enable_interrupt(&mut exti);
     button.trigger_on_edge(&mut exti, Edge::Falling);
 
-    let tester = Tester { rtc };
+    let sda = gpioc.pc1;
+    let scl = gpioc.pc0;
+
+    let mut sda = sda.into_open_drain_output(&mut gpioc.moder, &mut gpioc.otyper);
+    let mut scl = scl.into_open_drain_output(&mut gpioc.moder, &mut gpioc.otyper);
+    sda.internal_pull_up(&mut gpioc.pupdr, false);
+    scl.internal_pull_up(&mut gpioc.pupdr, false);
+    let sda = sda.into_af4(&mut gpioc.moder, &mut gpioc.afrl);
+    let scl = scl.into_af4(&mut gpioc.moder, &mut gpioc.afrl);
+
+    let i2c_config = hal::i2c::Config::with_timing(I2C_TIMING_BITS);
+    let i2c = I2c::i2c3(p.I2C3, (scl, sda), i2c_config, &mut rcc.apb1r1);
+    let delayed_i2c = DelayedI2c {
+        i2c,
+        delay: DelayCM::new(clocks),
+        duration_us: 2,
+    };
+
+    let tester = Tester {
+        rtc,
+        i2c: delayed_i2c,
+        delay: DelayCM::new(clocks),
+    };
 
     init::LateResources { tester, button }
 }
@@ -109,7 +172,37 @@ impl Tester {
     fn run_test(&mut self) -> Result<()> {
         info!("Starting test");
 
-        // TODO: Test some stuff.
+        let stm32_config =
+            stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut self.i2c, &mut self.delay, stm32_config);
+
+        loop {
+            match stm32.get_chip_id() {
+                Ok(EXPECTED_CHIP_ID) => {
+                    break;
+                }
+                Ok(id) => {
+                    error!("Unexpected chip ID: {}", id);
+                    return Err(Error::UnexpectedMcuId);
+                }
+                Err(error) => {
+                    error!("Failed to read chip ID: {:?}", &error);
+                    return Err(Error::SystemBootloader);
+                }
+            }
+        }
+
+        stm32
+            .write_bulk(MCU_LOAD_ADDRESS, MCU_CODE, |_| {})
+            .map_err(|error| {
+                error!("Failed to write MCU memory: {}", &error);
+                Error::SystemBootloader
+            })?;
+
+        stm32.go(MCU_LOAD_ADDRESS).map_err(|error| {
+            error!("Failed to start MCU program: {}", &error);
+            Error::SystemBootloader
+        })?;
 
         Ok(())
     }
