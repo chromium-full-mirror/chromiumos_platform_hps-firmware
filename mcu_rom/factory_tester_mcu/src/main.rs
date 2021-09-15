@@ -261,13 +261,18 @@ fn init_peripherals(
         &mut rcc,
     );
 
+    // Power off the FPGA (and SPI flash) while we put the FPGA into reset,
+    // since the test gateware does not implement reset.
+    let mut fpga_power_gate = gpiob.pb5.into_push_pull_output();
+    fpga_power_gate.set_high().unwrap();
+    asm::delay(10 * CYCLES_PER_US);
+
     // Put FPGA into reset before we power it on to ensure that it doesn't try
     // to access the SPI flash at the same time as us.
     let mut fpga_programn = gpioc.pc15.into_push_pull_output();
     fpga_programn.set_low().unwrap();
 
     // Ensure FPGA and SPI flash are powered.
-    let mut fpga_power_gate = gpiob.pb5.into_push_pull_output();
     fpga_power_gate.set_low().unwrap();
 
     // Give the SPI flash chip a chance to start after we powered it on. The
