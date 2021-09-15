@@ -17,12 +17,14 @@ use hal::gpio::Floating;
 use hal::gpio::Input;
 use hal::gpio::OpenDrain;
 use hal::gpio::Output;
+use hal::gpio::PullUp;
 use hal::gpio::PushPull;
 use hal::gpio::AF4;
 use hal::gpio::PB13;
 use hal::gpio::PC0;
 use hal::gpio::PC1;
 use hal::gpio::PC13;
+use hal::gpio::PC2;
 use hal::gpio::PC3;
 use hal::i2c::I2c;
 use hal::prelude::*;
@@ -60,9 +62,10 @@ const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
 // I2C is going via isolation FETs that assume open drain.
 const I2C_TIMING_BITS: u32 = 0x0050081E;
 
-// How long we'll wait for the MCU to send us a signal on the interrupt line
-// after we tell it to start. This timeout is very generous, since the actual
-// time is <1ms.
+// How long we'll wait for the MCU to send us a signal on the interrupt and
+// FW_WP lines after we tell it to start. The interrupt line signal is generally
+// <1ms. The FW_WP signal isn't sent until after various things are initialized,
+// so ends up around the 7 to 12 ms mark. Still well short of this timeout.
 const MCU_START_TIMEOUT_MS: u32 = 100;
 
 type I2cToDut = I2c<
@@ -78,6 +81,7 @@ pub struct Tester {
     i2c: DelayedI2c<I2cToDut, DelayCM>,
     delay: DelayCM,
     mlb_int: PC3<Input<Floating>>,
+    fw_wp: PC2<Input<PullUp>>,
 }
 
 #[rtic::app(device = hal::stm32, peripherals = true)]
@@ -179,6 +183,11 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
         .pc3
         .into_floating_input(&mut gpioc.moder, &mut gpioc.pupdr);
 
+    // Monitor FW_WP pin. This pin has no external pull-up resistor, so we pull it up.
+    let fw_wp = gpioc
+        .pc2
+        .into_pull_up_input(&mut gpioc.moder, &mut gpioc.pupdr);
+
     let sda = gpioc.pc1;
     let scl = gpioc.pc0;
 
@@ -202,6 +211,7 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
         i2c: delayed_i2c,
         delay: DelayCM::new(clocks),
         mlb_int,
+        fw_wp,
     };
 
     info!("Press button to start test");
@@ -220,6 +230,11 @@ impl Tester {
         if self.mlb_int.is_low().unwrap_or_default() {
             error!("MLB_INT line is low at start of test, when it is supposed to be pulled high");
             return Err(Error::InterruptLine);
+        }
+
+        if self.fw_wp.is_low().unwrap_or_default() {
+            error!("FW_WP line is low at start of test, when it is supposed to be pulled high");
+            return Err(Error::FwwpLine);
         }
 
         // Check to see if we're connected to a HPS that already has firmware
@@ -268,13 +283,22 @@ impl Tester {
         })?;
 
         let mcu_start_ms = self.get_millis();
-        while self.mlb_int.is_high().unwrap_or_default() {
+        while self.mlb_int.is_high().unwrap_or_default() || self.fw_wp.is_high().unwrap_or_default()
+        {
             if self.get_millis() - mcu_start_ms > MCU_START_TIMEOUT_MS {
-                error!(
-                    "MCU failed to pull MLB_INT low after {}ms",
-                    MCU_START_TIMEOUT_MS
-                );
-                return Err(Error::InterruptLine);
+                if self.mlb_int.is_high().unwrap_or_default() {
+                    error!(
+                        "MCU failed to pull MLB_INT low after {}ms",
+                        MCU_START_TIMEOUT_MS
+                    );
+                    return Err(Error::InterruptLine);
+                } else {
+                    error!(
+                        "MCU failed to pull FW_WP low after {}ms",
+                        MCU_START_TIMEOUT_MS
+                    );
+                    return Err(Error::FwwpLine);
+                }
             }
         }
 
