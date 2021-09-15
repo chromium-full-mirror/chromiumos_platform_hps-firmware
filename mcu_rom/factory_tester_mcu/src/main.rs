@@ -129,8 +129,18 @@ fn init_peripherals(
     // disable, which it will never do, since it's being used.
     p.RCC.cfgr.write(|w| w);
     // The system bootloader doesn't configure the vector table for us, so we do
-    // it ourselves.
-    unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+    // it ourselves. Also, it seems that if we put our vector table at
+    // 0x20002700, it doesn't work, whereas 0x20002800 does work. This is odd,
+    // since only the bottom 7 bits of the vtor register are reserved, but it
+    // seems to behave as though it ignores the bottom 9. If we went and put our
+    // vector table at 0x20002800, it would work, but we'd have 256 bytes less
+    // to store our program. So instead, we copy our vector table to the start
+    // of RAM. Our linker script makes sure the first 1KB of RAM is kept free.
+    const VECTOR_TABLE_DEST: usize = 0x20000000;
+    unsafe {
+        core::ptr::copy_nonoverlapping(&VECTOR_TABLE as *const _, VECTOR_TABLE_DEST as *mut _, 256)
+    };
+    unsafe { cp.SCB.vtor.write(VECTOR_TABLE_DEST as u32) };
     // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
     // is still handled when we're idle and the CPU is put to sleep.
     p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
