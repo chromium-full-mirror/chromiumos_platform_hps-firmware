@@ -363,14 +363,29 @@ impl Tester {
         // Start FPGA
         self.fpga_programn.set_high()?;
 
+        let start = self.stopwatch.now();
         check_heartbeat(&self.heartbeat)?;
+        info!(
+            "FPGA start took {}ms",
+            self.stopwatch.elapsed(start).0 / 1000
+        );
 
+        let start = self.stopwatch.now();
         self.configure_camera().map_err(convert_camera_error)?;
+        info!(
+            "Camera configuration took {}ms",
+            self.stopwatch.elapsed(start).0 / 1000
+        );
 
+        let start = self.stopwatch.now();
         let image_data_result = image_receiver::validate_image_data(
             &mut self.fpga_spi,
             &mut self.fpga_spi_sck,
             &mut self.fpga_spi_copi,
+        );
+        info!(
+            "Receiving image data took {}ms",
+            self.stopwatch.elapsed(start).0 / 1000
         );
 
         let event_counts = rtic::Mutex::lock(&mut event_counts, |x| *x);
