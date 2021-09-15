@@ -25,16 +25,15 @@ pub(crate) fn validate_image_data(
         let byte = read_byte(spi)?;
         high_bits |= byte;
         low_bits |= !byte;
+        if high_bits == 0xff && low_bits == 0xff {
+            return Ok(());
+        }
     }
-    if high_bits != 0xff || low_bits != 0xff {
-        error!(
-            "Some bits not seen in some states. low=0x{:x}, high=0x{:x}",
-            low_bits, high_bits
-        );
-        Err(Error::IncorrectImageData)
-    } else {
-        Ok(())
-    }
+    error!(
+        "Some bits not seen in some states. low=0x{:x}, high=0x{:x}",
+        low_bits, high_bits
+    );
+    Err(Error::IncorrectImageData)
 }
 
 fn initialize_spi(
