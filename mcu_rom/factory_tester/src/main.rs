@@ -31,6 +31,7 @@ use hal::rtc::RtcConfig;
 use hal::stm32;
 use log::error;
 use log::info;
+use mcu_common::HPS_ADDRESS;
 use stm32_bootloader_client::Stm32;
 
 type Result<T, E = Error> = core::result::Result<T, E>;
@@ -171,6 +172,22 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
 impl Tester {
     fn run_test(&mut self) -> Result<()> {
         info!("Starting test");
+
+        // Check to see if we're connected to a HPS that already has firmware
+        // loaded. For now, we don't support testing devices that already have
+        // firmware loaded.
+        // TODO: Support testing such devices that already have stage0 loaded.
+        let mut response = [0u8; 2];
+        if self
+            .i2c
+            .write_read(HPS_ADDRESS, &[0x80], &mut response)
+            .is_ok()
+        {
+            if &response == &[0x9d, 0xf2] {
+                error!("Detected HPS that already has firmware loaded.");
+                return Err(Error::FirmwareAlreadyLoaded);
+            }
+        }
 
         let stm32_config =
             stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);

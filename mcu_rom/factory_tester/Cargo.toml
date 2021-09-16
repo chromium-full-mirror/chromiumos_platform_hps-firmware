@@ -8,6 +8,7 @@ cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 delayed_i2c = { path = "../delayed_i2c" }
+mcu_common = { path = "../mcu_common" }
 factory_tester_common = { path = "../factory_tester_common" }
 # Awaiting release of https://github.com/stm32-rs/stm32l4xx-hal/commit/c62164b71af0a98d7f7d0920de131d99102fc931
 hal = { git = "https://github.com/stm32-rs/stm32l4xx-hal.git", rev = "8b7f4ee08", package = "stm32l4xx-hal", features = ["rt", "stm32l4x2"]}
