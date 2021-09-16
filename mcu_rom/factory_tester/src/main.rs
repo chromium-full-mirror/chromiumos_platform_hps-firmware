@@ -6,6 +6,7 @@
 #![no_std]
 
 use core::convert::TryFrom;
+use core::ops::Range;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
@@ -36,6 +37,7 @@ use hal::rtc::RtcConfig;
 use hal::stm32;
 use log::error;
 use log::info;
+use log::warn;
 use mcu_common::HPS_ADDRESS;
 use panic_probe as _;
 use stm32_bootloader_client::Stm32;
@@ -67,6 +69,14 @@ const I2C_TIMING_BITS: u32 = 0x0050081E;
 // <1ms. The FW_WP signal isn't sent until after various things are initialized,
 // so ends up around the 7 to 12 ms mark. Still well short of this timeout.
 const MCU_START_TIMEOUT_MS: u32 = 100;
+
+/// Range of addresses in the MCU at which we log test results. This is the
+/// second half of the flash (64KB-128KB)
+const LOG_AREA: Range<u32> = 0x08010000..0x08020000;
+
+/// An arbitrary version number that we write to the test log stored on the
+/// MCU's flash.
+const TESTER_VERSION: u16 = 1;
 
 type I2cToDut = I2c<
     I2C3,
@@ -103,7 +113,11 @@ const APP: () = {
         let start_ms = tester.get_millis();
         let led = ctx.resources.led;
         led.set_low().unwrap();
-        match tester.run_test() {
+        let mut test_result = tester.run_test();
+        if let Err(error) = tester.log_result(test_result) {
+            test_result = Err(error);
+        }
+        match test_result {
             Ok(_) => {
                 let end_ms = tester.get_millis();
                 // Set the LED to be on to indicate that the test passed.
@@ -334,6 +348,78 @@ impl Tester {
         }
 
         Err(Error::try_from(test_result).unwrap_or(Error::Internal))
+    }
+
+    /// Writes the test result to the MCU flash for later retrieval (once the
+    /// HPS unit is installed into a laptop and has a network connection).
+    fn log_result(&mut self, test_result: Result<()>) -> Result<()> {
+        // 8 bytes would be a suitable size for a log entry, but unfortunately
+        // if we write 8 bytes at a time, the writes seem to silently fail for
+        // some addresses. It's not clear why. For now we use 128 bytes because
+        // that seems to work reliably. Using such a large size entry reduces
+        // the number of log results we can store, but it's still 512 results,
+        // which is an absurd number of times to test a single device, so
+        // shouldn't be a problem.
+        const TEST_LOG_ENTRY_SIZE: usize = 128;
+
+        let numeric_result = match test_result {
+            Ok(_) => 0,
+            Err(e) => e.into(),
+        };
+
+        let stm32_config =
+            stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
+        let mut stm32 = Stm32::new(&mut self.i2c, &mut self.delay, stm32_config);
+
+        // Wait for the system bootloader to come back up after the MCU reset
+        // itself.
+        for _ in 0..100 {
+            if stm32.get_chip_id().is_ok() {
+                break;
+            }
+        }
+
+        let mut buffer = [0u8; TEST_LOG_ENTRY_SIZE];
+        for address in LOG_AREA.step_by(buffer.len()) {
+            stm32.read_memory(address, &mut buffer).map_err(|e| {
+                error!("Failed to read flash when logging result: {}", e);
+                Error::SystemBootloader
+            })?;
+
+            if buffer == [0xff; TEST_LOG_ENTRY_SIZE] {
+                // Put a somewhat arbitrary header in to help identify that this
+                // is a test log.
+                buffer[..4].copy_from_slice(b"TLOG");
+                buffer[4..6].copy_from_slice(&TESTER_VERSION.to_le_bytes());
+                buffer[6] = numeric_result;
+
+                // Write the data back.
+                stm32.write_memory(address, &buffer).map_err(|e| {
+                    error!("Failed to write flash when logging result: {}", e);
+                    Error::SystemBootloader
+                })?;
+
+                let mut read_back = [0u8; TEST_LOG_ENTRY_SIZE];
+                stm32.read_memory(address, &mut read_back).map_err(|e| {
+                    error!("Failed to read flash when logging result: {}", e);
+                    Error::SystemBootloader
+                })?;
+                if read_back != buffer {
+                    error!(
+                        "Wrote: {:x?} to log at address 0x{:x}, but when read back, found: {:x?}",
+                        buffer, address, read_back
+                    );
+                    return Err(Error::SystemBootloader);
+                }
+
+                return Ok(());
+            }
+        }
+
+        warn!("Log area of MCU flash is full!");
+        // We can't log anything more at this point, but we don't want the test
+        // to fail because of that.
+        Ok(())
     }
 
     /// Returns the current time as milliseconds. Provided the the time hasn't been
