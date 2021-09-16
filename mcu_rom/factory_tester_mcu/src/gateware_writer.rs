@@ -17,6 +17,17 @@ const COMPRESSED_GATEWARE: &[u8] =
 
 const PAGE_SIZE: u32 = 256;
 
+enum SpiFlashStatus {
+    /// The SPI flash already contains the correct gateware.
+    Verified,
+    /// The SPI flash is blank. Note, we only check the first page, so if
+    /// something was written elsewhere, but nothing was written to the first
+    /// page, we'd incorrectly think it was blank, but we never do that.
+    Blank,
+    /// There's something already written, but it's an old or incorrect version.
+    UpdateNeeded,
+}
+
 pub(crate) fn write_gateware(
     flash: &mut Flash<FlashSpi, FlashSpiCs>,
     stopwatch: &mut Stopwatch,
@@ -32,14 +43,17 @@ pub(crate) fn write_gateware(
     // almost instantly, so costs us nothing. However if the test is being rerun
     // and the SPI flash already has the correct contents, then this saves us
     // rewriting and more importantly erasing, which is quite time consuming.
-    if verify_spi_flash(flash).is_ok() {
-        info!("SPI flash already has correct contents. Skipping write");
-        return Ok(());
+    match verify_spi_flash(flash)? {
+        SpiFlashStatus::Verified => {
+            info!("SPI flash already has correct contents. Skipping write");
+            return Ok(());
+        }
+        SpiFlashStatus::Blank => {}
+        SpiFlashStatus::UpdateNeeded => {
+            flash.erase_all().map_err(convert_spi_flash_error)?;
+        }
     }
 
-    // Most of the time, the SPI flash will be empty, so we optimistically
-    // assume it is and just write without erasing. Then if validation fails, we
-    // do a full erase and write again.
     let bytes_written = write_without_erase(flash)?;
 
     info!(
@@ -48,16 +62,10 @@ pub(crate) fn write_gateware(
         stopwatch.elapsed(start_time).0 / 1000
     );
 
-    let start_time = stopwatch.now();
-    if verify_spi_flash(flash).is_err() {
-        flash.erase_all().map_err(convert_spi_flash_error)?;
-        write_without_erase(flash)?;
-        verify_spi_flash(flash)?;
-    }
-    info!(
-        "Verified SPI flash in {}ms",
-        stopwatch.elapsed(start_time).0 / 1000
-    );
+    // We don't verify what we wrote in order to save time. It should almost
+    // always be correct. If it's incorrect and that causes something else to
+    // fail, then if the test gets rerun, the verification above should detect
+    // the mismatch and erase the bad contents.
 
     Ok(())
 }
@@ -85,7 +93,7 @@ fn write_without_erase(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<u32, E
     Ok(address)
 }
 
-pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<(), Error> {
+fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<SpiFlashStatus, Error> {
     let mut address = 0;
     let mut gateware = gateware_compress::Decompressor::new(COMPRESSED_GATEWARE);
     let mut buffer = [0u8; PAGE_SIZE as usize];
@@ -96,10 +104,18 @@ pub(crate) fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Resul
         for actual in buffer {
             if let Some(expected) = gateware.next() {
                 if actual != expected {
-                    return Err(Error::SpiFlashCommunication);
+                    if address == 0 && buffer == [0xff; PAGE_SIZE as usize] {
+                        // We never write to the SPI flash without first writing
+                        // to the first page, so if the first page is blank, we
+                        // assume the SPI flash is blank. This allows us to save
+                        // the time that would be required to check the whole
+                        // ~350KB to see if it's blank.
+                        return Ok(SpiFlashStatus::Blank);
+                    }
+                    return Ok(SpiFlashStatus::UpdateNeeded);
                 }
             } else {
-                return Ok(());
+                return Ok(SpiFlashStatus::Verified);
             }
         }
         address += PAGE_SIZE;
