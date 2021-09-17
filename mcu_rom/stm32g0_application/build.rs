@@ -1,16 +1,5 @@
-// Proto0 has an stm32g031, which only has 16K of flash and 8K of RAM.
-#[cfg(feature = "proto0")]
-fn memory_x_contents() -> &'static str {
-    r#"MEMORY
-{
-    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 16K
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 8K
-}
-"#
-}
-
-// All our boards that aren't proto0 have an stm32g071 with more RAM and flash.
-#[cfg(all(not(feature = "stage1"), not(feature = "proto0")))]
+// All our boards have an stm32g071.
+#[cfg(all(not(feature = "stage1")))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
@@ -20,7 +9,7 @@ fn memory_x_contents() -> &'static str {
 "#
 }
 
-#[cfg(all(feature = "stage1", not(feature = "proto0")))]
+#[cfg(all(feature = "stage1"))]
 fn memory_x_contents() -> &'static str {
     // The header doesn't need 256 bytes, however the vector table is located at
     // the start of FLASH and the vector table must be 256 byte aligned, so we
