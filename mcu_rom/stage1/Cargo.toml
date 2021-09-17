@@ -20,6 +20,10 @@ stm32g0xx-hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt"
 ufmt = "0.1.0"
 ufmt-write = "0.1.0"
 
+[features]
+# Build stage1_app such that it can be booted directly.
+freestanding_stage1 = []
+
 # Optimize all dependencies
 [profile.dev.package."*"]
 opt-level = "z"

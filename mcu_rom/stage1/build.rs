@@ -1,3 +1,14 @@
+#[cfg(all(feature = "freestanding_stage1"))]
+fn memory_x_contents() -> &'static str {
+    r#"MEMORY
+{
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+}
+"#
+}
+
+#[cfg(all(not(feature = "freestanding_stage1")))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
