@@ -134,6 +134,16 @@ const COMMANDS: &'static [AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(15),
     },
     AvailableDebugCommand {
+        keyword: "rotate_image_clockwise_off",
+        help_text: "Disable image rotation clockwise (for vertical camera mount)",
+        command_type: CommandType::FpgaCommand(16),
+    },
+    AvailableDebugCommand {
+        keyword: "rotate_image_clockwise_on",
+        help_text: "Enable image rotation clockwise (for horizontal camera mount)",
+        command_type: CommandType::FpgaCommand(17),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

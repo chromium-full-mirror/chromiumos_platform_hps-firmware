@@ -432,7 +432,6 @@ int main(void) {
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
-  // TODO(jakubm): Expose the attribute to hps-mon.
   bool rotate_image = true;
   uint16_t custom_register_address = 0;
   while (1) {
@@ -516,6 +515,14 @@ int main(void) {
           camera_addresses[1] = 0x0001;
           read_camera_i2c(camera_addresses, 2, camera_values);
           mcu_printf("0x%02x%02x\n", camera_values[0], camera_values[1]);
+          break;
+        case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
+          mcu_printf("Image rotation clockwise disabled\n");
+          rotate_image = false;
+          break;
+        case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_ON:
+          mcu_printf("Image rotation clockwise enabled\n");
+          rotate_image = true;
           break;
         case DEBUG_CMD_NONE:
           should_get_command = false;
