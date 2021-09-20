@@ -27,6 +27,7 @@ use hal::prelude::*;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
 use host_interface::Stage1OkState;
+use mcu_common::Error::McuFlashWriteError;
 use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 use panic_halt as _;
@@ -98,7 +99,9 @@ const APP: () = {
                     .write(event.address, &*event.data)
                 {
                     error!("Failed to write MCU flash: {}", flash_error_string(error));
-                    // TODO: Report error somewhere
+                    ctx.resources
+                        .host_interface
+                        .i2c_report_err(McuFlashWriteError);
                 }
                 if cfg!(feature = "no-i2c-clock-stretching") {
                     // Reenable I2C. It was disabled above in the I2C interrupt

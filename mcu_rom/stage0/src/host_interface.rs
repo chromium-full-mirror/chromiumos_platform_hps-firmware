@@ -154,4 +154,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
     pub(crate) fn i2c_mut(&mut self) -> &mut I {
         self.i2c.i2c_mut()
     }
+
+    pub(crate) fn i2c_report_err(&mut self, error: mcu_common::Error) {
+        self.common_interface.report_error(error);
+    }
 }
