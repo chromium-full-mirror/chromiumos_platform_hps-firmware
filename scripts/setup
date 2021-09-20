@@ -128,17 +128,18 @@ if [ ${#missing[@]} -gt 0 ]; then
 fi
 
 # Ensure specific RISCV compiler installed
-if [ ! -d "${RISCV_DIR}" ]; then
-    echo "Did not find a RISCV toolchain at ${RISCV_DIR}" >&2
+if ! command -v riscv64-unknown-elf-gcc >/dev/null ; then
+    echo "Did not find a RISCV toolchain on PATH" >&2
     echo -n "Download and install 290MB [y]/n? " >&2
     read -r answer
     if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
         (
             PKG_URL=https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14.tar.gz
             mkdir -p ~/Downloads
-            mkdir -p "${USER_BIN_DIR}"
+            mkdir -p "${PROJECT_ROOT}/third_party/installed"
             curl "${PKG_URL}" -o ~/Downloads/riscv64.tar.gz
-            tar -C "${USER_BIN_DIR}" -xvz -f ~/Downloads/riscv64.tar.gz
+            tar -C "${PROJECT_ROOT}/third_party/installed" \
+                --strip-components=1 -xvz -f ~/Downloads/riscv64.tar.gz
         )
     fi
 fi

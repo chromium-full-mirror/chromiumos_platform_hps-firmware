@@ -59,11 +59,7 @@ done
 export PYTHONPATH
 
 # Explicitly set the RISCV toolchain path.
-USER_BIN_DIR=$(realpath ~)/bin
-export USER_BIN_DIR
-RISCV_VER=riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14
-export RISCV_DIR="${USER_BIN_DIR}/${RISCV_VER}/bin"
-export PATH="${RISCV_DIR}:${PATH}"
+export RISCV_DIR="${HPS_ROOT}/third_party/installed/bin"
 
 # List of directories with Rust source
 export HPS_RUST_DIRS=(
