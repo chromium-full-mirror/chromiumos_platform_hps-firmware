@@ -267,10 +267,10 @@ def main():
         assert 'debug' not in soc.cpu.variant    # we can add this if wanted
         vexriscv = f'{SOC_DIR}/../third_party/python/' \
                    f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
-        var = 'Full'
+        var = 'SlimCfu'
         cache = args.cache
         soc.cpu.use_external_variant(
-            f'{vexriscv}/verilog/VexRiscv_{var}{cache}.v')
+            f'{vexriscv}/verilog/VexRiscv_{var}.v')
     else:
         if args.output_dir is None:
             args.output_dir = 'build/hps_platform'
