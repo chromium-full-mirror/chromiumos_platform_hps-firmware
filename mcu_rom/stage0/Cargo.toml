@@ -41,7 +41,8 @@ defmt-info = []
 defmt-warn = []
 defmt-error = []
 
-i2c-clock-stretching = []
+
+no-i2c-clock-stretching = []
 
 # Optimize all dependencies
 [profile.dev.package."*"]
