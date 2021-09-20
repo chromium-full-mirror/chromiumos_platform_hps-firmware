@@ -12,7 +12,7 @@ import subprocess
 
 build_hash = subprocess.check_output(
     ['git', 'describe', '--dirty', '--always'],
-    text=True).strip()
+    universal_newlines=True).strip()
 build_user = os.environ['USER']
 build_date = datetime.datetime.utcfromtimestamp(
     int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
