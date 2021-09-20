@@ -58,9 +58,6 @@ for i in "${HPS_ROOT}/third_party/python"/*; do
 done
 export PYTHONPATH
 
-# Explicitly set the RISCV toolchain path.
-export RISCV_DIR="${HPS_ROOT}/third_party/installed/bin"
-
 # List of directories with Rust source
 export HPS_RUST_DIRS=(
     mcu_rom

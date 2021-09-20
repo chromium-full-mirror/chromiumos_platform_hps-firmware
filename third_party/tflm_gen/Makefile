@@ -1,7 +1,4 @@
-ifndef RISCV_DIR
-$(error RISCV_DIR environment variable is not set)
-endif
-TARGET_TOOLCHAIN_ROOT := $(RISCV_DIR)/
+TARGET_TOOLCHAIN_ROOT :=
 TARGET_TOOLCHAIN_PREFIX := riscv64-unknown-elf-
 
 # These are microcontroller-specific rules for converting the ELF output

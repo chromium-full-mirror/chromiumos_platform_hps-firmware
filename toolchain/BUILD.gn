@@ -28,9 +28,7 @@ toolchain("dummy") {
 }
 
 toolchain("riscv-gcc") {
-  riscv_dir = getenv("RISCV_DIR")
-  assert("$riscv_dir" != "", "RISCV_DIR environment variable not set")
-  tool_prefix="${riscv_dir}/riscv64-unknown-elf-"
+  tool_prefix="riscv64-unknown-elf-"
 
   tool("cc") {
     depfile = "{{output}}.d"
