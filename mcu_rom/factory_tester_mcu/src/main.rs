@@ -20,6 +20,7 @@ use hal::gpio::gpioa::PA5;
 use hal::gpio::gpioa::PA6;
 use hal::gpio::gpioa::PA7;
 use hal::gpio::gpiob::PB0;
+use hal::gpio::gpiob::PB8;
 use hal::gpio::gpioc::PC15;
 use hal::gpio::Analog;
 use hal::gpio::Input;
@@ -98,6 +99,7 @@ const APP: () = {
         host_i2c: I2C1,
         exti: hal::stm32::EXTI,
         event_counts: EventCounts,
+        mlb_int: PB8<Output<OpenDrain>>,
     }
 
     #[init(spawn = [run_test])]
@@ -106,18 +108,19 @@ const APP: () = {
         init_peripherals(ctx.device, ctx.core)
     }
 
-    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts])]
+    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts, mlb_int])]
     fn run_test(ctx: run_test::Context) {
+        let mlb_int = ctx.resources.mlb_int;
         match ctx.resources.tester.run_test(ctx.resources.event_counts) {
             Ok(_) => {
                 if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, 0);
+                    report_result(ctx.resources.host_i2c, mlb_int, 0);
                 }
                 info!("Test successful");
             }
             Err(error) => {
                 if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, error as u8);
+                    report_result(ctx.resources.host_i2c, mlb_int, error as u8);
                 }
                 error!("Test failed: {:?}", error);
             }
@@ -334,6 +337,7 @@ fn init_peripherals(
         host_i2c,
         exti,
         event_counts: EventCounts::default(),
+        mlb_int,
     }
 }
 
@@ -422,7 +426,7 @@ fn convert_camera_error(e: hm01b0::Error) -> Error {
     }
 }
 
-fn report_result(i2c: &mut I2C1, result: u8) {
+fn report_result(i2c: &mut I2C1, mlb_int: &mut PB8<Output<OpenDrain>>, result: u8) {
     i2c.cr1.modify(|_, w| w.pe().clear_bit());
     i2c.timingr.write(|w| unsafe { w.bits(I2C_TIMING_BITS) });
     i2c.cr1.modify(|_, w| w.pe().set_bit());
@@ -432,6 +436,9 @@ fn report_result(i2c: &mut I2C1, result: u8) {
     i2c.oar1
         .modify(|_, w| unsafe { w.oa1_7_1().bits(TEST_CONTROLLER_I2C_ADDRESS) });
     i2c.oar1.modify(|_, w| w.oa1en().set_bit());
+
+    // Signal to the tester that we're ready.
+    mlb_int.set_high().unwrap();
 
     // Wait until the test controller addresses us.
     while i2c.isr.read().addr().bit_is_clear() {}

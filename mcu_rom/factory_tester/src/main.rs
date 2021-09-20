@@ -274,6 +274,10 @@ impl Tester {
             }
         }
 
+        // Wait for MCU to indicate that it has finished.
+        // TODO: Add a timeout.
+        while self.mlb_int.is_low().unwrap_or_default() {}
+
         Ok(())
     }
 
