@@ -20,8 +20,6 @@ use hal::gpio::gpioa::PA5;
 use hal::gpio::gpioa::PA6;
 use hal::gpio::gpioa::PA7;
 use hal::gpio::gpiob::PB0;
-use hal::gpio::gpiob::PB6;
-use hal::gpio::gpiob::PB7;
 use hal::gpio::gpioc::PC15;
 use hal::gpio::Analog;
 use hal::gpio::Input;
@@ -56,7 +54,6 @@ extern "C" {
 type FlashSpi = Spi<SPI1, (PA5<Analog>, PA6<Analog>, PA7<Analog>)>;
 type FlashSpiCs = PB0<Output<OpenDrain>>;
 type CameraI2c = DelayedI2c<I2c<I2C2, PA12<Output<OpenDrain>>, PA11<Output<OpenDrain>>>, Delay>;
-type HostI2c = I2c<I2C1, PB7<Output<OpenDrain>>, PB6<Output<OpenDrain>>>;
 
 // I2C bus speed = 400KHz. This value was computed by STM32CubeMX with APB clock
 // at 64MHz, rise time of 190ns and a fall time of 20ns.
@@ -98,7 +95,7 @@ const APP: () = {
         tester: Tester,
         syscfg_vrefbuf: SYSCFG_VREFBUF,
         debug_led: PA1<Output<PushPull>>,
-        host_i2c: HostI2c,
+        host_i2c: I2C1,
         exti: hal::stm32::EXTI,
         event_counts: EventCounts,
     }
@@ -114,13 +111,13 @@ const APP: () = {
         match ctx.resources.tester.run_test(ctx.resources.event_counts) {
             Ok(_) => {
                 if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, &[0]);
+                    report_result(ctx.resources.host_i2c, 0);
                 }
                 info!("Test successful");
             }
             Err(error) => {
                 if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, &[error as u8]);
+                    report_result(ctx.resources.host_i2c, error as u8);
                 }
                 error!("Test failed: {:?}", error);
             }
@@ -171,10 +168,36 @@ fn init_peripherals(
     // disabled.
     unsafe { debug_logger::initialize_logging() };
 
-    // Enable, then reset SPI2.
-    p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
+    // Enable required peripheral clocks.
+    p.RCC
+        .apbenr1
+        .write(|w| w.spi2en().set_bit().i2c1en().set_bit());
+
+    // Reset SPI2 and I2C1. Note, setting both reset bits together in a single
+    // write doesn't appear to work (I2C is non functional), although it's not
+    // clear why.
     p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
-    p.RCC.apbrstr1.write(|w| w.spi2rst().clear_bit());
+    p.RCC.apbrstr1.write(|w| w.i2c1rst().set_bit());
+    p.RCC.apbrstr1.write(|w| w);
+
+    // Reset all the GPIO ports that we use. The system bootloader leaves these
+    // initialized in some way that result in I2C not working otherwise.
+    p.RCC.ioprstr.write(|w| {
+        w.ioparst().set_bit();
+        w.iopbrst().set_bit();
+        w.iopcrst().set_bit()
+    });
+    p.RCC.ioprstr.write(|w| w);
+
+    // Set alternate function and mode registers for all our GPIO ports back to
+    // their reset values. The system bootloader leaves these initialized in
+    // some way that result in I2C not working otherwise.
+    p.GPIOA.afrl.write(|w| w);
+    p.GPIOA.moder.write(|w| w);
+    p.GPIOB.afrl.write(|w| w);
+    p.GPIOB.moder.write(|w| w);
+    p.GPIOC.afrl.write(|w| w);
+    p.GPIOC.moder.write(|w| w);
 
     // Reset system clock source to the HSI. The factory bootloader (which we
     // are run from without a CPU reset), will have set the clock source to the
@@ -252,14 +275,13 @@ fn init_peripherals(
         duration_us: 10,
     };
 
-    let sda = gpiob.pb7.into_floating_input();
-    let scl = gpiob.pb6.into_floating_input();
-    let host_i2c = p.I2C1.i2c(
-        sda.into_open_drain_output(),
-        scl.into_open_drain_output(),
-        hal::i2c::Config::with_timing(I2C_TIMING_BITS),
-        &mut rcc,
-    );
+    let sda = gpiob.pb7.into_open_drain_output();
+    let scl = gpiob.pb6.into_open_drain_output();
+
+    hal::i2c::SDAPin::setup(&sda);
+    hal::i2c::SCLPin::setup(&scl);
+
+    let host_i2c = p.I2C1;
 
     // Power off the FPGA (and SPI flash) while we put the FPGA into reset,
     // since the test gateware does not implement reset.
@@ -400,18 +422,28 @@ fn convert_camera_error(e: hm01b0::Error) -> Error {
     }
 }
 
-fn report_result(i2c: &mut HostI2c, result: &[u8]) {
-    use embedded_hal::blocking::i2c::Write;
-    // If we failed really quickly, the test controller might not have had a
-    // chance to reconfigure its I2C to receive our response, so we give it a
-    // few tries, with a delay between each.
-    for _ in 0..10 {
-        if i2c.write(TEST_CONTROLLER_I2C_ADDRESS, result).is_ok() {
-            return;
-        }
-        asm::delay(10 * CYCLES_PER_MS);
-    }
-    error!("Failed to send data back to tester");
+fn report_result(i2c: &mut I2C1, result: u8) {
+    i2c.cr1.modify(|_, w| w.pe().clear_bit());
+    i2c.timingr.write(|w| unsafe { w.bits(I2C_TIMING_BITS) });
+    i2c.cr1.modify(|_, w| w.pe().set_bit());
+
+    // Clear oar1 must be disabled while we configure it.
+    i2c.oar1.write(|w| w);
+    i2c.oar1
+        .modify(|_, w| unsafe { w.oa1_7_1().bits(TEST_CONTROLLER_I2C_ADDRESS) });
+    i2c.oar1.modify(|_, w| w.oa1en().set_bit());
+
+    // Wait until the test controller addresses us.
+    while i2c.isr.read().addr().bit_is_clear() {}
+    // Ack the request.
+    i2c.icr.write(|w| w.addrcf().set_bit());
+
+    // Send the test result byte.
+    i2c.txdr.write(|w| unsafe { w.bits(result as u32) });
+
+    // Wait until bus is not busy. We don't want to return, then reset the
+    // device while the transfer isn't complete.
+    while i2c.isr.read().busy().bit_is_set() {}
 }
 
 /// A null implementation of a stopwatch. This is used in non-dev mode when we
