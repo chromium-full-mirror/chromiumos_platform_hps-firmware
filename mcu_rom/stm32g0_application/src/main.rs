@@ -8,11 +8,13 @@
 pub mod boards;
 mod camera;
 mod debug;
+mod fpga_device;
 mod header;
 mod spi_flash;
 mod spi_peripheral;
 
 use crate::boards::board;
+use crate::fpga_device::FpgaDevice;
 use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
@@ -39,8 +41,7 @@ const APP: () = {
         spi: SpiPeripheral,
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
-        fpga_programn: board::FpgaProgramn,
-        fpga_power_gate: board::FpgaPowerGate,
+        fpga_device: FpgaDevice,
         fpga_up_channel: UpChannel,
         image_channel: UpChannel,
         mcu_cmd_response_channel: UpChannel,
@@ -96,8 +97,8 @@ const APP: () = {
     }
 
     #[task(binds = TIM16,
-        resources = [mcu_debug_handler, fpga_programn, timer, camera_i2c, spi_flash, stopwatch,
-            mcu_cmd_response_channel, fpga_power_gate, debug_led])]
+        resources = [mcu_debug_handler, fpga_device, timer, camera_i2c, spi_flash, stopwatch,
+            mcu_cmd_response_channel, debug_led])]
     fn timer_tick(mut ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         let led = &mut ctx.resources.debug_led;
@@ -111,7 +112,7 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_programn, fpga_up_channel,
+    #[task(resources = [spi, state, debug_led, fpga_device, fpga_up_channel,
         image_channel, fpga_debug_handler, mcu_debug_handler, camera_i2c])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
@@ -122,7 +123,9 @@ const APP: () = {
             fpga::Action::SetDebugLed(false) => {
                 ctx.resources.debug_led.set_low().unwrap();
             }
-            fpga::Action::ResetFpga => reset_fpga(ctx.resources.fpga_programn),
+            fpga::Action::ResetFpga => {
+                ctx.resources.fpga_device.reset_fpga();
+            }
             fpga::Action::ReadConfigRegisters => ctx
                 .resources
                 .state
@@ -171,13 +174,13 @@ const APP: () = {
         ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
-    #[task(resources = [spi_flash, fpga_programn])]
+    #[task(resources = [spi_flash, fpga_device])]
     fn write_spi_flash(ctx: write_spi_flash::Context, mut request: i2c_protocol::WriteMemoryEvent) {
         // Put FPGA into reset while we write SPI flash. We don't currently take
         // it out of reset. That's should be done once we've signature-checked
         // it.
         if board::SPI_FLASH_ENABLED {
-            ctx.resources.fpga_programn.set_low().unwrap();
+            ctx.resources.fpga_device.hold.set_low().unwrap();
             spi_flash::write(ctx.resources.spi_flash, request.address, &mut *request.data);
         }
     }
@@ -194,12 +197,12 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
     if board::SPI_FLASH_ENABLED {
         match command.kind {
             McuDebugCommand::ReadSpiFlash => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 spi_flash::debug_read(resources.spi_flash, command.arg as u32)
             }
             McuDebugCommand::WriteSpiFlash => {
                 if let Some(mut write_request) = command.write_request {
-                    resources.fpga_programn.set_low().unwrap();
+                    resources.fpga_device.hold.set_low().unwrap();
                     spi_flash::write(
                         resources.spi_flash,
                         write_request.address,
@@ -208,35 +211,35 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
                     resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
                 }
             }
-            McuDebugCommand::FpgaHoldInReset => resources.fpga_programn.set_low().unwrap(),
+            McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
             McuDebugCommand::EraseSpiFlash => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 spi_flash::erase(resources.spi_flash);
             }
             McuDebugCommand::HashSpiFlash => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 spi_flash::hash(resources.spi_flash, command.arg, resources.stopwatch)
             }
             McuDebugCommand::SpiFlashCrc => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 resources
                     .mcu_cmd_response_channel
                     .write(&spi_flash::crc_sector(resources.spi_flash, command.arg));
             }
             McuDebugCommand::SpiFlashReadSpeed => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 spi_flash::test_read_speed(resources.spi_flash, resources.stopwatch);
             }
             McuDebugCommand::SpiFlashWriteSpeed => {
-                resources.fpga_programn.set_low().unwrap();
+                resources.fpga_device.hold.set_low().unwrap();
                 spi_flash::test_write_speed(resources.spi_flash, resources.stopwatch);
             }
             McuDebugCommand::FpgaPowerOff => {
-                resources.fpga_power_gate.set_high().unwrap();
+                resources.fpga_device.power_gate.set_high().unwrap();
                 rprintln!("FPGA and SPI flash powered off");
             }
             McuDebugCommand::FpgaPowerOn => {
-                resources.fpga_power_gate.set_low().unwrap();
+                resources.fpga_device.power_gate.set_low().unwrap();
                 rprintln!("FPGA and SPI flash powered on");
             }
             _ => {
@@ -245,7 +248,9 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         }
     }
     match command.kind {
-        McuDebugCommand::ResetFpga => reset_fpga(resources.fpga_programn),
+        McuDebugCommand::ResetFpga => {
+            resources.fpga_device.reset_fpga();
+        }
         McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
         McuDebugCommand::Ping => rprintln!("Pong!"),
         _ => {
@@ -254,16 +259,6 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             }
         }
     }
-}
-
-fn reset_fpga(fpga_programn: &mut board::FpgaProgramn) {
-    rprintln!("Resetting FPGA");
-    // Hold programn low for long enough to reset the FPGA. Experimentally 2
-    // iterations is sufficient, so we do 4 just to be sure.
-    for _ in 0..4 {
-        fpga_programn.set_low().unwrap();
-    }
-    fpga_programn.set_high().unwrap();
 }
 
 fn rcc_config() -> hal::rcc::Config {
@@ -453,8 +448,9 @@ fn init_peripherals(
         rcc.clocks.sys_clk.0 / 1000000
     );
 
+    let mut fpga_device = FpgaDevice::new(board.fpga_programn, board.fpga_power_gate);
     // Reset the FPGA on startup so that it's in a known state.
-    reset_fpga(&mut board.fpga_programn);
+    fpga_device.reset_fpga();
 
     init::LateResources {
         host_interface,
@@ -462,8 +458,7 @@ fn init_peripherals(
         exti,
         state: ApplicationState::default(),
         debug_led: board.debug_led,
-        fpga_programn: board.fpga_programn,
-        fpga_power_gate: board.fpga_power_gate,
+        fpga_device,
         fpga_up_channel: channels.up.1,
         image_channel: channels.up.2,
         mcu_cmd_response_channel: channels.up.3,
