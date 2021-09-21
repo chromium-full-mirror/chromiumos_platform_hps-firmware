@@ -133,10 +133,11 @@ class HpsSoC(LiteXSoC):
         self.submodules.spiflash_phy = LiteSPIPHY(
             self.platform.request('spiflash4x'),
             GD25LQ128D(read_opcode),
-            default_divisor=0)
+            default_divisor=0,
+            rate='1:2',
+            extra_latency=1)
         self.submodules.spiflash_mmap = LiteSPI(
             phy=self.spiflash_phy,
-            clk_freq=self.platform.sys_clk_freq,
             mmap_endianness=self.cpu.endianness)
         self.csr.add('spiflash_mmap')
         self.csr.add('spiflash_phy')
