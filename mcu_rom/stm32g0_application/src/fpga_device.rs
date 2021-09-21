@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 
-use hal::prelude::OutputPin;
+use hal::prelude::{OutputPin, StatefulOutputPin};
 use rtt_target::rprintln;
 use spi_memory::series25::Flash;
 
@@ -21,11 +21,15 @@ impl FpgaDevice {
         power_gate: board::FpgaPowerGate,
         spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
     ) -> Self {
-        FpgaDevice {
+        let mut device = FpgaDevice {
             hold: fpga_hold,
             power_gate: power_gate,
             spi_flash: spi_flash,
-        }
+        };
+        // Hold FPGA in reset until it is in the verified state.
+        device.hold.set_low().unwrap();
+
+        device
     }
     pub(crate) fn reset_fpga(&mut self) {
         rprintln!("Resetting FPGA");
@@ -41,5 +45,9 @@ impl FpgaDevice {
 pub(crate) fn get_spi_flash(
     fpga_device: &mut FpgaDevice,
 ) -> Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>> {
-    fpga_device.spi_flash.as_mut()
+    if fpga_device.hold.is_set_high().unwrap() {
+        None
+    } else {
+        fpga_device.spi_flash.as_mut()
+    }
 }
