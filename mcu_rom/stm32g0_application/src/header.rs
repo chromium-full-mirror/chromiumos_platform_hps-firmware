@@ -24,5 +24,5 @@ pub static __IMAGE_HDR: TargetImageHeader = ImageHeader {
 };
 
 pub const fn build_hash() -> &'static str {
-    git_version!()
+    git_version!(fallback = "out_of_tree")
 }
