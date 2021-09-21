@@ -20,7 +20,7 @@ const PAGE_SIZE: u32 = 256;
 /// response from the SPI flash. We don't actually use this returned data, but
 /// we don't get any choice about receiving the response.
 pub(crate) fn write(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     address: u32,
     data: &mut [u8],
 ) {
@@ -52,7 +52,7 @@ pub(crate) fn write(
 }
 
 pub(crate) fn debug_read(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     address: u32,
 ) {
     let spi_flash = match spi_flash {
@@ -74,7 +74,7 @@ pub(crate) fn debug_read(
     rprintln!("===");
 }
 
-pub(crate) fn erase(spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>) {
+pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>) {
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
@@ -90,7 +90,7 @@ pub(crate) fn erase(spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSp
 }
 
 pub(crate) fn hash(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     num_pages: u16,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
@@ -117,7 +117,7 @@ pub(crate) fn hash(
 const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
 
 pub(crate) fn crc_sector(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     sector: u16,
 ) -> [u8; 4] {
     let spi_flash = match spi_flash {
@@ -141,7 +141,7 @@ pub(crate) fn crc_sector(
 }
 
 pub(crate) fn test_read_speed(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
     let spi_flash = match spi_flash {
@@ -163,7 +163,7 @@ pub(crate) fn test_read_speed(
 }
 
 pub(crate) fn test_write_speed(
-    spi_flash: &mut Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
     let spi_flash = match spi_flash {

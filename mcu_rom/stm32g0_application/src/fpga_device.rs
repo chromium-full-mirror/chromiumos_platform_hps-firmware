@@ -5,19 +5,26 @@
 
 use hal::prelude::OutputPin;
 use rtt_target::rprintln;
+use spi_memory::series25::Flash;
 
 use crate::board;
 
 pub struct FpgaDevice {
     pub hold: board::FpgaProgramn,
     pub power_gate: board::FpgaPowerGate,
+    pub(crate) spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
 }
 
 impl FpgaDevice {
-    pub(crate) fn new(fpga_hold: board::FpgaProgramn, power_gate: board::FpgaPowerGate) -> Self {
+    pub(crate) fn new(
+        fpga_hold: board::FpgaProgramn,
+        power_gate: board::FpgaPowerGate,
+        spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    ) -> Self {
         FpgaDevice {
             hold: fpga_hold,
             power_gate: power_gate,
+            spi_flash: spi_flash,
         }
     }
     pub(crate) fn reset_fpga(&mut self) {
@@ -29,4 +36,10 @@ impl FpgaDevice {
         }
         self.hold.set_high().unwrap();
     }
+}
+
+pub(crate) fn get_spi_flash(
+    fpga_device: &mut FpgaDevice,
+) -> Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>> {
+    fpga_device.spi_flash.as_mut()
 }
