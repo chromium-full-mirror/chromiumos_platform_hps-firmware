@@ -15,6 +15,8 @@ fn build_mcu_test_program() {
     let bin_file = out_dir.join("factory_tester_mcu.bin");
     let out = Command::new("cargo")
         .current_dir("../factory_tester_mcu")
+        .env_clear()
+        .env("PATH", std::env::var("PATH").unwrap_or_default())
         .arg("objcopy")
         .arg("--release")
         .arg("--no-default-features")
