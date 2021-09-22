@@ -165,6 +165,13 @@ fn init_peripherals(
         // however if we're loaded from the system bootloader without a reset,
         // it won't be. We have to configure it ourselves.
         unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+        // The system bootloader leaves the flash in an unlocked state. We
+        // expect it to be locked. If we try to unlock it when it's already
+        // unlocked then a hard fault will result, so we lock it now. Locking
+        // when already locked doesn't cause a fault, so even if the system
+        // bootloader sometimes doesn't leave the flash unlocked, this should be
+        // safe.
+        p.FLASH.cr.modify(|_, w| w.lock().set_bit());
     }
     // Configure clocks so that CPU runs as full speed, otherwise we can't
     // service I2C at 400KHz. Note, we switch this back prior to loading the
