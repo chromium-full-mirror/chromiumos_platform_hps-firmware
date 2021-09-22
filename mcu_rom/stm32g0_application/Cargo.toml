@@ -12,7 +12,9 @@ cortex-m-rtic = "0.5.5"
 crc = "2.0"
 embedded-hal = "0.2.4"
 git-version = "0.3.4"
-hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt"]}
+# TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
+# better understood.
+hal = { package = "stm32g0xx-hal", version = "=0.1.0", features = ["rt"]}
 hmac-sha256 = "0.1.6"
 i2c_peripheral = { path = "../i2c_peripheral" }
 i2c_protocol = { path = "../i2c_protocol" }
