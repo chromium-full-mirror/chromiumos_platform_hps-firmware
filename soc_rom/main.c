@@ -40,6 +40,15 @@ static int recalibration_threshold = 0;
 #define CAM_IMAGE_WIDTH 320
 #define CAM_IMAGE_HEIGHT 240
 
+struct configuration {
+  uint16_t enabled_features;
+};
+
+struct status {
+  int8_t person_score;
+  int8_t not_person_score;
+};
+
 // Wait for DMA to finish
 static void cam_dma_wait(void) {
   while (cam_control_running_read()) {
@@ -162,12 +171,11 @@ inline uint8_t get_pixel(size_t x, size_t y) {
 }
 
 // Sends status register content to the mcu
-static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
+static void write_mcu_status(const struct status* status) {
   puts("Updating status in MCU");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_WRITE_STATUS_REGISTERS;
-  mcu_buf_out[1] = person_score;
-  mcu_buf_out[2] = not_person_score;
+  memcpy(&mcu_buf_out[1], status, sizeof(*status));
   mcu_transaction();
   if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
       mcu_buf_in[1] != MCU_COMMAND_WRITE_STATUS_REGISTERS) {
@@ -178,9 +186,8 @@ static void write_mcu_status(int8_t person_score, int8_t not_person_score) {
 // Performs the classification.
 //
 // Assumes input data vector is already filled. Writes the result of the
-// classification to the MCU.
-void run_classify() {
-  int8_t person, not_person;
+// classification to `status`.
+void run_classify(struct status* status) {
   mcu_printf("Running classification\n");
 
   // Start timer0 counting down from UINT32_MAX.
@@ -189,7 +196,7 @@ void run_classify() {
   timer0_load_write(UINT32_MAX);
   timer0_en_write(1);
 
-  tflite_classify(&person, &not_person);
+  tflite_classify(&status->person_score, &status->not_person_score);
 
   // Report how long the classification took.
   timer0_update_value_write(1);
@@ -203,8 +210,8 @@ void run_classify() {
                elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
-  mcu_printf("Person: %d, Not person %d\n", person, not_person);
-  write_mcu_status(person, not_person);
+  mcu_printf("Person: %d, Not person %d\n", status->person_score,
+             status->not_person_score);
 }
 
 // Initializes the camera
@@ -218,13 +225,12 @@ static void camera_init() {
 }
 
 // Reads configuration registers from the MCU
-static void read_mcu_config(void) {
+static void read_mcu_config(struct configuration* config) {
   puts("Reading MCU configuration");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_READ_CONFIG_REGISTERS;
-
-  // Just running the transaction will print debug info
   mcu_transaction();
+  memcpy(config, &mcu_buf_in[2], sizeof(struct configuration));
 }
 
 // Sends a poll command to the MCU. If a packet was previously lost and the MCU
@@ -426,6 +432,8 @@ int main(void) {
   write_ae_cfg();
   int calibration_frames = CALIBRATION_FRAMES;
 
+  struct configuration configuration = {0};
+
   uint32_t loop_counter = 0;
   bool do_run_classify = false;
   bool do_show_auto_exposure = false;
@@ -528,7 +536,9 @@ int main(void) {
       }
     }
     // Run configured functions
-    read_mcu_config();
+    read_mcu_config(&configuration);
+    struct status inference_status = {0};
+
     write_ae_cfg();
     if (do_run_exposure_calibration) {
       calibration_frames = CALIBRATION_FRAMES;
@@ -556,8 +566,9 @@ int main(void) {
       print_ae_cfg();
     }
     if (do_run_classify) {
-      run_classify();
+      run_classify(&inference_status);
     }
+    write_mcu_status(&inference_status);
     set_mcu_led(loop_counter % 2);
   }
 }
