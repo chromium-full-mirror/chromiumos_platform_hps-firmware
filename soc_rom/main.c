@@ -427,7 +427,6 @@ int main(void) {
   int calibration_frames = CALIBRATION_FRAMES;
 
   uint32_t loop_counter = 0;
-  bool do_spi_transfer = false;
   bool do_run_classify = false;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
@@ -440,7 +439,6 @@ int main(void) {
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
-      recognized |= user_toggle(c, 's', "SPI Transfer", &do_spi_transfer);
       recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
       recognized |= user_toggle(c, 't', "Transfer image to host",
                                 &do_transfer_image_to_host);
@@ -530,9 +528,7 @@ int main(void) {
       }
     }
     // Run configured functions
-    if (do_spi_transfer) {
-      read_mcu_config();
-    }
+    read_mcu_config();
     write_ae_cfg();
     if (do_run_exposure_calibration) {
       calibration_frames = CALIBRATION_FRAMES;
