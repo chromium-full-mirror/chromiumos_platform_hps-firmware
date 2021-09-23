@@ -62,7 +62,7 @@ class HpsSoC(LiteXSoC):
 
     cpu_type = 'vexriscv'
 
-    def __init__(self, *, platform, debug,
+    def __init__(self, *, platform, debug, cpu_cfu=None,
                  litespi_flash=True, litespi_quad=False):
         LiteXSoC.__init__(self,
                           platform=platform,
@@ -74,7 +74,8 @@ class HpsSoC(LiteXSoC):
         self.add_controller('ctrl')
         self.add_cpu(self.cpu_type,
                      variant=('full+debug' if debug else 'full'),
-                     reset_address=self.rom_origin)
+                     reset_address=self.rom_origin,
+                     cfu=cpu_cfu)
 
         # RAM
         self.setup_ram()
@@ -230,23 +231,26 @@ def main():
     hps_soc_args(parser)
     parser.add_argument(
         '--debug', action='store_true',
-        help='Enable debug mode')
+        help='Enable debug mode.')
     parser.add_argument(
         '--build', action='store_true',
-        help='Whether to do a full build, including the bitstream')
+        help='Whether to do a full build, including the bitstream.')
     parser.add_argument(
         '--toolchain', default='oxide',
-        help='Which toolchain to use, oxide (default) or radiant')
+        help='Which toolchain to use, oxide (default) or radiant.')
     parser.add_argument(
         '--cache', default=None,
-        help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w]')
+        help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w].')
     parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
-        help='Use Litex minimal SPI flash instead of Litespi')
+        help='Use Litex minimal SPI flash instead of Litespi.')
+    parser.add_argument(
+        "--cpu-cfu", default=None, 
+        help="Specify file containing CFU Verilog module.")
     parser.add_argument(
         '--litespi-quad', action='store_true',
-        help='Use quad read opcode when reading from SPI flash')
+        help='Use quad read opcode when reading from SPI flash.')
     parser.add_argument(
         '--prog', action='store_true',
         help='Program the FPGA bitstream and software.')
@@ -257,6 +261,7 @@ def main():
         platform=Platform(args.toolchain),
         debug=args.debug,
         litespi_flash=args.litespi_flash,
+        cpu_cfu=args.cpu_cfu,
         litespi_quad=args.litespi_quad)
 
     if args.cache:
