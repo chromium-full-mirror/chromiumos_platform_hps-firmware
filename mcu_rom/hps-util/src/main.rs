@@ -18,11 +18,8 @@ use std::path::PathBuf;
 
 use hps_util::{print_device_list, query_status};
 
-mod i2c_over_uart;
 mod ipc;
 use ipc::setup_ipc;
-
-use crate::i2c_over_uart::I2cOverUart;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -31,8 +28,7 @@ struct Flags {
     sub_command: SubCommand,
 
     #[argh(option)]
-    /// ftdi device serial number, or an absolute path to a serial device, or
-    /// "fake"
+    /// ftdi device serial number or "fake"
     device: Option<String>,
 
     #[argh(option)]
@@ -182,11 +178,6 @@ fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {
 
 fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
     if let Some(device) = &flags.device {
-        // TODO(dml): Use a separate flag for device type rather than detecting
-        // the device type by the form of the device flag.
-        if device.starts_with("/") {
-            return Ok(Box::new(HpsAdapter::new(I2cOverUart::new(&device)?)?));
-        }
         if device == "fake" {
             let mut fhps = hps_util::FakeHps::default();
             // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
