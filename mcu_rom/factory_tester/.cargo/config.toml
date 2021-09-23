@@ -2,6 +2,7 @@
 runner = 'probe-run --chip stm32l452'
 
 rustflags = [
+  "-C", "linker=ld.lld",
   "-C", "link-arg=-Tlink.x",
 ]
 
