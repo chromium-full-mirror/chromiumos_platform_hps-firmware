@@ -4,19 +4,9 @@
 
 use cortex_m_rt::pre_init;
 
-bitflags! {
-    struct TransientNVMemFlags: u32 {
-        const DFU = 0b00000001;
-        const SLOT_A = 0b00000010;
-        const SLOT_B = 0b00000100;
-    }
-}
 pub struct TransientNVMem {
     magic: u32,
     count: u8,
-    // TODO: Use this field.
-    #[allow(unused)]
-    flags: TransientNVMemFlags,
 }
 
 // The initial value assigned here is just to make the compiler happy.
@@ -24,11 +14,7 @@ pub struct TransientNVMem {
 // We could use MaybeUnit here, except that MaybeUnit::assume_init_ref isn't
 // stable.
 #[link_section = ".uninit.BOOT0STATE"]
-static mut BOOT0STATE: TransientNVMem = TransientNVMem {
-    magic: 0,
-    count: 0,
-    flags: TransientNVMemFlags::empty(),
-};
+static mut BOOT0STATE: TransientNVMem = TransientNVMem { magic: 0, count: 0 };
 
 #[pre_init]
 unsafe fn init_boot0_state() {

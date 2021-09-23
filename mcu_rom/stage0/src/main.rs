@@ -29,9 +29,6 @@ use panic_halt as _;
 use rtic::app;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
-#[macro_use]
-extern crate bitflags;
-
 type Led = gpioa::PA1<Output<PushPull>>;
 type FwWp = gpioa::PA15<Input<Floating>>;
 
