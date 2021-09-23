@@ -47,6 +47,7 @@ struct configuration {
 struct status {
   int8_t person_score;
   int8_t not_person_score;
+  uint16_t enabled_features;
 };
 
 // Wait for DMA to finish
@@ -538,6 +539,7 @@ int main(void) {
     // Run configured functions
     read_mcu_config(&configuration);
     struct status inference_status = {0};
+    inference_status.enabled_features = configuration.enabled_features;
 
     write_ae_cfg();
     if (do_run_exposure_calibration) {

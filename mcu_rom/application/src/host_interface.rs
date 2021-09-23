@@ -76,6 +76,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     0
                 }
             }
+            registers::ENABLED_FEATURES => state.status.enabled_features,
             _ => common_value,
         }
     }
