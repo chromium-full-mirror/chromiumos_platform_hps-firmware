@@ -38,12 +38,12 @@ const MAX_REPEAT_RUN: usize = 63;
 const ZERO_THRESHOLD: usize = 2;
 // Note, sequence 1 is followed by a 1-byte repeat count, since this sequence
 // often repeats many times.
-const SEQUENCE1: &'static [u8] = &sequence1();
+const SEQUENCE1: &[u8] = &sequence1();
 const SEQUENCE1_TOKEN: u8 = 0;
 // Note, sequence 2 does not have a repeat count, since it generally does not
 // repeat and representing this sequence as 2 bytes instead of 1 would consume a
 // significant amount of extra space.
-const SEQUENCE2: &'static [u8] = &sequence2();
+const SEQUENCE2: &[u8] = &sequence2();
 const SEQUENCE2_TOKEN: u8 = 0x80;
 
 /// Compresses `input`, calling `out` for each byte in the compressed output.
@@ -180,7 +180,7 @@ impl<'a, I: Iterator<Item = &'a u8>> Iterator for Decompressor<'a, I> {
                 } else {
                     self.state = CommandState::Data(count - 1);
                 }
-                return value;
+                value
             }
             CommandState::Zeros(count) => {
                 if count <= 1 {
@@ -188,7 +188,7 @@ impl<'a, I: Iterator<Item = &'a u8>> Iterator for Decompressor<'a, I> {
                 } else {
                     self.state = CommandState::Zeros(count - 1);
                 }
-                return Some(0);
+                Some(0)
             }
             CommandState::Ff(count) => {
                 if count <= 1 {
@@ -196,7 +196,7 @@ impl<'a, I: Iterator<Item = &'a u8>> Iterator for Decompressor<'a, I> {
                 } else {
                     self.state = CommandState::Ff(count - 1);
                 }
-                return Some(0xff);
+                Some(0xff)
             }
             CommandState::Sequence1(offset, count) => {
                 if offset + 1 == SEQUENCE1.len() as u8 {
@@ -208,7 +208,7 @@ impl<'a, I: Iterator<Item = &'a u8>> Iterator for Decompressor<'a, I> {
                 } else {
                     self.state = CommandState::Sequence1(offset + 1, count);
                 }
-                return Some(SEQUENCE1[offset as usize]);
+                Some(SEQUENCE1[offset as usize])
             }
             CommandState::Sequence2(offset) => {
                 if offset + 1 == SEQUENCE2.len() as u8 {
@@ -216,11 +216,9 @@ impl<'a, I: Iterator<Item = &'a u8>> Iterator for Decompressor<'a, I> {
                 } else {
                     self.state = CommandState::Sequence2(offset + 1);
                 }
-                return Some(SEQUENCE2[offset as usize]);
+                Some(SEQUENCE2[offset as usize])
             }
-            CommandState::End => {
-                return None;
-            }
+            CommandState::End => None,
         }
     }
 }
@@ -248,7 +246,7 @@ fn repeated_run_length(to_repeat: u8, bytes: &[u8]) -> usize {
         .iter()
         .take(MAX_REPEAT_RUN)
         .position(|byte| *byte != to_repeat)
-        .unwrap_or(min(MAX_REPEAT_RUN, bytes.len()))
+        .unwrap_or_else(|| min(MAX_REPEAT_RUN, bytes.len()))
 }
 
 #[cfg(test)]
@@ -312,8 +310,7 @@ mod tests {
 
     #[test]
     fn multiple_data_blocks() {
-        let mut expected = Vec::new();
-        expected.push(0xff);
+        let mut expected = vec![0xff];
         expected.extend_from_slice(&[42; 127]);
         expected.push(0x81);
         expected.push(42);
@@ -322,21 +319,21 @@ mod tests {
 
     #[test]
     fn sequence1() {
-        check(&SEQUENCE1, &[0, 1]);
+        check(SEQUENCE1, &[0, 1]);
         let mut input = vec![10, 20];
-        input.extend_from_slice(&SEQUENCE1);
-        input.extend_from_slice(&SEQUENCE1);
-        input.extend_from_slice(&SEQUENCE1);
+        input.extend_from_slice(SEQUENCE1);
+        input.extend_from_slice(SEQUENCE1);
+        input.extend_from_slice(SEQUENCE1);
         input.push(30);
         check(&input, &[0x82, 10, 20, 0, 3, 0x81, 30]);
     }
 
     #[test]
     fn sequence2() {
-        check(&SEQUENCE2, &[0x80]);
+        check(SEQUENCE2, &[0x80]);
         let mut input = vec![10, 20];
-        input.extend_from_slice(&SEQUENCE2);
-        input.extend_from_slice(&SEQUENCE2);
+        input.extend_from_slice(SEQUENCE2);
+        input.extend_from_slice(SEQUENCE2);
         input.push(30);
         check(&input, &[0x82, 10, 20, 0x80, 0x80, 0x81, 30]);
     }

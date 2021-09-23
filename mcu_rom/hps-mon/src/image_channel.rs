@@ -117,7 +117,7 @@ fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()>
         &mut buf,
     );
     bayer::run_demosaic(
-        &mut Cursor::new(&raw_bytes[..]),
+        &mut Cursor::new(raw_bytes),
         bayer::BayerDepth::Depth8,
         bayer::CFA::GBRG,
         bayer::Demosaic::Cubic,
@@ -180,11 +180,12 @@ impl OutputDir {
         Ok(())
     }
 
-    fn write_png(&self, png_filename: &PathBuf, raw_bytes: &[u8]) -> Result<(), anyhow::Error> {
-        Ok(match self.image_type {
-            ImageType::Grayscale => write_png_from_greyscale_camera(&png_filename, raw_bytes)?,
-            ImageType::Color => write_pngs_from_color_camera(&png_filename, raw_bytes)?,
-        })
+    fn write_png(&self, png_filename: &Path, raw_bytes: &[u8]) -> Result<(), anyhow::Error> {
+        match self.image_type {
+            ImageType::Grayscale => write_png_from_greyscale_camera(png_filename, raw_bytes)?,
+            ImageType::Color => write_pngs_from_color_camera(png_filename, raw_bytes)?,
+        }
+        Ok(())
     }
 
     fn next_output_filename(&mut self) -> PathBuf {

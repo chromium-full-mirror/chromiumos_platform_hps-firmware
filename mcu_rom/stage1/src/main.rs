@@ -83,14 +83,10 @@ fn inner_main() -> Result<(), ()> {
     delay.delay(20.ms()); // wait for SPI to quiesce.
 
     let mut flash = Flash::init(spi, spi_cs).map_err(drop)?; //.expect("WEL and BUSY bit should be clear"); // can causes HardFault when writes are in progess!
-    let jedec_id = flash.read_jedec_id(); // expect Identification([c8, 60, 18])
-    match jedec_id {
-        Ok(id) => {
-            if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
-                uwriteln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
-            }
+    if let Ok(id) = flash.read_jedec_id() {
+        if id.mfr_code() == 0xC8 && id.device_id() == [0x60, 0x18] {
+            uwriteln!(usart, "Found GigaDevice GD25LQ128C/D !\r").map_err(drop)?;
         }
-        Err(..) => {}
     }
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);

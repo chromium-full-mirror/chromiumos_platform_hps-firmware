@@ -28,7 +28,7 @@ pub fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signat
 /// Compute the digest of the payload image with the required length
 /// extention for later signing.
 pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]> {
-    let v = extend_image(&payload, region_length);
+    let v = extend_image(payload, region_length);
 
     let mut hasher = Hash::new();
     for block in v.chunks(FLASH_PAGE_SZ) {
@@ -42,7 +42,7 @@ pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]
 /// Return a extended image with a provided length.
 fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     let mut v = Vec::new();
-    v.extend_from_slice(&image);
+    v.extend_from_slice(image);
 
     // Determine the residue of remaining Bytes that
     // will complete the write size and pad with zeros.

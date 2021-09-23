@@ -41,10 +41,8 @@ pub(crate) fn write(
         rprintln!("SPI write crosses page boundary");
         return;
     }
-    if address % SECTOR_SIZE == 0 {
-        if spi_flash.erase_sectors(address, 1).is_err() {
-            rprintln!("Failed to erase to sector");
-        }
+    if address % SECTOR_SIZE == 0 && spi_flash.erase_sectors(address, 1).is_err() {
+        rprintln!("Failed to erase to sector");
     }
     if spi_flash.write_bytes(address, data).is_err() {
         rprintln!("Failed to write to SPI flash");

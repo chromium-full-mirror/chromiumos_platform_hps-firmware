@@ -96,7 +96,7 @@ fn stage1_digest() -> [u8; 32] {
     // is obviously inserted after signing.
     // Replace the signature with zeros, since that's what was in the
     // file when the digest was computed during the signing process.
-    let mut region = unsafe { *((slot.start + 0) as *const [u8; PAGE_SIZE]) };
+    let mut region = unsafe { *(slot.start as *const [u8; PAGE_SIZE]) };
     let sig_offset = unsafe { &_hdr.sig as *const _ as usize - &_hdr as *const _ as usize };
     for idx in 0..64 {
         region[sig_offset + idx] = 0x00;

@@ -54,7 +54,7 @@ struct CommandEditor {
 #[derive(Default)]
 struct CompletionHelper {}
 
-const COMMANDS: &'static [AvailableDebugCommand] = &[
+const COMMANDS: &[AvailableDebugCommand] = &[
     // TODO: Consider changing commands that set things on and off to single
     // commands with an argument. That would require changing the FPGA side as
     // well, so isn't done initially.
@@ -240,7 +240,7 @@ pub(crate) fn create_command_source(
         .editor
         .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
-    if let Ok(commands) = parse_commands(&initial_commands) {
+    if let Ok(commands) = parse_commands(initial_commands) {
         for command in commands {
             let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
             if tx.send(command).is_err() || is_exit {
@@ -274,7 +274,7 @@ pub(crate) fn create_command_source(
 }
 
 impl DebugCommand {
-    pub(crate) fn to_bytes(&self) -> [u8; DEBUG_BYTES_PER_COMMAND] {
+    pub(crate) fn to_bytes(self) -> [u8; DEBUG_BYTES_PER_COMMAND] {
         let mut result = [0u8; DEBUG_BYTES_PER_COMMAND];
         result[0] = mcu_common::DEBUG_COMMAND_START;
         result[1] = self.code;

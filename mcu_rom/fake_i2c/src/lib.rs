@@ -86,7 +86,7 @@ impl WriteRead for FakeI2cController {
             self.events_to_device
                 .send(Ok(I2cEvent::ByteReceived(*byte)))?;
         }
-        if bytes_to_read.len() > 0 {
+        if !bytes_to_read.is_empty() {
             self.events_to_device.send(Ok(I2cEvent::StartRead))?;
             for out in bytes_to_read {
                 self.events_to_device.send(Ok(I2cEvent::NeedByte))?;

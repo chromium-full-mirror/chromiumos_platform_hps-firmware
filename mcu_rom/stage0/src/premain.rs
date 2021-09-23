@@ -38,7 +38,7 @@ unsafe fn init_boot0_state() {
         BOOT0STATE.count = 0;
         BOOT0STATE.magic = 0xC0FFEE;
     }
-    BOOT0STATE.count = BOOT0STATE.count + 1;
+    BOOT0STATE.count += 1;
 }
 
 pub fn boot_count() -> u8 {

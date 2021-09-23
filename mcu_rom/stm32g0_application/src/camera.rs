@@ -39,7 +39,7 @@ pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
 pub fn read_camera_reg(camera_i2c: &mut board::CameraI2c, addrs: &mut [u8]) {
     for addr_pair in addrs.chunks_exact_mut(2) {
         let mut data: [u8; 1] = [0];
-        match camera_i2c.write_read(CAMERA_I2C_ID, &addr_pair, &mut data) {
+        match camera_i2c.write_read(CAMERA_I2C_ID, addr_pair, &mut data) {
             Ok(_) => addr_pair[0] = data[0],
             Err(_) => rprintln!("Failed to read 0x{:02x}{:02x}", addr_pair[0], addr_pair[1]),
         }
@@ -51,7 +51,7 @@ pub fn read_camera_reg(camera_i2c: &mut board::CameraI2c, addrs: &mut [u8]) {
 /// The request is a sequence of register addresses, followed by value.
 pub fn write_camera_reg(camera_i2c: &mut board::CameraI2c, addrs_values: &mut [u8]) {
     for addr_pair_value in addrs_values.chunks_exact(3) {
-        match camera_i2c.write(CAMERA_I2C_ID, &addr_pair_value) {
+        match camera_i2c.write(CAMERA_I2C_ID, addr_pair_value) {
             Ok(_) => {}
             Err(_) => rprintln!(
                 "Failed to write 0x{:02x}{:02x}[{:02x}]",

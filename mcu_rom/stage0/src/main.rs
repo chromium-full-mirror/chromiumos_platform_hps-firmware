@@ -293,18 +293,18 @@ fn detect_and_validate_stage1(
                 defmt::warn!("write-protect de-asserted!");
             }
             host_interface.stage0_ctx.set_firmware_version(version);
-            return Ok(Stage1OkState::ValidSignature);
+            Ok(Stage1OkState::ValidSignature)
         }
         Err(_) => {
             defmt::error!("signature bad!");
             if fw_wp.is_low().unwrap() {
                 defmt::warn!("write-protect asserted!");
                 defmt::warn!("stage 1 is untrusted, waitting for recovery.");
-                return Err(Stage1Error::InvalidSignature);
+                Err(Stage1Error::InvalidSignature)
             } else {
                 defmt::warn!("write-protect de-asserted!");
                 defmt::warn!("starting untrusted stage 1..");
-                return Ok(Stage1OkState::InvalidSignatureWpDeassert); // unconditionally load in dev mode.
+                Ok(Stage1OkState::InvalidSignatureWpDeassert) // unconditionally load in dev mode.
             }
         }
     }

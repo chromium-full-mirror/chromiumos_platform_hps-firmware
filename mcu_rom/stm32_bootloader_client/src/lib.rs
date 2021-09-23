@@ -414,11 +414,9 @@ mod tests {
     #[test]
     fn test_write_bulk() {
         let to_write: Vec<u8> = (0..200).collect();
-        let mut write1 = Vec::new();
-        write1.push(127u8);
+        let mut write1 = vec![127u8];
         write1.extend_from_slice(&to_write[..128]);
-        let mut write2 = Vec::new();
-        write2.push((to_write.len() - 128 - 1) as u8);
+        let mut write2 = vec![(to_write.len() - 128 - 1) as u8];
         write2.extend_from_slice(&to_write[128..]);
         let expectations = [
             mock_write_with_checksum(&[Command::WriteMemory as u8]),

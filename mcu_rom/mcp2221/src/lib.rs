@@ -178,7 +178,7 @@ fn first_device_on_bus(bus_number: u8) -> Result<Option<rusb::Device<rusb::Globa
             return Ok(Some(device.device));
         }
     }
-    return Ok(None);
+    Ok(None)
 }
 
 impl I2c {
@@ -291,7 +291,7 @@ impl I2c {
     pub fn get_gpio_config(&mut self) -> Result<GpioConfig> {
         let mut buffer = [0u8; MCP_TRANSFER_SIZE];
         buffer[0] = COMMAND_GET_SRAM_SETTINGS;
-        self.transfer(&mut buffer)?;
+        self.transfer(&buffer)?;
         if self.recv[0] != COMMAND_GET_SRAM_SETTINGS || self.recv[1] != 0 {
             return Err(Error::GpioError);
         }
@@ -304,7 +304,7 @@ impl I2c {
     pub fn get_pin_values(&mut self) -> Result<PinValues> {
         let mut buffer = [0u8; MCP_TRANSFER_SIZE];
         buffer[0] = COMMAND_GET_GPIO;
-        self.transfer(&mut buffer)?;
+        self.transfer(&buffer)?;
         if self.recv[0] != COMMAND_GET_GPIO || self.recv[1] != 0 {
             return Err(Error::ReadError);
         }
@@ -353,7 +353,7 @@ impl I2c {
 
     fn transfer(&mut self, buffer: &[u8]) -> Result<()> {
         self.handle
-            .write_interrupt(MCP_WRITE_ENDPOINT, &buffer, TIMEOUT)?;
+            .write_interrupt(MCP_WRITE_ENDPOINT, buffer, TIMEOUT)?;
 
         let size = self
             .handle

@@ -138,7 +138,7 @@ fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
                    echo \"blacklist ftdi_sio\" | sudo tee /etc/modprobe.d/local-dontload.conf"
             );
         }
-        Err(x) => Err(x)?,
+        Err(x) => Err(x.into()),
     }
 }
 
@@ -188,7 +188,7 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
             return Ok(Box::new(fhps));
         }
     }
-    let ftdi = Box::leak(Box::new(open_ftdi(&flags)?));
+    let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
     let i2c = ftdi.i2c()?;
     // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
     // by default, so we wrap it in a type that implements Send.

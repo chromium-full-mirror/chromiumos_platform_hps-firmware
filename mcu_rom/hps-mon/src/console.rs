@@ -36,7 +36,7 @@ impl ConsoleController {
             }
         });
         Self {
-            join_handle: join_handle,
+            join_handle,
             console: Console {
                 output_lock,
                 line_sink,

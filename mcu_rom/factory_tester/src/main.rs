@@ -227,30 +227,27 @@ impl Tester {
             .i2c
             .write_read(HPS_ADDRESS, &[0x80], &mut response)
             .is_ok()
+            && response == [0x9d, 0xf2]
         {
-            if &response == &[0x9d, 0xf2] {
-                error!("Detected HPS that already has firmware loaded.");
-                return Err(Error::FirmwareAlreadyLoaded);
-            }
+            error!("Detected HPS that already has firmware loaded.");
+            return Err(Error::FirmwareAlreadyLoaded);
         }
 
         let stm32_config =
             stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
         let mut stm32 = Stm32::new(&mut self.i2c, &mut self.delay, stm32_config);
 
-        loop {
-            match stm32.get_chip_id() {
-                Ok(EXPECTED_CHIP_ID) => {
-                    break;
-                }
-                Ok(id) => {
-                    error!("Unexpected chip ID: {}", id);
-                    return Err(Error::UnexpectedMcuId);
-                }
-                Err(error) => {
-                    error!("Failed to read chip ID: {:?}", &error);
-                    return Err(Error::SystemBootloader);
-                }
+        match stm32.get_chip_id() {
+            Ok(EXPECTED_CHIP_ID) => {
+                // Nothing to do.
+            }
+            Ok(id) => {
+                error!("Unexpected chip ID: {}", id);
+                return Err(Error::UnexpectedMcuId);
+            }
+            Err(error) => {
+                error!("Failed to read chip ID: {:?}", &error);
+                return Err(Error::SystemBootloader);
             }
         }
 

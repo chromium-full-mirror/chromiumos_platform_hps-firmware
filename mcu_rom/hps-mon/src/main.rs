@@ -235,7 +235,7 @@ fn create_channels(
             Box::new(image_channel::ImageChannel::new(
                 image_out,
                 flags.image_type,
-                line_sink.clone(),
+                line_sink,
             )?),
         )?);
     }
