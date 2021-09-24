@@ -8,6 +8,7 @@ use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::status;
 use mcu_common::CommonHostInterface;
 
 const HARDWARE_VERSION: u16 = 1;
@@ -45,7 +46,11 @@ impl StageZContext {
         self.stage1_present && self.signature_check_pass
     }
     fn get_system_status(&self) -> u16 {
-        self.signature_check_pass as u16 // TODO(quasisec): correct encoding?
+        if self.signature_check_pass {
+            status::AVERIFY
+        } else {
+            status::ANONVER
+        }
     }
     pub fn get_firmware_version(&self, register: u8) -> u16 {
         match register {
