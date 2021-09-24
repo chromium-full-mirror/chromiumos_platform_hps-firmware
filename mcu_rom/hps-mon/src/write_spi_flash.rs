@@ -18,7 +18,7 @@ const BLOCK_SIZE: usize = 64 * 1024;
 const PAGES_PER_BLOCK: usize = BLOCK_SIZE / PAGE_SIZE;
 
 const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
-const MAX_OUTSTANDING_COMMANDS: usize = 10;
+const MAX_OUTSTANDING_COMMANDS: usize = 28;
 
 pub(crate) fn write_spi_flash(
     command_channel: &mut Option<Box<dyn DataSink>>,

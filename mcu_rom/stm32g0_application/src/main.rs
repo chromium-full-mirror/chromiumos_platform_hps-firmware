@@ -325,7 +325,9 @@ fn init_peripherals(
         }
         down: {
             0: {
-                size: 4096
+                // This must be at least large enough to fit 256 *
+                // MAX_OUTSTANDING_COMMANDS (as defined in hps-mon).
+                size: 8192
                 mode: NoBlockSkip
                 name: "McuCommands"
             }
