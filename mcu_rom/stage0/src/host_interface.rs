@@ -93,9 +93,14 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 let result = self
                     .common_interface
                     .read_register(event.register)
+                    .map(|common_value| match event.register {
+                        registers::SYSTEM_STATUS => {
+                            common_value | self.stage0_ctx.get_system_status()
+                        }
+                        _ => common_value,
+                    })
                     .unwrap_or_else(|| match event.register {
                         registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
-                        registers::SYSTEM_STATUS => self.stage0_ctx.get_system_status(),
                         registers::FIRMWARE_VERSION_HIGH => self
                             .stage0_ctx
                             .get_firmware_version(registers::FIRMWARE_VERSION_HIGH),
