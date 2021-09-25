@@ -92,14 +92,6 @@ const APP: () = {
         init_peripherals(ctx.device)
     }
 
-    // TOOD: Figure out how to make RTT work without this (we did this for the
-    // stm32g0, but need to find the equivalent for the stm32l4).
-    #[idle(resources = [])]
-    fn idle(_ctx: idle::Context) -> ! {
-        info!("Press button to start test");
-        loop {}
-    }
-
     #[task(binds = EXTI15_10, resources = [tester, button, led])]
     fn exti15_10(ctx: exti15_10::Context) {
         let tester = ctx.resources.tester;
@@ -136,6 +128,15 @@ const APP: () = {
 
 fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
     initialize_logging();
+    // Make sure that SWD is still available when RTIC puts the CPU to sleep
+    // with the WFI (wait for interrupt) instruction.
+    p.DBGMCU.cr.modify(|_, w| {
+        w.dbg_sleep().set_bit();
+        w.dbg_standby().set_bit();
+        w.dbg_stop().set_bit()
+    });
+    p.RCC.ahb1enr.modify(|_, w| w.dma1en().set_bit());
+
     let mut flash = p.FLASH.constrain();
     let mut rcc = p.RCC.constrain();
     let mut pwr = p.PWR.constrain(&mut rcc.apb1r1);
@@ -201,6 +202,8 @@ fn init_peripherals(p: stm32::Peripherals) -> init::LateResources {
         delay: DelayCM::new(clocks),
         mlb_int,
     };
+
+    info!("Press button to start test");
 
     init::LateResources {
         tester,
