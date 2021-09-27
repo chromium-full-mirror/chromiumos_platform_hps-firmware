@@ -208,7 +208,7 @@ fn main() -> Result<()> {
 }
 
 /// Create channels. The channels here must match the channel definitions in
-/// stm32g0_application/src/main.rs. e.g. up-channel 0 is the MCU's debug
+/// stage1_app/src/main.rs. e.g. up-channel 0 is the MCU's debug
 /// channel, 1 is the FPGA's debug channel.
 fn create_channels(
     mut from_device: Vec<Box<dyn DataSource>>,

@@ -61,8 +61,8 @@ export PYTHONPATH
 # List of directories with Rust source
 export HPS_RUST_DIRS=(
     mcu_rom
-    mcu_rom/stm32g0_application
     mcu_rom/stage0
     mcu_rom/stage1
+    mcu_rom/stage1_app
     mcu_rom/stm32g0_i2c_peripheral
 )

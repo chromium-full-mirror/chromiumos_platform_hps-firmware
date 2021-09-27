@@ -15,7 +15,7 @@ These crates are all in a workspace. See Cargo.toml in this directory.
 
 The `application` crate contains the logic of the application and tests for that
 logic. Any interaction with hardware is done separately in the
-`stm32g0_application` crate.
+`stage1_app` crate.
 
 Primary responsibilities are:
 
@@ -122,7 +122,7 @@ most likely will be part of the same binary.
 A library for communicating with the factory bootloader on stm32
 microcontrollers. Allows writing to flash/RAM.
 
-### Crate: stm32g0_application
+### Crate: stage1_app
 
 A stand-alone MCU binary that runs the application. This crate mostly just
 contains code for interacting with the hardware. Any non-hardware-specific code
