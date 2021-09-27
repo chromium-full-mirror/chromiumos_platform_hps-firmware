@@ -51,20 +51,26 @@ impl Stm32g0I2cPeripheral {
         sda.setup();
         scl.setup();
 
-        // The I2C unit needs to be disabled while we configure it
-        ii2c.cr1.modify(|_, w| w.pe().clear_bit());
+        // The I2C unit needs to be disabled while we configure it. Set CR1 to
+        // default value.
+        ii2c.cr1.write(|w| w);
         // Configure timing.
         ii2c.timingr
             .write(|w| unsafe { w.bits(timing(rcc, 400.khz())) });
-        // Enable the kinds of I2C interrupts that we want to handle
-        ii2c.cr1.modify(|_, w| w.addrie().set_bit());
-        ii2c.cr1.modify(|_, w| w.rxie().set_bit());
-        ii2c.cr1.modify(|_, w| w.txie().set_bit());
-        ii2c.cr1.modify(|_, w| w.stopie().set_bit());
-        ii2c.cr1.modify(|_, w| w.errie().set_bit());
-        // Disable clock stretching.
-        ii2c.cr1
-            .modify(|_, w| w.nostretch().bit(!config.clock_stretching));
+        ii2c.cr1.modify(|_, w| {
+            // Get an interrupt when we're addressed.
+            w.addrie().set_bit();
+            // Get an interrupt when we receive a byte.
+            w.rxie().set_bit();
+            // Get an interrupt when our transmit buffer is empty.
+            w.txie().set_bit();
+            // Get an interrupt when we receive a STOP signal.
+            w.stopie().set_bit();
+            // Get an interrupt when there's an error.
+            w.errie().set_bit();
+            // Enable or disable clock stretching.
+            w.nostretch().bit(!config.clock_stretching)
+        });
         // Enable the I2C unit
         ii2c.cr1.modify(|_, w| w.pe().set_bit());
 
