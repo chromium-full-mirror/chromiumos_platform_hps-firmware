@@ -30,7 +30,7 @@ pub struct Stm32g0I2cPeripheral {
 impl Stm32g0I2cPeripheral {
     /// Initializes the I2C interface with the host (I2C1).
     pub fn new(
-        i2c1: I2C1,
+        ii2c: I2C1,
         rcc: &mut Rcc,
         sda: impl SDAPin<I2C1>,
         scl: impl SCLPin<I2C1>,
@@ -38,18 +38,24 @@ impl Stm32g0I2cPeripheral {
         address: u8,
         config: Config,
     ) -> Self {
-        let i2c = i2c1.i2c(
-            sda,
-            scl,
-            hal::i2c::Config::with_timing(timing(rcc, 400.khz())),
-            rcc,
-        );
+        // safety: We hold an exclusive reference to Rcc, which owns RCC. Unfortunately Rcc doesn't
+        // provide the access we need.
+        let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
+        // Enable I2C peripheral clock.
+        raw_rcc.apbenr1.modify(|_, w| w.i2c1en().set_bit());
+        // Reset the I2C peripheral.
+        raw_rcc.apbrstr1.modify(|_, w| w.i2c1rst().set_bit());
+        raw_rcc.apbrstr1.modify(|_, w| w.i2c1rst().clear_bit());
 
-        // un-own p.I2C1 block to tap registers
-        let (ii2c, _, _) = i2c.release();
+        // Configure pins.
+        sda.setup();
+        scl.setup();
 
         // The I2C unit needs to be disabled while we configure it
         ii2c.cr1.modify(|_, w| w.pe().clear_bit());
+        // Configure timing.
+        ii2c.timingr
+            .write(|w| unsafe { w.bits(timing(rcc, 400.khz())) });
         // Enable the kinds of I2C interrupts that we want to handle
         ii2c.cr1.modify(|_, w| w.addrie().set_bit());
         ii2c.cr1.modify(|_, w| w.rxie().set_bit());
