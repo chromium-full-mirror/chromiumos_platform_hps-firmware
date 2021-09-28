@@ -4,12 +4,12 @@
 
 #![cfg_attr(not(test), no_std)]
 
+use core::ops::Deref;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::stm32;
-use hal::stm32::I2C1;
 use hal::time::Hertz;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
@@ -21,31 +21,32 @@ pub struct Config {
     pub clock_stretching: bool,
 }
 
-#[non_exhaustive]
-pub struct Stm32g0I2cPeripheral {
-    // TODO: Make generic over hardware
-    i2c1: I2C1,
+/// A bit of hardware within the STM32 that controls the I2C bus. e.g. I2C1,
+/// I2C2 etc.
+pub trait I2cBusController: Deref<Target = stm32::i2c1::RegisterBlock> {
+    fn enable_power(rcc: &mut Rcc);
+    fn reset_peripheral(rcc: &mut Rcc);
+    fn interrupt() -> hal::stm32::Interrupt;
 }
 
-impl Stm32g0I2cPeripheral {
-    /// Initializes the I2C interface with the host (I2C1).
+#[non_exhaustive]
+pub struct Stm32g0I2cPeripheral<I2C: I2cBusController> {
+    i2c: I2C,
+}
+
+impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
+    /// Initializes the I2C interface as an I2C peripheral.
     pub fn new(
-        ii2c: I2C1,
+        i2c: I2C,
         rcc: &mut Rcc,
-        sda: impl SDAPin<I2C1>,
-        scl: impl SCLPin<I2C1>,
+        sda: impl SDAPin<I2C>,
+        scl: impl SCLPin<I2C>,
         // TODO: Consider moving address into Config.
         address: u8,
         config: Config,
     ) -> Self {
-        // safety: We hold an exclusive reference to Rcc, which owns RCC. Unfortunately Rcc doesn't
-        // provide the access we need.
-        let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
-        // Enable I2C peripheral clock.
-        raw_rcc.apbenr1.modify(|_, w| w.i2c1en().set_bit());
-        // Reset the I2C peripheral.
-        raw_rcc.apbrstr1.modify(|_, w| w.i2c1rst().set_bit());
-        raw_rcc.apbrstr1.modify(|_, w| w.i2c1rst().clear_bit());
+        I2C::enable_power(rcc);
+        I2C::reset_peripheral(rcc);
 
         // Configure pins.
         sda.setup();
@@ -53,11 +54,11 @@ impl Stm32g0I2cPeripheral {
 
         // The I2C unit needs to be disabled while we configure it. Set CR1 to
         // default value.
-        ii2c.cr1.write(|w| w);
+        i2c.cr1.write(|w| w);
         // Configure timing.
-        ii2c.timingr
+        i2c.timingr
             .write(|w| unsafe { w.bits(timing(rcc, 400.khz())) });
-        ii2c.cr1.modify(|_, w| {
+        i2c.cr1.modify(|_, w| {
             // Get an interrupt when we're addressed.
             w.addrie().set_bit();
             // Get an interrupt when we receive a byte.
@@ -72,54 +73,53 @@ impl Stm32g0I2cPeripheral {
             w.nostretch().bit(!config.clock_stretching)
         });
         // Enable the I2C unit
-        ii2c.cr1.modify(|_, w| w.pe().set_bit());
+        i2c.cr1.modify(|_, w| w.pe().set_bit());
 
         // Set our I2C address. oa1en need to be clear while we set the address.
-        ii2c.oar1.modify(|_, w| w.oa1en().clear_bit());
-        ii2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
-        ii2c.oar1
-            .modify(|_, w| unsafe { w.oa1_7_1().bits(address) });
+        i2c.oar1.modify(|_, w| w.oa1en().clear_bit());
+        i2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
+        i2c.oar1.modify(|_, w| unsafe { w.oa1_7_1().bits(address) });
         // Enable automatic ACK of our address.
-        ii2c.oar1.modify(|_, w| w.oa1en().set_bit());
+        i2c.oar1.modify(|_, w| w.oa1en().set_bit());
 
-        Self { i2c1: ii2c }
+        Self { i2c }
     }
 
     pub fn enable_interupts(&mut self) {
-        stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
-        unsafe { stm32::NVIC::unmask(hal::stm32::Interrupt::I2C1) };
+        stm32::NVIC::unpend(I2C::interrupt());
+        unsafe { stm32::NVIC::unmask(I2C::interrupt()) };
     }
 
     pub fn disable_interrupts(&mut self) {
-        stm32::NVIC::unpend(hal::stm32::Interrupt::I2C1);
-        stm32::NVIC::mask(hal::stm32::Interrupt::I2C1);
-        self.i2c1.cr1.modify(|_, w| w.pe().clear_bit());
+        stm32::NVIC::unpend(I2C::interrupt());
+        stm32::NVIC::mask(I2C::interrupt());
+        self.i2c.cr1.modify(|_, w| w.pe().clear_bit());
     }
 
     pub fn set_i2c_enabled(&mut self, enabled: bool) {
-        self.i2c1.oar1.modify(|_, w| w.oa1en().bit(enabled));
+        self.i2c.oar1.modify(|_, w| w.oa1en().bit(enabled));
     }
 }
 
-impl Drop for Stm32g0I2cPeripheral {
+impl<I2C: I2cBusController> Drop for Stm32g0I2cPeripheral<I2C> {
     fn drop(&mut self) {
         self.disable_interrupts();
         // Disable I2C
-        self.i2c1.cr1.modify(|_, w| w.pe().clear_bit());
+        self.i2c.cr1.modify(|_, w| w.pe().clear_bit());
     }
 }
 
-impl I2cPeripheral for Stm32g0I2cPeripheral {
+impl<I2C: I2cBusController> I2cPeripheral for Stm32g0I2cPeripheral<I2C> {
     fn next_event(&mut self) -> nb::Result<I2cEvent, I2cError> {
-        let isr = self.i2c1.isr.read();
+        let isr = self.i2c.isr.read();
         if isr.txis().bit_is_set() {
             return Ok(I2cEvent::NeedByte);
         }
         if isr.rxne().bit_is_set() {
-            return Ok(I2cEvent::ByteReceived(self.i2c1.rxdr.read().bits() as u8));
+            return Ok(I2cEvent::ByteReceived(self.i2c.rxdr.read().bits() as u8));
         }
         if isr.addr().bit_is_set() {
-            self.i2c1.icr.write(|w| w.addrcf().set_bit());
+            self.i2c.icr.write(|w| w.addrcf().set_bit());
             if isr.dir().bit_is_set() {
                 return Ok(I2cEvent::StartRead);
             } else {
@@ -127,15 +127,15 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
             }
         }
         if isr.stopf().bit_is_set() {
-            self.i2c1.icr.write(|w| w.stopcf().set_bit());
+            self.i2c.icr.write(|w| w.stopcf().set_bit());
             // Setting txe will clear any existing byte already stored into
             // txrd. This is important if the previous read was terminated early
             // by the controller.
-            self.i2c1.isr.write(|w| w.txe().set_bit());
+            self.i2c.isr.write(|w| w.txe().set_bit());
             return Ok(I2cEvent::Stop);
         }
         if isr.ovr().bit_is_set() {
-            self.i2c1.icr.write(|w| w.ovrcf().set_bit());
+            self.i2c.icr.write(|w| w.ovrcf().set_bit());
             if isr.dir().bit_is_set() {
                 return Err(nb::Error::Other(I2cError::Underrun));
             } else {
@@ -143,14 +143,14 @@ impl I2cPeripheral for Stm32g0I2cPeripheral {
             };
         }
         if isr.berr().bit_is_set() {
-            self.i2c1.icr.write(|w| w.berrcf().set_bit());
+            self.i2c.icr.write(|w| w.berrcf().set_bit());
             return Err(nb::Error::Other(I2cError::BusError));
         }
         Err(nb::Error::WouldBlock)
     }
 
     fn write_byte(&mut self, byte: u8) {
-        self.i2c1.txdr.write(|w| unsafe { w.txdata().bits(byte) });
+        self.i2c.txdr.write(|w| unsafe { w.txdata().bits(byte) });
     }
 }
 
@@ -209,3 +209,33 @@ fn timing(rcc: &mut Rcc, i2c_speed: Hertz) -> u32 {
     // suitable for putting into the I2C timing register.
     prescaler << 28 | scldel << 20 | sdadel << 16 | scl_high << 8 | scl_low
 }
+
+macro_rules! i2c_bus_controller {
+    ($i2c:path, $enable_bit:ident, $reset_bit:ident, $interrupt:path) => {
+        impl I2cBusController for $i2c {
+            fn enable_power(_rcc: &mut Rcc) {
+                // safety: We hold an exclusive reference to Rcc, which owns RCC. Unfortunately Rcc doesn't
+                // provide the access we need.
+                let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
+                // Enable I2C peripheral clock.
+                raw_rcc.apbenr1.modify(|_, w| w.$enable_bit().set_bit());
+            }
+
+            fn reset_peripheral(_rcc: &mut Rcc) {
+                // safety: We hold an exclusive reference to Rcc, which owns RCC. Unfortunately Rcc doesn't
+                // provide the access we need.
+                let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
+                // Reset the I2C peripheral.
+                raw_rcc.apbrstr1.modify(|_, w| w.$reset_bit().set_bit());
+                raw_rcc.apbrstr1.modify(|_, w| w.$reset_bit().clear_bit());
+            }
+
+            fn interrupt() -> hal::stm32::Interrupt {
+                $interrupt
+            }
+        }
+    };
+}
+
+i2c_bus_controller!(stm32::I2C1, i2c1en, i2c1rst, stm32::Interrupt::I2C1);
+i2c_bus_controller!(stm32::I2C2, i2c2en, i2c2rst, stm32::Interrupt::I2C2);

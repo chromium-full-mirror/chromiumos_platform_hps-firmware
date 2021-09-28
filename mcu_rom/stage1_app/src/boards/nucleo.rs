@@ -26,7 +26,7 @@ use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 pub type FpgaSpiCsPin = gpio::gpioa::PA8<Input<Floating>>;
 pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO8;
 
-pub type HostBus = Stm32g0I2cPeripheral;
+pub type HostBus = Stm32g0I2cPeripheral<I2C1>;
 
 pub type DebugLed = gpio::gpioa::PA5<Output<PushPull>>;
 
@@ -61,7 +61,7 @@ pub struct Board {
     pub fpga_spi_cipo: gpio::gpioa::PA6<Analog>,
     pub fpga_spi_copi: gpio::gpioa::PA7<Analog>,
 
-    pub host_bus: Stm32g0I2cPeripheral,
+    pub host_bus: HostBus,
 
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,

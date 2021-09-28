@@ -25,7 +25,7 @@ use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 pub type FpgaSpiCsPin = gpio::gpioa::PA8<Input<Floating>>;
 pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO8;
 
-pub type HostBus = Stm32g0I2cPeripheral;
+pub type HostBus = Stm32g0I2cPeripheral<I2C1>;
 
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;

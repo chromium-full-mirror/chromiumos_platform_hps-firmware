@@ -24,6 +24,7 @@ use hal::gpio::SignalEdge;
 use hal::gpio::{Floating, PushPull};
 use hal::gpio::{Input, Output};
 use hal::prelude::*;
+use hal::stm32::I2C1;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
 use host_interface::Stage1OkState;
@@ -59,7 +60,7 @@ static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
-        host_interface: HostInterface<Stm32g0I2cPeripheral>,
+        host_interface: HostInterface<Stm32g0I2cPeripheral<I2C1>>,
         flash_writer: FlashWriter,
         led: Led,
         fw_wp: FwWp,
@@ -285,7 +286,7 @@ fn init_peripherals(
 
 /// Checks whether it's OK to load the application, returning an error if not.
 fn detect_and_validate_stage1(
-    host_interface: &mut HostInterface<Stm32g0I2cPeripheral>,
+    host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
     led: &mut Led,
     wp_state: WriteProtectState,
 ) -> Result<Stage1OkState, Stage1Error> {
