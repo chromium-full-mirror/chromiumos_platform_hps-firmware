@@ -47,6 +47,12 @@ enum Stage1Error {
     InvalidSignature,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum WriteProtectState {
+    Asserted,
+    Deasserted,
+}
+
 /// Whether we're done running stage0 and we should now load stage1.
 static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
 
@@ -196,7 +202,14 @@ fn init_peripherals(
     let mut led = gpioa.pa1.into_push_pull_output();
     // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
     // wp is inverted, i.e., de-assert strapped low.
-    let mut fw_wp = gpioa.pa15.into_floating_input();
+    let fw_wp = gpioa.pa15.into_floating_input();
+    let wp_state = if fw_wp.is_low().unwrap() {
+        warn!("write-protect de-asserted!");
+        WriteProtectState::Deasserted
+    } else {
+        WriteProtectState::Asserted
+    };
+
     // Configure PB4 as output pin.
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
@@ -234,7 +247,7 @@ fn init_peripherals(
         i2c_config,
     ));
 
-    match detect_and_validate_stage1(&mut host_interface, &mut led, &mut fw_wp) {
+    match detect_and_validate_stage1(&mut host_interface, &mut led, wp_state) {
         Ok(oks) => {
             host_interface.stage0_ctx.set_stage1_present_flag();
             match oks {
@@ -272,7 +285,7 @@ fn init_peripherals(
 fn detect_and_validate_stage1(
     host_interface: &mut HostInterface<Stm32g0I2cPeripheral>,
     led: &mut Led,
-    fw_wp: &mut FwWp,
+    wp_state: WriteProtectState,
 ) -> Result<Stage1OkState, Stage1Error> {
     if let Err(e) = detect_stage1() {
         info!("{}", e);
@@ -286,22 +299,21 @@ fn detect_and_validate_stage1(
     match stage1_validation {
         Ok(version) => {
             info!("signature good!");
-            if fw_wp.is_low().unwrap() {
-                warn!("write-protect de-asserted!");
-            }
             host_interface.stage0_ctx.set_firmware_version(version);
             Ok(Stage1OkState::ValidSignature)
         }
         Err(_) => {
             error!("signature bad!");
-            if fw_wp.is_high().unwrap() {
-                warn!("write-protect asserted!");
-                warn!("stage 1 is untrusted, waitting for recovery.");
-                Err(Stage1Error::InvalidSignature)
-            } else {
-                warn!("write-protect de-asserted!");
-                warn!("starting untrusted stage 1..");
-                Ok(Stage1OkState::InvalidSignatureWpDeassert) // unconditionally load in dev mode.
+            match wp_state {
+                WriteProtectState::Asserted => {
+                    warn!("write-protect asserted!");
+                    warn!("stage 1 is untrusted, waitting for recovery.");
+                    Err(Stage1Error::InvalidSignature)
+                }
+                WriteProtectState::Deasserted => {
+                    warn!("starting untrusted stage 1..");
+                    Ok(Stage1OkState::InvalidSignatureWpDeassert) // unconditionally load in dev mode.
+                }
             }
         }
     }
