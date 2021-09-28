@@ -247,8 +247,8 @@ def main():
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi.')
     parser.add_argument(
-        "--cpu-cfu", default=None, 
-        help="Specify file containing CFU Verilog module.")
+        '--cpu-cfu', default=None,
+        help='Specify file containing CFU Verilog module.')
     parser.add_argument(
         '--litespi-quad', action='store_true',
         help='Use quad read opcode when reading from SPI flash.')
@@ -274,7 +274,6 @@ def main():
         vexriscv = f'{SOC_DIR}/../third_party/python/' \
                    f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
         var = 'SlimCfu'
-        cache = args.cache
         soc.cpu.use_external_variant(
             f'{vexriscv}/verilog/VexRiscv_{var}.v')
     else:
