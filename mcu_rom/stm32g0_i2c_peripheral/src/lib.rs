@@ -7,7 +7,6 @@
 use core::ops::Deref;
 use hal::i2c::SCLPin;
 use hal::i2c::SDAPin;
-use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::stm32;
 use hal::time::Hertz;
@@ -21,12 +20,18 @@ pub struct Config {
     /// Whether to enable i2c clock stretching.
     pub clock_stretching: bool,
     address: Address,
+    timing: Timing,
 }
 
 #[derive(Copy, Clone)]
 pub struct Address {
     /// A 7 bit address. Private to allow future support for 10 bit addresses.
     address: u8,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Timing {
+    raw_timing_bits: u32,
 }
 
 /// A bit of hardware within the STM32 that controls the I2C bus. e.g. I2C1,
@@ -43,10 +48,11 @@ pub struct Stm32g0I2cPeripheral<I2C: I2cBusController> {
 }
 
 impl Config {
-    pub const fn new(address: Address) -> Config {
+    pub const fn new(address: Address, timing: Timing) -> Config {
         Config {
             clock_stretching: true,
             address,
+            timing,
         }
     }
 }
@@ -54,6 +60,22 @@ impl Config {
 impl Address {
     pub const fn new_7bit(address: u8) -> Self {
         Self { address }
+    }
+}
+
+impl Timing {
+    /// Compute timing bits based on a requested I2C bus speed, taking into
+    /// account the current system clock configuration.
+    pub fn from_speed(rcc: &mut Rcc, speed: Hertz) -> Self {
+        Self {
+            raw_timing_bits: timing(rcc, speed),
+        }
+    }
+
+    /// Use raw timing bits computed elsewhere. There are various external
+    /// calculators you can use to compute these, e.g. STM32CubeMX.
+    pub const fn from_bits(raw_timing_bits: u32) -> Self {
+        Self { raw_timing_bits }
     }
 }
 
@@ -78,7 +100,7 @@ impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
         i2c.cr1.write(|w| w);
         // Configure timing.
         i2c.timingr
-            .write(|w| unsafe { w.bits(timing(rcc, 400.khz())) });
+            .write(|w| unsafe { w.bits(config.timing.raw_timing_bits) });
         i2c.cr1.modify(|_, w| {
             // Get an interrupt when we're addressed.
             w.addrie().set_bit();

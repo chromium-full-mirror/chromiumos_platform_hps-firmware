@@ -237,6 +237,7 @@ fn init_peripherals(
 
     let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
         stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+        stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
     );
     i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
 
