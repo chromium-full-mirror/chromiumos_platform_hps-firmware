@@ -63,7 +63,7 @@ class HpsSoC(LiteXSoC):
     cpu_type = 'vexriscv'
 
     def __init__(self, *, platform, debug, cpu_cfu=None,
-                 litespi_flash=True, litespi_quad=False):
+                 litespi_flash=True):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
@@ -82,7 +82,7 @@ class HpsSoC(LiteXSoC):
 
         # SPI Flash
         if litespi_flash:
-            self.setup_litespi_flash(quad=litespi_quad)
+            self.setup_litespi_flash()
         else:
             self.setup_flash()
 
@@ -128,11 +128,10 @@ class HpsSoC(LiteXSoC):
         self.bus.add_slave('spiflash', self.spiflash.bus, self.spiflash_region)
         self.csr.add('spiflash')
 
-    def setup_litespi_flash(self, quad=False):
-        read_opcode = Codes.READ_1_1_4 if quad else Codes.READ_1_1_1
+    def setup_litespi_flash(self):
         self.submodules.spiflash_phy = LiteSPIPHY(
             self.platform.request('spiflash4x'),
-            GD25LQ128D(read_opcode),
+            GD25LQ128D(Codes.READ_1_1_4),
             default_divisor=0,
             rate='1:2',
             extra_latency=1)
@@ -250,9 +249,6 @@ def main():
         '--cpu-cfu', default=None,
         help='Specify file containing CFU Verilog module.')
     parser.add_argument(
-        '--litespi-quad', action='store_true',
-        help='Use quad read opcode when reading from SPI flash.')
-    parser.add_argument(
         '--prog', action='store_true',
         help='Program the FPGA bitstream and software.')
 
@@ -262,8 +258,7 @@ def main():
         platform=Platform(args.toolchain),
         debug=args.debug,
         litespi_flash=args.litespi_flash,
-        cpu_cfu=args.cpu_cfu,
-        litespi_quad=args.litespi_quad)
+        cpu_cfu=args.cpu_cfu)
 
     if args.cache:
         if args.output_dir is None:
