@@ -235,16 +235,16 @@ fn init_peripherals(
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
 
-    let i2c_config = stm32g0_i2c_peripheral::Config {
-        clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
-    };
+    let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
+        stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+    );
+    i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
 
     let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
         gpiob.pb7.into_open_drain_output(),
         gpiob.pb6.into_open_drain_output(),
-        mcu_common::HPS_ADDRESS,
         i2c_config,
     ));
 

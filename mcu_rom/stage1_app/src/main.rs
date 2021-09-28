@@ -358,9 +358,10 @@ fn init_peripherals(
     let mut rcc = p.RCC.freeze(rcc_config());
     let mut delay = Delay::syst(cp.SYST, &rcc);
 
-    let i2c_config = stm32g0_i2c_peripheral::Config {
-        clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
-    };
+    let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
+        stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+    );
+    i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
 
     let mut board = board::Board::new(
         p.GPIOA.split(&mut rcc),

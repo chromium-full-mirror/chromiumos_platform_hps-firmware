@@ -100,7 +100,6 @@ impl Board {
             rcc,
             b.pb7.into_open_drain_output(),
             b.pb6.into_open_drain_output(),
-            mcu_common::HPS_ADDRESS,
             i2c_config,
         );
 

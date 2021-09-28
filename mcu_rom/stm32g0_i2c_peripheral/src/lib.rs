@@ -15,10 +15,18 @@ use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
+#[non_exhaustive]
 pub struct Config {
     /// Whether to enable i2c clock stretching.
     pub clock_stretching: bool,
+    address: Address,
+}
+
+#[derive(Copy, Clone)]
+pub struct Address {
+    /// A 7 bit address. Private to allow future support for 10 bit addresses.
+    address: u8,
 }
 
 /// A bit of hardware within the STM32 that controls the I2C bus. e.g. I2C1,
@@ -34,6 +42,21 @@ pub struct Stm32g0I2cPeripheral<I2C: I2cBusController> {
     i2c: I2C,
 }
 
+impl Config {
+    pub const fn new(address: Address) -> Config {
+        Config {
+            clock_stretching: true,
+            address,
+        }
+    }
+}
+
+impl Address {
+    pub const fn new_7bit(address: u8) -> Self {
+        Self { address }
+    }
+}
+
 impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
     /// Initializes the I2C interface as an I2C peripheral.
     pub fn new(
@@ -41,8 +64,6 @@ impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
         rcc: &mut Rcc,
         sda: impl SDAPin<I2C>,
         scl: impl SCLPin<I2C>,
-        // TODO: Consider moving address into Config.
-        address: u8,
         config: Config,
     ) -> Self {
         I2C::enable_power(rcc);
@@ -78,7 +99,8 @@ impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
         // Set our I2C address. oa1en need to be clear while we set the address.
         i2c.oar1.modify(|_, w| w.oa1en().clear_bit());
         i2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
-        i2c.oar1.modify(|_, w| unsafe { w.oa1_7_1().bits(address) });
+        i2c.oar1
+            .modify(|_, w| unsafe { w.oa1_7_1().bits(config.address.address) });
         // Enable automatic ACK of our address.
         i2c.oar1.modify(|_, w| w.oa1en().set_bit());
 
