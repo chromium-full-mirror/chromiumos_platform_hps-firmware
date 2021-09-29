@@ -199,17 +199,6 @@ fn init_peripherals(
     let mut exti = p.EXTI;
     gpioc.pc13.listen(SignalEdge::Rising, &mut exti);
 
-    // Keep the USART pins in a known state early on.
-    use hal::serial::FullConfig;
-    let _raw_usart = p
-        .USART2
-        .usart(
-            gpioa.pa2, // rx
-            gpioa.pa3, // tx
-            FullConfig::default().baudrate(115_200.bps()),
-            &mut rcc,
-        )
-        .unwrap();
     info!("Booting...");
 
     // The art of implementing a stm32 bootloader in rust.
