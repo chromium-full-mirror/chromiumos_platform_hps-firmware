@@ -45,13 +45,13 @@ pub fn load_stage1() -> ! {
         ))
     };
     unsafe {
-        info!(" [[stage 1]] >> version={}\r", _hdr.version);
+        info!(" [[stage 1]] >> version={}", _hdr.version);
         debug!(
-            " [[stage 1]] >> should I jmp to vector={:x}\r",
+            " [[stage 1]] >> should I jmp to vector={:x}",
             (_hdr.vector_addr as *const u32) as u32
         );
-        info!(" [[stage 1]] >> git hash build={}\r", git_hash);
-        info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
+        info!(" [[stage 1]] >> git hash build={}", git_hash);
+        info!(" [[stage 1]] >> sig={:x}\n", get_stage1_signature());
 
         // The application will want to configure the PLL itself, however the
         // PLL cannot be reconfigured while it's active. The HAL code that
@@ -78,7 +78,7 @@ pub fn load_stage1() -> ! {
 pub fn detect_stage1() -> Result<(), &'static str> {
     let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
-        info!("Found stage1.\r");
+        info!("Found stage1.");
         return Ok(());
     }
     Err("Could not find stage1")

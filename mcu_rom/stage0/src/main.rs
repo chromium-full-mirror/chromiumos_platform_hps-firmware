@@ -210,21 +210,21 @@ fn init_peripherals(
             &mut rcc,
         )
         .unwrap();
-    info!("Booting...\r");
+    info!("Booting...");
 
     // The art of implementing a stm32 bootloader in rust.
     info!("{}\n", banner());
 
     let boot_count = boot_count();
-    info!("boot count = {}\r", boot_count);
+    info!("boot count = {}", boot_count);
 
     // Stop FPGA running and taking SPI flash from us.
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {
-        info!("FPGA done\r");
+        info!("FPGA done");
     } else {
-        info!("FPGA wait\r");
+        info!("FPGA wait");
     }
 
     let i2c_config = stm32g0_i2c_peripheral::Config {
@@ -281,7 +281,7 @@ fn detect_and_validate_stage1(
     fw_wp: &mut FwWp,
 ) -> Result<Stage1OkState, Stage1Error> {
     if let Err(e) = detect_stage1() {
-        info!("{}\r", e);
+        info!("{}", e);
         return Err(Stage1Error::Missing);
     }
 
