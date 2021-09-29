@@ -46,8 +46,17 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         return Some(event);
                     }
                 }
-                i2c_protocol::Event::WriteMemory(event) => {
-                    if event.bank == memory_banks::SPI_FLASH {
+                i2c_protocol::Event::WriteMemory(mut event) => {
+                    // We support two memory banks. One for the bitstream and
+                    // one for the SOC ROM. They overlap, so you can program
+                    // both at once by just writing a concatenated bistream +
+                    // padding + SOC ROM to the bitstream's memory bank -
+                    // however doing so is wasteful, so not recommended.
+                    if event.bank == memory_banks::FPGA_BITSTREAM {
+                        return Some(Event::WriteSpiFlash(event));
+                    }
+                    if event.bank == memory_banks::SOC_ROM {
+                        event.address += mcu_common::SOC_ROM_OFFSET;
                         return Some(Event::WriteSpiFlash(event));
                     }
                 }
@@ -73,7 +82,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::USER_PRESENT_STATUS => state.status.person_score as u16,
             registers::MEMORY_BANK_AVAILABLE => {
                 if i2c_protocol::Buffer::is_available() {
-                    1 << memory_banks::SPI_FLASH
+                    (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
                 } else {
                     0
                 }

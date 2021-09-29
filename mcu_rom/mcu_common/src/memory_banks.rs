@@ -4,4 +4,6 @@
 
 pub const MCU_RW: u8 = 0;
 
-pub const SPI_FLASH: u8 = 1;
+pub const FPGA_BITSTREAM: u8 = 1;
+
+pub const SOC_ROM: u8 = 2;

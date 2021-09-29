@@ -92,7 +92,10 @@ impl DebugCommandHandler {
             if let Some(mut buffer) = Buffer::new() {
                 buffer.resize(Buffer::CAPACITY);
                 command.write_request = Some(WriteMemoryEvent {
-                    bank: memory_banks::SPI_FLASH,
+                    // Note, bank is not actually used by the caller, however if
+                    // it were, FPGA_BITSTREAM represents the start of the SPI
+                    // flash, so would do what we wanted.
+                    bank: memory_banks::FPGA_BITSTREAM,
                     address: arg as u32 * 256,
                     data: buffer,
                 });

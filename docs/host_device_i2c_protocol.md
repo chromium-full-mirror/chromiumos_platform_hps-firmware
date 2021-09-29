@@ -23,10 +23,11 @@ and then the data.
 
 ## Memory Banks
 
-| Number | Bank      |                    |
-|:-------|:----------|:-------------------|
-| 0      | MCU flash | Writable in stage0 |
-| 1      | SPI flash | Writable in stage1 |
+| Number | Bank          |                    |
+|:-------|:--------------|:-------------------|
+| 0      | MCU flash     | Writable in stage0 |
+| 1      | FPGA gateware | Writable in stage1 |
+| 2      | SOC ROM       | Writable in stage1 |
 
 # Register Access
 
