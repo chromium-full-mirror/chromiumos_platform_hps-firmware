@@ -14,6 +14,10 @@ use crate::loader::*;
 use crate::premain::*;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
+use defmt::debug;
+use defmt::error;
+use defmt::info;
+use defmt::warn;
 use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::SignalEdge;
@@ -74,7 +78,7 @@ const APP: () = {
                     .set_i2c_enabled(false);
             }
             if ctx.spawn.handle_event(event).is_err() {
-                defmt::error!("Event queue full!");
+                error!("Event queue full!");
             }
         }
     }
@@ -93,7 +97,7 @@ const APP: () = {
                     .flash_writer
                     .write(event.address, &*event.data)
                 {
-                    defmt::error!("Failed to write MCU flash: {}", flash_error_string(error));
+                    error!("Failed to write MCU flash: {}", flash_error_string(error));
                     // TODO: Report error somewhere
                 }
                 if cfg!(feature = "no-i2c-clock-stretching") {
@@ -135,7 +139,7 @@ const APP: () = {
         // application and the button gets pressed, the application won't know
         // to clear the interrupt, so it will keep triggering indefinitely.
         ctx.resources.exti.unlisten(hal::exti::Event::GPIO13);
-        defmt::info!("Button pressed, booting...");
+        info!("Button pressed, booting...");
         let _ = ctx.spawn.handle_event(HostEvent::LoadApplication);
     }
 
@@ -206,21 +210,21 @@ fn init_peripherals(
             &mut rcc,
         )
         .unwrap();
-    defmt::info!("Booting...\r");
+    info!("Booting...\r");
 
     // The art of implementing a stm32 bootloader in rust.
-    defmt::info!("{}\n", banner());
+    info!("{}\n", banner());
 
     let boot_count = boot_count();
-    defmt::info!("boot count = {}\r", boot_count);
+    info!("boot count = {}\r", boot_count);
 
     // Stop FPGA running and taking SPI flash from us.
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
     if fpga_done.is_high().unwrap() {
-        defmt::info!("FPGA done\r");
+        info!("FPGA done\r");
     } else {
-        defmt::info!("FPGA wait\r");
+        info!("FPGA wait\r");
     }
 
     let i2c_config = stm32g0_i2c_peripheral::Config {
@@ -249,12 +253,12 @@ fn init_peripherals(
             }
         }
         Err(e) => {
-            defmt::error!("Failed to launch application");
+            error!("Failed to launch application");
             match e {
-                Stage1Error::Missing => defmt::error!("missing stage 1/app"),
+                Stage1Error::Missing => error!("missing stage 1/app"),
                 Stage1Error::InvalidSignature => {
                     host_interface.stage0_ctx.set_stage1_present_flag();
-                    defmt::error!("invalid stage 1/app signature");
+                    error!("invalid stage 1/app signature");
                 }
             };
         }
@@ -277,7 +281,7 @@ fn detect_and_validate_stage1(
     fw_wp: &mut FwWp,
 ) -> Result<Stage1OkState, Stage1Error> {
     if let Err(e) = detect_stage1() {
-        defmt::info!("{}\r", e);
+        info!("{}\r", e);
         return Err(Stage1Error::Missing);
     }
 
@@ -287,22 +291,22 @@ fn detect_and_validate_stage1(
 
     match stage1_validation {
         Ok(version) => {
-            defmt::info!("signature good!");
+            info!("signature good!");
             if fw_wp.is_low().unwrap() {
-                defmt::warn!("write-protect de-asserted!");
+                warn!("write-protect de-asserted!");
             }
             host_interface.stage0_ctx.set_firmware_version(version);
             Ok(Stage1OkState::ValidSignature)
         }
         Err(_) => {
-            defmt::error!("signature bad!");
+            error!("signature bad!");
             if fw_wp.is_high().unwrap() {
-                defmt::warn!("write-protect asserted!");
-                defmt::warn!("stage 1 is untrusted, waitting for recovery.");
+                warn!("write-protect asserted!");
+                warn!("stage 1 is untrusted, waitting for recovery.");
                 Err(Stage1Error::InvalidSignature)
             } else {
-                defmt::warn!("write-protect de-asserted!");
-                defmt::warn!("starting untrusted stage 1..");
+                warn!("write-protect de-asserted!");
+                warn!("starting untrusted stage 1..");
                 Ok(Stage1OkState::InvalidSignatureWpDeassert) // unconditionally load in dev mode.
             }
         }

@@ -4,6 +4,8 @@
 
 use core::ops::Range;
 
+use crate::debug;
+use crate::info;
 use mcu_common::Hash;
 use mcu_common::TargetImageHeader;
 
@@ -43,13 +45,13 @@ pub fn load_stage1() -> ! {
         ))
     };
     unsafe {
-        defmt::info!(" [[stage 1]] >> version={}\r", _hdr.version);
-        defmt::debug!(
+        info!(" [[stage 1]] >> version={}\r", _hdr.version);
+        debug!(
             " [[stage 1]] >> should I jmp to vector={:x}\r",
             (_hdr.vector_addr as *const u32) as u32
         );
-        defmt::info!(" [[stage 1]] >> git hash build={}\r", git_hash);
-        defmt::info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
+        info!(" [[stage 1]] >> git hash build={}\r", git_hash);
+        info!(" [[stage 1]] >> sig={:x}\n\r", get_stage1_signature());
 
         // The application will want to configure the PLL itself, however the
         // PLL cannot be reconfigured while it's active. The HAL code that
@@ -76,7 +78,7 @@ pub fn load_stage1() -> ! {
 pub fn detect_stage1() -> Result<(), &'static str> {
     let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
-        defmt::info!("Found stage1.\r");
+        info!("Found stage1.\r");
         return Ok(());
     }
     Err("Could not find stage1")
@@ -88,7 +90,7 @@ fn stage1_digest() -> [u8; 32] {
 
     const FLASH_END: usize = hal::flash::FLASH_END as usize;
     if slot.end > FLASH_END {
-        defmt::debug!("invalid slot.end = {:X}", slot.end);
+        debug!("invalid slot.end = {:X}", slot.end);
     }
 
     // Although we hash the header as well we must treat it a little
@@ -113,7 +115,7 @@ fn stage1_digest() -> [u8; 32] {
 
 pub fn validate_stage1() -> Result<[u16; 2], ed25519_compact::Error> {
     let stage1_digest = stage1_digest();
-    defmt::info!("{:?}", stage1_digest);
+    info!("{:?}", stage1_digest);
 
     let hdr_sig = get_stage1_signature();
     let sign = ed25519_compact::Signature::new(hdr_sig);

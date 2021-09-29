@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::info;
 use core::ops::Range;
 use hal::flash;
 use hal::flash::FlashExt;
@@ -60,7 +61,7 @@ impl FlashWriter {
                 }
             }
         }
-        defmt::info!(
+        info!(
             "Successfully wrote {} bytes to MCU flash at address {:x}.",
             data.len(),
             address
