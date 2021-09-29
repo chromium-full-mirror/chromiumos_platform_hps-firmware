@@ -110,7 +110,7 @@ _oxide_build_template = [
      '{ignoreloops} '
      '--seed {seed} '
      '--router router1'
-    ),
+     ),
     'prjoxide pack {build_name}.fasm {build_name}.bit',
 ]
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""SoC definition and builder script for HPS proto0"""
+"""SoC definition and builder script for HPS"""
 
 import argparse
 import os
@@ -35,7 +35,7 @@ SOC_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class HpsSoC(LiteXSoC):
-    """SoC definition for HPS proto0"""
+    """SoC definition for HPS"""
     # Memory layout
     csr_origin = 0xf0000000
     spiflash_region = SoCRegion(0x20000000, 16 * MB, cached=True)
@@ -62,7 +62,7 @@ class HpsSoC(LiteXSoC):
 
     cpu_type = 'vexriscv'
 
-    def __init__(self, *, platform, debug, cpu_cfu=None,
+    def __init__(self, *, platform, debug, cpu_cfu=None, variant=None,
                  litespi_flash=True):
         LiteXSoC.__init__(self,
                           platform=platform,
@@ -73,7 +73,7 @@ class HpsSoC(LiteXSoC):
         self.submodules.crg = platform.create_crg()
         self.add_controller('ctrl')
         self.add_cpu(self.cpu_type,
-                     variant=('full+debug' if debug else 'full'),
+                     variant=variant,
                      reset_address=self.rom_origin,
                      cfu=cpu_cfu)
 
@@ -239,9 +239,6 @@ def main():
         '--toolchain', default='oxide',
         help='Which toolchain to use, oxide (default) or radiant.')
     parser.add_argument(
-        '--cache', default=None,
-        help='Use custom cache config: 8d8i2w, 8d8i4w [default: 4d4i1w].')
-    parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi.')
@@ -253,31 +250,29 @@ def main():
         help='Program the FPGA bitstream and software.')
 
     args = parser.parse_args()
+    args.output_dir = 'build/hps_platform'
+
+    variant, variantName = 'full', 'Full'
+    if args.cpu_cfu:
+        variant, variantName = 'full+cfu', 'FullCfu'
+    print(f'{variantName} variant selected')
 
     soc = HpsSoC(
         platform=Platform(args.toolchain),
         debug=args.debug,
         litespi_flash=args.litespi_flash,
+        variant=variant,
         cpu_cfu=args.cpu_cfu)
 
-    if args.cache:
-        if args.output_dir is None:
-            args.output_dir = ('build/hps_' + args.cache)
-            print(f'Set output dir to {args.output_dir}')
-        assert 'full' in soc.cpu.variant
-        assert 'debug' not in soc.cpu.variant    # we can add this if wanted
-        vexriscv = f'{SOC_DIR}/../third_party/python/' \
-                   f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
-        var = 'SlimCfu'
-        soc.cpu.use_external_variant(
-            f'{vexriscv}/verilog/VexRiscv_{var}.v')
-    else:
-        if args.output_dir is None:
-            args.output_dir = 'build/hps_platform'
+    vexriscv = f'{SOC_DIR}/../third_party/python/' \
+        f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
+    soc.cpu.use_external_variant(
+        f'{vexriscv}/verilog/VexRiscv_{variantName}.v')
 
     builder = create_builder(soc, args)
-    builder_kwargs = radiant_build_argdict(
-        args) if args.toolchain == 'radiant' else {}
+    builder_kwargs = {}
+    if args.toolchain == 'radiant':
+        builder_kwargs.update(radiant_build_argdict(args))
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 
