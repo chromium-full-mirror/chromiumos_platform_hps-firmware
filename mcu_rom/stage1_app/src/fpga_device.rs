@@ -40,6 +40,12 @@ impl FpgaDevice {
         }
         self.hold.set_high().unwrap();
     }
+
+    pub(crate) fn start_fpga(&mut self) {
+        // TODO: If the SPI flash hasn't been validated yet, this should report
+        // an error and refuse to take the FPGA out of reset.
+        self.hold.set_high().unwrap();
+    }
 }
 
 pub(crate) fn get_spi_flash(

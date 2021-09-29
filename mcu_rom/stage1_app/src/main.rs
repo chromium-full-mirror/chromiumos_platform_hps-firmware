@@ -57,7 +57,8 @@ const APP: () = {
         init_peripherals(ctx.device, ctx.core)
     }
 
-    #[task(binds = I2C1, resources = [host_interface, state], spawn = [write_spi_flash], priority = 3)]
+    #[task(binds = I2C1, resources = [host_interface, state],
+        spawn = [write_spi_flash, try_start_fpga], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         match ctx
             .resources
@@ -67,6 +68,11 @@ const APP: () = {
             Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
             Some(application::Event::WriteSpiFlash(write_request)) => {
                 let _ = ctx.spawn.write_spi_flash(write_request);
+            }
+            Some(application::Event::StartFpga) => {
+                // We can safely ignore failed attempts to swap this task
+                // because 1 attempt to start the FPGA is equivalent to 2.
+                let _ = ctx.spawn.try_start_fpga();
             }
             None => {}
         }
@@ -185,6 +191,11 @@ const APP: () = {
                 &mut *request.data,
             );
         }
+    }
+
+    #[task(resources = [fpga_device])]
+    fn try_start_fpga(ctx: try_start_fpga::Context) {
+        ctx.resources.fpga_device.start_fpga();
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
