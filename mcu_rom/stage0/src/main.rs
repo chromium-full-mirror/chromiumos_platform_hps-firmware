@@ -190,9 +190,9 @@ fn init_peripherals(
     // Configure PB4 as output pin.
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
     let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
-    // Configure PC14 as input pin.
+
     let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
-    let fpga_done = gpioc.pc14.into_floating_input();
+
     // Configure PC15 as output pin.
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
@@ -221,11 +221,6 @@ fn init_peripherals(
     // Stop FPGA running and taking SPI flash from us.
     let _ = fpga_prog.set_low(); // SW1 (pressed)?
     let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
-    if fpga_done.is_high().unwrap() {
-        info!("FPGA done");
-    } else {
-        info!("FPGA wait");
-    }
 
     let i2c_config = stm32g0_i2c_peripheral::Config {
         clock_stretching: !cfg!(feature = "no-i2c-clock-stretching"),
