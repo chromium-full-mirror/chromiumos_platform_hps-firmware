@@ -567,7 +567,9 @@ int main(void) {
     if (do_show_auto_exposure) {
       print_ae_cfg();
     }
-    if (do_run_classify) {
+    // We run classification if it's enabled via the UART, or if feature 0 is
+    // enabled from the MCU via I2C.
+    if (do_run_classify || (configuration.enabled_features & 1 != 0)) {
       run_classify(&inference_status);
     }
     write_mcu_status(&inference_status);
