@@ -184,13 +184,11 @@ const APP: () = {
         // Put FPGA into reset while we write SPI flash. We don't currently take
         // it out of reset. That's should be done once we've signature-checked
         // it.
-        if board::SPI_FLASH_ENABLED {
-            spi_flash::write(
-                get_spi_flash(ctx.resources.fpga_device),
-                request.address,
-                &mut *request.data,
-            );
-        }
+        spi_flash::write(
+            get_spi_flash(ctx.resources.fpga_device),
+            request.address,
+            &mut *request.data,
+        );
     }
 
     #[task(resources = [fpga_device])]
@@ -207,61 +205,53 @@ const APP: () = {
 
 fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
     let mut handled = true;
-    if board::SPI_FLASH_ENABLED {
-        match command.kind {
-            McuDebugCommand::ReadSpiFlash => {
-                spi_flash::debug_read(get_spi_flash(resources.fpga_device), command.arg as u32)
-            }
-            McuDebugCommand::WriteSpiFlash => {
-                if let Some(mut write_request) = command.write_request {
-                    spi_flash::write(
-                        get_spi_flash(resources.fpga_device),
-                        write_request.address,
-                        &mut *write_request.data,
-                    );
-                    resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
-                }
-            }
-            McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
-            McuDebugCommand::EraseSpiFlash => {
-                spi_flash::erase(get_spi_flash(resources.fpga_device));
-            }
-            McuDebugCommand::HashSpiFlash => spi_flash::hash(
-                get_spi_flash(resources.fpga_device),
-                command.arg,
-                resources.stopwatch,
-            ),
-            McuDebugCommand::SpiFlashCrc => {
-                resources
-                    .mcu_cmd_response_channel
-                    .write(&spi_flash::crc_sector(
-                        get_spi_flash(resources.fpga_device),
-                        command.arg,
-                    ));
-            }
-            McuDebugCommand::SpiFlashReadSpeed => {
-                spi_flash::test_read_speed(
+    match command.kind {
+        McuDebugCommand::ReadSpiFlash => {
+            spi_flash::debug_read(get_spi_flash(resources.fpga_device), command.arg as u32)
+        }
+        McuDebugCommand::WriteSpiFlash => {
+            if let Some(mut write_request) = command.write_request {
+                spi_flash::write(
                     get_spi_flash(resources.fpga_device),
-                    resources.stopwatch,
+                    write_request.address,
+                    &mut *write_request.data,
                 );
+                resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
             }
-            McuDebugCommand::SpiFlashWriteSpeed => {
-                spi_flash::test_write_speed(
+        }
+        McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
+        McuDebugCommand::EraseSpiFlash => {
+            spi_flash::erase(get_spi_flash(resources.fpga_device));
+        }
+        McuDebugCommand::HashSpiFlash => spi_flash::hash(
+            get_spi_flash(resources.fpga_device),
+            command.arg,
+            resources.stopwatch,
+        ),
+        McuDebugCommand::SpiFlashCrc => {
+            resources
+                .mcu_cmd_response_channel
+                .write(&spi_flash::crc_sector(
                     get_spi_flash(resources.fpga_device),
-                    resources.stopwatch,
-                );
-            }
-            McuDebugCommand::FpgaPowerOff => {
-                resources.fpga_device.power_gate.set_high().unwrap();
-                rprintln!("FPGA and SPI flash powered off");
-            }
-            McuDebugCommand::FpgaPowerOn => {
-                resources.fpga_device.power_gate.set_low().unwrap();
-                rprintln!("FPGA and SPI flash powered on");
-            }
-            _ => {
-                handled = false;
-            }
+                    command.arg,
+                ));
+        }
+        McuDebugCommand::SpiFlashReadSpeed => {
+            spi_flash::test_read_speed(get_spi_flash(resources.fpga_device), resources.stopwatch);
+        }
+        McuDebugCommand::SpiFlashWriteSpeed => {
+            spi_flash::test_write_speed(get_spi_flash(resources.fpga_device), resources.stopwatch);
+        }
+        McuDebugCommand::FpgaPowerOff => {
+            resources.fpga_device.power_gate.set_high().unwrap();
+            rprintln!("FPGA and SPI flash powered off");
+        }
+        McuDebugCommand::FpgaPowerOn => {
+            resources.fpga_device.power_gate.set_low().unwrap();
+            rprintln!("FPGA and SPI flash powered on");
+        }
+        _ => {
+            handled = false;
         }
     }
     match command.kind {

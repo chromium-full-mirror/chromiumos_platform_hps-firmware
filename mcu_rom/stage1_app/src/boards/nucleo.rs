@@ -55,8 +55,6 @@ pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
 /// GigaDevice GD25LQ128C/D
 pub const SPI_FLASH_DEVICE_ID: [u8; 2] = [0x60, 0x18];
 
-pub const SPI_FLASH_ENABLED: bool = true;
-
 pub struct Board {
     pub fpga_spi_cs: gpio::gpioa::PA8<Analog>,
     pub fpga_spi_clk: gpio::gpioa::PA1<Analog>,
