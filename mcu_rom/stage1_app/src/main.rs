@@ -181,9 +181,6 @@ const APP: () = {
 
     #[task(resources = [fpga_device])]
     fn write_spi_flash(ctx: write_spi_flash::Context, mut request: i2c_protocol::WriteMemoryEvent) {
-        // Put FPGA into reset while we write SPI flash. We don't currently take
-        // it out of reset. That's should be done once we've signature-checked
-        // it.
         spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device),
             request.address,
