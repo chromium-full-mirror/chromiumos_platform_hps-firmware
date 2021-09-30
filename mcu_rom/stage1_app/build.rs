@@ -1,3 +1,7 @@
+// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // All our boards have an stm32g071.
 #[cfg(all(not(feature = "stage1")))]
 fn memory_x_contents() -> &'static str {
