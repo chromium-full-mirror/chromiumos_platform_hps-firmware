@@ -1,9 +1,8 @@
-[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+[target.thumbv6m-none-eabi]
 # make `cargo run` start a GDB session
 runner = 'gdb-multiarch -q -x ../toolchain/mcu_dev/stm32g03_proto.gdb'
-
+linker = "ld.lld"
 rustflags = [
-  "-C", "linker=ld.lld",
   # !!CAREFUL!! link.x is an internally generated linker script
   # that will include 'memory.x' in the src root. Changing this
   # will result in mysteriously broken binaries and you will be sad.

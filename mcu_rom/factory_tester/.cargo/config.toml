@@ -1,8 +1,7 @@
-[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+[target.thumbv7em-none-eabihf]
 runner = 'probe-run --chip stm32l452'
-
+linker = "ld.lld"
 rustflags = [
-  "-C", "linker=ld.lld",
   "-C", "link-arg=-Tlink.x",
 ]
 
