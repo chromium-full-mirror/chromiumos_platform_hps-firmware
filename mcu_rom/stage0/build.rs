@@ -3,40 +3,31 @@
 // found in the LICENSE file.
 
 #[cfg(not(feature = "sys_bootloader"))]
-fn memory_x_contents() -> &'static str {
-    r#"MEMORY
-{
-/*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
-    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
-    HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
-    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
-}
+const STAGE0_FLASH_START: u32 = 0x08000000;
 
-PROVIDE(_hdr = ORIGIN(HDR));
-PROVIDE(_slot_start = ORIGIN(SLOT));
-PROVIDE(_slot_end   = ORIGIN(SLOT) + LENGTH(SLOT));
-"#
-}
-
-/// Configuration if we're being loaded by the system bootloader. In this case,
-/// we leave the first 1KB of flash empty so that the system bootloader still
-/// runs.
+/// When we're being loaded by the system bootloader, we leave the first 1KB of
+/// flash empty so that the system bootloader still runs.
 #[cfg(feature = "sys_bootloader")]
-fn memory_x_contents() -> &'static str {
-    r#"MEMORY
-{
-/*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
-    FLASH (rx) : ORIGIN = 0x08000400, LENGTH = 63K
+const STAGE0_FLASH_START: u32 = 0x08000400;
+
+fn memory_x_contents() -> String {
+    // The full extent of the flash is:
+    // FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    format!(
+        r#"MEMORY
+{{
+    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K
     HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
     SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
-}
+}}
 
 PROVIDE(_hdr = ORIGIN(HDR));
 PROVIDE(_slot_start = ORIGIN(SLOT));
 PROVIDE(_slot_end   = ORIGIN(SLOT) + LENGTH(SLOT));
-"#
+"#,
+        STAGE0_FLASH_START
+    )
 }
 
 fn main() {
