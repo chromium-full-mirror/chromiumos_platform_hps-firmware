@@ -31,6 +31,7 @@ sys_bootloader = []
 # set logging levels here
 default = [
   "defmt-default",
+  "sys_bootloader",
 ]
 # do NOT modify these features
 defmt-default = []
