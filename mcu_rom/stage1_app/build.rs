@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // All our boards have an stm32g071.
-#[cfg(all(not(feature = "stage1")))]
+#[cfg(all(feature = "standalone"))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
@@ -13,7 +13,7 @@ fn memory_x_contents() -> &'static str {
 "#
 }
 
-#[cfg(all(feature = "stage1"))]
+#[cfg(all(not(feature = "standalone")))]
 fn memory_x_contents() -> &'static str {
     // The header doesn't need 256 bytes, however the vector table is located at
     // the start of FLASH and the vector table must be 256 byte aligned, so we
