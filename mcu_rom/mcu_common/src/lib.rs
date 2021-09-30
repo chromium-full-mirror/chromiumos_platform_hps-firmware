@@ -19,6 +19,10 @@ pub use hmac_sha256::Hash;
 pub use mcu_debug_commands::McuDebugCommand;
 pub use mem_block::MemBlock;
 
+/// The length of the stage1 slot. This constant is used by stage0, so shouldn't
+/// be changed once stage0 is locked.
+pub const STAGE1_SLOT_LENGTH: usize = 64 * 1024;
+
 /// STM32G0x1, RM0444 (Reference manual)
 /// p.76 - 3.3.8 FLASH Main memory programming sequences
 /// It is only possible to program a double word (2 x 32-bit data).
@@ -46,10 +50,12 @@ pub const HPS_ADDRESS: u8 = 0x30;
 pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 
 /// The address at which the application is written. The stage1 header will be
-/// at this address.
+/// at this address. This constant is used by stage0, so shouldn't be changed
+/// once stage0 is locked.
 pub const APPLICATION_START_ADDRESS: u32 = 0x08010000;
 
-// The address of the application vector table.
+// The address of the application vector table. This constant is used by stage0,
+// so shouldn't be changed once stage0 is locked.
 pub const APPLICATION_VECTOR_ADDRESS: u32 = 0x08010100;
 
 /// ImageHeader is the structure found upon the prefix of a stage 1 image.

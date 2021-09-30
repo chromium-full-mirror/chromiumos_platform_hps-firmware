@@ -18,15 +18,15 @@ fn memory_x_contents() -> String {
 {{
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K
     HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
-    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K
+    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = {}
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }}
 
 PROVIDE(_hdr = ORIGIN(HDR));
-PROVIDE(_slot_start = ORIGIN(SLOT));
-PROVIDE(_slot_end   = ORIGIN(SLOT) + LENGTH(SLOT));
+PROVIDE(_slot = ORIGIN(SLOT));
 "#,
-        STAGE0_FLASH_START
+        STAGE0_FLASH_START,
+        mcu_common::STAGE1_SLOT_LENGTH,
     )
 }
 

@@ -22,8 +22,7 @@ const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
 
 extern "C" {
     pub static _hdr: TargetImageHeader;
-    pub static _slot_start: u8;
-    pub static _slot_end: u8;
+    pub static _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
 }
 
 fn get_stage1_signature() -> [u8; 64] {
@@ -148,7 +147,5 @@ fn get_stage1_version() -> [u16; 2] {
 }
 
 pub(crate) fn get_stage1_slot() -> &'static [u8] {
-    let slot_length =
-        unsafe { &_slot_end as *const _ as usize - &_slot_start as *const _ as usize };
-    unsafe { core::slice::from_raw_parts(&_slot_start as *const _, slot_length) }
+    unsafe { &_slot }
 }
