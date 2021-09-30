@@ -9,7 +9,6 @@ use crate::warn;
 use crate::Stage1Error;
 use crate::ValidStage1;
 use crate::WriteProtectState;
-use core::ops::Range;
 use mcu_common::Hash;
 use mcu_common::TargetImageHeader;
 
@@ -23,8 +22,8 @@ const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
 
 extern "C" {
     pub static _hdr: TargetImageHeader;
-    pub static _slot_start: u32;
-    pub static _slot_end: u32;
+    pub static _slot_start: u8;
+    pub static _slot_end: u8;
 }
 
 fn get_stage1_signature() -> [u8; 64] {
@@ -108,30 +107,25 @@ pub fn detect_stage1() -> Result<(), &'static str> {
 }
 
 fn stage1_digest() -> [u8; 32] {
-    let slot = get_stage_slot_se();
+    let slot = get_stage1_slot();
     let mut hasher = Hash::new();
-
-    const FLASH_END: usize = hal::flash::FLASH_END as usize;
-    if slot.end > FLASH_END {
-        debug!("invalid slot.end = {:X}", slot.end);
-    }
 
     // Although we hash the header as well we must treat it a little
     // differently because the signature is a variable position that
     // is obviously inserted after signing.
     // Replace the signature with zeros, since that's what was in the
     // file when the digest was computed during the signing process.
-    let mut region = unsafe { *(slot.start as *const [u8; PAGE_SIZE]) };
+    let mut first_page = [0u8; PAGE_SIZE];
+    first_page.copy_from_slice(&slot[..PAGE_SIZE]);
     let sig_offset = unsafe { &_hdr.sig as *const _ as usize - &_hdr as *const _ as usize };
     for idx in 0..64 {
-        region[sig_offset + idx] = 0x00;
+        first_page[sig_offset + idx] = 0x00;
     }
-    hasher.update(&region);
+    hasher.update(&first_page);
 
-    for offset in ((PAGE_SIZE)..(slot.end - slot.start)).step_by(PAGE_SIZE) {
+    for page in slot[PAGE_SIZE..].chunks_exact(PAGE_SIZE) {
         // Page flash by 2K steps.
-        let region = unsafe { *((slot.start + offset) as *const [u8; PAGE_SIZE]) };
-        hasher.update(&region); // Extend hash one sector at a time.
+        hasher.update(&page);
     }
     hasher.finalize()
 }
@@ -153,8 +147,8 @@ fn get_stage1_version() -> [u16; 2] {
     decode_version(&hdr_sig)
 }
 
-pub(crate) fn get_stage_slot_se() -> Range<usize> {
-    let start: usize = unsafe { (&_slot_start as *const _) as usize };
-    let end: usize = unsafe { (&_slot_end as *const u32) as usize };
-    start..end
+pub(crate) fn get_stage1_slot() -> &'static [u8] {
+    let slot_length =
+        unsafe { &_slot_end as *const _ as usize - &_slot_start as *const _ as usize };
+    unsafe { core::slice::from_raw_parts(&_slot_start as *const _, slot_length) }
 }

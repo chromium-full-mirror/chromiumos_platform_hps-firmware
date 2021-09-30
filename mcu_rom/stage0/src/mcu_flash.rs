@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 use crate::info;
-use core::ops::Range;
 use hal::flash;
 use hal::flash::FlashExt;
 use hal::flash::FlashPage;
@@ -14,7 +13,7 @@ const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 pub struct FlashWriter {
     flash: Option<FLASH>,
-    slot: Range<usize>,
+    slot: &'static [u8],
 }
 
 pub(crate) fn flash_error_string(error: flash::Error) -> &'static str {
@@ -28,7 +27,7 @@ pub(crate) fn flash_error_string(error: flash::Error) -> &'static str {
 }
 
 impl FlashWriter {
-    pub(crate) fn new(flash: FLASH, slot: Range<usize>) -> FlashWriter {
+    pub(crate) fn new(flash: FLASH, slot: &'static [u8]) -> FlashWriter {
         FlashWriter {
             flash: Some(flash),
             slot,
@@ -38,10 +37,10 @@ impl FlashWriter {
     pub(crate) fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.
-        let address = self.slot.start + address as usize;
-        if address + data.len() > self.slot.end {
-            return Err(flash::Error::PageOutOfRange);
-        }
+        let address = &self
+            .slot
+            .get(address as usize)
+            .ok_or(flash::Error::PageOutOfRange)? as *const _ as usize;
         if let Some(flash) = self.flash.take() {
             match flash.unlock() {
                 Ok(mut unlocked_flash) => {

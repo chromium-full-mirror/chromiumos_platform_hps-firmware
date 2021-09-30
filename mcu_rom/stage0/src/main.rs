@@ -271,7 +271,7 @@ fn init_peripherals(
         }
     };
 
-    let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage_slot_se());
+    let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage1_slot());
     init::LateResources {
         host_interface,
         flash_writer,
