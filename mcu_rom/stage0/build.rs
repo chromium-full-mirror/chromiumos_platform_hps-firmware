@@ -9,7 +9,7 @@ fn memory_x_contents() -> &'static str {
 /*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
     HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
-    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K - LENGTH(HDR)
+    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }
 
@@ -29,7 +29,7 @@ fn memory_x_contents() -> &'static str {
 /*  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K*/
     FLASH (rx) : ORIGIN = 0x08000400, LENGTH = 63K
     HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
-    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K - LENGTH(HDR)
+    SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = 64K
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }
 
