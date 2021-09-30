@@ -180,6 +180,8 @@ fn init_peripherals(
     // Configure PA1 as output pin.
     let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
     let mut led = gpioa.pa1.into_push_pull_output();
+    // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
+    // wp is inverted, i.e., de-assert strapped low.
     let mut fw_wp = gpioa.pa15.into_floating_input();
     // Configure PB4 as output pin.
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
@@ -286,7 +288,7 @@ fn detect_and_validate_stage1(
     match stage1_validation {
         Ok(version) => {
             defmt::info!("signature good!");
-            if fw_wp.is_high().unwrap() {
+            if fw_wp.is_low().unwrap() {
                 defmt::warn!("write-protect de-asserted!");
             }
             host_interface.stage0_ctx.set_firmware_version(version);
@@ -294,7 +296,7 @@ fn detect_and_validate_stage1(
         }
         Err(_) => {
             defmt::error!("signature bad!");
-            if fw_wp.is_low().unwrap() {
+            if fw_wp.is_high().unwrap() {
                 defmt::warn!("write-protect asserted!");
                 defmt::warn!("stage 1 is untrusted, waitting for recovery.");
                 Err(Stage1Error::InvalidSignature)
