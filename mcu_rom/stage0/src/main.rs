@@ -247,6 +247,8 @@ fn init_peripherals(
         i2c_config,
     ));
 
+    host_interface.stage0_ctx.set_write_protect_state(wp_state);
+
     match detect_and_validate_stage1(&mut host_interface, &mut led, wp_state) {
         Ok(oks) => {
             host_interface.stage0_ctx.set_stage1_present_flag();

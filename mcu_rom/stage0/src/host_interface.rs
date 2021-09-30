@@ -5,6 +5,7 @@
 use crate::error;
 use crate::info;
 use crate::warn;
+use crate::WriteProtectState;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::Buffer;
 use i2c_protocol::I2cProtocolHandler;
@@ -27,6 +28,7 @@ pub struct StageZContext {
     signature_check_pass: bool, // True indicates a validate signature.
     stage1_present: bool,       // True indicates that stage 1 magic was found.
     firmware_version: [u16; 2], // Contains first 4B of validated signature.
+    write_protect_state: WriteProtectState,
 }
 
 impl StageZContext {
@@ -35,6 +37,7 @@ impl StageZContext {
             signature_check_pass: false,
             stage1_present: false,
             firmware_version: [0xFFFF, 0xFFFF],
+            write_protect_state: WriteProtectState::Asserted,
         }
     }
     pub fn set_signature_passed_flag(&mut self) {
@@ -43,17 +46,26 @@ impl StageZContext {
     pub fn set_stage1_present_flag(&mut self) {
         self.stage1_present = true;
     }
+    pub fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
+        self.write_protect_state = write_protect_state;
+    }
     pub fn set_firmware_version(&mut self, version: [u16; 2]) {
         self.firmware_version = version;
     }
     pub fn can_stage1_jmp(&self) -> bool {
         self.stage1_present && self.signature_check_pass
     }
-    fn get_system_status(&self) -> u16 {
+    fn get_verification_status(&self) -> u16 {
         if self.signature_check_pass {
             status::AVERIFY
         } else {
             status::ANONVER
+        }
+    }
+    fn get_fw_wp_status(&self) -> u16 {
+        match self.write_protect_state {
+            WriteProtectState::Asserted => status::WPON,
+            WriteProtectState::Deasserted => status::WPOFF,
         }
     }
     pub fn get_firmware_version(&self, register: u8) -> u16 {
@@ -104,7 +116,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .read_register(event.register)
                     .map(|common_value| match event.register {
                         registers::SYSTEM_STATUS => {
-                            common_value | self.stage0_ctx.get_system_status()
+                            common_value
+                                | self.stage0_ctx.get_verification_status()
+                                | self.stage0_ctx.get_fw_wp_status()
                         }
                         _ => common_value,
                     })
