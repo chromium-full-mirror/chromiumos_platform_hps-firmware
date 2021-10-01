@@ -13,6 +13,7 @@ use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::HPS_ADDRESS;
 use std::time::Duration;
+use std::time::Instant;
 
 pub trait Hps: Send + 'static {
     fn read_register(&mut self, reg: u8) -> Result<u16>;
@@ -39,19 +40,29 @@ pub trait Hps: Send + 'static {
         self.write_register(registers::COMMAND, command)
     }
 
-    fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
-        for _ in 0..100 {
-            if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
-                if available & (1 << memory_bank) != 0 {
-                    return Ok(());
-                }
+    fn is_memory_bank_available(&mut self, memory_bank: u8) -> bool {
+        if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
+            if available & (1 << memory_bank) != 0 {
+                return true;
             }
-            std::thread::sleep(Duration::from_millis(5));
         }
-        bail!(
-            "Timeout while waiting for memory bank {} to become available",
-            memory_bank
-        );
+        false
+    }
+
+    fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
+        const TIMEOUT: Duration = Duration::from_millis(500);
+        let start = Instant::now();
+        loop {
+            if self.is_memory_bank_available(memory_bank) {
+                return Ok(());
+            }
+            if start.elapsed() > TIMEOUT {
+                bail!(
+                    "Timeout while waiting for memory bank {} to become available",
+                    memory_bank
+                );
+            }
+        }
     }
 
     fn write_firmware(&mut self, bytes: &[u8]) -> Result<()> {
