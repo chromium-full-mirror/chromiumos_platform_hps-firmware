@@ -329,15 +329,18 @@ impl I2c {
         arg3: u8,
         data: &[u8],
     ) -> Result<()> {
-        for _ in 0..5 {
+        let start_time = Instant::now();
+        const TIMEOUT: Duration = Duration::from_millis(50);
+        loop {
             self.cmd(command, arg1, arg2, arg3, data)?;
             if self.recv[1] != I2C_BUSY {
                 return Ok(());
             }
-            std::thread::sleep(Duration::from_millis(10));
+            if start_time.elapsed() > TIMEOUT {
+                let _ = self.cancel_transfer();
+                return Err(Error::ReadTimeout);
+            }
         }
-        let _ = self.cancel_transfer();
-        Err(Error::ReadTimeout)
     }
 
     fn cmd(&mut self, command: u8, arg1: u8, arg2: u8, arg3: u8, data: &[u8]) -> Result<()> {
