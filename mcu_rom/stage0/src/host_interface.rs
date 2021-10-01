@@ -13,6 +13,7 @@ use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
+use mcu_common::MemBlock;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
@@ -90,6 +91,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
+    /// Supply (or return) a memory block for the purpose of receiving data.
+    pub fn supply_mem_block(&mut self, mem_block: MemBlock) {
+        self.i2c.supply_mem_block(mem_block);
+    }
+
     pub(crate) fn handle_i2c_events(&mut self) -> Option<HostEvent> {
         match self.i2c.next_event() {
             i2c_protocol::Event::ReadRegister(event) => {
@@ -111,7 +117,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                             .stage0_ctx
                             .get_firmware_version(registers::FIRMWARE_VERSION_LOW),
                         registers::MEMORY_BANK_AVAILABLE => {
-                            if Buffer::is_available() {
+                            if self.i2c.has_receive_buffer() {
                                 1 << memory_banks::MCU_RW
                             } else {
                                 0

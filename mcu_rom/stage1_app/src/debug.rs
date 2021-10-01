@@ -7,6 +7,7 @@ use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
 use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
+use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
 use rtt_target::rprintln;
@@ -18,6 +19,7 @@ pub struct DebugCommandHandler {
     buffer: [u8; DEBUG_BYTES_PER_COMMAND],
     bytes_received: usize,
     pending: Option<McuDebugCommandInfo>,
+    mem_block: Option<MemBlock>,
 }
 
 pub(crate) struct McuDebugCommandInfo {
@@ -33,7 +35,12 @@ impl DebugCommandHandler {
             buffer: [0u8; DEBUG_BYTES_PER_COMMAND],
             bytes_received: 0,
             pending: None,
+            mem_block: None,
         }
+    }
+
+    pub(crate) fn supply_mem_block(&mut self, mem_block: MemBlock) {
+        self.mem_block = Some(mem_block);
     }
 
     /// Writes the next debug command into `buffer`. Leaves `buffer` unchanged
@@ -89,8 +96,9 @@ impl DebugCommandHandler {
             write_request: None,
         };
         if command.kind == McuDebugCommand::WriteSpiFlash {
-            if let Some(mut buffer) = Buffer::new() {
-                buffer.resize(Buffer::CAPACITY);
+            if let Some(mem_block) = self.mem_block.take() {
+                let mut buffer = Buffer::new(mem_block);
+                buffer.resize(buffer.capacity());
                 command.write_request = Some(WriteMemoryEvent {
                     // Note, bank is not actually used by the caller, however if
                     // it were, FPGA_BITSTREAM represents the start of the SPI

@@ -54,17 +54,25 @@ const APP: () = {
 
     #[init]
     fn init(ctx: init::Context) -> init::LateResources {
-        init_peripherals(ctx.device, ctx.core)
+        static mut I2C_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
+            [0; i2c_protocol::RECV_BUFFER_SIZE];
+        static mut DEBUG_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
+            [0; i2c_protocol::RECV_BUFFER_SIZE];
+        let mut resources = init_peripherals(ctx.device, ctx.core);
+        resources
+            .host_interface
+            .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
+        resources
+            .mcu_debug_handler
+            .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
+        resources
     }
 
     #[task(binds = I2C1, resources = [host_interface, state],
         spawn = [write_spi_flash, try_start_fpga], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        match ctx
-            .resources
-            .host_interface
-            .handle_interrupt(ctx.resources.state)
-        {
+        let host_interface = ctx.resources.host_interface;
+        match host_interface.handle_interrupt(ctx.resources.state) {
             Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
             Some(application::Event::WriteSpiFlash(write_request)) => {
                 let _ = ctx.spawn.write_spi_flash(write_request);
@@ -179,13 +187,19 @@ const APP: () = {
         ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
-    #[task(resources = [fpga_device])]
-    fn write_spi_flash(ctx: write_spi_flash::Context, mut request: i2c_protocol::WriteMemoryEvent) {
+    #[task(resources = [fpga_device, host_interface, mcu_debug_handler])]
+    fn write_spi_flash(
+        mut ctx: write_spi_flash::Context,
+        mut request: i2c_protocol::WriteMemoryEvent,
+    ) {
         spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device),
             request.address,
             &mut *request.data,
         );
+        ctx.resources
+            .host_interface
+            .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
     #[task(resources = [fpga_device])]
@@ -213,6 +227,9 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
                     write_request.address,
                     &mut *write_request.data,
                 );
+                resources
+                    .mcu_debug_handler
+                    .supply_mem_block(write_request.data.release());
                 resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
             }
         }

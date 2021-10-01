@@ -28,6 +28,7 @@ use host_interface::HostEvent;
 use host_interface::HostInterface;
 use host_interface::Stage1OkState;
 use mcu_common::Error::McuFlashWriteError;
+use mcu_common::MemBlock;
 use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 use panic_halt as _;
@@ -61,7 +62,13 @@ const APP: () = {
 
     #[init]
     fn init(ctx: init::Context) -> init::LateResources {
-        init_peripherals(ctx.device, ctx.core)
+        static mut I2C_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
+            [0; i2c_protocol::RECV_BUFFER_SIZE];
+        let mut resources = init_peripherals(ctx.device, ctx.core);
+        resources
+            .host_interface
+            .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
+        resources
     }
 
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface])]
@@ -86,9 +93,10 @@ const APP: () = {
 
     #[task(resources = [flash_writer, led, fw_wp, host_interface], capacity = 10)]
     fn handle_event(ctx: handle_event::Context, event: HostEvent) {
+        let host_interface = ctx.resources.host_interface;
         match event {
             HostEvent::LoadApplication => {
-                if ctx.resources.host_interface.stage0_ctx.can_stage1_jmp() {
+                if host_interface.stage0_ctx.can_stage1_jmp() {
                     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
             }
@@ -99,14 +107,13 @@ const APP: () = {
                     .write(event.address, &*event.data)
                 {
                     error!("Failed to write MCU flash: {}", flash_error_string(error));
-                    ctx.resources
-                        .host_interface
-                        .i2c_report_err(McuFlashWriteError);
+                    host_interface.i2c_report_err(McuFlashWriteError);
                 }
+                host_interface.supply_mem_block(event.data.release());
                 if cfg!(feature = "no-i2c-clock-stretching") {
                     // Reenable I2C. It was disabled above in the I2C interrupt
                     // handler.
-                    ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
+                    host_interface.i2c_mut().set_i2c_enabled(true);
                 }
             }
             HostEvent::Reset => {

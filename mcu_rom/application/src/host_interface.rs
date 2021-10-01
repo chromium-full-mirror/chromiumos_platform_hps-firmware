@@ -10,6 +10,7 @@ use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
+use mcu_common::MemBlock;
 
 use crate::application_state::ApplicationState;
 
@@ -32,6 +33,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
         }
+    }
+
+    /// Supply (or return) a memory block for the purpose of receiving data.
+    pub fn supply_mem_block(&mut self, mem_block: MemBlock) {
+        self.protocol_handler.supply_mem_block(mem_block);
     }
 
     pub fn handle_interrupt(&mut self, state: &mut ApplicationState) -> Option<Event> {
@@ -81,7 +87,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             }
             registers::USER_PRESENT_STATUS => state.status.person_score as u16,
             registers::MEMORY_BANK_AVAILABLE => {
-                if i2c_protocol::Buffer::is_available() {
+                if self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
                 } else {
                     0

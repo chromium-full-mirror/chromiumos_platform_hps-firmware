@@ -11,6 +11,9 @@ pub use buffer::Buffer;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::MemBlock;
+
+pub const RECV_BUFFER_SIZE: usize = 256;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Event {
@@ -51,6 +54,7 @@ impl ReadRegisterEvent {
 pub struct I2cProtocolHandler<I: I2cPeripheral> {
     i2c: I,
     state: State,
+    mem_block: Option<MemBlock>,
 }
 
 enum State {
@@ -106,7 +110,19 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         Self {
             i2c,
             state: State::Initial,
+            mem_block: None,
         }
+    }
+
+    /// Supply (or return) a memory block for the purpose of receiving data.
+    pub fn supply_mem_block(&mut self, mem_block: MemBlock) {
+        self.mem_block = Some(mem_block);
+    }
+
+    /// Returns whether we currently have a buffer into which data can be
+    /// received.
+    pub fn has_receive_buffer(&self) -> bool {
+        self.mem_block.is_some()
     }
 
     /// Returns the next event that needs to be handled, consuming that event in
@@ -176,11 +192,11 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         state.address_bytes[state.address_bytes_received as usize] = byte;
                         state.address_bytes_received += 1;
                         if state.address_bytes_received as usize == state.address_bytes.len() {
-                            if let Some(buffer) = Buffer::new() {
+                            if let Some(mem_block) = self.mem_block.take() {
                                 self.state = State::MemoryBankWrite(MemoryBankWriteState {
                                     bank: state.bank,
                                     address: u32::from_be_bytes(state.address_bytes),
-                                    buffer,
+                                    buffer: Buffer::new(mem_block),
                                 });
                             } else {
                                 // Attempt to write to memory buffer when the
@@ -280,11 +296,17 @@ mod tests {
                 .unwrap()
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert!(!protocol_handler.has_receive_buffer());
+        protocol_handler.supply_mem_block(MemBlock::new(Box::leak(Box::new([0u8; 64]))));
+        assert!(protocol_handler.has_receive_buffer());
         match protocol_handler.next_event() {
             Event::WriteMemory(event) => {
                 assert_eq!(event.bank, 1);
                 assert_eq!(event.address, 0x12345678);
                 assert_eq!(*event.data, [10, 11, 12]);
+                assert!(!protocol_handler.has_receive_buffer());
+                protocol_handler.supply_mem_block(event.data.release());
+                assert!(protocol_handler.has_receive_buffer());
             }
             x => panic!("Unexpected event {:?}", x),
         }
