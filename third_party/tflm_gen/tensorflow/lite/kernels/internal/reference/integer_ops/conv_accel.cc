@@ -17,9 +17,9 @@
 
 #include "tensorflow/lite/kernels/internal/reference/integer_ops/conv_accel.h"
 
-#include "cfu_playground_shim/blocks.h"
-#include "cfu_playground_shim/cfu.h"
-#include "cfu_playground_shim/gateware_constants.h"
+#include "../hps_accel/blocks.h"
+#include "../hps_accel/cfu.h"
+#include "../hps_accel/gateware_constants.h"
 
 using hps_accel::multiply_accumulate;
 using hps_accel::Vector16;
