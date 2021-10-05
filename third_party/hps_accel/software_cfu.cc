@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#ifdef CFU_SOFTWARE_DEFINED
+
 #include "software_cfu.h"
 
 #include <cstddef>
@@ -26,7 +28,7 @@ namespace soft_cfu {
 int32_t macc_input_offset;
 int8_t macc_input[16];
 int8_t macc_filter[16];
-bool macc_valid;
+uint32_t iterations;
 
 Storage filter_storage;
 Storage input_storage;
@@ -39,6 +41,14 @@ int32_t reg_output_offset;
 int32_t reg_output_max;
 int32_t reg_output_min;
 
+OutputFIFO output_fifo;
+
 uint32_t reg_verify;
 uint32_t ping_storage;
 };  // namespace soft_cfu
+
+#else  // CFU_SOFTWARE_DEFINED
+
+// Everything compiled out.
+
+#endif

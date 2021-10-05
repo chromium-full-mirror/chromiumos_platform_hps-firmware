@@ -17,6 +17,8 @@
 #ifndef SOFTWARE_CFU_H
 #define SOFTWARE_CFU_H
 
+#ifdef CFU_SOFTWARE_DEFINED
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -24,6 +26,8 @@
 #include <cstdio>
 
 #include "gateware_constants.h"
+#include "global_debug.h"
+#include "tensorflow/lite/kernels/op_macros.h"
 
 namespace soft_cfu {
 
@@ -31,7 +35,7 @@ namespace soft_cfu {
 extern int32_t macc_input_offset;
 extern int8_t macc_input[16];
 extern int8_t macc_filter[16];
-extern bool macc_valid;
+extern uint32_t iterations;
 
 inline void Unpack32(int8_t* dest, uint32_t value) {
   dest[0] = (value & 0x000000ff);
@@ -47,8 +51,8 @@ inline void SetMaccFilter(size_t n, uint32_t value) {
   Unpack32(macc_filter + (4 * n), value);
 }
 
-// Do the macc
-inline int32_t Macc() {
+// Do one macc operation
+inline int32_t MaccOne() {
   int32_t macc_out = 0;
   // NOTE: unrolling this resulted in slower execution
   for (size_t n = 0; n < 16; n++) {
@@ -85,6 +89,27 @@ class Storage {
 extern Storage filter_storage;
 extern Storage input_storage;
 
+// Run macc operations and return the accumulated output.
+inline int32_t Macc() {
+  assert(iterations > 0);
+  int32_t accumulator = 0;
+  while (iterations > 0) {
+    filter_storage.Next();
+    input_storage.Next();
+    SetMaccFilter(0, filter_storage.Get(0));
+    SetMaccFilter(1, filter_storage.Get(1));
+    SetMaccFilter(2, filter_storage.Get(2));
+    SetMaccFilter(3, filter_storage.Get(3));
+    SetMaccInput(0, input_storage.Get(0));
+    SetMaccInput(1, input_storage.Get(1));
+    SetMaccInput(2, input_storage.Get(2));
+    SetMaccInput(3, input_storage.Get(3));
+    accumulator += MaccOne();
+    iterations -= 1;
+  }
+  return accumulator;
+}
+
 struct OutputParams {
   int16_t bias;
   int32_t multiplier;
@@ -119,7 +144,8 @@ extern int32_t reg_output_min;
 // Verify register storage
 extern uint32_t reg_verify;
 
-inline int32_t SaturatingRoundingDoubleHighMul(int32_t value, int32_t multiplier) {
+inline int32_t SaturatingRoundingDoubleHighMul(int32_t value,
+                                               int32_t multiplier) {
   bool positive = value >= 0;
   int64_t a_64(positive ? value : -value);
   int64_t b_64(multiplier);
@@ -137,8 +163,8 @@ inline int32_t SaturatingRoundingDoubleHighMul(int32_t value, int32_t multiplier
   return product;
 }
 
-inline int32_t RoundingDivideByPOT(int32_t value, int32_t nshift) {
-  int32_t shift = static_cast<int32_t>(nshift);
+inline int32_t RoundingDivideByPOT(int32_t value, int32_t shift) {
+  TF_LITE_ASSERT(-11 <= shift && shift <= -3);
   int32_t quotient;
   int32_t mask;
   switch (shift) {
@@ -189,6 +215,41 @@ inline int32_t RoundingDivideByPOT(int32_t value, int32_t nshift) {
   return quotient + rounding;
 }
 
+class OutputFIFO {
+ public:
+  OutputFIFO() : read_index_(0), write_index_(0) {}
+
+  void WriteValue(int8_t value) {
+    if (global_debug_flag) {
+      printf("Write,%u,%02x\n", write_index_, value & 0xff);
+    }
+    data[write_index_] = value;
+    write_index_ = (write_index_ + 1) % kDataSize;
+    TF_LITE_ASSERT(write_index_ != read_index_);
+  }
+
+  uint32_t ReadWord() {
+    uint32_t result = ((data[(read_index_ + 0) % kDataSize] & 0xff) << 0) +
+                      ((data[(read_index_ + 1) % kDataSize] & 0xff) << 8) +
+                      ((data[(read_index_ + 2) % kDataSize] & 0xff) << 16) +
+                      ((data[(read_index_ + 3) % kDataSize] & 0xff) << 24);
+    if (global_debug_flag) {
+      printf("Read,%u,%08lx\n", read_index_, result);
+    }
+    TF_LITE_ASSERT((read_index_ & ~3) != (write_index_ & ~3));
+    read_index_ = (read_index_ + 4) % kDataSize;
+    return result;
+  }
+
+ private:
+  static constexpr size_t kDataSize = MAX_CHANNELS + 4;
+  int8_t data[kDataSize];
+  size_t read_index_;
+  size_t write_index_;
+};
+
+extern OutputFIFO output_fifo;
+
 inline uint32_t PostProcess(int32_t acc) {
   const OutputParams& params = output_params_storage.Fetch();
   acc += params.bias;
@@ -197,7 +258,8 @@ inline uint32_t PostProcess(int32_t acc) {
   acc += reg_output_offset;
   acc = std::max(acc, reg_output_min);
   acc = std::min(acc, reg_output_max);
-  return acc;
+  output_fifo.WriteValue(acc);
+  return 0;
 }
 
 inline uint32_t SetRegister(int funct7, uint32_t rs1, uint32_t rs2) {
@@ -233,18 +295,8 @@ inline uint32_t SetRegister(int funct7, uint32_t rs1, uint32_t rs2) {
       reg_output_max = rs1;
       return 0;
     case REG_FILTER_INPUT_NEXT:
-      assert(!macc_valid);
-      filter_storage.Next();
-      input_storage.Next();
-      SetMaccFilter(0, filter_storage.Get(0));
-      SetMaccFilter(1, filter_storage.Get(1));
-      SetMaccFilter(2, filter_storage.Get(2));
-      SetMaccFilter(3, filter_storage.Get(3));
-      SetMaccInput(0, input_storage.Get(0));
-      SetMaccInput(1, input_storage.Get(1));
-      SetMaccInput(2, input_storage.Get(2));
-      SetMaccInput(3, input_storage.Get(3));
-      macc_valid = true;
+      assert(iterations == 0);
+      iterations = rs1;
       return 0;
     case REG_OUTPUT_BIAS:
       reg_bias = rs1;
@@ -259,7 +311,6 @@ inline uint32_t SetRegister(int funct7, uint32_t rs1, uint32_t rs2) {
     case REG_VERIFY:
       reg_verify = rs1;
       return 0;
-
     default:
       printf("\nInvalid SetRegister number %d\n", funct7);
       return 0;
@@ -269,26 +320,10 @@ inline uint32_t SetRegister(int funct7, uint32_t rs1, uint32_t rs2) {
 
 inline uint32_t GetRegister(int funct7, uint32_t rs1, uint32_t rs2) {
   switch (funct7) {
-    case REG_FILTER_0:
-      return filter_storage.Get(0);
-    case REG_FILTER_1:
-      return filter_storage.Get(1);
-    case REG_FILTER_2:
-      return filter_storage.Get(2);
-    case REG_FILTER_3:
-      return filter_storage.Get(3);
-    case REG_INPUT_0:
-      return input_storage.Get(0);
-    case REG_INPUT_1:
-      return input_storage.Get(1);
-    case REG_INPUT_2:
-      return input_storage.Get(2);
-    case REG_INPUT_3:
-      return input_storage.Get(3);
     case REG_MACC_OUT:
-      assert(macc_valid);
-      macc_valid = false;
       return Macc();
+    case REG_OUTPUT_WORD:
+      return output_fifo.ReadWord();
     case REG_VERIFY:
       return reg_verify + 1;
     default:
@@ -332,5 +367,16 @@ inline uint32_t software_cfu(int funct3, int funct7, uint32_t rs1,
       return 0;
   }
 }
+
+#else  // CFU_SOFTWARE_DEFINED
+
+// Dummy implementation which returns zeroes. When software CFU is disabled, we
+// compile everything out in order to save memory.
+inline uint32_t software_cfu(int funct3, int funct7, uint32_t rs1,
+                             uint32_t rs2) {
+  return 0;
+}
+
+#endif  // CFU_SOFTWARE_DEFINED
 
 #endif  // SOFTWARE_CFU_H

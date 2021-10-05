@@ -80,10 +80,13 @@ void ConvPerChannel4x4(const ConvParams& params,
                               output_activation_max);
 
   // Work out maximum output channels we can do per filter load
+  // First calculate how many filter words one output channel takes
+  // Then determine how many will fit in filter memory
+  // Finally, round down to a multiple of 4
   const int filter_words_per_output_channel =
       input_depth * filter_height * filter_width / 4;
   const int max_output_channels_per_load =
-      MAX_FILTER_WORDS / filter_words_per_output_channel;
+      (MAX_FILTER_WORDS / filter_words_per_output_channel) / 4 * 4;
 
   for (int out_channel_offset = 0; out_channel_offset < output_depth;
        out_channel_offset += max_output_channels_per_load) {
@@ -94,6 +97,9 @@ void ConvPerChannel4x4(const ConvParams& params,
         filter_data + Offset(filter_shape, out_channel_offset, 0, 0, 0));
     hps_accel::LoadOutputParams(out_channel_offset, output_channels, bias_data,
                                 output_multiplier, output_shift);
+
+    uint32_t* output_data32_base = static_cast<uint32_t*>(static_cast<void*>(
+        output_data + Offset(output_shape, 0, 0, 0, out_channel_offset)));
 
     for (int out_y = 0; out_y < output_height; ++out_y) {
       const int in_y_origin = out_y * stride_height;
@@ -110,19 +116,24 @@ void ConvPerChannel4x4(const ConvParams& params,
                          MAX_INPUT_WORDS);
         hps_accel::LoadInput(input_width, input_depth, current_input_data);
 
+        // Calculate all outputs for a single output pixel
         for (int out_channel = out_channel_offset;
              out_channel < out_channel_offset + output_channels;
              ++out_channel) {
-          int32_t acc = 0;
-          for (int i = 0; i < filter_height * filter_width * input_depth / 16;
-               ++i) {
-            hps_accel::AdvanceFilterInput();
-            acc += multiply_accumulate();
-          }
-
-          acc = hps_accel::PostProcess(acc);
-          output_data[Offset(output_shape, 0, out_y, out_x, out_channel)] = acc;
+          int iterations = filter_height * filter_width * input_depth / 16;
+          hps_accel::AdvanceFilterInput(iterations);
+          int32_t acc = multiply_accumulate();
+          hps_accel::PostProcess(acc);
         }
+
+        // Pull result data from output FIFO and place into memory, a word at a
+        // time.
+        uint32_t* output_data32 = output_data32_base;
+        for (int i = 0; i < output_channels; i += 4) {
+          *(output_data32++) = hps_accel::GetOutputWord();
+        }
+        // Point to start of next pixel
+        output_data32_base += (output_depth / 4);
       }
     }
   }

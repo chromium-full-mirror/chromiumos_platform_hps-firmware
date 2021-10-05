@@ -5,58 +5,58 @@
 (* generator = "nMigen" *)
 module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload_inputs_1, rsp_valid, rsp_ready, rsp_payload_response_ok, rsp_payload_outputs_0, reset, clk, rst, cmd_valid);
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:152" *)
-  wire [32:0] \$43 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:152" *)
-  wire [32:0] \$44 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:199" *)
+  wire [32:0] \$27 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:199" *)
+  wire [32:0] \$28 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
   wire [31:0] \$signal ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
+  wire \$signal$30 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
+  reg \$signal$31 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
+  wire [31:0] \$signal$32 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
+  wire \$signal$33 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
+  reg \$signal$34 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
+  wire [31:0] \$signal$35 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
+  wire \$signal$36 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
+  reg \$signal$37 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
+  wire [31:0] \$signal$38 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
+  wire \$signal$39 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
+  reg \$signal$40 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
+  wire [31:0] \$signal$41 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
+  wire \$signal$42 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
+  reg \$signal$44 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
+  wire [31:0] \$signal$45 ;
+  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
   wire \$signal$46 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$47 ;
+  reg \$signal$48 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$48 ;
+  wire [31:0] \$signal$49 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$49 ;
+  wire \$signal$50 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$50 ;
+  reg \$signal$52 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$51 ;
+  wire [31:0] \$signal$53 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$52 ;
+  wire \$signal$54 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$53 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$54 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$55 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$56 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$57 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$58 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$60 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$61 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$62 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$64 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$65 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$66 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$68 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:235" *)
-  wire [31:0] \$signal$69 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:236" *)
-  wire \$signal$70 ;
-  (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:237" *)
-  reg \$signal$71 ;
+  reg \$signal$55 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
   wire [31:0] add_one_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
@@ -118,44 +118,40 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   wire [31:0] fallback6_in1;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:51" *)
   wire [31:0] fallback6_output;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  wire [31:0] filter_store_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  wire filter_store_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  wire filter_store_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:59" *)
-  wire filter_store_next;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire [127:0] filter_flow_restrictor_input__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire filter_flow_restrictor_input__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire filter_flow_restrictor_input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire [127:0] filter_flow_restrictor_output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire filter_flow_restrictor_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire filter_flow_restrictor_output__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  wire [31:0] filter_flow_restrictor_release__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  wire filter_flow_restrictor_release__valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  wire [31:0] filter_store_num_words__payload;
+  wire [31:0] filter_store_data_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  wire filter_store_num_words__ready;
+  wire filter_store_data_input__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  wire filter_store_num_words__valid;
+  wire filter_store_data_input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  wire [127:0] filter_store_data_output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  wire filter_store_data_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  wire filter_store_data_output__valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire [31:0] filter_store_output_0__payload;
+  wire [31:0] filter_store_num_words_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_0__ready;
+  wire filter_store_num_words_input__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_0__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire [31:0] filter_store_output_1__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_1__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_1__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire [31:0] filter_store_output_2__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_2__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_2__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire [31:0] filter_store_output_3__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_3__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  wire filter_store_output_3__valid;
+  wire filter_store_num_words_input__valid;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
   reg [1:0] fsm_state = 2'h0;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
@@ -165,15 +161,15 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:221" *)
   wire [6:0] funct7;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
-  wire [6:0] \funct7$72 ;
+  wire [6:0] \funct7$56 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
-  wire [6:0] \funct7$73 ;
+  wire [6:0] \funct7$57 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
-  wire [6:0] \funct7$74 ;
+  wire [6:0] \funct7$58 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
-  wire [6:0] \funct7$75 ;
+  wire [6:0] \funct7$59 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
-  wire [6:0] \funct7$76 ;
+  wire [6:0] \funct7$60 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:53" *)
   wire get_done;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
@@ -184,90 +180,54 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   wire [31:0] get_in1;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:51" *)
   wire [31:0] get_output;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_10__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_10__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_11__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_11__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_12__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_12__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_13__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_13__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_18__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_18__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_19__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_19__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_1a__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_1a__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire [31:0] get_sink_1b__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire get_sink_1b__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire [31:0] get_sink_30__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire get_sink_30__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire get_sink_30__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire [31:0] get_sink_70__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire get_sink_70__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   wire get_sink_70__valid;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
   wire get_start;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire [127:0] input_flow_restrictor_input__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire input_flow_restrictor_input__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  wire input_flow_restrictor_input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire [127:0] input_flow_restrictor_output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire input_flow_restrictor_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  wire input_flow_restrictor_output__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  wire [31:0] input_flow_restrictor_release__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  wire input_flow_restrictor_release__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   wire [31:0] input_store_data_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   wire input_store_data_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   wire input_store_data_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:57" *)
-  wire input_store_next;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  wire [127:0] input_store_data_output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  wire input_store_data_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  wire input_store_data_output__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   wire [31:0] input_store_num_words_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   wire input_store_num_words_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   wire input_store_num_words_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire [31:0] input_store_output_0__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_0__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_0__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire [31:0] input_store_output_1__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_1__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_1__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire [31:0] input_store_output_2__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_2__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_2__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire [31:0] input_store_output_3__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_3__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  wire input_store_output_3__valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/macc.py:56" *)
   wire macc_enable;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/macc.py:57" *)
@@ -307,73 +267,25 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/post_process.py:167" *)
   reg \op_store_write_enable$next ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__filter_0;
+  wire [127:0] operands_buffer_output__payload__filters;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__filter_1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__filter_2;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__filter_3;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__input_0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__input_1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__input_2;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  wire [31:0] operands_buffer_output__payload__input_3;
+  wire [127:0] operands_buffer_output__payload__inputs;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
   wire operands_buffer_output__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
   wire operands_buffer_output__valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] operands_buffer_payload;
+  wire [127:0] operands_buffer_payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$26 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$29 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$32 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$35 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$38 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire [31:0] \operands_buffer_payload$41 ;
+  wire [127:0] \operands_buffer_payload$25 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
   wire operands_buffer_ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$24 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$30 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$33 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$36 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$39 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_ready$42 ;
+  wire \operands_buffer_ready$26 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
   wire operands_buffer_valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$22 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$28 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$31 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$34 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$37 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  wire \operands_buffer_valid$40 ;
+  wire \operands_buffer_valid$24 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:51" *)
   wire [31:0] \output ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:53" *)
@@ -414,6 +326,22 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   wire pp_start;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:181" *)
   input reset;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  wire [31:0] result_accumulator_accumulated__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  wire result_accumulator_accumulated__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  wire result_accumulator_accumulated__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:81" *)
+  wire [31:0] result_accumulator_num_results__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:81" *)
+  wire result_accumulator_num_results__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  wire [31:0] result_accumulator_results__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  wire result_accumulator_results__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  wire result_accumulator_results__valid;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:180" *)
   output [31:0] rsp_payload_outputs_0;
   reg [31:0] rsp_payload_outputs_0;
@@ -426,26 +354,24 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   reg rsp_valid;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   output rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  wire \set_$signal ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \set_$signal$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \set_$signal$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \set_$signal$15 ;
+  wire [31:0] \set_$signal ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   wire [31:0] \set_$signal$16 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  wire \set_$signal$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  wire \set_$signal$18 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \set_$signal$19 ;
+  wire [31:0] \set_$signal$17 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \set_$signal$20 ;
+  wire [31:0] \set_$signal$18 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  wire \set_$signal$19 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  wire \set_$signal$20 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   wire [31:0] \set_$signal$21 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
+  wire [31:0] \set_$signal$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
+  wire [31:0] \set_$signal$23 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:53" *)
   wire set_done;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
@@ -459,6 +385,8 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire [31:0] \set_payload$11 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
+  wire [31:0] \set_payload$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire [31:0] \set_payload$2 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire [31:0] \set_payload$5 ;
@@ -468,6 +396,8 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   wire set_ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \set_ready$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
+  wire \set_ready$15 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \set_ready$3 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
@@ -483,17 +413,19 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \set_valid$10 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
+  wire \set_valid$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \set_valid$4 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \set_valid$7 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
   wire start;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
-  wire \start$59 ;
+  wire \start$43 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
-  wire \start$63 ;
+  wire \start$47 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
-  wire \start$67 ;
+  wire \start$51 ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:226" *)
   reg [2:0] stored_function_id = 3'h0;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:226" *)
@@ -502,7 +434,7 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   reg [31:0] stored_output = 32'd0;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:229" *)
   reg [31:0] \stored_output$next ;
-  assign \$44  = - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:152" *) \set_$signal$16 ;
+  assign \$28  = - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:199" *) \set_$signal$18 ;
   always @(posedge clk)
     stored_output <= \stored_output$next ;
   always @(posedge clk)
@@ -543,27 +475,29 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .in1(fallback6_in1),
     .\output (fallback6_output)
   );
+  filter_flow_restrictor filter_flow_restrictor (
+    .clk(clk),
+    .input__payload(filter_flow_restrictor_input__payload),
+    .input__ready(filter_flow_restrictor_input__ready),
+    .input__valid(filter_flow_restrictor_input__valid),
+    .output__payload(filter_flow_restrictor_output__payload),
+    .output__ready(filter_flow_restrictor_output__ready),
+    .output__valid(filter_flow_restrictor_output__valid),
+    .release__payload(filter_flow_restrictor_release__payload),
+    .release__valid(filter_flow_restrictor_release__valid),
+    .rst(rst)
+  );
   filter_store filter_store (
     .clk(clk),
-    .input__payload(filter_store_input__payload),
-    .input__ready(filter_store_input__ready),
-    .input__valid(filter_store_input__valid),
-    .next(filter_store_next),
-    .num_words__payload(filter_store_num_words__payload),
-    .num_words__ready(filter_store_num_words__ready),
-    .num_words__valid(filter_store_num_words__valid),
-    .output_0__payload(filter_store_output_0__payload),
-    .output_0__ready(filter_store_output_0__ready),
-    .output_0__valid(filter_store_output_0__valid),
-    .output_1__payload(filter_store_output_1__payload),
-    .output_1__ready(filter_store_output_1__ready),
-    .output_1__valid(filter_store_output_1__valid),
-    .output_2__payload(filter_store_output_2__payload),
-    .output_2__ready(filter_store_output_2__ready),
-    .output_2__valid(filter_store_output_2__valid),
-    .output_3__payload(filter_store_output_3__payload),
-    .output_3__ready(filter_store_output_3__ready),
-    .output_3__valid(filter_store_output_3__valid),
+    .data_input__payload(filter_store_data_input__payload),
+    .data_input__ready(filter_store_data_input__ready),
+    .data_input__valid(filter_store_data_input__valid),
+    .data_output__payload(filter_store_data_output__payload),
+    .data_output__ready(filter_store_data_output__ready),
+    .data_output__valid(filter_store_data_output__valid),
+    .num_words_input__payload(filter_store_num_words_input__payload),
+    .num_words_input__ready(filter_store_num_words_input__ready),
+    .num_words_input__valid(filter_store_num_words_input__valid),
     .rst(rst)
   );
   get get (
@@ -574,22 +508,6 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .in1(get_in1),
     .\output (get_output),
     .rst(rst),
-    .sink_10__payload(get_sink_10__payload),
-    .sink_10__valid(1'h1),
-    .sink_11__payload(get_sink_11__payload),
-    .sink_11__valid(1'h1),
-    .sink_12__payload(get_sink_12__payload),
-    .sink_12__valid(1'h1),
-    .sink_13__payload(get_sink_13__payload),
-    .sink_13__valid(1'h1),
-    .sink_18__payload(get_sink_18__payload),
-    .sink_18__valid(1'h1),
-    .sink_19__payload(get_sink_19__payload),
-    .sink_19__valid(1'h1),
-    .sink_1a__payload(get_sink_1a__payload),
-    .sink_1a__valid(1'h1),
-    .sink_1b__payload(get_sink_1b__payload),
-    .sink_1b__valid(1'h1),
     .sink_30__payload(get_sink_30__payload),
     .sink_30__ready(get_sink_30__ready),
     .sink_30__valid(get_sink_30__valid),
@@ -598,27 +516,29 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .sink_70__valid(get_sink_70__valid),
     .start(get_start)
   );
+  input_flow_restrictor input_flow_restrictor (
+    .clk(clk),
+    .input__payload(input_flow_restrictor_input__payload),
+    .input__ready(input_flow_restrictor_input__ready),
+    .input__valid(input_flow_restrictor_input__valid),
+    .output__payload(input_flow_restrictor_output__payload),
+    .output__ready(input_flow_restrictor_output__ready),
+    .output__valid(input_flow_restrictor_output__valid),
+    .release__payload(input_flow_restrictor_release__payload),
+    .release__valid(input_flow_restrictor_release__valid),
+    .rst(rst)
+  );
   input_store input_store (
     .clk(clk),
     .data_input__payload(input_store_data_input__payload),
     .data_input__ready(input_store_data_input__ready),
     .data_input__valid(input_store_data_input__valid),
-    .next(input_store_next),
+    .data_output__payload(input_store_data_output__payload),
+    .data_output__ready(input_store_data_output__ready),
+    .data_output__valid(input_store_data_output__valid),
     .num_words_input__payload(input_store_num_words_input__payload),
     .num_words_input__ready(input_store_num_words_input__ready),
     .num_words_input__valid(input_store_num_words_input__valid),
-    .output_0__payload(input_store_output_0__payload),
-    .output_0__ready(input_store_output_0__ready),
-    .output_0__valid(input_store_output_0__valid),
-    .output_1__payload(input_store_output_1__payload),
-    .output_1__ready(input_store_output_1__ready),
-    .output_1__valid(input_store_output_1__valid),
-    .output_2__payload(input_store_output_2__payload),
-    .output_2__ready(input_store_output_2__ready),
-    .output_2__valid(input_store_output_2__valid),
-    .output_3__payload(input_store_output_3__payload),
-    .output_3__ready(input_store_output_3__ready),
-    .output_3__valid(input_store_output_3__valid),
     .rst(rst)
   );
   macc macc (
@@ -649,41 +569,17 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   );
   operands_buffer operands_buffer (
     .clk(clk),
-    .output__payload__filter_0(operands_buffer_output__payload__filter_0),
-    .output__payload__filter_1(operands_buffer_output__payload__filter_1),
-    .output__payload__filter_2(operands_buffer_output__payload__filter_2),
-    .output__payload__filter_3(operands_buffer_output__payload__filter_3),
-    .output__payload__input_0(operands_buffer_output__payload__input_0),
-    .output__payload__input_1(operands_buffer_output__payload__input_1),
-    .output__payload__input_2(operands_buffer_output__payload__input_2),
-    .output__payload__input_3(operands_buffer_output__payload__input_3),
+    .output__payload__filters(operands_buffer_output__payload__filters),
+    .output__payload__inputs(operands_buffer_output__payload__inputs),
     .output__ready(operands_buffer_output__ready),
     .output__valid(operands_buffer_output__valid),
     .payload(operands_buffer_payload),
-    .\payload$11 (\operands_buffer_payload$32 ),
-    .\payload$14 (\operands_buffer_payload$35 ),
-    .\payload$17 (\operands_buffer_payload$38 ),
-    .\payload$2 (\operands_buffer_payload$23 ),
-    .\payload$20 (\operands_buffer_payload$41 ),
-    .\payload$5 (\operands_buffer_payload$26 ),
-    .\payload$8 (\operands_buffer_payload$29 ),
+    .\payload$2 (\operands_buffer_payload$25 ),
     .ready(operands_buffer_ready),
-    .\ready$12 (\operands_buffer_ready$33 ),
-    .\ready$15 (\operands_buffer_ready$36 ),
-    .\ready$18 (\operands_buffer_ready$39 ),
-    .\ready$21 (\operands_buffer_ready$42 ),
-    .\ready$3 (\operands_buffer_ready$24 ),
-    .\ready$6 (\operands_buffer_ready$27 ),
-    .\ready$9 (\operands_buffer_ready$30 ),
+    .\ready$3 (\operands_buffer_ready$26 ),
     .rst(rst),
     .valid(operands_buffer_valid),
-    .\valid$1 (\operands_buffer_valid$22 ),
-    .\valid$10 (\operands_buffer_valid$31 ),
-    .\valid$13 (\operands_buffer_valid$34 ),
-    .\valid$16 (\operands_buffer_valid$37 ),
-    .\valid$19 (\operands_buffer_valid$40 ),
-    .\valid$4 (\operands_buffer_valid$25 ),
-    .\valid$7 (\operands_buffer_valid$28 )
+    .\valid$1 (\operands_buffer_valid$24 )
   );
   ping ping (
     .clk(clk),
@@ -711,17 +607,28 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .rst(rst),
     .start(pp_start)
   );
+  result_accumulator result_accumulator (
+    .accumulated__payload(result_accumulator_accumulated__payload),
+    .accumulated__ready(result_accumulator_accumulated__ready),
+    .accumulated__valid(result_accumulator_accumulated__valid),
+    .clk(clk),
+    .num_results__payload(result_accumulator_num_results__payload),
+    .num_results__valid(result_accumulator_num_results__valid),
+    .results__payload(result_accumulator_results__payload),
+    .results__ready(result_accumulator_results__ready),
+    .results__valid(result_accumulator_results__valid),
+    .rst(rst)
+  );
   set set (
     .\$signal (\set_$signal ),
-    .\$signal$13 (\set_$signal$13 ),
-    .\$signal$14 (\set_$signal$14 ),
-    .\$signal$15 (\set_$signal$15 ),
     .\$signal$16 (\set_$signal$16 ),
     .\$signal$17 (\set_$signal$17 ),
     .\$signal$18 (\set_$signal$18 ),
     .\$signal$19 (\set_$signal$19 ),
     .\$signal$20 (\set_$signal$20 ),
     .\$signal$21 (\set_$signal$21 ),
+    .\$signal$22 (\set_$signal$22 ),
+    .\$signal$23 (\set_$signal$23 ),
     .clk(clk),
     .done(set_done),
     .funct7(set_funct7),
@@ -729,11 +636,13 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .in1(set_in1),
     .payload(set_payload),
     .\payload$11 (\set_payload$11 ),
+    .\payload$13 (\set_payload$13 ),
     .\payload$2 (\set_payload$2 ),
     .\payload$5 (\set_payload$5 ),
     .\payload$8 (\set_payload$8 ),
     .ready(set_ready),
     .\ready$12 (\set_ready$12 ),
+    .\ready$15 (1'h1),
     .\ready$3 (\set_ready$3 ),
     .\ready$6 (\set_ready$6 ),
     .\ready$9 (\set_ready$9 ),
@@ -742,151 +651,10 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
     .valid(set_valid),
     .\valid$1 (\set_valid$1 ),
     .\valid$10 (\set_valid$10 ),
+    .\valid$14 (\set_valid$14 ),
     .\valid$4 (\set_valid$4 ),
     .\valid$7 (\set_valid$7 )
   );
-  always @* begin
-    if (\initial ) begin end
-    current_function_id = 3'h0;
-    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_CMD/0" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
-      2'h0:
-          current_function_id = funct3;
-      /* \nmigen.decoding  = "WAIT_INSTRUCTION/2" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:269" */
-      2'h2:
-          current_function_id = stored_function_id;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    current_function_done = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_CMD/0" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
-      2'h0:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:262" *)
-          casez (current_function_id)
-            3'h0:
-                current_function_done = \$signal$46 ;
-            3'h1:
-                current_function_done = \$signal$49 ;
-            3'h2:
-                current_function_done = \$signal$52 ;
-            3'h3:
-                current_function_done = \$signal$55 ;
-            3'h4:
-                current_function_done = \$signal$58 ;
-            3'h5:
-                current_function_done = \$signal$62 ;
-            3'h6:
-                current_function_done = \$signal$66 ;
-            3'h?:
-                current_function_done = \$signal$70 ;
-          endcase
-      /* \nmigen.decoding  = "WAIT_INSTRUCTION/2" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:269" */
-      2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:274" *)
-          casez (current_function_id)
-            3'h0:
-                current_function_done = \$signal$46 ;
-            3'h1:
-                current_function_done = \$signal$49 ;
-            3'h2:
-                current_function_done = \$signal$52 ;
-            3'h3:
-                current_function_done = \$signal$55 ;
-            3'h4:
-                current_function_done = \$signal$58 ;
-            3'h5:
-                current_function_done = \$signal$62 ;
-            3'h6:
-                current_function_done = \$signal$66 ;
-            3'h?:
-                current_function_done = \$signal$70 ;
-          endcase
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    cmd_ready = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_CMD/0" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
-      2'h0:
-          cmd_ready = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \stored_function_id$next  = stored_function_id;
-    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_CMD/0" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" *)
-          casez (cmd_valid)
-            /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" */
-            1'h1:
-                \stored_function_id$next  = cmd_payload_function_id[2:0];
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \stored_function_id$next  = 3'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \$signal$47  = 1'h0;
-    \$signal$50  = 1'h0;
-    \$signal$53  = 1'h0;
-    \$signal$56  = 1'h0;
-    \$signal$60  = 1'h0;
-    \$signal$64  = 1'h0;
-    \$signal$68  = 1'h0;
-    \$signal$71  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_CMD/0" */
-      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" *)
-          casez (cmd_valid)
-            /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" */
-            1'h1:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:267" *)
-                casez (current_function_id)
-                  3'h0:
-                      \$signal$47  = 1'h1;
-                  3'h1:
-                      \$signal$50  = 1'h1;
-                  3'h2:
-                      \$signal$53  = 1'h1;
-                  3'h3:
-                      \$signal$56  = 1'h1;
-                  3'h4:
-                      \$signal$60  = 1'h1;
-                  3'h5:
-                      \$signal$64  = 1'h1;
-                  3'h6:
-                      \$signal$68  = 1'h1;
-                  3'h?:
-                      \$signal$71  = 1'h1;
-                endcase
-          endcase
-    endcase
-  end
   always @* begin
     if (\initial ) begin end
     rsp_valid = 1'h0;
@@ -943,19 +711,19 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
                         3'h0:
                             rsp_payload_outputs_0 = \$signal ;
                         3'h1:
-                            rsp_payload_outputs_0 = \$signal$48 ;
+                            rsp_payload_outputs_0 = \$signal$32 ;
                         3'h2:
-                            rsp_payload_outputs_0 = \$signal$51 ;
+                            rsp_payload_outputs_0 = \$signal$35 ;
                         3'h3:
-                            rsp_payload_outputs_0 = \$signal$54 ;
+                            rsp_payload_outputs_0 = \$signal$38 ;
                         3'h4:
-                            rsp_payload_outputs_0 = \$signal$57 ;
+                            rsp_payload_outputs_0 = \$signal$41 ;
                         3'h5:
-                            rsp_payload_outputs_0 = \$signal$61 ;
+                            rsp_payload_outputs_0 = \$signal$45 ;
                         3'h6:
-                            rsp_payload_outputs_0 = \$signal$65 ;
+                            rsp_payload_outputs_0 = \$signal$49 ;
                         3'h?:
-                            rsp_payload_outputs_0 = \$signal$69 ;
+                            rsp_payload_outputs_0 = \$signal$53 ;
                       endcase
                 endcase
           endcase
@@ -972,19 +740,19 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
                   3'h0:
                       rsp_payload_outputs_0 = \$signal ;
                   3'h1:
-                      rsp_payload_outputs_0 = \$signal$48 ;
+                      rsp_payload_outputs_0 = \$signal$32 ;
                   3'h2:
-                      rsp_payload_outputs_0 = \$signal$51 ;
+                      rsp_payload_outputs_0 = \$signal$35 ;
                   3'h3:
-                      rsp_payload_outputs_0 = \$signal$54 ;
+                      rsp_payload_outputs_0 = \$signal$38 ;
                   3'h4:
-                      rsp_payload_outputs_0 = \$signal$57 ;
+                      rsp_payload_outputs_0 = \$signal$41 ;
                   3'h5:
-                      rsp_payload_outputs_0 = \$signal$61 ;
+                      rsp_payload_outputs_0 = \$signal$45 ;
                   3'h6:
-                      rsp_payload_outputs_0 = \$signal$65 ;
+                      rsp_payload_outputs_0 = \$signal$49 ;
                   3'h?:
-                      rsp_payload_outputs_0 = \$signal$69 ;
+                      rsp_payload_outputs_0 = \$signal$53 ;
                 endcase
           endcase
       /* \nmigen.decoding  = "WAIT_TRANSFER/1" */
@@ -1093,19 +861,19 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
                               3'h0:
                                   \stored_output$next  = \$signal ;
                               3'h1:
-                                  \stored_output$next  = \$signal$48 ;
+                                  \stored_output$next  = \$signal$32 ;
                               3'h2:
-                                  \stored_output$next  = \$signal$51 ;
+                                  \stored_output$next  = \$signal$35 ;
                               3'h3:
-                                  \stored_output$next  = \$signal$54 ;
+                                  \stored_output$next  = \$signal$38 ;
                               3'h4:
-                                  \stored_output$next  = \$signal$57 ;
+                                  \stored_output$next  = \$signal$41 ;
                               3'h5:
-                                  \stored_output$next  = \$signal$61 ;
+                                  \stored_output$next  = \$signal$45 ;
                               3'h6:
-                                  \stored_output$next  = \$signal$65 ;
+                                  \stored_output$next  = \$signal$49 ;
                               3'h?:
-                                  \stored_output$next  = \$signal$69 ;
+                                  \stored_output$next  = \$signal$53 ;
                             endcase
                       endcase
                 endcase
@@ -1131,19 +899,19 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
                         3'h0:
                             \stored_output$next  = \$signal ;
                         3'h1:
-                            \stored_output$next  = \$signal$48 ;
+                            \stored_output$next  = \$signal$32 ;
                         3'h2:
-                            \stored_output$next  = \$signal$51 ;
+                            \stored_output$next  = \$signal$35 ;
                         3'h3:
-                            \stored_output$next  = \$signal$54 ;
+                            \stored_output$next  = \$signal$38 ;
                         3'h4:
-                            \stored_output$next  = \$signal$57 ;
+                            \stored_output$next  = \$signal$41 ;
                         3'h5:
-                            \stored_output$next  = \$signal$61 ;
+                            \stored_output$next  = \$signal$45 ;
                         3'h6:
-                            \stored_output$next  = \$signal$65 ;
+                            \stored_output$next  = \$signal$49 ;
                         3'h?:
-                            \stored_output$next  = \$signal$69 ;
+                            \stored_output$next  = \$signal$53 ;
                       endcase
                 endcase
           endcase
@@ -1156,29 +924,171 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   end
   always @* begin
     if (\initial ) begin end
-    \op_store_write_enable$next  = \set_$signal$17 ;
+    \op_store_write_enable$next  = \set_$signal$19 ;
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
           \op_store_write_enable$next  = 1'h0;
     endcase
   end
-  assign \$43  = \$44 ;
+  always @* begin
+    if (\initial ) begin end
+    current_function_id = 3'h0;
+    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "WAIT_CMD/0" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
+      2'h0:
+          current_function_id = funct3;
+      /* \nmigen.decoding  = "WAIT_INSTRUCTION/2" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:269" */
+      2'h2:
+          current_function_id = stored_function_id;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    current_function_done = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "WAIT_CMD/0" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
+      2'h0:
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:262" *)
+          casez (current_function_id)
+            3'h0:
+                current_function_done = \$signal$30 ;
+            3'h1:
+                current_function_done = \$signal$33 ;
+            3'h2:
+                current_function_done = \$signal$36 ;
+            3'h3:
+                current_function_done = \$signal$39 ;
+            3'h4:
+                current_function_done = \$signal$42 ;
+            3'h5:
+                current_function_done = \$signal$46 ;
+            3'h6:
+                current_function_done = \$signal$50 ;
+            3'h?:
+                current_function_done = \$signal$54 ;
+          endcase
+      /* \nmigen.decoding  = "WAIT_INSTRUCTION/2" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:269" */
+      2'h2:
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:274" *)
+          casez (current_function_id)
+            3'h0:
+                current_function_done = \$signal$30 ;
+            3'h1:
+                current_function_done = \$signal$33 ;
+            3'h2:
+                current_function_done = \$signal$36 ;
+            3'h3:
+                current_function_done = \$signal$39 ;
+            3'h4:
+                current_function_done = \$signal$42 ;
+            3'h5:
+                current_function_done = \$signal$46 ;
+            3'h6:
+                current_function_done = \$signal$50 ;
+            3'h?:
+                current_function_done = \$signal$54 ;
+          endcase
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    cmd_ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "WAIT_CMD/0" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
+      2'h0:
+          cmd_ready = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \stored_function_id$next  = stored_function_id;
+    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "WAIT_CMD/0" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
+      2'h0:
+          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" *)
+          casez (cmd_valid)
+            /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" */
+            1'h1:
+                \stored_function_id$next  = cmd_payload_function_id[2:0];
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \stored_function_id$next  = 3'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \$signal$31  = 1'h0;
+    \$signal$34  = 1'h0;
+    \$signal$37  = 1'h0;
+    \$signal$40  = 1'h0;
+    \$signal$44  = 1'h0;
+    \$signal$48  = 1'h0;
+    \$signal$52  = 1'h0;
+    \$signal$55  = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:257" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "WAIT_CMD/0" */
+      /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:258" */
+      2'h0:
+          (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" *)
+          casez (cmd_valid)
+            /* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:264" */
+            1'h1:
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:267" *)
+                casez (current_function_id)
+                  3'h0:
+                      \$signal$31  = 1'h1;
+                  3'h1:
+                      \$signal$34  = 1'h1;
+                  3'h2:
+                      \$signal$37  = 1'h1;
+                  3'h3:
+                      \$signal$40  = 1'h1;
+                  3'h4:
+                      \$signal$44  = 1'h1;
+                  3'h5:
+                      \$signal$48  = 1'h1;
+                  3'h6:
+                      \$signal$52  = 1'h1;
+                  3'h?:
+                      \$signal$55  = 1'h1;
+                endcase
+          endcase
+    endcase
+  end
+  assign \$27  = \$28 ;
   assign \output  = 32'd0;
   assign rst = reset;
-  assign \funct7$76  = funct7;
+  assign \funct7$60  = funct7;
   assign ping_in1 = cmd_payload_inputs_1;
   assign ping_in0 = cmd_payload_inputs_0;
-  assign \funct7$75  = funct7;
+  assign \funct7$59  = funct7;
   assign fallback6_in1 = cmd_payload_inputs_1;
   assign fallback6_in0 = cmd_payload_inputs_0;
-  assign \funct7$74  = funct7;
+  assign \funct7$58  = funct7;
   assign fallback5_in1 = cmd_payload_inputs_1;
   assign fallback5_in0 = cmd_payload_inputs_0;
-  assign \funct7$73  = funct7;
+  assign \funct7$57  = funct7;
   assign fallback4_in1 = cmd_payload_inputs_1;
   assign fallback4_in0 = cmd_payload_inputs_0;
-  assign \funct7$72  = funct7;
+  assign \funct7$56  = funct7;
   assign fallback3_in1 = cmd_payload_inputs_1;
   assign fallback3_in0 = cmd_payload_inputs_0;
   assign pp_funct7 = funct7;
@@ -1190,95 +1100,75 @@ module Cfu(cmd_ready, cmd_payload_function_id, cmd_payload_inputs_0, cmd_payload
   assign set_funct7 = funct7;
   assign set_in1 = cmd_payload_inputs_1;
   assign set_in0 = cmd_payload_inputs_0;
-  assign ping_start = \$signal$71 ;
-  assign \$signal$70  = ping_done;
-  assign \$signal$69  = ping_output;
-  assign \start$67  = \$signal$68 ;
-  assign \$signal$66  = fallback6_done;
-  assign \$signal$65  = fallback6_output;
-  assign \start$63  = \$signal$64 ;
-  assign \$signal$62  = fallback5_done;
-  assign \$signal$61  = fallback5_output;
-  assign \start$59  = \$signal$60 ;
-  assign \$signal$58  = fallback4_done;
-  assign \$signal$57  = fallback4_output;
-  assign start = \$signal$56 ;
-  assign \$signal$55  = fallback3_done;
-  assign \$signal$54  = fallback3_output;
-  assign pp_start = \$signal$53 ;
-  assign \$signal$52  = pp_done;
-  assign \$signal$51  = pp_output;
-  assign get_start = \$signal$50 ;
-  assign \$signal$49  = get_done;
-  assign \$signal$48  = get_output;
-  assign set_start = \$signal$47 ;
-  assign \$signal$46  = set_done;
+  assign ping_start = \$signal$55 ;
+  assign \$signal$54  = ping_done;
+  assign \$signal$53  = ping_output;
+  assign \start$51  = \$signal$52 ;
+  assign \$signal$50  = fallback6_done;
+  assign \$signal$49  = fallback6_output;
+  assign \start$47  = \$signal$48 ;
+  assign \$signal$46  = fallback5_done;
+  assign \$signal$45  = fallback5_output;
+  assign \start$43  = \$signal$44 ;
+  assign \$signal$42  = fallback4_done;
+  assign \$signal$41  = fallback4_output;
+  assign start = \$signal$40 ;
+  assign \$signal$39  = fallback3_done;
+  assign \$signal$38  = fallback3_output;
+  assign pp_start = \$signal$37 ;
+  assign \$signal$36  = pp_done;
+  assign \$signal$35  = pp_output;
+  assign get_start = \$signal$34 ;
+  assign \$signal$33  = get_done;
+  assign \$signal$32  = get_output;
+  assign set_start = \$signal$31 ;
+  assign \$signal$30  = set_done;
   assign \$signal  = 32'd0;
   assign op_store_read_enable = pp_read_enable;
   assign { pp_read_data__shift, pp_read_data__multiplier, pp_read_data__bias } = { op_store_read_data__shift, op_store_read_data__multiplier, op_store_read_data__bias };
-  assign pp_activation_max = \set_$signal$21 [7:0];
-  assign pp_activation_min = \set_$signal$20 [7:0];
-  assign pp_offset = \set_$signal$19 [8:0];
-  assign op_store_reset = \set_$signal$18 ;
-  assign op_store_write_data__shift = \$44 [3:0];
-  assign op_store_write_data__multiplier = \set_$signal$15 ;
-  assign op_store_write_data__bias = \set_$signal$14 [15:0];
-  assign macc_result__ready = get_sink_30__ready;
-  assign get_sink_30__payload = macc_result__payload;
-  assign get_sink_30__valid = macc_result__valid;
+  assign pp_activation_max = \set_$signal$23 [7:0];
+  assign pp_activation_min = \set_$signal$22 [7:0];
+  assign pp_offset = \set_$signal$21 [8:0];
+  assign op_store_reset = \set_$signal$20 ;
+  assign op_store_write_data__shift = \$28 [3:0];
+  assign op_store_write_data__multiplier = \set_$signal$17 ;
+  assign op_store_write_data__bias = \set_$signal$16 [15:0];
+  assign result_accumulator_accumulated__ready = get_sink_30__ready;
+  assign get_sink_30__payload = result_accumulator_accumulated__payload;
+  assign get_sink_30__valid = result_accumulator_accumulated__valid;
+  assign result_accumulator_num_results__valid = \set_valid$14 ;
+  assign result_accumulator_num_results__payload = \set_payload$13 ;
+  assign macc_result__ready = result_accumulator_results__ready;
+  assign result_accumulator_results__payload = macc_result__payload;
+  assign result_accumulator_results__valid = macc_result__valid;
   assign operands_buffer_output__ready = macc_operands__ready;
-  assign { macc_operands__payload__filters, macc_operands__payload__inputs } = { operands_buffer_output__payload__filter_3, operands_buffer_output__payload__filter_2, operands_buffer_output__payload__filter_1, operands_buffer_output__payload__filter_0, operands_buffer_output__payload__input_3, operands_buffer_output__payload__input_2, operands_buffer_output__payload__input_1, operands_buffer_output__payload__input_0 };
+  assign { macc_operands__payload__filters, macc_operands__payload__inputs } = { operands_buffer_output__payload__filters, operands_buffer_output__payload__inputs };
   assign macc_operands__valid = operands_buffer_output__valid;
-  assign filter_store_output_3__ready = \operands_buffer_ready$42 ;
-  assign \operands_buffer_payload$41  = filter_store_output_3__payload;
-  assign \operands_buffer_valid$40  = filter_store_output_3__valid;
-  assign filter_store_output_2__ready = \operands_buffer_ready$39 ;
-  assign \operands_buffer_payload$38  = filter_store_output_2__payload;
-  assign \operands_buffer_valid$37  = filter_store_output_2__valid;
-  assign filter_store_output_1__ready = \operands_buffer_ready$36 ;
-  assign \operands_buffer_payload$35  = filter_store_output_1__payload;
-  assign \operands_buffer_valid$34  = filter_store_output_1__valid;
-  assign filter_store_output_0__ready = \operands_buffer_ready$33 ;
-  assign \operands_buffer_payload$32  = filter_store_output_0__payload;
-  assign \operands_buffer_valid$31  = filter_store_output_0__valid;
-  assign input_store_output_3__ready = \operands_buffer_ready$30 ;
-  assign \operands_buffer_payload$29  = input_store_output_3__payload;
-  assign \operands_buffer_valid$28  = input_store_output_3__valid;
-  assign input_store_output_2__ready = \operands_buffer_ready$27 ;
-  assign \operands_buffer_payload$26  = input_store_output_2__payload;
-  assign \operands_buffer_valid$25  = input_store_output_2__valid;
-  assign input_store_output_1__ready = \operands_buffer_ready$24 ;
-  assign \operands_buffer_payload$23  = input_store_output_1__payload;
-  assign \operands_buffer_valid$22  = input_store_output_1__valid;
-  assign input_store_output_0__ready = operands_buffer_ready;
-  assign operands_buffer_payload = input_store_output_0__payload;
-  assign operands_buffer_valid = input_store_output_0__valid;
-  assign macc_offset = \set_$signal$13 [8:0];
+  assign filter_flow_restrictor_output__ready = \operands_buffer_ready$26 ;
+  assign \operands_buffer_payload$25  = filter_flow_restrictor_output__payload;
+  assign \operands_buffer_valid$24  = filter_flow_restrictor_output__valid;
+  assign input_flow_restrictor_output__ready = operands_buffer_ready;
+  assign operands_buffer_payload = input_flow_restrictor_output__payload;
+  assign operands_buffer_valid = input_flow_restrictor_output__valid;
+  assign filter_flow_restrictor_release__valid = \set_valid$14 ;
+  assign filter_flow_restrictor_release__payload = \set_payload$13 ;
+  assign filter_store_data_output__ready = filter_flow_restrictor_input__ready;
+  assign filter_flow_restrictor_input__payload = filter_store_data_output__payload;
+  assign filter_flow_restrictor_input__valid = filter_store_data_output__valid;
+  assign \set_ready$15  = 1'h1;
+  assign input_flow_restrictor_release__valid = \set_valid$14 ;
+  assign input_flow_restrictor_release__payload = \set_payload$13 ;
+  assign input_store_data_output__ready = input_flow_restrictor_input__ready;
+  assign input_flow_restrictor_input__payload = input_store_data_output__payload;
+  assign input_flow_restrictor_input__valid = input_store_data_output__valid;
+  assign macc_offset = \set_$signal [8:0];
   assign macc_enable = 1'h1;
-  assign get_sink_13__payload = filter_store_output_3__payload;
-  assign get_sink_13__valid = 1'h1;
-  assign get_sink_12__payload = filter_store_output_2__payload;
-  assign get_sink_12__valid = 1'h1;
-  assign get_sink_11__payload = filter_store_output_1__payload;
-  assign get_sink_11__valid = 1'h1;
-  assign get_sink_10__payload = filter_store_output_0__payload;
-  assign get_sink_10__valid = 1'h1;
-  assign filter_store_next = \set_$signal ;
-  assign \set_ready$12  = filter_store_input__ready;
-  assign filter_store_input__payload = \set_payload$11 ;
-  assign filter_store_input__valid = \set_valid$10 ;
-  assign \set_ready$9  = filter_store_num_words__ready;
-  assign filter_store_num_words__payload = \set_payload$8 ;
-  assign filter_store_num_words__valid = \set_valid$7 ;
-  assign get_sink_1b__payload = input_store_output_3__payload;
-  assign get_sink_1b__valid = 1'h1;
-  assign get_sink_1a__payload = input_store_output_2__payload;
-  assign get_sink_1a__valid = 1'h1;
-  assign get_sink_19__payload = input_store_output_1__payload;
-  assign get_sink_19__valid = 1'h1;
-  assign get_sink_18__payload = input_store_output_0__payload;
-  assign get_sink_18__valid = 1'h1;
-  assign input_store_next = \set_$signal ;
+  assign \set_ready$12  = filter_store_data_input__ready;
+  assign filter_store_data_input__payload = \set_payload$11 ;
+  assign filter_store_data_input__valid = \set_valid$10 ;
+  assign \set_ready$9  = filter_store_num_words_input__ready;
+  assign filter_store_num_words_input__payload = \set_payload$8 ;
+  assign filter_store_num_words_input__valid = \set_valid$7 ;
   assign \set_ready$6  = input_store_data_input__ready;
   assign input_store_data_input__payload = \set_payload$5 ;
   assign input_store_data_input__valid = \set_valid$4 ;
@@ -1299,9 +1189,9 @@ endmodule
 (* \nmigen.hierarchy  = "Cfu.add_one" *)
 (* generator = "nMigen" *)
 module add_one(input__payload, input__ready, output__valid, output__payload, output__ready, input__valid);
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:59" *)
   wire [32:0] \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:59" *)
   wire [32:0] \$2 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
   input [31:0] input__payload;
@@ -1315,7 +1205,7 @@ module add_one(input__payload, input__ready, output__valid, output__payload, out
   input output__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
   output output__valid;
-  assign \$2  = input__payload + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:58" *) 1'h1;
+  assign \$2  = input__payload + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:59" *) 1'h1;
   assign \$1  = \$2 ;
   assign output__payload = \$2 [31:0];
   assign output__valid = input__valid;
@@ -1406,601 +1296,732 @@ module fallback6(done, in0, in1, \output );
   assign \output  = in0;
 endmodule
 
+(* \nmigen.hierarchy  = "Cfu.filter_flow_restrictor" *)
+(* generator = "nMigen" *)
+module filter_flow_restrictor(input__payload, input__ready, release__payload, release__valid, output__valid, output__payload, output__ready, rst, clk, input__valid);
+  reg \initial  = 0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$1 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *)
+  wire [32:0] \$10 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$3 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$7 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *)
+  wire [32:0] \$9 ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input clk;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  input [127:0] input__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  output input__ready;
+  reg input__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  input input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  output [127:0] output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  input output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  output output__valid;
+  reg output__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  input [31:0] release__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  reg release__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  input release__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:56" *)
+  reg [31:0] release_counter = 32'd0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:56" *)
+  reg [31:0] \release_counter$next ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input rst;
+  assign \$10  = release_counter - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *) 1'h1;
+  assign \$12  = release__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) release__ready;
+  assign \$14  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$1  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$3  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$5  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$7  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  always @(posedge clk)
+    release_counter <= \release_counter$next ;
+  always @* begin
+    if (\initial ) begin end
+    input__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$1 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          input__ready = output__ready;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    output__valid = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$3 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          output__valid = input__valid;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \release_counter$next  = release_counter;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$5 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:60" *)
+          casez (\$7 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:60" */
+            1'h1:
+                \release_counter$next  = \$10 [31:0];
+          endcase
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:62" */
+      default:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:64" *)
+          casez (\$12 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:64" */
+            1'h1:
+                \release_counter$next  = release__payload;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \release_counter$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    release__ready = 1'h0;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$14 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          /* empty */;
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:62" */
+      default:
+          release__ready = 1'h1;
+    endcase
+  end
+  assign \$9  = \$10 ;
+  assign output__payload = input__payload;
+endmodule
+
 (* \nmigen.hierarchy  = "Cfu.filter_store" *)
 (* generator = "nMigen" *)
-module filter_store(num_words__payload, num_words__ready, input__valid, input__payload, input__ready, next, output_0__payload, output_1__payload, output_2__payload, output_3__payload, output_0__valid, output_0__ready, output_1__valid, output_1__ready, output_2__valid, output_2__ready, output_3__valid, output_3__ready, rst, clk, num_words__valid);
+module filter_store(num_words_input__payload, num_words_input__ready, data_input__valid, data_input__payload, data_input__ready, data_output__valid, data_output__payload, data_output__ready, rst, clk, num_words_input__valid);
   reg \initial  = 0;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
   wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
-  wire [11:0] \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
-  wire [11:0] \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *)
-  wire [11:0] \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:107" *)
-  wire [11:0] \$18 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *)
-  wire [11:0] \$20 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:78" *)
+  wire [12:0] \$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:78" *)
+  wire [12:0] \$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$15 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$17 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$19 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *)
   wire [11:0] \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$26 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$28 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *)
+  wire [11:0] \$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *)
+  wire [11:0] \$24 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *)
+  wire [12:0] \$25 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *)
+  wire \$27 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
   wire \$30 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$32 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
   wire \$34 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$36 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$38 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
+  wire [12:0] \$40 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
+  wire \$42 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+  wire \$44 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$40 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:114" *)
-  wire [32:0] \$42 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:114" *)
-  wire [32:0] \$43 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:90" *)
-  wire [11:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:90" *)
-  wire [11:0] \$8 ;
+  wire \$46 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+  wire \$48 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:76" *)
+  wire [11:0] \$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+  wire \$50 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$52 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+  wire \$54 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$56 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$58 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:76" *)
+  wire [11:0] \$6 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+  wire \$60 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
+  wire [12:0] \$8 ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:58" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:65" *)
-  reg [10:0] max_index = 11'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:65" *)
-  reg [10:0] \max_index$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] mem_0_read_addr_input__payload = 9'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] \mem_0_read_addr_input__payload$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_0_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg mem_0_read_addr_input__valid = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg \mem_0_read_addr_input__valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_0_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_0_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_0_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [8:0] mem_0_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [31:0] mem_0_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_0_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] mem_1_read_addr_input__payload = 9'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] \mem_1_read_addr_input__payload$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_1_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg mem_1_read_addr_input__valid = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg \mem_1_read_addr_input__valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_1_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_1_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_1_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [8:0] mem_1_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [31:0] mem_1_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_1_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] mem_2_read_addr_input__payload = 9'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] \mem_2_read_addr_input__payload$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_2_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg mem_2_read_addr_input__valid = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg \mem_2_read_addr_input__valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_2_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_2_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_2_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [8:0] mem_2_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [31:0] mem_2_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_2_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] mem_3_read_addr_input__payload = 9'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg [8:0] \mem_3_read_addr_input__payload$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_3_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg mem_3_read_addr_input__valid = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  reg \mem_3_read_addr_input__valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_3_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_3_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_3_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [8:0] mem_3_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire [31:0] mem_3_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_3_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:59" *)
-  input next;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  input [31:0] num_words__payload;
+  input [31:0] data_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  output num_words__ready;
+  output data_input__ready;
+  reg data_input__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:60" *)
-  input num_words__valid;
+  input data_input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  output [127:0] data_output__payload;
+  reg [127:0] data_output__payload = 128'h00000000000000000000000000000000;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  reg [127:0] \data_output__payload$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  input data_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  output data_output__valid;
+  reg data_output__valid = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:62" *)
+  reg \data_output__valid$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+  reg [1:0] fsm_state = 2'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+  reg [1:0] \fsm_state$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:109" *)
+  reg [10:0] index = 11'h000;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:109" *)
+  reg [10:0] \index$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:54" *)
+  reg [8:0] memory_read_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:55" *)
+  wire [127:0] memory_read_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:51" *)
+  reg [10:0] memory_write_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:52" *)
+  reg [31:0] memory_write_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:53" *)
+  reg memory_write_enable;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:108" *)
+  reg [11:0] num_words = 12'h000;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:108" *)
+  reg [11:0] \num_words$next ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output [31:0] output_0__payload;
+  input [31:0] num_words_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  input output_0__ready;
+  output num_words_input__ready;
+  reg num_words_input__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output output_0__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output [31:0] output_1__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  input output_1__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output output_1__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output [31:0] output_2__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  input output_2__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output output_2__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output [31:0] output_3__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  input output_3__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:61" *)
-  output output_3__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:67" *)
-  reg [10:0] read_index = 11'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:67" *)
-  reg [10:0] \read_index$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:68" *)
-  reg read_required = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:68" *)
-  reg \read_required$next ;
+  input num_words_input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:85" *)
+  reg read_port_valid = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:85" *)
+  reg \read_port_valid$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:86" *)
+  reg read_started = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:86" *)
+  reg \read_started$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:110" *)
+  wire reset;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:66" *)
-  reg [10:0] write_index = 11'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:66" *)
-  reg [10:0] \write_index$next ;
-  assign \$12  = write_index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *) max_index;
-  assign \$15  = max_index - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) 2'h3;
-  assign \$18  = read_index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:107" *) 3'h4;
-  assign \$21  = max_index - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *) 2'h3;
-  assign \$23  = read_index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *) \$21 ;
-  assign \$20  = \$23  ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:106" *) 12'h000 : \$18 ;
-  assign \$26  = mem_0_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_0_read_addr_input__ready;
-  assign \$28  = mem_0_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_0_read_addr_input__ready;
-  assign \$30  = mem_1_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_1_read_addr_input__ready;
-  assign \$32  = mem_2_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_2_read_addr_input__ready;
-  assign \$34  = mem_3_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_3_read_addr_input__ready;
-  assign \$36  = mem_1_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_1_read_addr_input__ready;
-  assign \$38  = mem_2_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_2_read_addr_input__ready;
-  assign \$40  = mem_3_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_3_read_addr_input__ready;
-  assign \$43  = num_words__payload - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:114" *) 1'h1;
-  assign \$5  = write_index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *) max_index;
-  assign \$8  = write_index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:90" *) 1'h1;
+  assign \$10  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *) \$8 ;
+  assign \$13  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:78" *) 3'h4;
+  assign \$15  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) read_port_valid;
+  assign \$17  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) read_started;
+  assign \$1  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
+  assign \$19  = \$15  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) \$17 ;
+  assign \$22  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *) 3'h4;
+  assign \$25  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *) 3'h4;
+  assign \$27  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *) \$25 ;
+  assign \$24  = \$27  ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:94" *) 12'h000 : \$22 ;
+  assign \$30  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) data_output__valid;
+  assign \$32  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$34  = \$30  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) \$32 ;
+  assign \$36  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
+  assign \$38  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
+  assign \$3  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
+  assign \$40  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *) 1'h1;
+  assign \$42  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *) \$40 ;
+  assign \$44  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) data_output__valid;
+  assign \$46  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$48  = \$44  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) \$46 ;
+  assign \$50  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) data_output__valid;
+  assign \$52  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$54  = \$50  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *) \$52 ;
+  assign \$56  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) read_port_valid;
+  assign \$58  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) read_started;
+  assign \$60  = \$56  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *) \$58 ;
+  assign \$6  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:76" *) 1'h1;
+  assign \$8  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *) 1'h1;
   always @(posedge clk)
-    max_index <= \max_index$next ;
+    read_started <= \read_started$next ;
   always @(posedge clk)
-    mem_3_read_addr_input__valid <= \mem_3_read_addr_input__valid$next ;
+    read_port_valid <= \read_port_valid$next ;
   always @(posedge clk)
-    mem_3_read_addr_input__payload <= \mem_3_read_addr_input__payload$next ;
+    data_output__payload <= \data_output__payload$next ;
   always @(posedge clk)
-    mem_2_read_addr_input__valid <= \mem_2_read_addr_input__valid$next ;
+    fsm_state <= \fsm_state$next ;
   always @(posedge clk)
-    mem_2_read_addr_input__payload <= \mem_2_read_addr_input__payload$next ;
+    data_output__valid <= \data_output__valid$next ;
   always @(posedge clk)
-    mem_1_read_addr_input__valid <= \mem_1_read_addr_input__valid$next ;
+    index <= \index$next ;
   always @(posedge clk)
-    mem_1_read_addr_input__payload <= \mem_1_read_addr_input__payload$next ;
-  always @(posedge clk)
-    read_required <= \read_required$next ;
-  always @(posedge clk)
-    mem_0_read_addr_input__valid <= \mem_0_read_addr_input__valid$next ;
-  always @(posedge clk)
-    mem_0_read_addr_input__payload <= \mem_0_read_addr_input__payload$next ;
-  always @(posedge clk)
-    read_index <= \read_index$next ;
-  always @(posedge clk)
-    write_index <= \write_index$next ;
-  \mem_0$5  mem_0 (
+    num_words <= \num_words$next ;
+  \memory$2  memory (
     .clk(clk),
-    .read_addr_input__payload(mem_0_read_addr_input__payload),
-    .read_addr_input__ready(mem_0_read_addr_input__ready),
-    .read_addr_input__valid(mem_0_read_addr_input__valid),
-    .read_data_output__payload(mem_0_read_data_output__payload),
-    .read_data_output__ready(mem_0_read_data_output__ready),
-    .read_data_output__valid(mem_0_read_data_output__valid),
-    .rst(rst),
-    .write_input__payload__addr(mem_0_write_input__payload__addr),
-    .write_input__payload__data(mem_0_write_input__payload__data),
-    .write_input__valid(mem_0_write_input__valid)
-  );
-  \mem_1$7  mem_1 (
-    .clk(clk),
-    .read_addr_input__payload(mem_1_read_addr_input__payload),
-    .read_addr_input__ready(mem_1_read_addr_input__ready),
-    .read_addr_input__valid(mem_1_read_addr_input__valid),
-    .read_data_output__payload(mem_1_read_data_output__payload),
-    .read_data_output__ready(mem_1_read_data_output__ready),
-    .read_data_output__valid(mem_1_read_data_output__valid),
-    .rst(rst),
-    .write_input__payload__addr(mem_1_write_input__payload__addr),
-    .write_input__payload__data(mem_1_write_input__payload__data),
-    .write_input__valid(mem_1_write_input__valid)
-  );
-  \mem_2$9  mem_2 (
-    .clk(clk),
-    .read_addr_input__payload(mem_2_read_addr_input__payload),
-    .read_addr_input__ready(mem_2_read_addr_input__ready),
-    .read_addr_input__valid(mem_2_read_addr_input__valid),
-    .read_data_output__payload(mem_2_read_data_output__payload),
-    .read_data_output__ready(mem_2_read_data_output__ready),
-    .read_data_output__valid(mem_2_read_data_output__valid),
-    .rst(rst),
-    .write_input__payload__addr(mem_2_write_input__payload__addr),
-    .write_input__payload__data(mem_2_write_input__payload__data),
-    .write_input__valid(mem_2_write_input__valid)
-  );
-  \mem_3$11  mem_3 (
-    .clk(clk),
-    .read_addr_input__payload(mem_3_read_addr_input__payload),
-    .read_addr_input__ready(mem_3_read_addr_input__ready),
-    .read_addr_input__valid(mem_3_read_addr_input__valid),
-    .read_data_output__payload(mem_3_read_data_output__payload),
-    .read_data_output__ready(mem_3_read_data_output__ready),
-    .read_data_output__valid(mem_3_read_data_output__valid),
-    .rst(rst),
-    .write_input__payload__addr(mem_3_write_input__payload__addr),
-    .write_input__payload__data(mem_3_write_input__payload__data),
-    .write_input__valid(mem_3_write_input__valid)
+    .read_addr(memory_read_addr),
+    .read_data(memory_read_data),
+    .write_addr(memory_write_addr),
+    .write_data(memory_write_data),
+    .write_enable(memory_write_enable)
   );
   always @* begin
     if (\initial ) begin end
-    \write_index$next  = write_index;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *)
-          casez (\$5 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" */
+    \num_words$next  = num_words;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          \num_words$next  = 12'h000;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:123" *)
+          casez (\$1 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:123" */
             1'h1:
-                \write_index$next  = 11'h000;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:89" */
+                \num_words$next  = num_words_input__payload[11:0];
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \num_words$next  = 12'h000;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_read_addr = 9'h000;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+          memory_read_addr = index[10:2];
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \data_output__payload$next  = data_output__payload;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+          casez (\$48 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" */
+            1'h1:
+                \data_output__payload$next  = memory_read_data;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \data_output__payload$next  = 128'h00000000000000000000000000000000;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \read_port_valid$next  = read_port_valid;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+        begin
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+          casez (\$54 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" */
+            1'h1:
+                \read_port_valid$next  = 1'h0;
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:99" *)
+          casez (read_started)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:99" */
+            1'h1:
+                \read_port_valid$next  = 1'h1;
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:103" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:103" */
+            1'h1:
+                \read_port_valid$next  = 1'h0;
+          endcase
+        end
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \read_port_valid$next  = 1'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \read_started$next  = read_started;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+        begin
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+          casez (\$60 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" */
+            1'h1:
+                \read_started$next  = 1'h1;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:96" */
             default:
-                \write_index$next  = \$8 [10:0];
+                \read_started$next  = 1'h0;
           endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" *)
-    casez (num_words__valid)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" */
-      1'h1:
-          \write_index$next  = 11'h000;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \write_index$next  = 11'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_index$next  = read_index;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" *)
-    casez (\$10 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" *)
-          casez (\$12 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:84" */
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:103" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:103" */
             1'h1:
-                \read_index$next  = \$15 [10:0];
+                \read_started$next  = 1'h0;
+          endcase
+        end
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \read_started$next  = 1'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \index$next  = index;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          \index$next  = 11'h000;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:75" *)
+          casez (\$3 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:75" */
+            1'h1:
+              begin
+                \index$next  = \$6 [10:0];
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
+                casez (\$10 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" */
+                  1'h1:
+                      \index$next  = \$13 [10:0];
+                endcase
+              end
+          endcase
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" *)
+          casez (\$19 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:93" */
+            1'h1:
+                \index$next  = \$24 [10:0];
           endcase
     endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:104" *)
-    casez (next)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:104" */
-      1'h1:
-          \read_index$next  = \$20 [10:0];
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" *)
-    casez (num_words__valid)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" */
-      1'h1:
-          \read_index$next  = 11'h000;
-    endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_index$next  = 11'h000;
+          \index$next  = 11'h000;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \mem_0_read_addr_input__payload$next  = read_index[10:2];
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_0_read_addr_input__payload$next  = 9'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_0_read_addr_input__valid$next  = mem_0_read_addr_input__valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$26 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \mem_0_read_addr_input__valid$next  = 1'h1;
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:100" */
-      2'b1?:
-          \mem_0_read_addr_input__valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_0_read_addr_input__valid$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_required$next  = read_required;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$28 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \read_required$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$30 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \read_required$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$32 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \read_required$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$34 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \read_required$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:104" *)
-    casez (next)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:104" */
-      1'h1:
-          \read_required$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_required$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_1_read_addr_input__payload$next  = read_index[10:2];
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_1_read_addr_input__payload$next  = 9'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_1_read_addr_input__valid$next  = mem_1_read_addr_input__valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$36 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \mem_1_read_addr_input__valid$next  = 1'h1;
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:100" */
-      2'b1?:
-          \mem_1_read_addr_input__valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_1_read_addr_input__valid$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_2_read_addr_input__payload$next  = read_index[10:2];
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_2_read_addr_input__payload$next  = 9'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_2_read_addr_input__valid$next  = mem_2_read_addr_input__valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$38 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \mem_2_read_addr_input__valid$next  = 1'h1;
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:100" */
-      2'b1?:
-          \mem_2_read_addr_input__valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_2_read_addr_input__valid$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_3_read_addr_input__payload$next  = read_index[10:2];
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_3_read_addr_input__payload$next  = 9'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \mem_3_read_addr_input__valid$next  = mem_3_read_addr_input__valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" *)
-    casez ({ \$40 , read_required })
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:97" */
-      2'b?1:
-          \mem_3_read_addr_input__valid$next  = 1'h1;
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:100" */
-      2'b1?:
-          \mem_3_read_addr_input__valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \mem_3_read_addr_input__valid$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \max_index$next  = max_index;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" *)
-    casez (num_words__valid)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:112" */
-      1'h1:
-          \max_index$next  = \$43 [10:0];
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \max_index$next  = 11'h000;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_0_write_input__valid = 1'h0;
-    mem_1_write_input__valid = 1'h0;
-    mem_2_write_input__valid = 1'h0;
-    mem_3_write_input__valid = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:82" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:83" *)
-          casez (write_index[1:0])
-            2'h0:
-                mem_0_write_input__valid = 1'h1;
-            2'h1:
-                mem_1_write_input__valid = 1'h1;
-            2'h2:
-                mem_2_write_input__valid = 1'h1;
-            2'h?:
-                mem_3_write_input__valid = 1'h1;
+    \data_output__valid$next  = data_output__valid;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          \data_output__valid$next  = 1'h0;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" *)
+          casez (\$34 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:88" */
+            1'h1:
+                \data_output__valid$next  = read_port_valid;
           endcase
     endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \data_output__valid$next  = 1'h0;
+    endcase
   end
-  assign \$7  = \$8 ;
-  assign \$14  = \$15 ;
-  assign \$17  = \$20 ;
-  assign \$42  = \$43 ;
-  assign num_words__ready = 1'h1;
-  assign mem_3_read_data_output__ready = output_3__ready;
-  assign output_3__payload = mem_3_read_data_output__payload;
-  assign output_3__valid = mem_3_read_data_output__valid;
-  assign mem_2_read_data_output__ready = output_2__ready;
-  assign output_2__payload = mem_2_read_data_output__payload;
-  assign output_2__valid = mem_2_read_data_output__valid;
-  assign mem_1_read_data_output__ready = output_1__ready;
-  assign output_1__payload = mem_1_read_data_output__payload;
-  assign output_1__valid = mem_1_read_data_output__valid;
-  assign mem_0_read_data_output__ready = output_0__ready;
-  assign output_0__payload = mem_0_read_data_output__payload;
-  assign output_0__valid = mem_0_read_data_output__valid;
-  assign mem_3_write_input__payload__data = input__payload;
-  assign mem_3_write_input__payload__addr = write_index[10:2];
-  assign mem_2_write_input__payload__data = input__payload;
-  assign mem_2_write_input__payload__addr = write_index[10:2];
-  assign mem_1_write_input__payload__data = input__payload;
-  assign mem_1_write_input__payload__addr = write_index[10:2];
-  assign mem_0_write_input__payload__data = input__payload;
-  assign mem_0_write_input__payload__addr = write_index[10:2];
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-  assign \$10  = input__valid;
+  always @* begin
+    if (\initial ) begin end
+    \fsm_state$next  = fsm_state;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          \fsm_state$next  = 2'h1;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:123" *)
+          casez (\$36 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:123" */
+            1'h1:
+                \fsm_state$next  = 2'h2;
+          endcase
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+        begin
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:75" *)
+          casez (\$38 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:75" */
+            1'h1:
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" *)
+                casez (\$42 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:77" */
+                  1'h1:
+                      \fsm_state$next  = 2'h3;
+                endcase
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:128" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:128" */
+            1'h1:
+                \fsm_state$next  = 2'h0;
+          endcase
+        end
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:130" */
+      2'h3:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:132" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:132" */
+            1'h1:
+                \fsm_state$next  = 2'h0;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \fsm_state$next  = 2'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    num_words_input__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          num_words_input__ready = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_write_addr = 11'h000;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          memory_write_addr = index;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_write_data = 32'd0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          memory_write_data = data_input__payload;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_write_enable = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          memory_write_enable = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    data_input__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:115" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:116" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:121" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/filter_store.py:126" */
+      2'h2:
+          data_input__ready = 1'h1;
+    endcase
+  end
+  assign \$5  = \$6 ;
+  assign \$12  = \$13 ;
+  assign \$21  = \$24 ;
+  assign reset = num_words_input__valid;
 endmodule
 
 (* \nmigen.hierarchy  = "Cfu.get" *)
 (* generator = "nMigen" *)
-module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, sink_19__valid, sink_19__payload, sink_1a__valid, sink_1a__payload, sink_1b__valid, sink_1b__payload, sink_10__valid, sink_10__payload, sink_11__valid, sink_11__payload, sink_12__valid, sink_12__payload, sink_13__valid, sink_13__payload, sink_30__valid, sink_30__payload, sink_30__ready, \output , done, start, in0, in1, funct7, rst, clk, sink_70__valid);
+module get(sink_70__payload, sink_70__ready, sink_30__valid, sink_30__payload, sink_30__ready, \output , done, start, in0, in1, funct7, rst, clk, sink_70__valid);
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:168" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" *)
   wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_10;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_11;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_12;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_13;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_18;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_19;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_1a;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
-  wire clear_1b;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:120" *)
   wire clear_30;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:120" *)
   wire clear_70;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
@@ -2009,13 +2030,13 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   reg done = 1'h0;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:53" *)
   reg \done$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:175" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:159" *)
   reg [6:0] f7_buf = 7'h00;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:175" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:159" *)
   reg [6:0] \f7_buf$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
   reg [1:0] fsm_state = 2'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
   reg [1:0] \fsm_state$next ;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:50" *)
   input [6:0] funct7;
@@ -2032,142 +2053,14 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   reg [31:0] \output  = 32'd0;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:51" *)
   reg [31:0] \output$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_10 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_10$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_11 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_11$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_12 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_12$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_13 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_13$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_18 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_18$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_19 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_19$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_1a = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_1a$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg read_strobe_1b = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
-  reg \read_strobe_1b$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:121" *)
   reg read_strobe_30 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:121" *)
   reg \read_strobe_30$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:121" *)
   reg read_strobe_70 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:137" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:121" *)
   reg \read_strobe_70$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_10_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_10_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_10_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_10_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_10_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_10_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_11_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_11_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_11_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_11_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_11_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_11_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_12_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_12_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_12_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_12_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_12_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_12_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_13_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_13_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_13_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_13_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_13_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_13_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_18_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_18_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_18_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_18_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_18_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_18_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_19_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_19_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_19_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_19_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_19_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_19_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_1a_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_1a_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_1a_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_1a_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_1a_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_1a_value;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire [31:0] reg_1b_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_1b_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  wire reg_1b_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  wire reg_1b_invalidate;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  wire reg_1b_valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  wire [31:0] reg_1b_value;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
   wire [31:0] reg_30_input__payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
@@ -2194,65 +2087,17 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   wire [31:0] reg_70_value;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_10__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_10__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_10__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_11__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_11__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_11__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_12__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_12__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_12__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_13__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_13__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_13__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_18__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_18__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_18__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_19__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_19__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_19__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_1a__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_1a__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_1a__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input [31:0] sink_1b__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  wire sink_1b__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
-  input sink_1b__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   input [31:0] sink_30__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   output sink_30__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   input sink_30__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   input [31:0] sink_70__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   output sink_70__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:135" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:119" *)
   input sink_70__valid;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
   input start;
@@ -2268,102 +2113,6 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
     read_strobe_70 <= \read_strobe_70$next ;
   always @(posedge clk)
     read_strobe_30 <= \read_strobe_30$next ;
-  always @(posedge clk)
-    read_strobe_1b <= \read_strobe_1b$next ;
-  always @(posedge clk)
-    read_strobe_1a <= \read_strobe_1a$next ;
-  always @(posedge clk)
-    read_strobe_19 <= \read_strobe_19$next ;
-  always @(posedge clk)
-    read_strobe_18 <= \read_strobe_18$next ;
-  always @(posedge clk)
-    read_strobe_13 <= \read_strobe_13$next ;
-  always @(posedge clk)
-    read_strobe_12 <= \read_strobe_12$next ;
-  always @(posedge clk)
-    read_strobe_11 <= \read_strobe_11$next ;
-  always @(posedge clk)
-    read_strobe_10 <= \read_strobe_10$next ;
-  reg_10 reg_10 (
-    .clk(clk),
-    .input__payload(reg_10_input__payload),
-    .input__ready(reg_10_input__ready),
-    .input__valid(reg_10_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_10_valid),
-    .value(reg_10_value)
-  );
-  reg_11 reg_11 (
-    .clk(clk),
-    .input__payload(reg_11_input__payload),
-    .input__ready(reg_11_input__ready),
-    .input__valid(reg_11_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_11_valid),
-    .value(reg_11_value)
-  );
-  reg_12 reg_12 (
-    .clk(clk),
-    .input__payload(reg_12_input__payload),
-    .input__ready(reg_12_input__ready),
-    .input__valid(reg_12_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_12_valid),
-    .value(reg_12_value)
-  );
-  reg_13 reg_13 (
-    .clk(clk),
-    .input__payload(reg_13_input__payload),
-    .input__ready(reg_13_input__ready),
-    .input__valid(reg_13_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_13_valid),
-    .value(reg_13_value)
-  );
-  reg_18 reg_18 (
-    .clk(clk),
-    .input__payload(reg_18_input__payload),
-    .input__ready(reg_18_input__ready),
-    .input__valid(reg_18_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_18_valid),
-    .value(reg_18_value)
-  );
-  reg_19 reg_19 (
-    .clk(clk),
-    .input__payload(reg_19_input__payload),
-    .input__ready(reg_19_input__ready),
-    .input__valid(reg_19_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_19_valid),
-    .value(reg_19_value)
-  );
-  reg_1a reg_1a (
-    .clk(clk),
-    .input__payload(reg_1a_input__payload),
-    .input__ready(reg_1a_input__ready),
-    .input__valid(reg_1a_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_1a_valid),
-    .value(reg_1a_value)
-  );
-  reg_1b reg_1b (
-    .clk(clk),
-    .input__payload(reg_1b_input__payload),
-    .input__ready(reg_1b_input__ready),
-    .input__valid(reg_1b_input__valid),
-    .invalidate(1'h0),
-    .rst(rst),
-    .valid(reg_1b_valid),
-    .value(reg_1b_value)
-  );
   reg_30 reg_30 (
     .clk(clk),
     .input__payload(reg_30_input__payload),
@@ -2386,563 +2135,290 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   );
   always @* begin
     if (\initial ) begin end
-    \read_strobe_12$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    \f7_buf$next  = f7_buf;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_12_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \read_strobe_12$next  = 1'h1;
-                      endcase
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_12_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \read_strobe_12$next  = 1'h1;
-                endcase
+                \f7_buf$next  = funct7;
           endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_strobe_12$next  = 1'h0;
+          \f7_buf$next  = 7'h00;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \read_strobe_13$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    \output$next  = \output ;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
                 casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_13_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h30:
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_30_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                         1'h1:
-                            \read_strobe_13$next  = 1'h1;
+                            \output$next  = reg_30_value;
                       endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h70:
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_70_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                        1'h1:
+                            \output$next  = reg_70_value;
+                      endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+                  default:
+                      \output$next  = 32'd0;
                 endcase
           endcase
       /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:165" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
           casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_13_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h30:
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_30_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                   1'h1:
-                      \read_strobe_13$next  = 1'h1;
+                      \output$next  = reg_30_value;
                 endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h70:
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_70_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                  1'h1:
+                      \output$next  = reg_70_value;
+                endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+            default:
+                \output$next  = 32'd0;
           endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_strobe_13$next  = 1'h0;
+          \output$next  = 32'd0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \read_strobe_18$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    \done$next  = done;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
                 casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_18_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h30:
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_30_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                         1'h1:
-                            \read_strobe_18$next  = 1'h1;
+                            \done$next  = 1'h1;
                       endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h70:
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_70_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                        1'h1:
+                            \done$next  = 1'h1;
+                      endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+                  default:
+                      \done$next  = 1'h1;
                 endcase
           endcase
       /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:165" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
           casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_18_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h30:
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_30_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                   1'h1:
-                      \read_strobe_18$next  = 1'h1;
+                      \done$next  = 1'h1;
                 endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h70:
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_70_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                  1'h1:
+                      \done$next  = 1'h1;
+                endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+            default:
+                \done$next  = 1'h1;
           endcase
+      /* \nmigen.decoding  = "DONE/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:167" */
+      2'h1:
+          \done$next  = 1'h0;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_strobe_18$next  = 1'h0;
+          \done$next  = 1'h0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \read_strobe_19$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    \fsm_state$next  = fsm_state;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
                 casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_19_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h30:
+                      (* full_case = 32'd1 *)
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_30_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                         1'h1:
-                            \read_strobe_19$next  = 1'h1;
+                            \fsm_state$next  = 2'h1;
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:134" */
+                        default:
+                            \fsm_state$next  = 2'h2;
                       endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+                  7'h70:
+                      (* full_case = 32'd1 *)
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                      casez (reg_70_valid)
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                        1'h1:
+                            \fsm_state$next  = 2'h1;
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:134" */
+                        default:
+                            \fsm_state$next  = 2'h2;
+                      endcase
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+                  default:
+                      \fsm_state$next  = 2'h1;
                 endcase
           endcase
       /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:165" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
           casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_19_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h30:
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_30_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                   1'h1:
-                      \read_strobe_19$next  = 1'h1;
+                      \fsm_state$next  = 2'h1;
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:134" */
+                  default:
+                      \fsm_state$next  = 2'h2;
                 endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
+            7'h70:
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
+                casez (reg_70_valid)
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
+                  1'h1:
+                      \fsm_state$next  = 2'h1;
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:134" */
+                  default:
+                      \fsm_state$next  = 2'h2;
+                endcase
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:136" */
+            default:
+                \fsm_state$next  = 2'h1;
           endcase
+      /* \nmigen.decoding  = "DONE/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:167" */
+      2'h1:
+          \fsm_state$next  = 2'h0;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_strobe_19$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_strobe_1a$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1a_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \read_strobe_1a$next  = 1'h1;
-                      endcase
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1a_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \read_strobe_1a$next  = 1'h1;
-                endcase
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_strobe_1a$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_strobe_1b$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1b_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \read_strobe_1b$next  = 1'h1;
-                      endcase
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1b_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \read_strobe_1b$next  = 1'h1;
-                endcase
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_strobe_1b$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_strobe_10$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_10_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \read_strobe_10$next  = 1'h1;
-                      endcase
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_10_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \read_strobe_10$next  = 1'h1;
-                endcase
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_strobe_10$next  = 1'h0;
+          \fsm_state$next  = 2'h0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
     \read_strobe_30$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
                 casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
                   7'h30:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
                       casez (reg_30_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                         1'h1:
                             \read_strobe_30$next  = 1'h1;
                       endcase
                 endcase
           endcase
       /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:165" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
           casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
             7'h30:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
                 casez (reg_30_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                   1'h1:
                       \read_strobe_30$next  = 1'h1;
                 endcase
@@ -2957,91 +2433,43 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   always @* begin
     if (\initial ) begin end
     \read_strobe_70$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:160" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:161" */
       2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" *)
           casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:162" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
                 casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
                   7'h30:
                       /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
                   7'h70:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
+                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
                       casez (reg_70_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                         1'h1:
                             \read_strobe_70$next  = 1'h1;
                       endcase
                 endcase
           endcase
       /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:165" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:125" *)
           casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
             7'h30:
                 /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:127" */
             7'h70:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" *)
                 casez (reg_70_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:128" */
                   1'h1:
                       \read_strobe_70$next  = 1'h1;
                 endcase
@@ -3053,765 +2481,6 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
           \read_strobe_70$next  = 1'h0;
     endcase
   end
-  always @* begin
-    if (\initial ) begin end
-    \f7_buf$next  = f7_buf;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                \f7_buf$next  = funct7;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \f7_buf$next  = 7'h00;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \output$next  = \output ;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_10_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_10_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_11_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_11_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_12_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_12_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_13_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_13_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_18_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_18_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_19_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_19_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1a_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_1a_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1b_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_1b_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h30:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_30_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_30_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h70:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_70_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \output$next  = reg_70_value;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-                  default:
-                      \output$next  = 32'd0;
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_10_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_10_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_11_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_11_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_12_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_12_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_13_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_13_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_18_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_18_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_19_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_19_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1a_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_1a_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1b_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_1b_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h30:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_30_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_30_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h70:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_70_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \output$next  = reg_70_value;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-            default:
-                \output$next  = 32'd0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \output$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \done$next  = done;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_10_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_11_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_12_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_13_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_18_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_19_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1a_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1b_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h30:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_30_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h70:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_70_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \done$next  = 1'h1;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-                  default:
-                      \done$next  = 1'h1;
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_10_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_11_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_12_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_13_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_18_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_19_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1a_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1b_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h30:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_30_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h70:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_70_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \done$next  = 1'h1;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-            default:
-                \done$next  = 1'h1;
-          endcase
-      /* \nmigen.decoding  = "DONE/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:183" */
-      2'h1:
-          \done$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \done$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \fsm_state$next  = fsm_state;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_10_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_11_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h12:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_12_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h13:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_13_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h18:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_18_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h19:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_19_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1a:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1a_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h1b:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_1b_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h30:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_30_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h70:
-                      (* full_case = 32'd1 *)
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_70_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \fsm_state$next  = 2'h1;
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                        default:
-                            \fsm_state$next  = 2'h2;
-                      endcase
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-                  default:
-                      \fsm_state$next  = 2'h1;
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_10_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_11_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h12:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_12_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h13:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_13_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h18:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_18_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h19:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_19_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1a:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1a_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h1b:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_1b_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h30:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_30_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h70:
-                (* full_case = 32'd1 *)
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_70_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \fsm_state$next  = 2'h1;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:150" */
-                  default:
-                      \fsm_state$next  = 2'h2;
-                endcase
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:152" */
-            default:
-                \fsm_state$next  = 2'h1;
-          endcase
-      /* \nmigen.decoding  = "DONE/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:183" */
-      2'h1:
-          \fsm_state$next  = 2'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \fsm_state$next  = 2'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_strobe_11$next  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:176" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "WAIT_START/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:177" */
-      2'h0:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" *)
-          casez (start)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:178" */
-            1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-                casez (funct7)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h10:
-                      /* empty */;
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-                  7'h11:
-                      (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                      casez (reg_11_valid)
-                        /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                        1'h1:
-                            \read_strobe_11$next  = 1'h1;
-                      endcase
-                endcase
-          endcase
-      /* \nmigen.decoding  = "GETTING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:181" */
-      2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:141" *)
-          casez (f7_buf)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h10:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:143" */
-            7'h11:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" *)
-                casez (reg_11_valid)
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:144" */
-                  1'h1:
-                      \read_strobe_11$next  = 1'h1;
-                endcase
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_strobe_11$next  = 1'h0;
-    endcase
-  end
-  assign clear_10 = 1'h0;
-  assign clear_11 = 1'h0;
-  assign clear_12 = 1'h0;
-  assign clear_13 = 1'h0;
-  assign clear_18 = 1'h0;
-  assign clear_19 = 1'h0;
-  assign clear_1a = 1'h0;
-  assign clear_1b = 1'h0;
   assign clear_30 = 1'h0;
   assign clear_70 = 1'h0;
   assign in1s = in1;
@@ -3824,416 +2493,329 @@ module get(sink_70__payload, sink_70__ready, sink_18__valid, sink_18__payload, s
   assign sink_30__ready = reg_30_input__ready;
   assign reg_30_input__payload = sink_30__payload;
   assign reg_30_input__valid = sink_30__valid;
-  assign reg_1b_invalidate = 1'h0;
-  assign sink_1b__ready = reg_1b_input__ready;
-  assign reg_1b_input__payload = sink_1b__payload;
-  assign reg_1b_input__valid = sink_1b__valid;
-  assign reg_1a_invalidate = 1'h0;
-  assign sink_1a__ready = reg_1a_input__ready;
-  assign reg_1a_input__payload = sink_1a__payload;
-  assign reg_1a_input__valid = sink_1a__valid;
-  assign reg_19_invalidate = 1'h0;
-  assign sink_19__ready = reg_19_input__ready;
-  assign reg_19_input__payload = sink_19__payload;
-  assign reg_19_input__valid = sink_19__valid;
-  assign reg_18_invalidate = 1'h0;
-  assign sink_18__ready = reg_18_input__ready;
-  assign reg_18_input__payload = sink_18__payload;
-  assign reg_18_input__valid = sink_18__valid;
-  assign reg_13_invalidate = 1'h0;
-  assign sink_13__ready = reg_13_input__ready;
-  assign reg_13_input__payload = sink_13__payload;
-  assign reg_13_input__valid = sink_13__valid;
-  assign reg_12_invalidate = 1'h0;
-  assign sink_12__ready = reg_12_input__ready;
-  assign reg_12_input__payload = sink_12__payload;
-  assign reg_12_input__valid = sink_12__valid;
-  assign reg_11_invalidate = 1'h0;
-  assign sink_11__ready = reg_11_input__ready;
-  assign reg_11_input__payload = sink_11__payload;
-  assign reg_11_input__valid = sink_11__valid;
-  assign reg_10_invalidate = 1'h0;
-  assign sink_10__ready = reg_10_input__ready;
-  assign reg_10_input__payload = sink_10__payload;
-  assign reg_10_input__valid = sink_10__valid;
   assign \$1  = read_strobe_30;
+endmodule
+
+(* \nmigen.hierarchy  = "Cfu.input_flow_restrictor" *)
+(* generator = "nMigen" *)
+module input_flow_restrictor(input__payload, input__ready, release__payload, release__valid, output__valid, output__payload, output__ready, rst, clk, input__valid);
+  reg \initial  = 0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$1 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *)
+  wire [32:0] \$10 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$3 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+  wire \$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$7 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *)
+  wire [32:0] \$9 ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input clk;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  input [127:0] input__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  output input__ready;
+  reg input__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:48" *)
+  input input__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  output [127:0] output__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  input output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/actor.py:49" *)
+  output output__valid;
+  reg output__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  input [31:0] release__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  reg release__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:53" *)
+  input release__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:56" *)
+  reg [31:0] release_counter = 32'd0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:56" *)
+  reg [31:0] \release_counter$next ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input rst;
+  assign \$10  = release_counter - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:61" *) 1'h1;
+  assign \$12  = release__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) release__ready;
+  assign \$14  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$1  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$3  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$5  = release_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *) 1'h0;
+  assign \$7  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  always @(posedge clk)
+    release_counter <= \release_counter$next ;
+  always @* begin
+    if (\initial ) begin end
+    input__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$1 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          input__ready = output__ready;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    output__valid = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$3 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          output__valid = input__valid;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \release_counter$next  = release_counter;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$5 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:60" *)
+          casez (\$7 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:60" */
+            1'h1:
+                \release_counter$next  = \$10 [31:0];
+          endcase
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:62" */
+      default:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:64" *)
+          casez (\$12 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:64" */
+            1'h1:
+                \release_counter$next  = release__payload;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \release_counter$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    release__ready = 1'h0;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" *)
+    casez (\$14 )
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:57" */
+      1'h1:
+          /* empty */;
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/flow.py:62" */
+      default:
+          release__ready = 1'h1;
+    endcase
+  end
+  assign \$9  = \$10 ;
+  assign output__payload = input__payload;
 endmodule
 
 (* \nmigen.hierarchy  = "Cfu.input_store" *)
 (* generator = "nMigen" *)
-module input_store(num_words_input__payload, num_words_input__ready, data_input__valid, data_input__payload, data_input__ready, next, output_0__payload, output_1__payload, output_2__payload, output_3__payload, output_0__valid, output_0__ready, output_1__valid, output_1__ready, output_2__valid, output_2__ready, output_3__valid, output_3__ready, rst, clk, num_words_input__valid);
+module input_store(num_words_input__payload, num_words_input__ready, data_input__valid, data_input__payload, data_input__ready, data_output__valid, data_output__payload, data_output__ready, rst, clk, num_words_input__valid);
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *)
-  wire \$16 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$18 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$20 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$22 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:98" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+  wire \$10 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:70" *)
+  wire [9:0] \$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:70" *)
+  wire [9:0] \$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$15 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$17 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$19 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *)
+  wire [8:0] \$21 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *)
+  wire [8:0] \$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *)
   wire [8:0] \$24 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:98" *)
-  wire [8:0] \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-  wire [9:0] \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-  wire \$29 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *)
+  wire [9:0] \$25 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *)
+  wire \$27 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
   wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:100" *)
-  wire [9:0] \$31 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:100" *)
-  wire [9:0] \$32 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
-  wire [8:0] \$34 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
-  wire [8:0] \$35 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
-  wire [8:0] \$37 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
-  wire [9:0] \$38 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
-  wire \$40 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$30 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$43 ;
+  wire \$32 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$34 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$45 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-  wire [9:0] \$47 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-  wire \$49 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *)
-  wire \$6 ;
+  wire \$36 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$8 ;
+  wire \$38 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+  wire [9:0] \$40 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+  wire \$42 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$44 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$46 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$48 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:68" *)
+  wire [8:0] \$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$50 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$52 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+  wire \$54 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$56 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$58 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:68" *)
+  wire [8:0] \$6 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+  wire \$60 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+  wire [9:0] \$8 ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   input [31:0] data_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   output data_input__ready;
   reg data_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:56" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:52" *)
   input data_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  output [127:0] data_output__payload;
+  reg [127:0] data_output__payload = 128'h00000000000000000000000000000000;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  reg [127:0] \data_output__payload$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  input data_output__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  output data_output__valid;
+  reg data_output__valid = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:54" *)
+  reg \data_output__valid$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
   reg [1:0] fsm_state = 2'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
   reg [1:0] \fsm_state$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:111" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:101" *)
   reg [7:0] index = 8'h00;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:111" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:101" *)
   reg [7:0] \index$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire [5:0] mem_0_read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_0_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_0_read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_0_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_0_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_0_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  reg mem_0_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [5:0] mem_0_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [31:0] mem_0_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire mem_0_write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_0_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire [5:0] mem_1_read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_1_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_1_read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_1_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_1_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_1_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  reg mem_1_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [5:0] mem_1_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [31:0] mem_1_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire mem_1_write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_1_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire [5:0] mem_2_read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_2_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_2_read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_2_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_2_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_2_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  reg mem_2_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [5:0] mem_2_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [31:0] mem_2_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire mem_2_write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_2_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire [5:0] mem_3_read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_3_read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  wire mem_3_read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire [31:0] mem_3_read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_3_read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  wire mem_3_read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  reg mem_3_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [5:0] mem_3_write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg [31:0] mem_3_write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire mem_3_write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  reg mem_3_write_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:57" *)
-  input next;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:110" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:54" *)
+  reg [5:0] memory_read_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:55" *)
+  wire [127:0] memory_read_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:51" *)
+  reg [7:0] memory_write_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:52" *)
+  reg [31:0] memory_write_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:53" *)
+  reg memory_write_enable;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:100" *)
   reg [8:0] num_words = 9'h000;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:110" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:100" *)
   reg [8:0] \num_words$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   input [31:0] num_words_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   output num_words_input__ready;
   reg num_words_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:58" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:53" *)
   input num_words_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output [31:0] output_0__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  input output_0__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output output_0__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output [31:0] output_1__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  input output_1__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output output_1__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output [31:0] output_2__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  input output_2__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output output_2__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output [31:0] output_3__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  input output_3__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:59" *)
-  output output_3__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" *)
-  reg read_required = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" *)
-  reg \read_required$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg read_waiting = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$10  = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$10$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$15  = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$15$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$5  = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$5$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:73" *)
-  reg \read_waiting$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:112" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
+  reg read_port_valid = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
+  reg \read_port_valid$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:78" *)
+  reg read_started = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:78" *)
+  reg \read_started$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:102" *)
   wire reset;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input rst;
-  assign \$11  = read_required | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *) \read_waiting$10 ;
-  assign \$13  = mem_2_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_2_read_addr_input__ready;
-  assign \$16  = read_required | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *) \read_waiting$15 ;
-  assign \$18  = mem_3_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_3_read_addr_input__ready;
-  assign \$1  = read_required | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *) read_waiting;
-  assign \$20  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
-  assign \$22  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
-  assign \$25  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:98" *) 1'h1;
-  assign \$27  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *) 1'h1;
-  assign \$29  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *) \$27 ;
-  assign \$32  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:100" *) 3'h4;
-  assign \$35  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *) 3'h4;
-  assign \$38  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *) 3'h4;
-  assign \$3  = mem_0_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_0_read_addr_input__ready;
-  assign \$40  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *) \$38 ;
-  assign \$37  = \$40  ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *) 9'h000 : \$35 ;
-  assign \$43  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
-  assign \$45  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
-  assign \$47  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *) 1'h1;
-  assign \$49  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *) \$47 ;
-  assign \$6  = read_required | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:74" *) \read_waiting$5 ;
-  assign \$8  = mem_1_read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) mem_1_read_addr_input__ready;
+  assign \$10  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *) \$8 ;
+  assign \$13  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:70" *) 3'h4;
+  assign \$15  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) read_port_valid;
+  assign \$17  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) read_started;
+  assign \$1  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
+  assign \$19  = \$15  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) \$17 ;
+  assign \$22  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *) 3'h4;
+  assign \$25  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *) 3'h4;
+  assign \$27  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *) \$25 ;
+  assign \$24  = \$27  ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:86" *) 9'h000 : \$22 ;
+  assign \$30  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) data_output__valid;
+  assign \$32  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$34  = \$30  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) \$32 ;
+  assign \$36  = num_words_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_words_input__ready;
+  assign \$38  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
+  assign \$3  = data_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_input__ready;
+  assign \$40  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *) 1'h1;
+  assign \$42  = index == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *) \$40 ;
+  assign \$44  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) data_output__valid;
+  assign \$46  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$48  = \$44  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) \$46 ;
+  assign \$50  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) data_output__valid;
+  assign \$52  = data_output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) data_output__ready;
+  assign \$54  = \$50  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *) \$52 ;
+  assign \$56  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) read_port_valid;
+  assign \$58  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) read_started;
+  assign \$60  = \$56  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *) \$58 ;
+  assign \$6  = index + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:68" *) 1'h1;
+  assign \$8  = num_words - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *) 1'h1;
+  always @(posedge clk)
+    read_started <= \read_started$next ;
+  always @(posedge clk)
+    read_port_valid <= \read_port_valid$next ;
+  always @(posedge clk)
+    data_output__payload <= \data_output__payload$next ;
   always @(posedge clk)
     fsm_state <= \fsm_state$next ;
   always @(posedge clk)
-    read_required <= \read_required$next ;
+    data_output__valid <= \data_output__valid$next ;
   always @(posedge clk)
     index <= \index$next ;
   always @(posedge clk)
     num_words <= \num_words$next ;
-  always @(posedge clk)
-    \read_waiting$15  <= \read_waiting$15$next ;
-  always @(posedge clk)
-    \read_waiting$10  <= \read_waiting$10$next ;
-  always @(posedge clk)
-    \read_waiting$5  <= \read_waiting$5$next ;
-  always @(posedge clk)
-    read_waiting <= \read_waiting$next ;
-  mem_0 mem_0 (
+  memory memory (
     .clk(clk),
-    .read_addr_input__payload(mem_0_read_addr_input__payload),
-    .read_addr_input__ready(mem_0_read_addr_input__ready),
-    .read_addr_input__valid(mem_0_read_addr_input__valid),
-    .read_data_output__payload(mem_0_read_data_output__payload),
-    .read_data_output__ready(mem_0_read_data_output__ready),
-    .read_data_output__valid(mem_0_read_data_output__valid),
-    .reset(mem_0_reset),
-    .rst(rst),
-    .write_input__payload__addr(mem_0_write_input__payload__addr),
-    .write_input__payload__data(mem_0_write_input__payload__data),
-    .write_input__ready(mem_0_write_input__ready),
-    .write_input__valid(mem_0_write_input__valid)
+    .read_addr(memory_read_addr),
+    .read_data(memory_read_data),
+    .write_addr(memory_write_addr),
+    .write_data(memory_write_data),
+    .write_enable(memory_write_enable)
   );
-  mem_1 mem_1 (
-    .clk(clk),
-    .read_addr_input__payload(mem_1_read_addr_input__payload),
-    .read_addr_input__ready(mem_1_read_addr_input__ready),
-    .read_addr_input__valid(mem_1_read_addr_input__valid),
-    .read_data_output__payload(mem_1_read_data_output__payload),
-    .read_data_output__ready(mem_1_read_data_output__ready),
-    .read_data_output__valid(mem_1_read_data_output__valid),
-    .reset(mem_1_reset),
-    .rst(rst),
-    .write_input__payload__addr(mem_1_write_input__payload__addr),
-    .write_input__payload__data(mem_1_write_input__payload__data),
-    .write_input__ready(mem_1_write_input__ready),
-    .write_input__valid(mem_1_write_input__valid)
-  );
-  mem_2 mem_2 (
-    .clk(clk),
-    .read_addr_input__payload(mem_2_read_addr_input__payload),
-    .read_addr_input__ready(mem_2_read_addr_input__ready),
-    .read_addr_input__valid(mem_2_read_addr_input__valid),
-    .read_data_output__payload(mem_2_read_data_output__payload),
-    .read_data_output__ready(mem_2_read_data_output__ready),
-    .read_data_output__valid(mem_2_read_data_output__valid),
-    .reset(mem_2_reset),
-    .rst(rst),
-    .write_input__payload__addr(mem_2_write_input__payload__addr),
-    .write_input__payload__data(mem_2_write_input__payload__data),
-    .write_input__ready(mem_2_write_input__ready),
-    .write_input__valid(mem_2_write_input__valid)
-  );
-  mem_3 mem_3 (
-    .clk(clk),
-    .read_addr_input__payload(mem_3_read_addr_input__payload),
-    .read_addr_input__ready(mem_3_read_addr_input__ready),
-    .read_addr_input__valid(mem_3_read_addr_input__valid),
-    .read_data_output__payload(mem_3_read_data_output__payload),
-    .read_data_output__ready(mem_3_read_data_output__ready),
-    .read_data_output__valid(mem_3_read_data_output__valid),
-    .reset(mem_3_reset),
-    .rst(rst),
-    .write_input__payload__addr(mem_3_write_input__payload__addr),
-    .write_input__payload__data(mem_3_write_input__payload__data),
-    .write_input__ready(mem_3_write_input__ready),
-    .write_input__valid(mem_3_write_input__valid)
-  );
-  always @* begin
-    if (\initial ) begin end
-    \read_waiting$10$next  = \read_waiting$10 ;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" *)
-    casez (read_required)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" */
-      1'h1:
-          \read_waiting$10$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
-    casez (\$13 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" */
-      1'h1:
-          \read_waiting$10$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_waiting$10$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_waiting$15$next  = \read_waiting$15 ;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" *)
-    casez (read_required)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" */
-      1'h1:
-          \read_waiting$15$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
-    casez (\$18 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" */
-      1'h1:
-          \read_waiting$15$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_waiting$15$next  = 1'h0;
-    endcase
-  end
   always @* begin
     if (\initial ) begin end
     \num_words$next  = num_words;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
           \num_words$next  = 9'h000;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:127" *)
-          casez (\$20 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:127" */
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:115" *)
+          casez (\$1 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:115" */
             1'h1:
                 \num_words$next  = num_words_input__payload[8:0];
           endcase
@@ -4246,43 +2828,195 @@ module input_store(num_words_input__payload, num_words_input__ready, data_input_
   end
   always @* begin
     if (\initial ) begin end
-    \index$next  = index;
+    memory_read_addr = 6'h00;
     (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
-          \index$next  = 8'h00;
+          /* empty */;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
           /* empty */;
       /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
       2'h2:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:97" *)
-          casez (\$22 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:97" */
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
+      2'h3:
+          memory_read_addr = index[7:2];
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \data_output__payload$next  = data_output__payload;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
+      2'h3:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+          casez (\$48 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" */
+            1'h1:
+                \data_output__payload$next  = memory_read_data;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \data_output__payload$next  = 128'h00000000000000000000000000000000;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \read_port_valid$next  = read_port_valid;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
+      2'h3:
+        begin
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+          casez (\$54 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" */
+            1'h1:
+                \read_port_valid$next  = 1'h0;
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:91" *)
+          casez (read_started)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:91" */
+            1'h1:
+                \read_port_valid$next  = 1'h1;
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:95" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:95" */
+            1'h1:
+                \read_port_valid$next  = 1'h0;
+          endcase
+        end
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \read_port_valid$next  = 1'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \read_started$next  = read_started;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          /* empty */;
+      /* \nmigen.decoding  = "READING/3" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
+      2'h3:
+        begin
+          (* full_case = 32'd1 *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+          casez (\$60 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" */
+            1'h1:
+                \read_started$next  = 1'h1;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:88" */
+            default:
+                \read_started$next  = 1'h0;
+          endcase
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:95" *)
+          casez (reset)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:95" */
+            1'h1:
+                \read_started$next  = 1'h0;
+          endcase
+        end
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \read_started$next  = 1'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \index$next  = index;
+    (* full_case = 32'd1 *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          \index$next  = 8'h00;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:67" *)
+          casez (\$3 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:67" */
             1'h1:
               begin
-                \index$next  = \$25 [7:0];
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-                casez (\$29 )
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" */
+                \index$next  = \$6 [7:0];
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+                casez (\$10 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" */
                   1'h1:
-                      \index$next  = \$32 [7:0];
+                      \index$next  = \$13 [7:0];
                 endcase
               end
           endcase
       /* \nmigen.decoding  = "READING/3" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:135" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
       2'h3:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:106" *)
-          casez (next)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:106" */
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" *)
+          casez (\$19 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:85" */
             1'h1:
-                \index$next  = \$37 [7:0];
+                \index$next  = \$24 [7:0];
           endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
@@ -4293,145 +3027,85 @@ module input_store(num_words_input__payload, num_words_input__ready, data_input_
   end
   always @* begin
     if (\initial ) begin end
-    \read_required$next  = read_required;
+    \data_output__valid$next  = data_output__valid;
     (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
-          \read_required$next  = 1'h0;
+          \data_output__valid$next  = 1'h0;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
           /* empty */;
       /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
       2'h2:
           /* empty */;
       /* \nmigen.decoding  = "READING/3" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:135" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
       2'h3:
-          \read_required$next  = next;
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" *)
+          casez (\$34 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:80" */
+            1'h1:
+                \data_output__valid$next  = read_port_valid;
+          endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \read_required$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_0_reset = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          mem_0_reset = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_1_reset = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          mem_1_reset = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_waiting$next  = read_waiting;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" *)
-    casez (read_required)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" */
-      1'h1:
-          \read_waiting$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" */
-      1'h1:
-          \read_waiting$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_waiting$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_2_reset = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          mem_2_reset = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_3_reset = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          mem_3_reset = 1'h1;
+          \data_output__valid$next  = 1'h0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
     \fsm_state$next  = fsm_state;
     (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
           \fsm_state$next  = 2'h1;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:127" *)
-          casez (\$43 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:127" */
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:115" *)
+          casez (\$36 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:115" */
             1'h1:
                 \fsm_state$next  = 2'h2;
           endcase
       /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
       2'h2:
         begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:97" *)
-          casez (\$45 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:97" */
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:67" *)
+          casez (\$38 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:67" */
             1'h1:
-                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" *)
-                casez (\$49 )
-                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:99" */
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" *)
+                casez (\$42 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:69" */
                   1'h1:
                       \fsm_state$next  = 2'h3;
                 endcase
           endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:133" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:120" *)
           casez (reset)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:133" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:120" */
             1'h1:
                 \fsm_state$next  = 2'h0;
           endcase
         end
       /* \nmigen.decoding  = "READING/3" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:135" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:122" */
       2'h3:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:137" *)
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:124" *)
           casez (reset)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:137" */
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:124" */
             1'h1:
                 \fsm_state$next  = 2'h0;
           endcase
@@ -4445,277 +3119,97 @@ module input_store(num_words_input__payload, num_words_input__ready, data_input_
   always @* begin
     if (\initial ) begin end
     num_words_input__ready = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
           /* empty */;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
           num_words_input__ready = 1'h1;
     endcase
   end
   always @* begin
     if (\initial ) begin end
+    memory_write_addr = 8'h00;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          memory_write_addr = index;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_write_data = 32'd0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          memory_write_data = data_input__payload;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    memory_write_enable = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "RESET/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "NUM_WORDS/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "WRITING/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      2'h2:
+          memory_write_enable = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
     data_input__ready = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:107" *)
     casez (fsm_state)
       /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:108" */
       2'h0:
           /* empty */;
       /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:113" */
       2'h1:
           /* empty */;
       /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:88" *)
-          casez (index[1:0])
-            2'h0:
-                data_input__ready = mem_0_write_input__ready;
-            2'h1:
-                data_input__ready = mem_1_write_input__ready;
-            2'h2:
-                data_input__ready = mem_2_write_input__ready;
-            2'h?:
-                data_input__ready = mem_3_write_input__ready;
-          endcase
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_0_write_input__valid = 1'h0;
-    mem_1_write_input__valid = 1'h0;
-    mem_2_write_input__valid = 1'h0;
-    mem_3_write_input__valid = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
       2'h2:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:89" *)
-          casez (index[1:0])
-            2'h0:
-                mem_0_write_input__valid = data_input__valid;
-            2'h1:
-                mem_1_write_input__valid = data_input__valid;
-            2'h2:
-                mem_2_write_input__valid = data_input__valid;
-            2'h?:
-                mem_3_write_input__valid = data_input__valid;
-          endcase
+          data_input__ready = 1'h1;
     endcase
   end
-  always @* begin
-    if (\initial ) begin end
-    mem_0_write_input__payload__data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_0_write_input__payload__data = data_input__payload;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_0_write_input__payload__addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_0_write_input__payload__addr = index[7:2];
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_1_write_input__payload__data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_1_write_input__payload__data = data_input__payload;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_1_write_input__payload__addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_1_write_input__payload__addr = index[7:2];
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_2_write_input__payload__data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_2_write_input__payload__data = data_input__payload;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_2_write_input__payload__addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_2_write_input__payload__addr = index[7:2];
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_3_write_input__payload__data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_3_write_input__payload__data = data_input__payload;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    mem_3_write_input__payload__addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:117" *)
-    casez (fsm_state)
-      /* \nmigen.decoding  = "RESET/0" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:118" */
-      2'h0:
-          /* empty */;
-      /* \nmigen.decoding  = "NUM_WORDS/1" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:125" */
-      2'h1:
-          /* empty */;
-      /* \nmigen.decoding  = "WRITING/2" */
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:130" */
-      2'h2:
-          mem_3_write_input__payload__addr = index[7:2];
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_waiting$5$next  = \read_waiting$5 ;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" *)
-    casez (read_required)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:75" */
-      1'h1:
-          \read_waiting$5$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" *)
-    casez (\$8 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/input_store.py:77" */
-      1'h1:
-          \read_waiting$5$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_waiting$5$next  = 1'h0;
-    endcase
-  end
-  assign \$24  = \$25 ;
-  assign \$31  = \$32 ;
-  assign \$34  = \$37 ;
-  assign mem_3_read_data_output__ready = output_3__ready;
-  assign output_3__payload = mem_3_read_data_output__payload;
-  assign output_3__valid = mem_3_read_data_output__valid;
-  assign mem_3_read_addr_input__valid = \$16 ;
-  assign mem_3_read_addr_input__payload = index[7:2];
-  assign mem_2_read_data_output__ready = output_2__ready;
-  assign output_2__payload = mem_2_read_data_output__payload;
-  assign output_2__valid = mem_2_read_data_output__valid;
-  assign mem_2_read_addr_input__valid = \$11 ;
-  assign mem_2_read_addr_input__payload = index[7:2];
-  assign mem_1_read_data_output__ready = output_1__ready;
-  assign output_1__payload = mem_1_read_data_output__payload;
-  assign output_1__valid = mem_1_read_data_output__valid;
-  assign mem_1_read_addr_input__valid = \$6 ;
-  assign mem_1_read_addr_input__payload = index[7:2];
-  assign mem_0_read_data_output__ready = output_0__ready;
-  assign output_0__payload = mem_0_read_data_output__payload;
-  assign output_0__valid = mem_0_read_data_output__valid;
-  assign mem_0_read_addr_input__valid = \$1 ;
-  assign mem_0_read_addr_input__payload = index[7:2];
+  assign \$5  = \$6 ;
+  assign \$12  = \$13 ;
+  assign \$21  = \$24 ;
   assign reset = num_words_input__valid;
 endmodule
 
@@ -5981,3560 +4475,2664 @@ module macc(offset, operands__valid, operands__payload__inputs, operands__payloa
   assign result__valid = \$2 ;
 endmodule
 
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_0" *)
+(* \nmigen.hierarchy  = "Cfu.input_store.memory" *)
 (* generator = "nMigen" *)
-module mem_0(clk, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, read_data_output__valid, read_data_output__payload, read_data_output__ready, reset, write_input__ready, write_input__valid, write_input__payload__data, write_input__payload__addr, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
+module memory(write_addr, write_data, write_enable, read_addr, read_data, clk);
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$26 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$28 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$30 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$32 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$34 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$36 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$38 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$40 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$42 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$44 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$46 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$48 ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [5:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [5:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [5:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [5:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  output write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [63:0];
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [5:0] mem_r_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [5:0] \mem_r_addr$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [5:0] \mem_r_addr$21 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [5:0] \mem_r_addr$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] mem_r_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$6 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire mem_r_en;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$20 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$4 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [5:0] mem_w_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [5:0] \mem_w_addr$16 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [5:0] \mem_w_addr$24 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [5:0] \mem_w_addr$8 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] mem_w_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$17 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$25 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$9 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire mem_w_en;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$15 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$23 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$7 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:54" *)
+  input [5:0] read_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:55" *)
+  output [127:0] read_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:51" *)
+  input [7:0] write_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:52" *)
+  input [31:0] write_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:53" *)
+  input write_enable;
+  reg [31:0] mem [63:0];
   initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
+    mem[0] = 32'd0;
+    mem[1] = 32'd0;
+    mem[2] = 32'd0;
+    mem[3] = 32'd0;
+    mem[4] = 32'd0;
+    mem[5] = 32'd0;
+    mem[6] = 32'd0;
+    mem[7] = 32'd0;
+    mem[8] = 32'd0;
+    mem[9] = 32'd0;
+    mem[10] = 32'd0;
+    mem[11] = 32'd0;
+    mem[12] = 32'd0;
+    mem[13] = 32'd0;
+    mem[14] = 32'd0;
+    mem[15] = 32'd0;
+    mem[16] = 32'd0;
+    mem[17] = 32'd0;
+    mem[18] = 32'd0;
+    mem[19] = 32'd0;
+    mem[20] = 32'd0;
+    mem[21] = 32'd0;
+    mem[22] = 32'd0;
+    mem[23] = 32'd0;
+    mem[24] = 32'd0;
+    mem[25] = 32'd0;
+    mem[26] = 32'd0;
+    mem[27] = 32'd0;
+    mem[28] = 32'd0;
+    mem[29] = 32'd0;
+    mem[30] = 32'd0;
+    mem[31] = 32'd0;
+    mem[32] = 32'd0;
+    mem[33] = 32'd0;
+    mem[34] = 32'd0;
+    mem[35] = 32'd0;
+    mem[36] = 32'd0;
+    mem[37] = 32'd0;
+    mem[38] = 32'd0;
+    mem[39] = 32'd0;
+    mem[40] = 32'd0;
+    mem[41] = 32'd0;
+    mem[42] = 32'd0;
+    mem[43] = 32'd0;
+    mem[44] = 32'd0;
+    mem[45] = 32'd0;
+    mem[46] = 32'd0;
+    mem[47] = 32'd0;
+    mem[48] = 32'd0;
+    mem[49] = 32'd0;
+    mem[50] = 32'd0;
+    mem[51] = 32'd0;
+    mem[52] = 32'd0;
+    mem[53] = 32'd0;
+    mem[54] = 32'd0;
+    mem[55] = 32'd0;
+    mem[56] = 32'd0;
+    mem[57] = 32'd0;
+    mem[58] = 32'd0;
+    mem[59] = 32'd0;
+    mem[60] = 32'd0;
+    mem[61] = 32'd0;
+    mem[62] = 32'd0;
+    mem[63] = 32'd0;
   end
   always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
+    if (mem_w_en)
+      mem[mem_w_addr] <= mem_w_data;
   end
   reg [31:0] _0_;
   always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
+    if (mem_r_en) begin
+      _0_ <= mem[mem_r_addr];
     end
   end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  read_buffer read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(read_buffer_reset),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
+  assign mem_r_data = _0_;
+  reg [31:0] \mem$10  [63:0];
+  initial begin
+    \mem$10 [0] = 32'd0;
+    \mem$10 [1] = 32'd0;
+    \mem$10 [2] = 32'd0;
+    \mem$10 [3] = 32'd0;
+    \mem$10 [4] = 32'd0;
+    \mem$10 [5] = 32'd0;
+    \mem$10 [6] = 32'd0;
+    \mem$10 [7] = 32'd0;
+    \mem$10 [8] = 32'd0;
+    \mem$10 [9] = 32'd0;
+    \mem$10 [10] = 32'd0;
+    \mem$10 [11] = 32'd0;
+    \mem$10 [12] = 32'd0;
+    \mem$10 [13] = 32'd0;
+    \mem$10 [14] = 32'd0;
+    \mem$10 [15] = 32'd0;
+    \mem$10 [16] = 32'd0;
+    \mem$10 [17] = 32'd0;
+    \mem$10 [18] = 32'd0;
+    \mem$10 [19] = 32'd0;
+    \mem$10 [20] = 32'd0;
+    \mem$10 [21] = 32'd0;
+    \mem$10 [22] = 32'd0;
+    \mem$10 [23] = 32'd0;
+    \mem$10 [24] = 32'd0;
+    \mem$10 [25] = 32'd0;
+    \mem$10 [26] = 32'd0;
+    \mem$10 [27] = 32'd0;
+    \mem$10 [28] = 32'd0;
+    \mem$10 [29] = 32'd0;
+    \mem$10 [30] = 32'd0;
+    \mem$10 [31] = 32'd0;
+    \mem$10 [32] = 32'd0;
+    \mem$10 [33] = 32'd0;
+    \mem$10 [34] = 32'd0;
+    \mem$10 [35] = 32'd0;
+    \mem$10 [36] = 32'd0;
+    \mem$10 [37] = 32'd0;
+    \mem$10 [38] = 32'd0;
+    \mem$10 [39] = 32'd0;
+    \mem$10 [40] = 32'd0;
+    \mem$10 [41] = 32'd0;
+    \mem$10 [42] = 32'd0;
+    \mem$10 [43] = 32'd0;
+    \mem$10 [44] = 32'd0;
+    \mem$10 [45] = 32'd0;
+    \mem$10 [46] = 32'd0;
+    \mem$10 [47] = 32'd0;
+    \mem$10 [48] = 32'd0;
+    \mem$10 [49] = 32'd0;
+    \mem$10 [50] = 32'd0;
+    \mem$10 [51] = 32'd0;
+    \mem$10 [52] = 32'd0;
+    \mem$10 [53] = 32'd0;
+    \mem$10 [54] = 32'd0;
+    \mem$10 [55] = 32'd0;
+    \mem$10 [56] = 32'd0;
+    \mem$10 [57] = 32'd0;
+    \mem$10 [58] = 32'd0;
+    \mem$10 [59] = 32'd0;
+    \mem$10 [60] = 32'd0;
+    \mem$10 [61] = 32'd0;
+    \mem$10 [62] = 32'd0;
+    \mem$10 [63] = 32'd0;
   end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
+  always @(posedge clk) begin
+    if (\mem_w_en$15 )
+      \mem$10 [\mem_w_addr$16 ] <= \mem_w_data$17 ;
   end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
+  reg [31:0] _1_;
+  always @(posedge clk) begin
+    if (\mem_r_en$12 ) begin
+      _1_ <= \mem$10 [\mem_r_addr$13 ];
+    end
   end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
+  assign \mem_r_data$14  = _1_;
+  reg [31:0] \mem$18  [63:0];
+  initial begin
+    \mem$18 [0] = 32'd0;
+    \mem$18 [1] = 32'd0;
+    \mem$18 [2] = 32'd0;
+    \mem$18 [3] = 32'd0;
+    \mem$18 [4] = 32'd0;
+    \mem$18 [5] = 32'd0;
+    \mem$18 [6] = 32'd0;
+    \mem$18 [7] = 32'd0;
+    \mem$18 [8] = 32'd0;
+    \mem$18 [9] = 32'd0;
+    \mem$18 [10] = 32'd0;
+    \mem$18 [11] = 32'd0;
+    \mem$18 [12] = 32'd0;
+    \mem$18 [13] = 32'd0;
+    \mem$18 [14] = 32'd0;
+    \mem$18 [15] = 32'd0;
+    \mem$18 [16] = 32'd0;
+    \mem$18 [17] = 32'd0;
+    \mem$18 [18] = 32'd0;
+    \mem$18 [19] = 32'd0;
+    \mem$18 [20] = 32'd0;
+    \mem$18 [21] = 32'd0;
+    \mem$18 [22] = 32'd0;
+    \mem$18 [23] = 32'd0;
+    \mem$18 [24] = 32'd0;
+    \mem$18 [25] = 32'd0;
+    \mem$18 [26] = 32'd0;
+    \mem$18 [27] = 32'd0;
+    \mem$18 [28] = 32'd0;
+    \mem$18 [29] = 32'd0;
+    \mem$18 [30] = 32'd0;
+    \mem$18 [31] = 32'd0;
+    \mem$18 [32] = 32'd0;
+    \mem$18 [33] = 32'd0;
+    \mem$18 [34] = 32'd0;
+    \mem$18 [35] = 32'd0;
+    \mem$18 [36] = 32'd0;
+    \mem$18 [37] = 32'd0;
+    \mem$18 [38] = 32'd0;
+    \mem$18 [39] = 32'd0;
+    \mem$18 [40] = 32'd0;
+    \mem$18 [41] = 32'd0;
+    \mem$18 [42] = 32'd0;
+    \mem$18 [43] = 32'd0;
+    \mem$18 [44] = 32'd0;
+    \mem$18 [45] = 32'd0;
+    \mem$18 [46] = 32'd0;
+    \mem$18 [47] = 32'd0;
+    \mem$18 [48] = 32'd0;
+    \mem$18 [49] = 32'd0;
+    \mem$18 [50] = 32'd0;
+    \mem$18 [51] = 32'd0;
+    \mem$18 [52] = 32'd0;
+    \mem$18 [53] = 32'd0;
+    \mem$18 [54] = 32'd0;
+    \mem$18 [55] = 32'd0;
+    \mem$18 [56] = 32'd0;
+    \mem$18 [57] = 32'd0;
+    \mem$18 [58] = 32'd0;
+    \mem$18 [59] = 32'd0;
+    \mem$18 [60] = 32'd0;
+    \mem$18 [61] = 32'd0;
+    \mem$18 [62] = 32'd0;
+    \mem$18 [63] = 32'd0;
   end
-  assign read_buffer_reset = reset;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
+  always @(posedge clk) begin
+    if (\mem_w_en$23 )
+      \mem$18 [\mem_w_addr$24 ] <= \mem_w_data$25 ;
+  end
+  reg [31:0] _2_;
+  always @(posedge clk) begin
+    if (\mem_r_en$20 ) begin
+      _2_ <= \mem$18 [\mem_r_addr$21 ];
+    end
+  end
+  assign \mem_r_data$22  = _2_;
+  reg [31:0] \mem$2  [63:0];
+  initial begin
+    \mem$2 [0] = 32'd0;
+    \mem$2 [1] = 32'd0;
+    \mem$2 [2] = 32'd0;
+    \mem$2 [3] = 32'd0;
+    \mem$2 [4] = 32'd0;
+    \mem$2 [5] = 32'd0;
+    \mem$2 [6] = 32'd0;
+    \mem$2 [7] = 32'd0;
+    \mem$2 [8] = 32'd0;
+    \mem$2 [9] = 32'd0;
+    \mem$2 [10] = 32'd0;
+    \mem$2 [11] = 32'd0;
+    \mem$2 [12] = 32'd0;
+    \mem$2 [13] = 32'd0;
+    \mem$2 [14] = 32'd0;
+    \mem$2 [15] = 32'd0;
+    \mem$2 [16] = 32'd0;
+    \mem$2 [17] = 32'd0;
+    \mem$2 [18] = 32'd0;
+    \mem$2 [19] = 32'd0;
+    \mem$2 [20] = 32'd0;
+    \mem$2 [21] = 32'd0;
+    \mem$2 [22] = 32'd0;
+    \mem$2 [23] = 32'd0;
+    \mem$2 [24] = 32'd0;
+    \mem$2 [25] = 32'd0;
+    \mem$2 [26] = 32'd0;
+    \mem$2 [27] = 32'd0;
+    \mem$2 [28] = 32'd0;
+    \mem$2 [29] = 32'd0;
+    \mem$2 [30] = 32'd0;
+    \mem$2 [31] = 32'd0;
+    \mem$2 [32] = 32'd0;
+    \mem$2 [33] = 32'd0;
+    \mem$2 [34] = 32'd0;
+    \mem$2 [35] = 32'd0;
+    \mem$2 [36] = 32'd0;
+    \mem$2 [37] = 32'd0;
+    \mem$2 [38] = 32'd0;
+    \mem$2 [39] = 32'd0;
+    \mem$2 [40] = 32'd0;
+    \mem$2 [41] = 32'd0;
+    \mem$2 [42] = 32'd0;
+    \mem$2 [43] = 32'd0;
+    \mem$2 [44] = 32'd0;
+    \mem$2 [45] = 32'd0;
+    \mem$2 [46] = 32'd0;
+    \mem$2 [47] = 32'd0;
+    \mem$2 [48] = 32'd0;
+    \mem$2 [49] = 32'd0;
+    \mem$2 [50] = 32'd0;
+    \mem$2 [51] = 32'd0;
+    \mem$2 [52] = 32'd0;
+    \mem$2 [53] = 32'd0;
+    \mem$2 [54] = 32'd0;
+    \mem$2 [55] = 32'd0;
+    \mem$2 [56] = 32'd0;
+    \mem$2 [57] = 32'd0;
+    \mem$2 [58] = 32'd0;
+    \mem$2 [59] = 32'd0;
+    \mem$2 [60] = 32'd0;
+    \mem$2 [61] = 32'd0;
+    \mem$2 [62] = 32'd0;
+    \mem$2 [63] = 32'd0;
+  end
+  always @(posedge clk) begin
+    if (\mem_w_en$7 )
+      \mem$2 [\mem_w_addr$8 ] <= \mem_w_data$9 ;
+  end
+  reg [31:0] _3_;
+  always @(posedge clk) begin
+    if (\mem_r_en$4 ) begin
+      _3_ <= \mem$2 [\mem_r_addr$5 ];
+    end
+  end
+  assign \mem_r_data$6  = _3_;
+  assign \$26  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$28  = ! (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) write_addr[1:0];
+  assign \$30  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$28 ;
+  assign \$32  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$34  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 1'h1;
+  assign \$36  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$34 ;
+  assign \$38  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$40  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 2'h2;
+  assign \$42  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$40 ;
+  assign \$44  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$46  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 2'h3;
+  assign \$48  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$46 ;
+  assign read_data = { \mem_r_data$22 , \mem_r_data$14 , \mem_r_data$6 , mem_r_data };
+  assign \mem_w_en$23  = \$48 ;
+  assign \mem_w_data$25  = write_data;
+  assign \mem_w_addr$24  = write_addr[7:2];
+  assign \mem_r_en$20  = \$44 ;
+  assign \mem_r_addr$21  = read_addr;
+  assign \mem_w_en$15  = \$42 ;
+  assign \mem_w_data$17  = write_data;
+  assign \mem_w_addr$16  = write_addr[7:2];
+  assign \mem_r_en$12  = \$38 ;
+  assign \mem_r_addr$13  = read_addr;
+  assign \mem_w_en$7  = \$36 ;
+  assign \mem_w_data$9  = write_data;
+  assign \mem_w_addr$8  = write_addr[7:2];
+  assign \mem_r_en$4  = \$32 ;
+  assign \mem_r_addr$5  = read_addr;
+  assign mem_w_en = \$30 ;
+  assign mem_w_data = write_data;
+  assign mem_w_addr = write_addr[7:2];
+  assign mem_r_en = \$26 ;
+  assign mem_r_addr = read_addr;
 endmodule
 
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_0" *)
+(* \nmigen.hierarchy  = "Cfu.filter_store.memory" *)
 (* generator = "nMigen" *)
-module \mem_0$5 (clk, write_input__payload__addr, write_input__payload__data, write_input__valid, read_data_output__valid, read_data_output__payload, read_data_output__ready, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
+module \memory$2 (write_addr, write_data, write_enable, read_addr, read_data, clk);
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$26 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$28 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$30 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$32 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$34 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$36 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$38 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$40 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$42 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *)
+  wire \$44 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *)
+  wire \$46 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *)
+  wire \$48 ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [8:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [8:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [8:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  wire reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [8:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [511:0];
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [8:0] mem_r_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [8:0] \mem_r_addr$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [8:0] \mem_r_addr$21 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [8:0] \mem_r_addr$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] mem_r_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire [31:0] \mem_r_data$6 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire mem_r_en;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$20 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:62" *)
+  wire \mem_r_en$4 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [8:0] mem_w_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [8:0] \mem_w_addr$16 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [8:0] \mem_w_addr$24 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [8:0] \mem_w_addr$8 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] mem_w_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$17 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$25 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire [31:0] \mem_w_data$9 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire mem_w_en;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$15 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$23 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:68" *)
+  wire \mem_w_en$7 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:54" *)
+  input [8:0] read_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:55" *)
+  output [127:0] read_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:51" *)
+  input [10:0] write_addr;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:52" *)
+  input [31:0] write_data;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:53" *)
+  input write_enable;
+  reg [31:0] mem [511:0];
   initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
-    memory[64] = 32'd0;
-    memory[65] = 32'd0;
-    memory[66] = 32'd0;
-    memory[67] = 32'd0;
-    memory[68] = 32'd0;
-    memory[69] = 32'd0;
-    memory[70] = 32'd0;
-    memory[71] = 32'd0;
-    memory[72] = 32'd0;
-    memory[73] = 32'd0;
-    memory[74] = 32'd0;
-    memory[75] = 32'd0;
-    memory[76] = 32'd0;
-    memory[77] = 32'd0;
-    memory[78] = 32'd0;
-    memory[79] = 32'd0;
-    memory[80] = 32'd0;
-    memory[81] = 32'd0;
-    memory[82] = 32'd0;
-    memory[83] = 32'd0;
-    memory[84] = 32'd0;
-    memory[85] = 32'd0;
-    memory[86] = 32'd0;
-    memory[87] = 32'd0;
-    memory[88] = 32'd0;
-    memory[89] = 32'd0;
-    memory[90] = 32'd0;
-    memory[91] = 32'd0;
-    memory[92] = 32'd0;
-    memory[93] = 32'd0;
-    memory[94] = 32'd0;
-    memory[95] = 32'd0;
-    memory[96] = 32'd0;
-    memory[97] = 32'd0;
-    memory[98] = 32'd0;
-    memory[99] = 32'd0;
-    memory[100] = 32'd0;
-    memory[101] = 32'd0;
-    memory[102] = 32'd0;
-    memory[103] = 32'd0;
-    memory[104] = 32'd0;
-    memory[105] = 32'd0;
-    memory[106] = 32'd0;
-    memory[107] = 32'd0;
-    memory[108] = 32'd0;
-    memory[109] = 32'd0;
-    memory[110] = 32'd0;
-    memory[111] = 32'd0;
-    memory[112] = 32'd0;
-    memory[113] = 32'd0;
-    memory[114] = 32'd0;
-    memory[115] = 32'd0;
-    memory[116] = 32'd0;
-    memory[117] = 32'd0;
-    memory[118] = 32'd0;
-    memory[119] = 32'd0;
-    memory[120] = 32'd0;
-    memory[121] = 32'd0;
-    memory[122] = 32'd0;
-    memory[123] = 32'd0;
-    memory[124] = 32'd0;
-    memory[125] = 32'd0;
-    memory[126] = 32'd0;
-    memory[127] = 32'd0;
-    memory[128] = 32'd0;
-    memory[129] = 32'd0;
-    memory[130] = 32'd0;
-    memory[131] = 32'd0;
-    memory[132] = 32'd0;
-    memory[133] = 32'd0;
-    memory[134] = 32'd0;
-    memory[135] = 32'd0;
-    memory[136] = 32'd0;
-    memory[137] = 32'd0;
-    memory[138] = 32'd0;
-    memory[139] = 32'd0;
-    memory[140] = 32'd0;
-    memory[141] = 32'd0;
-    memory[142] = 32'd0;
-    memory[143] = 32'd0;
-    memory[144] = 32'd0;
-    memory[145] = 32'd0;
-    memory[146] = 32'd0;
-    memory[147] = 32'd0;
-    memory[148] = 32'd0;
-    memory[149] = 32'd0;
-    memory[150] = 32'd0;
-    memory[151] = 32'd0;
-    memory[152] = 32'd0;
-    memory[153] = 32'd0;
-    memory[154] = 32'd0;
-    memory[155] = 32'd0;
-    memory[156] = 32'd0;
-    memory[157] = 32'd0;
-    memory[158] = 32'd0;
-    memory[159] = 32'd0;
-    memory[160] = 32'd0;
-    memory[161] = 32'd0;
-    memory[162] = 32'd0;
-    memory[163] = 32'd0;
-    memory[164] = 32'd0;
-    memory[165] = 32'd0;
-    memory[166] = 32'd0;
-    memory[167] = 32'd0;
-    memory[168] = 32'd0;
-    memory[169] = 32'd0;
-    memory[170] = 32'd0;
-    memory[171] = 32'd0;
-    memory[172] = 32'd0;
-    memory[173] = 32'd0;
-    memory[174] = 32'd0;
-    memory[175] = 32'd0;
-    memory[176] = 32'd0;
-    memory[177] = 32'd0;
-    memory[178] = 32'd0;
-    memory[179] = 32'd0;
-    memory[180] = 32'd0;
-    memory[181] = 32'd0;
-    memory[182] = 32'd0;
-    memory[183] = 32'd0;
-    memory[184] = 32'd0;
-    memory[185] = 32'd0;
-    memory[186] = 32'd0;
-    memory[187] = 32'd0;
-    memory[188] = 32'd0;
-    memory[189] = 32'd0;
-    memory[190] = 32'd0;
-    memory[191] = 32'd0;
-    memory[192] = 32'd0;
-    memory[193] = 32'd0;
-    memory[194] = 32'd0;
-    memory[195] = 32'd0;
-    memory[196] = 32'd0;
-    memory[197] = 32'd0;
-    memory[198] = 32'd0;
-    memory[199] = 32'd0;
-    memory[200] = 32'd0;
-    memory[201] = 32'd0;
-    memory[202] = 32'd0;
-    memory[203] = 32'd0;
-    memory[204] = 32'd0;
-    memory[205] = 32'd0;
-    memory[206] = 32'd0;
-    memory[207] = 32'd0;
-    memory[208] = 32'd0;
-    memory[209] = 32'd0;
-    memory[210] = 32'd0;
-    memory[211] = 32'd0;
-    memory[212] = 32'd0;
-    memory[213] = 32'd0;
-    memory[214] = 32'd0;
-    memory[215] = 32'd0;
-    memory[216] = 32'd0;
-    memory[217] = 32'd0;
-    memory[218] = 32'd0;
-    memory[219] = 32'd0;
-    memory[220] = 32'd0;
-    memory[221] = 32'd0;
-    memory[222] = 32'd0;
-    memory[223] = 32'd0;
-    memory[224] = 32'd0;
-    memory[225] = 32'd0;
-    memory[226] = 32'd0;
-    memory[227] = 32'd0;
-    memory[228] = 32'd0;
-    memory[229] = 32'd0;
-    memory[230] = 32'd0;
-    memory[231] = 32'd0;
-    memory[232] = 32'd0;
-    memory[233] = 32'd0;
-    memory[234] = 32'd0;
-    memory[235] = 32'd0;
-    memory[236] = 32'd0;
-    memory[237] = 32'd0;
-    memory[238] = 32'd0;
-    memory[239] = 32'd0;
-    memory[240] = 32'd0;
-    memory[241] = 32'd0;
-    memory[242] = 32'd0;
-    memory[243] = 32'd0;
-    memory[244] = 32'd0;
-    memory[245] = 32'd0;
-    memory[246] = 32'd0;
-    memory[247] = 32'd0;
-    memory[248] = 32'd0;
-    memory[249] = 32'd0;
-    memory[250] = 32'd0;
-    memory[251] = 32'd0;
-    memory[252] = 32'd0;
-    memory[253] = 32'd0;
-    memory[254] = 32'd0;
-    memory[255] = 32'd0;
-    memory[256] = 32'd0;
-    memory[257] = 32'd0;
-    memory[258] = 32'd0;
-    memory[259] = 32'd0;
-    memory[260] = 32'd0;
-    memory[261] = 32'd0;
-    memory[262] = 32'd0;
-    memory[263] = 32'd0;
-    memory[264] = 32'd0;
-    memory[265] = 32'd0;
-    memory[266] = 32'd0;
-    memory[267] = 32'd0;
-    memory[268] = 32'd0;
-    memory[269] = 32'd0;
-    memory[270] = 32'd0;
-    memory[271] = 32'd0;
-    memory[272] = 32'd0;
-    memory[273] = 32'd0;
-    memory[274] = 32'd0;
-    memory[275] = 32'd0;
-    memory[276] = 32'd0;
-    memory[277] = 32'd0;
-    memory[278] = 32'd0;
-    memory[279] = 32'd0;
-    memory[280] = 32'd0;
-    memory[281] = 32'd0;
-    memory[282] = 32'd0;
-    memory[283] = 32'd0;
-    memory[284] = 32'd0;
-    memory[285] = 32'd0;
-    memory[286] = 32'd0;
-    memory[287] = 32'd0;
-    memory[288] = 32'd0;
-    memory[289] = 32'd0;
-    memory[290] = 32'd0;
-    memory[291] = 32'd0;
-    memory[292] = 32'd0;
-    memory[293] = 32'd0;
-    memory[294] = 32'd0;
-    memory[295] = 32'd0;
-    memory[296] = 32'd0;
-    memory[297] = 32'd0;
-    memory[298] = 32'd0;
-    memory[299] = 32'd0;
-    memory[300] = 32'd0;
-    memory[301] = 32'd0;
-    memory[302] = 32'd0;
-    memory[303] = 32'd0;
-    memory[304] = 32'd0;
-    memory[305] = 32'd0;
-    memory[306] = 32'd0;
-    memory[307] = 32'd0;
-    memory[308] = 32'd0;
-    memory[309] = 32'd0;
-    memory[310] = 32'd0;
-    memory[311] = 32'd0;
-    memory[312] = 32'd0;
-    memory[313] = 32'd0;
-    memory[314] = 32'd0;
-    memory[315] = 32'd0;
-    memory[316] = 32'd0;
-    memory[317] = 32'd0;
-    memory[318] = 32'd0;
-    memory[319] = 32'd0;
-    memory[320] = 32'd0;
-    memory[321] = 32'd0;
-    memory[322] = 32'd0;
-    memory[323] = 32'd0;
-    memory[324] = 32'd0;
-    memory[325] = 32'd0;
-    memory[326] = 32'd0;
-    memory[327] = 32'd0;
-    memory[328] = 32'd0;
-    memory[329] = 32'd0;
-    memory[330] = 32'd0;
-    memory[331] = 32'd0;
-    memory[332] = 32'd0;
-    memory[333] = 32'd0;
-    memory[334] = 32'd0;
-    memory[335] = 32'd0;
-    memory[336] = 32'd0;
-    memory[337] = 32'd0;
-    memory[338] = 32'd0;
-    memory[339] = 32'd0;
-    memory[340] = 32'd0;
-    memory[341] = 32'd0;
-    memory[342] = 32'd0;
-    memory[343] = 32'd0;
-    memory[344] = 32'd0;
-    memory[345] = 32'd0;
-    memory[346] = 32'd0;
-    memory[347] = 32'd0;
-    memory[348] = 32'd0;
-    memory[349] = 32'd0;
-    memory[350] = 32'd0;
-    memory[351] = 32'd0;
-    memory[352] = 32'd0;
-    memory[353] = 32'd0;
-    memory[354] = 32'd0;
-    memory[355] = 32'd0;
-    memory[356] = 32'd0;
-    memory[357] = 32'd0;
-    memory[358] = 32'd0;
-    memory[359] = 32'd0;
-    memory[360] = 32'd0;
-    memory[361] = 32'd0;
-    memory[362] = 32'd0;
-    memory[363] = 32'd0;
-    memory[364] = 32'd0;
-    memory[365] = 32'd0;
-    memory[366] = 32'd0;
-    memory[367] = 32'd0;
-    memory[368] = 32'd0;
-    memory[369] = 32'd0;
-    memory[370] = 32'd0;
-    memory[371] = 32'd0;
-    memory[372] = 32'd0;
-    memory[373] = 32'd0;
-    memory[374] = 32'd0;
-    memory[375] = 32'd0;
-    memory[376] = 32'd0;
-    memory[377] = 32'd0;
-    memory[378] = 32'd0;
-    memory[379] = 32'd0;
-    memory[380] = 32'd0;
-    memory[381] = 32'd0;
-    memory[382] = 32'd0;
-    memory[383] = 32'd0;
-    memory[384] = 32'd0;
-    memory[385] = 32'd0;
-    memory[386] = 32'd0;
-    memory[387] = 32'd0;
-    memory[388] = 32'd0;
-    memory[389] = 32'd0;
-    memory[390] = 32'd0;
-    memory[391] = 32'd0;
-    memory[392] = 32'd0;
-    memory[393] = 32'd0;
-    memory[394] = 32'd0;
-    memory[395] = 32'd0;
-    memory[396] = 32'd0;
-    memory[397] = 32'd0;
-    memory[398] = 32'd0;
-    memory[399] = 32'd0;
-    memory[400] = 32'd0;
-    memory[401] = 32'd0;
-    memory[402] = 32'd0;
-    memory[403] = 32'd0;
-    memory[404] = 32'd0;
-    memory[405] = 32'd0;
-    memory[406] = 32'd0;
-    memory[407] = 32'd0;
-    memory[408] = 32'd0;
-    memory[409] = 32'd0;
-    memory[410] = 32'd0;
-    memory[411] = 32'd0;
-    memory[412] = 32'd0;
-    memory[413] = 32'd0;
-    memory[414] = 32'd0;
-    memory[415] = 32'd0;
-    memory[416] = 32'd0;
-    memory[417] = 32'd0;
-    memory[418] = 32'd0;
-    memory[419] = 32'd0;
-    memory[420] = 32'd0;
-    memory[421] = 32'd0;
-    memory[422] = 32'd0;
-    memory[423] = 32'd0;
-    memory[424] = 32'd0;
-    memory[425] = 32'd0;
-    memory[426] = 32'd0;
-    memory[427] = 32'd0;
-    memory[428] = 32'd0;
-    memory[429] = 32'd0;
-    memory[430] = 32'd0;
-    memory[431] = 32'd0;
-    memory[432] = 32'd0;
-    memory[433] = 32'd0;
-    memory[434] = 32'd0;
-    memory[435] = 32'd0;
-    memory[436] = 32'd0;
-    memory[437] = 32'd0;
-    memory[438] = 32'd0;
-    memory[439] = 32'd0;
-    memory[440] = 32'd0;
-    memory[441] = 32'd0;
-    memory[442] = 32'd0;
-    memory[443] = 32'd0;
-    memory[444] = 32'd0;
-    memory[445] = 32'd0;
-    memory[446] = 32'd0;
-    memory[447] = 32'd0;
-    memory[448] = 32'd0;
-    memory[449] = 32'd0;
-    memory[450] = 32'd0;
-    memory[451] = 32'd0;
-    memory[452] = 32'd0;
-    memory[453] = 32'd0;
-    memory[454] = 32'd0;
-    memory[455] = 32'd0;
-    memory[456] = 32'd0;
-    memory[457] = 32'd0;
-    memory[458] = 32'd0;
-    memory[459] = 32'd0;
-    memory[460] = 32'd0;
-    memory[461] = 32'd0;
-    memory[462] = 32'd0;
-    memory[463] = 32'd0;
-    memory[464] = 32'd0;
-    memory[465] = 32'd0;
-    memory[466] = 32'd0;
-    memory[467] = 32'd0;
-    memory[468] = 32'd0;
-    memory[469] = 32'd0;
-    memory[470] = 32'd0;
-    memory[471] = 32'd0;
-    memory[472] = 32'd0;
-    memory[473] = 32'd0;
-    memory[474] = 32'd0;
-    memory[475] = 32'd0;
-    memory[476] = 32'd0;
-    memory[477] = 32'd0;
-    memory[478] = 32'd0;
-    memory[479] = 32'd0;
-    memory[480] = 32'd0;
-    memory[481] = 32'd0;
-    memory[482] = 32'd0;
-    memory[483] = 32'd0;
-    memory[484] = 32'd0;
-    memory[485] = 32'd0;
-    memory[486] = 32'd0;
-    memory[487] = 32'd0;
-    memory[488] = 32'd0;
-    memory[489] = 32'd0;
-    memory[490] = 32'd0;
-    memory[491] = 32'd0;
-    memory[492] = 32'd0;
-    memory[493] = 32'd0;
-    memory[494] = 32'd0;
-    memory[495] = 32'd0;
-    memory[496] = 32'd0;
-    memory[497] = 32'd0;
-    memory[498] = 32'd0;
-    memory[499] = 32'd0;
-    memory[500] = 32'd0;
-    memory[501] = 32'd0;
-    memory[502] = 32'd0;
-    memory[503] = 32'd0;
-    memory[504] = 32'd0;
-    memory[505] = 32'd0;
-    memory[506] = 32'd0;
-    memory[507] = 32'd0;
-    memory[508] = 32'd0;
-    memory[509] = 32'd0;
-    memory[510] = 32'd0;
-    memory[511] = 32'd0;
+    mem[0] = 32'd0;
+    mem[1] = 32'd0;
+    mem[2] = 32'd0;
+    mem[3] = 32'd0;
+    mem[4] = 32'd0;
+    mem[5] = 32'd0;
+    mem[6] = 32'd0;
+    mem[7] = 32'd0;
+    mem[8] = 32'd0;
+    mem[9] = 32'd0;
+    mem[10] = 32'd0;
+    mem[11] = 32'd0;
+    mem[12] = 32'd0;
+    mem[13] = 32'd0;
+    mem[14] = 32'd0;
+    mem[15] = 32'd0;
+    mem[16] = 32'd0;
+    mem[17] = 32'd0;
+    mem[18] = 32'd0;
+    mem[19] = 32'd0;
+    mem[20] = 32'd0;
+    mem[21] = 32'd0;
+    mem[22] = 32'd0;
+    mem[23] = 32'd0;
+    mem[24] = 32'd0;
+    mem[25] = 32'd0;
+    mem[26] = 32'd0;
+    mem[27] = 32'd0;
+    mem[28] = 32'd0;
+    mem[29] = 32'd0;
+    mem[30] = 32'd0;
+    mem[31] = 32'd0;
+    mem[32] = 32'd0;
+    mem[33] = 32'd0;
+    mem[34] = 32'd0;
+    mem[35] = 32'd0;
+    mem[36] = 32'd0;
+    mem[37] = 32'd0;
+    mem[38] = 32'd0;
+    mem[39] = 32'd0;
+    mem[40] = 32'd0;
+    mem[41] = 32'd0;
+    mem[42] = 32'd0;
+    mem[43] = 32'd0;
+    mem[44] = 32'd0;
+    mem[45] = 32'd0;
+    mem[46] = 32'd0;
+    mem[47] = 32'd0;
+    mem[48] = 32'd0;
+    mem[49] = 32'd0;
+    mem[50] = 32'd0;
+    mem[51] = 32'd0;
+    mem[52] = 32'd0;
+    mem[53] = 32'd0;
+    mem[54] = 32'd0;
+    mem[55] = 32'd0;
+    mem[56] = 32'd0;
+    mem[57] = 32'd0;
+    mem[58] = 32'd0;
+    mem[59] = 32'd0;
+    mem[60] = 32'd0;
+    mem[61] = 32'd0;
+    mem[62] = 32'd0;
+    mem[63] = 32'd0;
+    mem[64] = 32'd0;
+    mem[65] = 32'd0;
+    mem[66] = 32'd0;
+    mem[67] = 32'd0;
+    mem[68] = 32'd0;
+    mem[69] = 32'd0;
+    mem[70] = 32'd0;
+    mem[71] = 32'd0;
+    mem[72] = 32'd0;
+    mem[73] = 32'd0;
+    mem[74] = 32'd0;
+    mem[75] = 32'd0;
+    mem[76] = 32'd0;
+    mem[77] = 32'd0;
+    mem[78] = 32'd0;
+    mem[79] = 32'd0;
+    mem[80] = 32'd0;
+    mem[81] = 32'd0;
+    mem[82] = 32'd0;
+    mem[83] = 32'd0;
+    mem[84] = 32'd0;
+    mem[85] = 32'd0;
+    mem[86] = 32'd0;
+    mem[87] = 32'd0;
+    mem[88] = 32'd0;
+    mem[89] = 32'd0;
+    mem[90] = 32'd0;
+    mem[91] = 32'd0;
+    mem[92] = 32'd0;
+    mem[93] = 32'd0;
+    mem[94] = 32'd0;
+    mem[95] = 32'd0;
+    mem[96] = 32'd0;
+    mem[97] = 32'd0;
+    mem[98] = 32'd0;
+    mem[99] = 32'd0;
+    mem[100] = 32'd0;
+    mem[101] = 32'd0;
+    mem[102] = 32'd0;
+    mem[103] = 32'd0;
+    mem[104] = 32'd0;
+    mem[105] = 32'd0;
+    mem[106] = 32'd0;
+    mem[107] = 32'd0;
+    mem[108] = 32'd0;
+    mem[109] = 32'd0;
+    mem[110] = 32'd0;
+    mem[111] = 32'd0;
+    mem[112] = 32'd0;
+    mem[113] = 32'd0;
+    mem[114] = 32'd0;
+    mem[115] = 32'd0;
+    mem[116] = 32'd0;
+    mem[117] = 32'd0;
+    mem[118] = 32'd0;
+    mem[119] = 32'd0;
+    mem[120] = 32'd0;
+    mem[121] = 32'd0;
+    mem[122] = 32'd0;
+    mem[123] = 32'd0;
+    mem[124] = 32'd0;
+    mem[125] = 32'd0;
+    mem[126] = 32'd0;
+    mem[127] = 32'd0;
+    mem[128] = 32'd0;
+    mem[129] = 32'd0;
+    mem[130] = 32'd0;
+    mem[131] = 32'd0;
+    mem[132] = 32'd0;
+    mem[133] = 32'd0;
+    mem[134] = 32'd0;
+    mem[135] = 32'd0;
+    mem[136] = 32'd0;
+    mem[137] = 32'd0;
+    mem[138] = 32'd0;
+    mem[139] = 32'd0;
+    mem[140] = 32'd0;
+    mem[141] = 32'd0;
+    mem[142] = 32'd0;
+    mem[143] = 32'd0;
+    mem[144] = 32'd0;
+    mem[145] = 32'd0;
+    mem[146] = 32'd0;
+    mem[147] = 32'd0;
+    mem[148] = 32'd0;
+    mem[149] = 32'd0;
+    mem[150] = 32'd0;
+    mem[151] = 32'd0;
+    mem[152] = 32'd0;
+    mem[153] = 32'd0;
+    mem[154] = 32'd0;
+    mem[155] = 32'd0;
+    mem[156] = 32'd0;
+    mem[157] = 32'd0;
+    mem[158] = 32'd0;
+    mem[159] = 32'd0;
+    mem[160] = 32'd0;
+    mem[161] = 32'd0;
+    mem[162] = 32'd0;
+    mem[163] = 32'd0;
+    mem[164] = 32'd0;
+    mem[165] = 32'd0;
+    mem[166] = 32'd0;
+    mem[167] = 32'd0;
+    mem[168] = 32'd0;
+    mem[169] = 32'd0;
+    mem[170] = 32'd0;
+    mem[171] = 32'd0;
+    mem[172] = 32'd0;
+    mem[173] = 32'd0;
+    mem[174] = 32'd0;
+    mem[175] = 32'd0;
+    mem[176] = 32'd0;
+    mem[177] = 32'd0;
+    mem[178] = 32'd0;
+    mem[179] = 32'd0;
+    mem[180] = 32'd0;
+    mem[181] = 32'd0;
+    mem[182] = 32'd0;
+    mem[183] = 32'd0;
+    mem[184] = 32'd0;
+    mem[185] = 32'd0;
+    mem[186] = 32'd0;
+    mem[187] = 32'd0;
+    mem[188] = 32'd0;
+    mem[189] = 32'd0;
+    mem[190] = 32'd0;
+    mem[191] = 32'd0;
+    mem[192] = 32'd0;
+    mem[193] = 32'd0;
+    mem[194] = 32'd0;
+    mem[195] = 32'd0;
+    mem[196] = 32'd0;
+    mem[197] = 32'd0;
+    mem[198] = 32'd0;
+    mem[199] = 32'd0;
+    mem[200] = 32'd0;
+    mem[201] = 32'd0;
+    mem[202] = 32'd0;
+    mem[203] = 32'd0;
+    mem[204] = 32'd0;
+    mem[205] = 32'd0;
+    mem[206] = 32'd0;
+    mem[207] = 32'd0;
+    mem[208] = 32'd0;
+    mem[209] = 32'd0;
+    mem[210] = 32'd0;
+    mem[211] = 32'd0;
+    mem[212] = 32'd0;
+    mem[213] = 32'd0;
+    mem[214] = 32'd0;
+    mem[215] = 32'd0;
+    mem[216] = 32'd0;
+    mem[217] = 32'd0;
+    mem[218] = 32'd0;
+    mem[219] = 32'd0;
+    mem[220] = 32'd0;
+    mem[221] = 32'd0;
+    mem[222] = 32'd0;
+    mem[223] = 32'd0;
+    mem[224] = 32'd0;
+    mem[225] = 32'd0;
+    mem[226] = 32'd0;
+    mem[227] = 32'd0;
+    mem[228] = 32'd0;
+    mem[229] = 32'd0;
+    mem[230] = 32'd0;
+    mem[231] = 32'd0;
+    mem[232] = 32'd0;
+    mem[233] = 32'd0;
+    mem[234] = 32'd0;
+    mem[235] = 32'd0;
+    mem[236] = 32'd0;
+    mem[237] = 32'd0;
+    mem[238] = 32'd0;
+    mem[239] = 32'd0;
+    mem[240] = 32'd0;
+    mem[241] = 32'd0;
+    mem[242] = 32'd0;
+    mem[243] = 32'd0;
+    mem[244] = 32'd0;
+    mem[245] = 32'd0;
+    mem[246] = 32'd0;
+    mem[247] = 32'd0;
+    mem[248] = 32'd0;
+    mem[249] = 32'd0;
+    mem[250] = 32'd0;
+    mem[251] = 32'd0;
+    mem[252] = 32'd0;
+    mem[253] = 32'd0;
+    mem[254] = 32'd0;
+    mem[255] = 32'd0;
+    mem[256] = 32'd0;
+    mem[257] = 32'd0;
+    mem[258] = 32'd0;
+    mem[259] = 32'd0;
+    mem[260] = 32'd0;
+    mem[261] = 32'd0;
+    mem[262] = 32'd0;
+    mem[263] = 32'd0;
+    mem[264] = 32'd0;
+    mem[265] = 32'd0;
+    mem[266] = 32'd0;
+    mem[267] = 32'd0;
+    mem[268] = 32'd0;
+    mem[269] = 32'd0;
+    mem[270] = 32'd0;
+    mem[271] = 32'd0;
+    mem[272] = 32'd0;
+    mem[273] = 32'd0;
+    mem[274] = 32'd0;
+    mem[275] = 32'd0;
+    mem[276] = 32'd0;
+    mem[277] = 32'd0;
+    mem[278] = 32'd0;
+    mem[279] = 32'd0;
+    mem[280] = 32'd0;
+    mem[281] = 32'd0;
+    mem[282] = 32'd0;
+    mem[283] = 32'd0;
+    mem[284] = 32'd0;
+    mem[285] = 32'd0;
+    mem[286] = 32'd0;
+    mem[287] = 32'd0;
+    mem[288] = 32'd0;
+    mem[289] = 32'd0;
+    mem[290] = 32'd0;
+    mem[291] = 32'd0;
+    mem[292] = 32'd0;
+    mem[293] = 32'd0;
+    mem[294] = 32'd0;
+    mem[295] = 32'd0;
+    mem[296] = 32'd0;
+    mem[297] = 32'd0;
+    mem[298] = 32'd0;
+    mem[299] = 32'd0;
+    mem[300] = 32'd0;
+    mem[301] = 32'd0;
+    mem[302] = 32'd0;
+    mem[303] = 32'd0;
+    mem[304] = 32'd0;
+    mem[305] = 32'd0;
+    mem[306] = 32'd0;
+    mem[307] = 32'd0;
+    mem[308] = 32'd0;
+    mem[309] = 32'd0;
+    mem[310] = 32'd0;
+    mem[311] = 32'd0;
+    mem[312] = 32'd0;
+    mem[313] = 32'd0;
+    mem[314] = 32'd0;
+    mem[315] = 32'd0;
+    mem[316] = 32'd0;
+    mem[317] = 32'd0;
+    mem[318] = 32'd0;
+    mem[319] = 32'd0;
+    mem[320] = 32'd0;
+    mem[321] = 32'd0;
+    mem[322] = 32'd0;
+    mem[323] = 32'd0;
+    mem[324] = 32'd0;
+    mem[325] = 32'd0;
+    mem[326] = 32'd0;
+    mem[327] = 32'd0;
+    mem[328] = 32'd0;
+    mem[329] = 32'd0;
+    mem[330] = 32'd0;
+    mem[331] = 32'd0;
+    mem[332] = 32'd0;
+    mem[333] = 32'd0;
+    mem[334] = 32'd0;
+    mem[335] = 32'd0;
+    mem[336] = 32'd0;
+    mem[337] = 32'd0;
+    mem[338] = 32'd0;
+    mem[339] = 32'd0;
+    mem[340] = 32'd0;
+    mem[341] = 32'd0;
+    mem[342] = 32'd0;
+    mem[343] = 32'd0;
+    mem[344] = 32'd0;
+    mem[345] = 32'd0;
+    mem[346] = 32'd0;
+    mem[347] = 32'd0;
+    mem[348] = 32'd0;
+    mem[349] = 32'd0;
+    mem[350] = 32'd0;
+    mem[351] = 32'd0;
+    mem[352] = 32'd0;
+    mem[353] = 32'd0;
+    mem[354] = 32'd0;
+    mem[355] = 32'd0;
+    mem[356] = 32'd0;
+    mem[357] = 32'd0;
+    mem[358] = 32'd0;
+    mem[359] = 32'd0;
+    mem[360] = 32'd0;
+    mem[361] = 32'd0;
+    mem[362] = 32'd0;
+    mem[363] = 32'd0;
+    mem[364] = 32'd0;
+    mem[365] = 32'd0;
+    mem[366] = 32'd0;
+    mem[367] = 32'd0;
+    mem[368] = 32'd0;
+    mem[369] = 32'd0;
+    mem[370] = 32'd0;
+    mem[371] = 32'd0;
+    mem[372] = 32'd0;
+    mem[373] = 32'd0;
+    mem[374] = 32'd0;
+    mem[375] = 32'd0;
+    mem[376] = 32'd0;
+    mem[377] = 32'd0;
+    mem[378] = 32'd0;
+    mem[379] = 32'd0;
+    mem[380] = 32'd0;
+    mem[381] = 32'd0;
+    mem[382] = 32'd0;
+    mem[383] = 32'd0;
+    mem[384] = 32'd0;
+    mem[385] = 32'd0;
+    mem[386] = 32'd0;
+    mem[387] = 32'd0;
+    mem[388] = 32'd0;
+    mem[389] = 32'd0;
+    mem[390] = 32'd0;
+    mem[391] = 32'd0;
+    mem[392] = 32'd0;
+    mem[393] = 32'd0;
+    mem[394] = 32'd0;
+    mem[395] = 32'd0;
+    mem[396] = 32'd0;
+    mem[397] = 32'd0;
+    mem[398] = 32'd0;
+    mem[399] = 32'd0;
+    mem[400] = 32'd0;
+    mem[401] = 32'd0;
+    mem[402] = 32'd0;
+    mem[403] = 32'd0;
+    mem[404] = 32'd0;
+    mem[405] = 32'd0;
+    mem[406] = 32'd0;
+    mem[407] = 32'd0;
+    mem[408] = 32'd0;
+    mem[409] = 32'd0;
+    mem[410] = 32'd0;
+    mem[411] = 32'd0;
+    mem[412] = 32'd0;
+    mem[413] = 32'd0;
+    mem[414] = 32'd0;
+    mem[415] = 32'd0;
+    mem[416] = 32'd0;
+    mem[417] = 32'd0;
+    mem[418] = 32'd0;
+    mem[419] = 32'd0;
+    mem[420] = 32'd0;
+    mem[421] = 32'd0;
+    mem[422] = 32'd0;
+    mem[423] = 32'd0;
+    mem[424] = 32'd0;
+    mem[425] = 32'd0;
+    mem[426] = 32'd0;
+    mem[427] = 32'd0;
+    mem[428] = 32'd0;
+    mem[429] = 32'd0;
+    mem[430] = 32'd0;
+    mem[431] = 32'd0;
+    mem[432] = 32'd0;
+    mem[433] = 32'd0;
+    mem[434] = 32'd0;
+    mem[435] = 32'd0;
+    mem[436] = 32'd0;
+    mem[437] = 32'd0;
+    mem[438] = 32'd0;
+    mem[439] = 32'd0;
+    mem[440] = 32'd0;
+    mem[441] = 32'd0;
+    mem[442] = 32'd0;
+    mem[443] = 32'd0;
+    mem[444] = 32'd0;
+    mem[445] = 32'd0;
+    mem[446] = 32'd0;
+    mem[447] = 32'd0;
+    mem[448] = 32'd0;
+    mem[449] = 32'd0;
+    mem[450] = 32'd0;
+    mem[451] = 32'd0;
+    mem[452] = 32'd0;
+    mem[453] = 32'd0;
+    mem[454] = 32'd0;
+    mem[455] = 32'd0;
+    mem[456] = 32'd0;
+    mem[457] = 32'd0;
+    mem[458] = 32'd0;
+    mem[459] = 32'd0;
+    mem[460] = 32'd0;
+    mem[461] = 32'd0;
+    mem[462] = 32'd0;
+    mem[463] = 32'd0;
+    mem[464] = 32'd0;
+    mem[465] = 32'd0;
+    mem[466] = 32'd0;
+    mem[467] = 32'd0;
+    mem[468] = 32'd0;
+    mem[469] = 32'd0;
+    mem[470] = 32'd0;
+    mem[471] = 32'd0;
+    mem[472] = 32'd0;
+    mem[473] = 32'd0;
+    mem[474] = 32'd0;
+    mem[475] = 32'd0;
+    mem[476] = 32'd0;
+    mem[477] = 32'd0;
+    mem[478] = 32'd0;
+    mem[479] = 32'd0;
+    mem[480] = 32'd0;
+    mem[481] = 32'd0;
+    mem[482] = 32'd0;
+    mem[483] = 32'd0;
+    mem[484] = 32'd0;
+    mem[485] = 32'd0;
+    mem[486] = 32'd0;
+    mem[487] = 32'd0;
+    mem[488] = 32'd0;
+    mem[489] = 32'd0;
+    mem[490] = 32'd0;
+    mem[491] = 32'd0;
+    mem[492] = 32'd0;
+    mem[493] = 32'd0;
+    mem[494] = 32'd0;
+    mem[495] = 32'd0;
+    mem[496] = 32'd0;
+    mem[497] = 32'd0;
+    mem[498] = 32'd0;
+    mem[499] = 32'd0;
+    mem[500] = 32'd0;
+    mem[501] = 32'd0;
+    mem[502] = 32'd0;
+    mem[503] = 32'd0;
+    mem[504] = 32'd0;
+    mem[505] = 32'd0;
+    mem[506] = 32'd0;
+    mem[507] = 32'd0;
+    mem[508] = 32'd0;
+    mem[509] = 32'd0;
+    mem[510] = 32'd0;
+    mem[511] = 32'd0;
   end
   always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
+    if (mem_w_en)
+      mem[mem_w_addr] <= mem_w_data;
   end
   reg [31:0] _0_;
   always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
+    if (mem_r_en) begin
+      _0_ <= mem[mem_r_addr];
     end
   end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$6  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(1'h0),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 9'h000;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign reset = 1'h0;
-  assign read_buffer_reset = 1'h0;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_1" *)
-(* generator = "nMigen" *)
-module mem_1(clk, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, read_data_output__valid, read_data_output__payload, read_data_output__ready, reset, write_input__ready, write_input__valid, write_input__payload__data, write_input__payload__addr, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [5:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [5:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [5:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [5:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  output write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [63:0];
+  assign mem_r_data = _0_;
+  reg [31:0] \mem$10  [511:0];
   initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
+    \mem$10 [0] = 32'd0;
+    \mem$10 [1] = 32'd0;
+    \mem$10 [2] = 32'd0;
+    \mem$10 [3] = 32'd0;
+    \mem$10 [4] = 32'd0;
+    \mem$10 [5] = 32'd0;
+    \mem$10 [6] = 32'd0;
+    \mem$10 [7] = 32'd0;
+    \mem$10 [8] = 32'd0;
+    \mem$10 [9] = 32'd0;
+    \mem$10 [10] = 32'd0;
+    \mem$10 [11] = 32'd0;
+    \mem$10 [12] = 32'd0;
+    \mem$10 [13] = 32'd0;
+    \mem$10 [14] = 32'd0;
+    \mem$10 [15] = 32'd0;
+    \mem$10 [16] = 32'd0;
+    \mem$10 [17] = 32'd0;
+    \mem$10 [18] = 32'd0;
+    \mem$10 [19] = 32'd0;
+    \mem$10 [20] = 32'd0;
+    \mem$10 [21] = 32'd0;
+    \mem$10 [22] = 32'd0;
+    \mem$10 [23] = 32'd0;
+    \mem$10 [24] = 32'd0;
+    \mem$10 [25] = 32'd0;
+    \mem$10 [26] = 32'd0;
+    \mem$10 [27] = 32'd0;
+    \mem$10 [28] = 32'd0;
+    \mem$10 [29] = 32'd0;
+    \mem$10 [30] = 32'd0;
+    \mem$10 [31] = 32'd0;
+    \mem$10 [32] = 32'd0;
+    \mem$10 [33] = 32'd0;
+    \mem$10 [34] = 32'd0;
+    \mem$10 [35] = 32'd0;
+    \mem$10 [36] = 32'd0;
+    \mem$10 [37] = 32'd0;
+    \mem$10 [38] = 32'd0;
+    \mem$10 [39] = 32'd0;
+    \mem$10 [40] = 32'd0;
+    \mem$10 [41] = 32'd0;
+    \mem$10 [42] = 32'd0;
+    \mem$10 [43] = 32'd0;
+    \mem$10 [44] = 32'd0;
+    \mem$10 [45] = 32'd0;
+    \mem$10 [46] = 32'd0;
+    \mem$10 [47] = 32'd0;
+    \mem$10 [48] = 32'd0;
+    \mem$10 [49] = 32'd0;
+    \mem$10 [50] = 32'd0;
+    \mem$10 [51] = 32'd0;
+    \mem$10 [52] = 32'd0;
+    \mem$10 [53] = 32'd0;
+    \mem$10 [54] = 32'd0;
+    \mem$10 [55] = 32'd0;
+    \mem$10 [56] = 32'd0;
+    \mem$10 [57] = 32'd0;
+    \mem$10 [58] = 32'd0;
+    \mem$10 [59] = 32'd0;
+    \mem$10 [60] = 32'd0;
+    \mem$10 [61] = 32'd0;
+    \mem$10 [62] = 32'd0;
+    \mem$10 [63] = 32'd0;
+    \mem$10 [64] = 32'd0;
+    \mem$10 [65] = 32'd0;
+    \mem$10 [66] = 32'd0;
+    \mem$10 [67] = 32'd0;
+    \mem$10 [68] = 32'd0;
+    \mem$10 [69] = 32'd0;
+    \mem$10 [70] = 32'd0;
+    \mem$10 [71] = 32'd0;
+    \mem$10 [72] = 32'd0;
+    \mem$10 [73] = 32'd0;
+    \mem$10 [74] = 32'd0;
+    \mem$10 [75] = 32'd0;
+    \mem$10 [76] = 32'd0;
+    \mem$10 [77] = 32'd0;
+    \mem$10 [78] = 32'd0;
+    \mem$10 [79] = 32'd0;
+    \mem$10 [80] = 32'd0;
+    \mem$10 [81] = 32'd0;
+    \mem$10 [82] = 32'd0;
+    \mem$10 [83] = 32'd0;
+    \mem$10 [84] = 32'd0;
+    \mem$10 [85] = 32'd0;
+    \mem$10 [86] = 32'd0;
+    \mem$10 [87] = 32'd0;
+    \mem$10 [88] = 32'd0;
+    \mem$10 [89] = 32'd0;
+    \mem$10 [90] = 32'd0;
+    \mem$10 [91] = 32'd0;
+    \mem$10 [92] = 32'd0;
+    \mem$10 [93] = 32'd0;
+    \mem$10 [94] = 32'd0;
+    \mem$10 [95] = 32'd0;
+    \mem$10 [96] = 32'd0;
+    \mem$10 [97] = 32'd0;
+    \mem$10 [98] = 32'd0;
+    \mem$10 [99] = 32'd0;
+    \mem$10 [100] = 32'd0;
+    \mem$10 [101] = 32'd0;
+    \mem$10 [102] = 32'd0;
+    \mem$10 [103] = 32'd0;
+    \mem$10 [104] = 32'd0;
+    \mem$10 [105] = 32'd0;
+    \mem$10 [106] = 32'd0;
+    \mem$10 [107] = 32'd0;
+    \mem$10 [108] = 32'd0;
+    \mem$10 [109] = 32'd0;
+    \mem$10 [110] = 32'd0;
+    \mem$10 [111] = 32'd0;
+    \mem$10 [112] = 32'd0;
+    \mem$10 [113] = 32'd0;
+    \mem$10 [114] = 32'd0;
+    \mem$10 [115] = 32'd0;
+    \mem$10 [116] = 32'd0;
+    \mem$10 [117] = 32'd0;
+    \mem$10 [118] = 32'd0;
+    \mem$10 [119] = 32'd0;
+    \mem$10 [120] = 32'd0;
+    \mem$10 [121] = 32'd0;
+    \mem$10 [122] = 32'd0;
+    \mem$10 [123] = 32'd0;
+    \mem$10 [124] = 32'd0;
+    \mem$10 [125] = 32'd0;
+    \mem$10 [126] = 32'd0;
+    \mem$10 [127] = 32'd0;
+    \mem$10 [128] = 32'd0;
+    \mem$10 [129] = 32'd0;
+    \mem$10 [130] = 32'd0;
+    \mem$10 [131] = 32'd0;
+    \mem$10 [132] = 32'd0;
+    \mem$10 [133] = 32'd0;
+    \mem$10 [134] = 32'd0;
+    \mem$10 [135] = 32'd0;
+    \mem$10 [136] = 32'd0;
+    \mem$10 [137] = 32'd0;
+    \mem$10 [138] = 32'd0;
+    \mem$10 [139] = 32'd0;
+    \mem$10 [140] = 32'd0;
+    \mem$10 [141] = 32'd0;
+    \mem$10 [142] = 32'd0;
+    \mem$10 [143] = 32'd0;
+    \mem$10 [144] = 32'd0;
+    \mem$10 [145] = 32'd0;
+    \mem$10 [146] = 32'd0;
+    \mem$10 [147] = 32'd0;
+    \mem$10 [148] = 32'd0;
+    \mem$10 [149] = 32'd0;
+    \mem$10 [150] = 32'd0;
+    \mem$10 [151] = 32'd0;
+    \mem$10 [152] = 32'd0;
+    \mem$10 [153] = 32'd0;
+    \mem$10 [154] = 32'd0;
+    \mem$10 [155] = 32'd0;
+    \mem$10 [156] = 32'd0;
+    \mem$10 [157] = 32'd0;
+    \mem$10 [158] = 32'd0;
+    \mem$10 [159] = 32'd0;
+    \mem$10 [160] = 32'd0;
+    \mem$10 [161] = 32'd0;
+    \mem$10 [162] = 32'd0;
+    \mem$10 [163] = 32'd0;
+    \mem$10 [164] = 32'd0;
+    \mem$10 [165] = 32'd0;
+    \mem$10 [166] = 32'd0;
+    \mem$10 [167] = 32'd0;
+    \mem$10 [168] = 32'd0;
+    \mem$10 [169] = 32'd0;
+    \mem$10 [170] = 32'd0;
+    \mem$10 [171] = 32'd0;
+    \mem$10 [172] = 32'd0;
+    \mem$10 [173] = 32'd0;
+    \mem$10 [174] = 32'd0;
+    \mem$10 [175] = 32'd0;
+    \mem$10 [176] = 32'd0;
+    \mem$10 [177] = 32'd0;
+    \mem$10 [178] = 32'd0;
+    \mem$10 [179] = 32'd0;
+    \mem$10 [180] = 32'd0;
+    \mem$10 [181] = 32'd0;
+    \mem$10 [182] = 32'd0;
+    \mem$10 [183] = 32'd0;
+    \mem$10 [184] = 32'd0;
+    \mem$10 [185] = 32'd0;
+    \mem$10 [186] = 32'd0;
+    \mem$10 [187] = 32'd0;
+    \mem$10 [188] = 32'd0;
+    \mem$10 [189] = 32'd0;
+    \mem$10 [190] = 32'd0;
+    \mem$10 [191] = 32'd0;
+    \mem$10 [192] = 32'd0;
+    \mem$10 [193] = 32'd0;
+    \mem$10 [194] = 32'd0;
+    \mem$10 [195] = 32'd0;
+    \mem$10 [196] = 32'd0;
+    \mem$10 [197] = 32'd0;
+    \mem$10 [198] = 32'd0;
+    \mem$10 [199] = 32'd0;
+    \mem$10 [200] = 32'd0;
+    \mem$10 [201] = 32'd0;
+    \mem$10 [202] = 32'd0;
+    \mem$10 [203] = 32'd0;
+    \mem$10 [204] = 32'd0;
+    \mem$10 [205] = 32'd0;
+    \mem$10 [206] = 32'd0;
+    \mem$10 [207] = 32'd0;
+    \mem$10 [208] = 32'd0;
+    \mem$10 [209] = 32'd0;
+    \mem$10 [210] = 32'd0;
+    \mem$10 [211] = 32'd0;
+    \mem$10 [212] = 32'd0;
+    \mem$10 [213] = 32'd0;
+    \mem$10 [214] = 32'd0;
+    \mem$10 [215] = 32'd0;
+    \mem$10 [216] = 32'd0;
+    \mem$10 [217] = 32'd0;
+    \mem$10 [218] = 32'd0;
+    \mem$10 [219] = 32'd0;
+    \mem$10 [220] = 32'd0;
+    \mem$10 [221] = 32'd0;
+    \mem$10 [222] = 32'd0;
+    \mem$10 [223] = 32'd0;
+    \mem$10 [224] = 32'd0;
+    \mem$10 [225] = 32'd0;
+    \mem$10 [226] = 32'd0;
+    \mem$10 [227] = 32'd0;
+    \mem$10 [228] = 32'd0;
+    \mem$10 [229] = 32'd0;
+    \mem$10 [230] = 32'd0;
+    \mem$10 [231] = 32'd0;
+    \mem$10 [232] = 32'd0;
+    \mem$10 [233] = 32'd0;
+    \mem$10 [234] = 32'd0;
+    \mem$10 [235] = 32'd0;
+    \mem$10 [236] = 32'd0;
+    \mem$10 [237] = 32'd0;
+    \mem$10 [238] = 32'd0;
+    \mem$10 [239] = 32'd0;
+    \mem$10 [240] = 32'd0;
+    \mem$10 [241] = 32'd0;
+    \mem$10 [242] = 32'd0;
+    \mem$10 [243] = 32'd0;
+    \mem$10 [244] = 32'd0;
+    \mem$10 [245] = 32'd0;
+    \mem$10 [246] = 32'd0;
+    \mem$10 [247] = 32'd0;
+    \mem$10 [248] = 32'd0;
+    \mem$10 [249] = 32'd0;
+    \mem$10 [250] = 32'd0;
+    \mem$10 [251] = 32'd0;
+    \mem$10 [252] = 32'd0;
+    \mem$10 [253] = 32'd0;
+    \mem$10 [254] = 32'd0;
+    \mem$10 [255] = 32'd0;
+    \mem$10 [256] = 32'd0;
+    \mem$10 [257] = 32'd0;
+    \mem$10 [258] = 32'd0;
+    \mem$10 [259] = 32'd0;
+    \mem$10 [260] = 32'd0;
+    \mem$10 [261] = 32'd0;
+    \mem$10 [262] = 32'd0;
+    \mem$10 [263] = 32'd0;
+    \mem$10 [264] = 32'd0;
+    \mem$10 [265] = 32'd0;
+    \mem$10 [266] = 32'd0;
+    \mem$10 [267] = 32'd0;
+    \mem$10 [268] = 32'd0;
+    \mem$10 [269] = 32'd0;
+    \mem$10 [270] = 32'd0;
+    \mem$10 [271] = 32'd0;
+    \mem$10 [272] = 32'd0;
+    \mem$10 [273] = 32'd0;
+    \mem$10 [274] = 32'd0;
+    \mem$10 [275] = 32'd0;
+    \mem$10 [276] = 32'd0;
+    \mem$10 [277] = 32'd0;
+    \mem$10 [278] = 32'd0;
+    \mem$10 [279] = 32'd0;
+    \mem$10 [280] = 32'd0;
+    \mem$10 [281] = 32'd0;
+    \mem$10 [282] = 32'd0;
+    \mem$10 [283] = 32'd0;
+    \mem$10 [284] = 32'd0;
+    \mem$10 [285] = 32'd0;
+    \mem$10 [286] = 32'd0;
+    \mem$10 [287] = 32'd0;
+    \mem$10 [288] = 32'd0;
+    \mem$10 [289] = 32'd0;
+    \mem$10 [290] = 32'd0;
+    \mem$10 [291] = 32'd0;
+    \mem$10 [292] = 32'd0;
+    \mem$10 [293] = 32'd0;
+    \mem$10 [294] = 32'd0;
+    \mem$10 [295] = 32'd0;
+    \mem$10 [296] = 32'd0;
+    \mem$10 [297] = 32'd0;
+    \mem$10 [298] = 32'd0;
+    \mem$10 [299] = 32'd0;
+    \mem$10 [300] = 32'd0;
+    \mem$10 [301] = 32'd0;
+    \mem$10 [302] = 32'd0;
+    \mem$10 [303] = 32'd0;
+    \mem$10 [304] = 32'd0;
+    \mem$10 [305] = 32'd0;
+    \mem$10 [306] = 32'd0;
+    \mem$10 [307] = 32'd0;
+    \mem$10 [308] = 32'd0;
+    \mem$10 [309] = 32'd0;
+    \mem$10 [310] = 32'd0;
+    \mem$10 [311] = 32'd0;
+    \mem$10 [312] = 32'd0;
+    \mem$10 [313] = 32'd0;
+    \mem$10 [314] = 32'd0;
+    \mem$10 [315] = 32'd0;
+    \mem$10 [316] = 32'd0;
+    \mem$10 [317] = 32'd0;
+    \mem$10 [318] = 32'd0;
+    \mem$10 [319] = 32'd0;
+    \mem$10 [320] = 32'd0;
+    \mem$10 [321] = 32'd0;
+    \mem$10 [322] = 32'd0;
+    \mem$10 [323] = 32'd0;
+    \mem$10 [324] = 32'd0;
+    \mem$10 [325] = 32'd0;
+    \mem$10 [326] = 32'd0;
+    \mem$10 [327] = 32'd0;
+    \mem$10 [328] = 32'd0;
+    \mem$10 [329] = 32'd0;
+    \mem$10 [330] = 32'd0;
+    \mem$10 [331] = 32'd0;
+    \mem$10 [332] = 32'd0;
+    \mem$10 [333] = 32'd0;
+    \mem$10 [334] = 32'd0;
+    \mem$10 [335] = 32'd0;
+    \mem$10 [336] = 32'd0;
+    \mem$10 [337] = 32'd0;
+    \mem$10 [338] = 32'd0;
+    \mem$10 [339] = 32'd0;
+    \mem$10 [340] = 32'd0;
+    \mem$10 [341] = 32'd0;
+    \mem$10 [342] = 32'd0;
+    \mem$10 [343] = 32'd0;
+    \mem$10 [344] = 32'd0;
+    \mem$10 [345] = 32'd0;
+    \mem$10 [346] = 32'd0;
+    \mem$10 [347] = 32'd0;
+    \mem$10 [348] = 32'd0;
+    \mem$10 [349] = 32'd0;
+    \mem$10 [350] = 32'd0;
+    \mem$10 [351] = 32'd0;
+    \mem$10 [352] = 32'd0;
+    \mem$10 [353] = 32'd0;
+    \mem$10 [354] = 32'd0;
+    \mem$10 [355] = 32'd0;
+    \mem$10 [356] = 32'd0;
+    \mem$10 [357] = 32'd0;
+    \mem$10 [358] = 32'd0;
+    \mem$10 [359] = 32'd0;
+    \mem$10 [360] = 32'd0;
+    \mem$10 [361] = 32'd0;
+    \mem$10 [362] = 32'd0;
+    \mem$10 [363] = 32'd0;
+    \mem$10 [364] = 32'd0;
+    \mem$10 [365] = 32'd0;
+    \mem$10 [366] = 32'd0;
+    \mem$10 [367] = 32'd0;
+    \mem$10 [368] = 32'd0;
+    \mem$10 [369] = 32'd0;
+    \mem$10 [370] = 32'd0;
+    \mem$10 [371] = 32'd0;
+    \mem$10 [372] = 32'd0;
+    \mem$10 [373] = 32'd0;
+    \mem$10 [374] = 32'd0;
+    \mem$10 [375] = 32'd0;
+    \mem$10 [376] = 32'd0;
+    \mem$10 [377] = 32'd0;
+    \mem$10 [378] = 32'd0;
+    \mem$10 [379] = 32'd0;
+    \mem$10 [380] = 32'd0;
+    \mem$10 [381] = 32'd0;
+    \mem$10 [382] = 32'd0;
+    \mem$10 [383] = 32'd0;
+    \mem$10 [384] = 32'd0;
+    \mem$10 [385] = 32'd0;
+    \mem$10 [386] = 32'd0;
+    \mem$10 [387] = 32'd0;
+    \mem$10 [388] = 32'd0;
+    \mem$10 [389] = 32'd0;
+    \mem$10 [390] = 32'd0;
+    \mem$10 [391] = 32'd0;
+    \mem$10 [392] = 32'd0;
+    \mem$10 [393] = 32'd0;
+    \mem$10 [394] = 32'd0;
+    \mem$10 [395] = 32'd0;
+    \mem$10 [396] = 32'd0;
+    \mem$10 [397] = 32'd0;
+    \mem$10 [398] = 32'd0;
+    \mem$10 [399] = 32'd0;
+    \mem$10 [400] = 32'd0;
+    \mem$10 [401] = 32'd0;
+    \mem$10 [402] = 32'd0;
+    \mem$10 [403] = 32'd0;
+    \mem$10 [404] = 32'd0;
+    \mem$10 [405] = 32'd0;
+    \mem$10 [406] = 32'd0;
+    \mem$10 [407] = 32'd0;
+    \mem$10 [408] = 32'd0;
+    \mem$10 [409] = 32'd0;
+    \mem$10 [410] = 32'd0;
+    \mem$10 [411] = 32'd0;
+    \mem$10 [412] = 32'd0;
+    \mem$10 [413] = 32'd0;
+    \mem$10 [414] = 32'd0;
+    \mem$10 [415] = 32'd0;
+    \mem$10 [416] = 32'd0;
+    \mem$10 [417] = 32'd0;
+    \mem$10 [418] = 32'd0;
+    \mem$10 [419] = 32'd0;
+    \mem$10 [420] = 32'd0;
+    \mem$10 [421] = 32'd0;
+    \mem$10 [422] = 32'd0;
+    \mem$10 [423] = 32'd0;
+    \mem$10 [424] = 32'd0;
+    \mem$10 [425] = 32'd0;
+    \mem$10 [426] = 32'd0;
+    \mem$10 [427] = 32'd0;
+    \mem$10 [428] = 32'd0;
+    \mem$10 [429] = 32'd0;
+    \mem$10 [430] = 32'd0;
+    \mem$10 [431] = 32'd0;
+    \mem$10 [432] = 32'd0;
+    \mem$10 [433] = 32'd0;
+    \mem$10 [434] = 32'd0;
+    \mem$10 [435] = 32'd0;
+    \mem$10 [436] = 32'd0;
+    \mem$10 [437] = 32'd0;
+    \mem$10 [438] = 32'd0;
+    \mem$10 [439] = 32'd0;
+    \mem$10 [440] = 32'd0;
+    \mem$10 [441] = 32'd0;
+    \mem$10 [442] = 32'd0;
+    \mem$10 [443] = 32'd0;
+    \mem$10 [444] = 32'd0;
+    \mem$10 [445] = 32'd0;
+    \mem$10 [446] = 32'd0;
+    \mem$10 [447] = 32'd0;
+    \mem$10 [448] = 32'd0;
+    \mem$10 [449] = 32'd0;
+    \mem$10 [450] = 32'd0;
+    \mem$10 [451] = 32'd0;
+    \mem$10 [452] = 32'd0;
+    \mem$10 [453] = 32'd0;
+    \mem$10 [454] = 32'd0;
+    \mem$10 [455] = 32'd0;
+    \mem$10 [456] = 32'd0;
+    \mem$10 [457] = 32'd0;
+    \mem$10 [458] = 32'd0;
+    \mem$10 [459] = 32'd0;
+    \mem$10 [460] = 32'd0;
+    \mem$10 [461] = 32'd0;
+    \mem$10 [462] = 32'd0;
+    \mem$10 [463] = 32'd0;
+    \mem$10 [464] = 32'd0;
+    \mem$10 [465] = 32'd0;
+    \mem$10 [466] = 32'd0;
+    \mem$10 [467] = 32'd0;
+    \mem$10 [468] = 32'd0;
+    \mem$10 [469] = 32'd0;
+    \mem$10 [470] = 32'd0;
+    \mem$10 [471] = 32'd0;
+    \mem$10 [472] = 32'd0;
+    \mem$10 [473] = 32'd0;
+    \mem$10 [474] = 32'd0;
+    \mem$10 [475] = 32'd0;
+    \mem$10 [476] = 32'd0;
+    \mem$10 [477] = 32'd0;
+    \mem$10 [478] = 32'd0;
+    \mem$10 [479] = 32'd0;
+    \mem$10 [480] = 32'd0;
+    \mem$10 [481] = 32'd0;
+    \mem$10 [482] = 32'd0;
+    \mem$10 [483] = 32'd0;
+    \mem$10 [484] = 32'd0;
+    \mem$10 [485] = 32'd0;
+    \mem$10 [486] = 32'd0;
+    \mem$10 [487] = 32'd0;
+    \mem$10 [488] = 32'd0;
+    \mem$10 [489] = 32'd0;
+    \mem$10 [490] = 32'd0;
+    \mem$10 [491] = 32'd0;
+    \mem$10 [492] = 32'd0;
+    \mem$10 [493] = 32'd0;
+    \mem$10 [494] = 32'd0;
+    \mem$10 [495] = 32'd0;
+    \mem$10 [496] = 32'd0;
+    \mem$10 [497] = 32'd0;
+    \mem$10 [498] = 32'd0;
+    \mem$10 [499] = 32'd0;
+    \mem$10 [500] = 32'd0;
+    \mem$10 [501] = 32'd0;
+    \mem$10 [502] = 32'd0;
+    \mem$10 [503] = 32'd0;
+    \mem$10 [504] = 32'd0;
+    \mem$10 [505] = 32'd0;
+    \mem$10 [506] = 32'd0;
+    \mem$10 [507] = 32'd0;
+    \mem$10 [508] = 32'd0;
+    \mem$10 [509] = 32'd0;
+    \mem$10 [510] = 32'd0;
+    \mem$10 [511] = 32'd0;
   end
   always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
+    if (\mem_w_en$15 )
+      \mem$10 [\mem_w_addr$16 ] <= \mem_w_data$17 ;
   end
-  reg [31:0] _0_;
+  reg [31:0] _1_;
   always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
+    if (\mem_r_en$12 ) begin
+      _1_ <= \mem$10 [\mem_r_addr$13 ];
     end
   end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$2  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(read_buffer_reset),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign read_buffer_reset = reset;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_1" *)
-(* generator = "nMigen" *)
-module \mem_1$7 (clk, write_input__payload__addr, write_input__payload__data, write_input__valid, read_data_output__valid, read_data_output__payload, read_data_output__ready, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [8:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [8:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [8:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  wire reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [8:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [511:0];
+  assign \mem_r_data$14  = _1_;
+  reg [31:0] \mem$18  [511:0];
   initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
-    memory[64] = 32'd0;
-    memory[65] = 32'd0;
-    memory[66] = 32'd0;
-    memory[67] = 32'd0;
-    memory[68] = 32'd0;
-    memory[69] = 32'd0;
-    memory[70] = 32'd0;
-    memory[71] = 32'd0;
-    memory[72] = 32'd0;
-    memory[73] = 32'd0;
-    memory[74] = 32'd0;
-    memory[75] = 32'd0;
-    memory[76] = 32'd0;
-    memory[77] = 32'd0;
-    memory[78] = 32'd0;
-    memory[79] = 32'd0;
-    memory[80] = 32'd0;
-    memory[81] = 32'd0;
-    memory[82] = 32'd0;
-    memory[83] = 32'd0;
-    memory[84] = 32'd0;
-    memory[85] = 32'd0;
-    memory[86] = 32'd0;
-    memory[87] = 32'd0;
-    memory[88] = 32'd0;
-    memory[89] = 32'd0;
-    memory[90] = 32'd0;
-    memory[91] = 32'd0;
-    memory[92] = 32'd0;
-    memory[93] = 32'd0;
-    memory[94] = 32'd0;
-    memory[95] = 32'd0;
-    memory[96] = 32'd0;
-    memory[97] = 32'd0;
-    memory[98] = 32'd0;
-    memory[99] = 32'd0;
-    memory[100] = 32'd0;
-    memory[101] = 32'd0;
-    memory[102] = 32'd0;
-    memory[103] = 32'd0;
-    memory[104] = 32'd0;
-    memory[105] = 32'd0;
-    memory[106] = 32'd0;
-    memory[107] = 32'd0;
-    memory[108] = 32'd0;
-    memory[109] = 32'd0;
-    memory[110] = 32'd0;
-    memory[111] = 32'd0;
-    memory[112] = 32'd0;
-    memory[113] = 32'd0;
-    memory[114] = 32'd0;
-    memory[115] = 32'd0;
-    memory[116] = 32'd0;
-    memory[117] = 32'd0;
-    memory[118] = 32'd0;
-    memory[119] = 32'd0;
-    memory[120] = 32'd0;
-    memory[121] = 32'd0;
-    memory[122] = 32'd0;
-    memory[123] = 32'd0;
-    memory[124] = 32'd0;
-    memory[125] = 32'd0;
-    memory[126] = 32'd0;
-    memory[127] = 32'd0;
-    memory[128] = 32'd0;
-    memory[129] = 32'd0;
-    memory[130] = 32'd0;
-    memory[131] = 32'd0;
-    memory[132] = 32'd0;
-    memory[133] = 32'd0;
-    memory[134] = 32'd0;
-    memory[135] = 32'd0;
-    memory[136] = 32'd0;
-    memory[137] = 32'd0;
-    memory[138] = 32'd0;
-    memory[139] = 32'd0;
-    memory[140] = 32'd0;
-    memory[141] = 32'd0;
-    memory[142] = 32'd0;
-    memory[143] = 32'd0;
-    memory[144] = 32'd0;
-    memory[145] = 32'd0;
-    memory[146] = 32'd0;
-    memory[147] = 32'd0;
-    memory[148] = 32'd0;
-    memory[149] = 32'd0;
-    memory[150] = 32'd0;
-    memory[151] = 32'd0;
-    memory[152] = 32'd0;
-    memory[153] = 32'd0;
-    memory[154] = 32'd0;
-    memory[155] = 32'd0;
-    memory[156] = 32'd0;
-    memory[157] = 32'd0;
-    memory[158] = 32'd0;
-    memory[159] = 32'd0;
-    memory[160] = 32'd0;
-    memory[161] = 32'd0;
-    memory[162] = 32'd0;
-    memory[163] = 32'd0;
-    memory[164] = 32'd0;
-    memory[165] = 32'd0;
-    memory[166] = 32'd0;
-    memory[167] = 32'd0;
-    memory[168] = 32'd0;
-    memory[169] = 32'd0;
-    memory[170] = 32'd0;
-    memory[171] = 32'd0;
-    memory[172] = 32'd0;
-    memory[173] = 32'd0;
-    memory[174] = 32'd0;
-    memory[175] = 32'd0;
-    memory[176] = 32'd0;
-    memory[177] = 32'd0;
-    memory[178] = 32'd0;
-    memory[179] = 32'd0;
-    memory[180] = 32'd0;
-    memory[181] = 32'd0;
-    memory[182] = 32'd0;
-    memory[183] = 32'd0;
-    memory[184] = 32'd0;
-    memory[185] = 32'd0;
-    memory[186] = 32'd0;
-    memory[187] = 32'd0;
-    memory[188] = 32'd0;
-    memory[189] = 32'd0;
-    memory[190] = 32'd0;
-    memory[191] = 32'd0;
-    memory[192] = 32'd0;
-    memory[193] = 32'd0;
-    memory[194] = 32'd0;
-    memory[195] = 32'd0;
-    memory[196] = 32'd0;
-    memory[197] = 32'd0;
-    memory[198] = 32'd0;
-    memory[199] = 32'd0;
-    memory[200] = 32'd0;
-    memory[201] = 32'd0;
-    memory[202] = 32'd0;
-    memory[203] = 32'd0;
-    memory[204] = 32'd0;
-    memory[205] = 32'd0;
-    memory[206] = 32'd0;
-    memory[207] = 32'd0;
-    memory[208] = 32'd0;
-    memory[209] = 32'd0;
-    memory[210] = 32'd0;
-    memory[211] = 32'd0;
-    memory[212] = 32'd0;
-    memory[213] = 32'd0;
-    memory[214] = 32'd0;
-    memory[215] = 32'd0;
-    memory[216] = 32'd0;
-    memory[217] = 32'd0;
-    memory[218] = 32'd0;
-    memory[219] = 32'd0;
-    memory[220] = 32'd0;
-    memory[221] = 32'd0;
-    memory[222] = 32'd0;
-    memory[223] = 32'd0;
-    memory[224] = 32'd0;
-    memory[225] = 32'd0;
-    memory[226] = 32'd0;
-    memory[227] = 32'd0;
-    memory[228] = 32'd0;
-    memory[229] = 32'd0;
-    memory[230] = 32'd0;
-    memory[231] = 32'd0;
-    memory[232] = 32'd0;
-    memory[233] = 32'd0;
-    memory[234] = 32'd0;
-    memory[235] = 32'd0;
-    memory[236] = 32'd0;
-    memory[237] = 32'd0;
-    memory[238] = 32'd0;
-    memory[239] = 32'd0;
-    memory[240] = 32'd0;
-    memory[241] = 32'd0;
-    memory[242] = 32'd0;
-    memory[243] = 32'd0;
-    memory[244] = 32'd0;
-    memory[245] = 32'd0;
-    memory[246] = 32'd0;
-    memory[247] = 32'd0;
-    memory[248] = 32'd0;
-    memory[249] = 32'd0;
-    memory[250] = 32'd0;
-    memory[251] = 32'd0;
-    memory[252] = 32'd0;
-    memory[253] = 32'd0;
-    memory[254] = 32'd0;
-    memory[255] = 32'd0;
-    memory[256] = 32'd0;
-    memory[257] = 32'd0;
-    memory[258] = 32'd0;
-    memory[259] = 32'd0;
-    memory[260] = 32'd0;
-    memory[261] = 32'd0;
-    memory[262] = 32'd0;
-    memory[263] = 32'd0;
-    memory[264] = 32'd0;
-    memory[265] = 32'd0;
-    memory[266] = 32'd0;
-    memory[267] = 32'd0;
-    memory[268] = 32'd0;
-    memory[269] = 32'd0;
-    memory[270] = 32'd0;
-    memory[271] = 32'd0;
-    memory[272] = 32'd0;
-    memory[273] = 32'd0;
-    memory[274] = 32'd0;
-    memory[275] = 32'd0;
-    memory[276] = 32'd0;
-    memory[277] = 32'd0;
-    memory[278] = 32'd0;
-    memory[279] = 32'd0;
-    memory[280] = 32'd0;
-    memory[281] = 32'd0;
-    memory[282] = 32'd0;
-    memory[283] = 32'd0;
-    memory[284] = 32'd0;
-    memory[285] = 32'd0;
-    memory[286] = 32'd0;
-    memory[287] = 32'd0;
-    memory[288] = 32'd0;
-    memory[289] = 32'd0;
-    memory[290] = 32'd0;
-    memory[291] = 32'd0;
-    memory[292] = 32'd0;
-    memory[293] = 32'd0;
-    memory[294] = 32'd0;
-    memory[295] = 32'd0;
-    memory[296] = 32'd0;
-    memory[297] = 32'd0;
-    memory[298] = 32'd0;
-    memory[299] = 32'd0;
-    memory[300] = 32'd0;
-    memory[301] = 32'd0;
-    memory[302] = 32'd0;
-    memory[303] = 32'd0;
-    memory[304] = 32'd0;
-    memory[305] = 32'd0;
-    memory[306] = 32'd0;
-    memory[307] = 32'd0;
-    memory[308] = 32'd0;
-    memory[309] = 32'd0;
-    memory[310] = 32'd0;
-    memory[311] = 32'd0;
-    memory[312] = 32'd0;
-    memory[313] = 32'd0;
-    memory[314] = 32'd0;
-    memory[315] = 32'd0;
-    memory[316] = 32'd0;
-    memory[317] = 32'd0;
-    memory[318] = 32'd0;
-    memory[319] = 32'd0;
-    memory[320] = 32'd0;
-    memory[321] = 32'd0;
-    memory[322] = 32'd0;
-    memory[323] = 32'd0;
-    memory[324] = 32'd0;
-    memory[325] = 32'd0;
-    memory[326] = 32'd0;
-    memory[327] = 32'd0;
-    memory[328] = 32'd0;
-    memory[329] = 32'd0;
-    memory[330] = 32'd0;
-    memory[331] = 32'd0;
-    memory[332] = 32'd0;
-    memory[333] = 32'd0;
-    memory[334] = 32'd0;
-    memory[335] = 32'd0;
-    memory[336] = 32'd0;
-    memory[337] = 32'd0;
-    memory[338] = 32'd0;
-    memory[339] = 32'd0;
-    memory[340] = 32'd0;
-    memory[341] = 32'd0;
-    memory[342] = 32'd0;
-    memory[343] = 32'd0;
-    memory[344] = 32'd0;
-    memory[345] = 32'd0;
-    memory[346] = 32'd0;
-    memory[347] = 32'd0;
-    memory[348] = 32'd0;
-    memory[349] = 32'd0;
-    memory[350] = 32'd0;
-    memory[351] = 32'd0;
-    memory[352] = 32'd0;
-    memory[353] = 32'd0;
-    memory[354] = 32'd0;
-    memory[355] = 32'd0;
-    memory[356] = 32'd0;
-    memory[357] = 32'd0;
-    memory[358] = 32'd0;
-    memory[359] = 32'd0;
-    memory[360] = 32'd0;
-    memory[361] = 32'd0;
-    memory[362] = 32'd0;
-    memory[363] = 32'd0;
-    memory[364] = 32'd0;
-    memory[365] = 32'd0;
-    memory[366] = 32'd0;
-    memory[367] = 32'd0;
-    memory[368] = 32'd0;
-    memory[369] = 32'd0;
-    memory[370] = 32'd0;
-    memory[371] = 32'd0;
-    memory[372] = 32'd0;
-    memory[373] = 32'd0;
-    memory[374] = 32'd0;
-    memory[375] = 32'd0;
-    memory[376] = 32'd0;
-    memory[377] = 32'd0;
-    memory[378] = 32'd0;
-    memory[379] = 32'd0;
-    memory[380] = 32'd0;
-    memory[381] = 32'd0;
-    memory[382] = 32'd0;
-    memory[383] = 32'd0;
-    memory[384] = 32'd0;
-    memory[385] = 32'd0;
-    memory[386] = 32'd0;
-    memory[387] = 32'd0;
-    memory[388] = 32'd0;
-    memory[389] = 32'd0;
-    memory[390] = 32'd0;
-    memory[391] = 32'd0;
-    memory[392] = 32'd0;
-    memory[393] = 32'd0;
-    memory[394] = 32'd0;
-    memory[395] = 32'd0;
-    memory[396] = 32'd0;
-    memory[397] = 32'd0;
-    memory[398] = 32'd0;
-    memory[399] = 32'd0;
-    memory[400] = 32'd0;
-    memory[401] = 32'd0;
-    memory[402] = 32'd0;
-    memory[403] = 32'd0;
-    memory[404] = 32'd0;
-    memory[405] = 32'd0;
-    memory[406] = 32'd0;
-    memory[407] = 32'd0;
-    memory[408] = 32'd0;
-    memory[409] = 32'd0;
-    memory[410] = 32'd0;
-    memory[411] = 32'd0;
-    memory[412] = 32'd0;
-    memory[413] = 32'd0;
-    memory[414] = 32'd0;
-    memory[415] = 32'd0;
-    memory[416] = 32'd0;
-    memory[417] = 32'd0;
-    memory[418] = 32'd0;
-    memory[419] = 32'd0;
-    memory[420] = 32'd0;
-    memory[421] = 32'd0;
-    memory[422] = 32'd0;
-    memory[423] = 32'd0;
-    memory[424] = 32'd0;
-    memory[425] = 32'd0;
-    memory[426] = 32'd0;
-    memory[427] = 32'd0;
-    memory[428] = 32'd0;
-    memory[429] = 32'd0;
-    memory[430] = 32'd0;
-    memory[431] = 32'd0;
-    memory[432] = 32'd0;
-    memory[433] = 32'd0;
-    memory[434] = 32'd0;
-    memory[435] = 32'd0;
-    memory[436] = 32'd0;
-    memory[437] = 32'd0;
-    memory[438] = 32'd0;
-    memory[439] = 32'd0;
-    memory[440] = 32'd0;
-    memory[441] = 32'd0;
-    memory[442] = 32'd0;
-    memory[443] = 32'd0;
-    memory[444] = 32'd0;
-    memory[445] = 32'd0;
-    memory[446] = 32'd0;
-    memory[447] = 32'd0;
-    memory[448] = 32'd0;
-    memory[449] = 32'd0;
-    memory[450] = 32'd0;
-    memory[451] = 32'd0;
-    memory[452] = 32'd0;
-    memory[453] = 32'd0;
-    memory[454] = 32'd0;
-    memory[455] = 32'd0;
-    memory[456] = 32'd0;
-    memory[457] = 32'd0;
-    memory[458] = 32'd0;
-    memory[459] = 32'd0;
-    memory[460] = 32'd0;
-    memory[461] = 32'd0;
-    memory[462] = 32'd0;
-    memory[463] = 32'd0;
-    memory[464] = 32'd0;
-    memory[465] = 32'd0;
-    memory[466] = 32'd0;
-    memory[467] = 32'd0;
-    memory[468] = 32'd0;
-    memory[469] = 32'd0;
-    memory[470] = 32'd0;
-    memory[471] = 32'd0;
-    memory[472] = 32'd0;
-    memory[473] = 32'd0;
-    memory[474] = 32'd0;
-    memory[475] = 32'd0;
-    memory[476] = 32'd0;
-    memory[477] = 32'd0;
-    memory[478] = 32'd0;
-    memory[479] = 32'd0;
-    memory[480] = 32'd0;
-    memory[481] = 32'd0;
-    memory[482] = 32'd0;
-    memory[483] = 32'd0;
-    memory[484] = 32'd0;
-    memory[485] = 32'd0;
-    memory[486] = 32'd0;
-    memory[487] = 32'd0;
-    memory[488] = 32'd0;
-    memory[489] = 32'd0;
-    memory[490] = 32'd0;
-    memory[491] = 32'd0;
-    memory[492] = 32'd0;
-    memory[493] = 32'd0;
-    memory[494] = 32'd0;
-    memory[495] = 32'd0;
-    memory[496] = 32'd0;
-    memory[497] = 32'd0;
-    memory[498] = 32'd0;
-    memory[499] = 32'd0;
-    memory[500] = 32'd0;
-    memory[501] = 32'd0;
-    memory[502] = 32'd0;
-    memory[503] = 32'd0;
-    memory[504] = 32'd0;
-    memory[505] = 32'd0;
-    memory[506] = 32'd0;
-    memory[507] = 32'd0;
-    memory[508] = 32'd0;
-    memory[509] = 32'd0;
-    memory[510] = 32'd0;
-    memory[511] = 32'd0;
+    \mem$18 [0] = 32'd0;
+    \mem$18 [1] = 32'd0;
+    \mem$18 [2] = 32'd0;
+    \mem$18 [3] = 32'd0;
+    \mem$18 [4] = 32'd0;
+    \mem$18 [5] = 32'd0;
+    \mem$18 [6] = 32'd0;
+    \mem$18 [7] = 32'd0;
+    \mem$18 [8] = 32'd0;
+    \mem$18 [9] = 32'd0;
+    \mem$18 [10] = 32'd0;
+    \mem$18 [11] = 32'd0;
+    \mem$18 [12] = 32'd0;
+    \mem$18 [13] = 32'd0;
+    \mem$18 [14] = 32'd0;
+    \mem$18 [15] = 32'd0;
+    \mem$18 [16] = 32'd0;
+    \mem$18 [17] = 32'd0;
+    \mem$18 [18] = 32'd0;
+    \mem$18 [19] = 32'd0;
+    \mem$18 [20] = 32'd0;
+    \mem$18 [21] = 32'd0;
+    \mem$18 [22] = 32'd0;
+    \mem$18 [23] = 32'd0;
+    \mem$18 [24] = 32'd0;
+    \mem$18 [25] = 32'd0;
+    \mem$18 [26] = 32'd0;
+    \mem$18 [27] = 32'd0;
+    \mem$18 [28] = 32'd0;
+    \mem$18 [29] = 32'd0;
+    \mem$18 [30] = 32'd0;
+    \mem$18 [31] = 32'd0;
+    \mem$18 [32] = 32'd0;
+    \mem$18 [33] = 32'd0;
+    \mem$18 [34] = 32'd0;
+    \mem$18 [35] = 32'd0;
+    \mem$18 [36] = 32'd0;
+    \mem$18 [37] = 32'd0;
+    \mem$18 [38] = 32'd0;
+    \mem$18 [39] = 32'd0;
+    \mem$18 [40] = 32'd0;
+    \mem$18 [41] = 32'd0;
+    \mem$18 [42] = 32'd0;
+    \mem$18 [43] = 32'd0;
+    \mem$18 [44] = 32'd0;
+    \mem$18 [45] = 32'd0;
+    \mem$18 [46] = 32'd0;
+    \mem$18 [47] = 32'd0;
+    \mem$18 [48] = 32'd0;
+    \mem$18 [49] = 32'd0;
+    \mem$18 [50] = 32'd0;
+    \mem$18 [51] = 32'd0;
+    \mem$18 [52] = 32'd0;
+    \mem$18 [53] = 32'd0;
+    \mem$18 [54] = 32'd0;
+    \mem$18 [55] = 32'd0;
+    \mem$18 [56] = 32'd0;
+    \mem$18 [57] = 32'd0;
+    \mem$18 [58] = 32'd0;
+    \mem$18 [59] = 32'd0;
+    \mem$18 [60] = 32'd0;
+    \mem$18 [61] = 32'd0;
+    \mem$18 [62] = 32'd0;
+    \mem$18 [63] = 32'd0;
+    \mem$18 [64] = 32'd0;
+    \mem$18 [65] = 32'd0;
+    \mem$18 [66] = 32'd0;
+    \mem$18 [67] = 32'd0;
+    \mem$18 [68] = 32'd0;
+    \mem$18 [69] = 32'd0;
+    \mem$18 [70] = 32'd0;
+    \mem$18 [71] = 32'd0;
+    \mem$18 [72] = 32'd0;
+    \mem$18 [73] = 32'd0;
+    \mem$18 [74] = 32'd0;
+    \mem$18 [75] = 32'd0;
+    \mem$18 [76] = 32'd0;
+    \mem$18 [77] = 32'd0;
+    \mem$18 [78] = 32'd0;
+    \mem$18 [79] = 32'd0;
+    \mem$18 [80] = 32'd0;
+    \mem$18 [81] = 32'd0;
+    \mem$18 [82] = 32'd0;
+    \mem$18 [83] = 32'd0;
+    \mem$18 [84] = 32'd0;
+    \mem$18 [85] = 32'd0;
+    \mem$18 [86] = 32'd0;
+    \mem$18 [87] = 32'd0;
+    \mem$18 [88] = 32'd0;
+    \mem$18 [89] = 32'd0;
+    \mem$18 [90] = 32'd0;
+    \mem$18 [91] = 32'd0;
+    \mem$18 [92] = 32'd0;
+    \mem$18 [93] = 32'd0;
+    \mem$18 [94] = 32'd0;
+    \mem$18 [95] = 32'd0;
+    \mem$18 [96] = 32'd0;
+    \mem$18 [97] = 32'd0;
+    \mem$18 [98] = 32'd0;
+    \mem$18 [99] = 32'd0;
+    \mem$18 [100] = 32'd0;
+    \mem$18 [101] = 32'd0;
+    \mem$18 [102] = 32'd0;
+    \mem$18 [103] = 32'd0;
+    \mem$18 [104] = 32'd0;
+    \mem$18 [105] = 32'd0;
+    \mem$18 [106] = 32'd0;
+    \mem$18 [107] = 32'd0;
+    \mem$18 [108] = 32'd0;
+    \mem$18 [109] = 32'd0;
+    \mem$18 [110] = 32'd0;
+    \mem$18 [111] = 32'd0;
+    \mem$18 [112] = 32'd0;
+    \mem$18 [113] = 32'd0;
+    \mem$18 [114] = 32'd0;
+    \mem$18 [115] = 32'd0;
+    \mem$18 [116] = 32'd0;
+    \mem$18 [117] = 32'd0;
+    \mem$18 [118] = 32'd0;
+    \mem$18 [119] = 32'd0;
+    \mem$18 [120] = 32'd0;
+    \mem$18 [121] = 32'd0;
+    \mem$18 [122] = 32'd0;
+    \mem$18 [123] = 32'd0;
+    \mem$18 [124] = 32'd0;
+    \mem$18 [125] = 32'd0;
+    \mem$18 [126] = 32'd0;
+    \mem$18 [127] = 32'd0;
+    \mem$18 [128] = 32'd0;
+    \mem$18 [129] = 32'd0;
+    \mem$18 [130] = 32'd0;
+    \mem$18 [131] = 32'd0;
+    \mem$18 [132] = 32'd0;
+    \mem$18 [133] = 32'd0;
+    \mem$18 [134] = 32'd0;
+    \mem$18 [135] = 32'd0;
+    \mem$18 [136] = 32'd0;
+    \mem$18 [137] = 32'd0;
+    \mem$18 [138] = 32'd0;
+    \mem$18 [139] = 32'd0;
+    \mem$18 [140] = 32'd0;
+    \mem$18 [141] = 32'd0;
+    \mem$18 [142] = 32'd0;
+    \mem$18 [143] = 32'd0;
+    \mem$18 [144] = 32'd0;
+    \mem$18 [145] = 32'd0;
+    \mem$18 [146] = 32'd0;
+    \mem$18 [147] = 32'd0;
+    \mem$18 [148] = 32'd0;
+    \mem$18 [149] = 32'd0;
+    \mem$18 [150] = 32'd0;
+    \mem$18 [151] = 32'd0;
+    \mem$18 [152] = 32'd0;
+    \mem$18 [153] = 32'd0;
+    \mem$18 [154] = 32'd0;
+    \mem$18 [155] = 32'd0;
+    \mem$18 [156] = 32'd0;
+    \mem$18 [157] = 32'd0;
+    \mem$18 [158] = 32'd0;
+    \mem$18 [159] = 32'd0;
+    \mem$18 [160] = 32'd0;
+    \mem$18 [161] = 32'd0;
+    \mem$18 [162] = 32'd0;
+    \mem$18 [163] = 32'd0;
+    \mem$18 [164] = 32'd0;
+    \mem$18 [165] = 32'd0;
+    \mem$18 [166] = 32'd0;
+    \mem$18 [167] = 32'd0;
+    \mem$18 [168] = 32'd0;
+    \mem$18 [169] = 32'd0;
+    \mem$18 [170] = 32'd0;
+    \mem$18 [171] = 32'd0;
+    \mem$18 [172] = 32'd0;
+    \mem$18 [173] = 32'd0;
+    \mem$18 [174] = 32'd0;
+    \mem$18 [175] = 32'd0;
+    \mem$18 [176] = 32'd0;
+    \mem$18 [177] = 32'd0;
+    \mem$18 [178] = 32'd0;
+    \mem$18 [179] = 32'd0;
+    \mem$18 [180] = 32'd0;
+    \mem$18 [181] = 32'd0;
+    \mem$18 [182] = 32'd0;
+    \mem$18 [183] = 32'd0;
+    \mem$18 [184] = 32'd0;
+    \mem$18 [185] = 32'd0;
+    \mem$18 [186] = 32'd0;
+    \mem$18 [187] = 32'd0;
+    \mem$18 [188] = 32'd0;
+    \mem$18 [189] = 32'd0;
+    \mem$18 [190] = 32'd0;
+    \mem$18 [191] = 32'd0;
+    \mem$18 [192] = 32'd0;
+    \mem$18 [193] = 32'd0;
+    \mem$18 [194] = 32'd0;
+    \mem$18 [195] = 32'd0;
+    \mem$18 [196] = 32'd0;
+    \mem$18 [197] = 32'd0;
+    \mem$18 [198] = 32'd0;
+    \mem$18 [199] = 32'd0;
+    \mem$18 [200] = 32'd0;
+    \mem$18 [201] = 32'd0;
+    \mem$18 [202] = 32'd0;
+    \mem$18 [203] = 32'd0;
+    \mem$18 [204] = 32'd0;
+    \mem$18 [205] = 32'd0;
+    \mem$18 [206] = 32'd0;
+    \mem$18 [207] = 32'd0;
+    \mem$18 [208] = 32'd0;
+    \mem$18 [209] = 32'd0;
+    \mem$18 [210] = 32'd0;
+    \mem$18 [211] = 32'd0;
+    \mem$18 [212] = 32'd0;
+    \mem$18 [213] = 32'd0;
+    \mem$18 [214] = 32'd0;
+    \mem$18 [215] = 32'd0;
+    \mem$18 [216] = 32'd0;
+    \mem$18 [217] = 32'd0;
+    \mem$18 [218] = 32'd0;
+    \mem$18 [219] = 32'd0;
+    \mem$18 [220] = 32'd0;
+    \mem$18 [221] = 32'd0;
+    \mem$18 [222] = 32'd0;
+    \mem$18 [223] = 32'd0;
+    \mem$18 [224] = 32'd0;
+    \mem$18 [225] = 32'd0;
+    \mem$18 [226] = 32'd0;
+    \mem$18 [227] = 32'd0;
+    \mem$18 [228] = 32'd0;
+    \mem$18 [229] = 32'd0;
+    \mem$18 [230] = 32'd0;
+    \mem$18 [231] = 32'd0;
+    \mem$18 [232] = 32'd0;
+    \mem$18 [233] = 32'd0;
+    \mem$18 [234] = 32'd0;
+    \mem$18 [235] = 32'd0;
+    \mem$18 [236] = 32'd0;
+    \mem$18 [237] = 32'd0;
+    \mem$18 [238] = 32'd0;
+    \mem$18 [239] = 32'd0;
+    \mem$18 [240] = 32'd0;
+    \mem$18 [241] = 32'd0;
+    \mem$18 [242] = 32'd0;
+    \mem$18 [243] = 32'd0;
+    \mem$18 [244] = 32'd0;
+    \mem$18 [245] = 32'd0;
+    \mem$18 [246] = 32'd0;
+    \mem$18 [247] = 32'd0;
+    \mem$18 [248] = 32'd0;
+    \mem$18 [249] = 32'd0;
+    \mem$18 [250] = 32'd0;
+    \mem$18 [251] = 32'd0;
+    \mem$18 [252] = 32'd0;
+    \mem$18 [253] = 32'd0;
+    \mem$18 [254] = 32'd0;
+    \mem$18 [255] = 32'd0;
+    \mem$18 [256] = 32'd0;
+    \mem$18 [257] = 32'd0;
+    \mem$18 [258] = 32'd0;
+    \mem$18 [259] = 32'd0;
+    \mem$18 [260] = 32'd0;
+    \mem$18 [261] = 32'd0;
+    \mem$18 [262] = 32'd0;
+    \mem$18 [263] = 32'd0;
+    \mem$18 [264] = 32'd0;
+    \mem$18 [265] = 32'd0;
+    \mem$18 [266] = 32'd0;
+    \mem$18 [267] = 32'd0;
+    \mem$18 [268] = 32'd0;
+    \mem$18 [269] = 32'd0;
+    \mem$18 [270] = 32'd0;
+    \mem$18 [271] = 32'd0;
+    \mem$18 [272] = 32'd0;
+    \mem$18 [273] = 32'd0;
+    \mem$18 [274] = 32'd0;
+    \mem$18 [275] = 32'd0;
+    \mem$18 [276] = 32'd0;
+    \mem$18 [277] = 32'd0;
+    \mem$18 [278] = 32'd0;
+    \mem$18 [279] = 32'd0;
+    \mem$18 [280] = 32'd0;
+    \mem$18 [281] = 32'd0;
+    \mem$18 [282] = 32'd0;
+    \mem$18 [283] = 32'd0;
+    \mem$18 [284] = 32'd0;
+    \mem$18 [285] = 32'd0;
+    \mem$18 [286] = 32'd0;
+    \mem$18 [287] = 32'd0;
+    \mem$18 [288] = 32'd0;
+    \mem$18 [289] = 32'd0;
+    \mem$18 [290] = 32'd0;
+    \mem$18 [291] = 32'd0;
+    \mem$18 [292] = 32'd0;
+    \mem$18 [293] = 32'd0;
+    \mem$18 [294] = 32'd0;
+    \mem$18 [295] = 32'd0;
+    \mem$18 [296] = 32'd0;
+    \mem$18 [297] = 32'd0;
+    \mem$18 [298] = 32'd0;
+    \mem$18 [299] = 32'd0;
+    \mem$18 [300] = 32'd0;
+    \mem$18 [301] = 32'd0;
+    \mem$18 [302] = 32'd0;
+    \mem$18 [303] = 32'd0;
+    \mem$18 [304] = 32'd0;
+    \mem$18 [305] = 32'd0;
+    \mem$18 [306] = 32'd0;
+    \mem$18 [307] = 32'd0;
+    \mem$18 [308] = 32'd0;
+    \mem$18 [309] = 32'd0;
+    \mem$18 [310] = 32'd0;
+    \mem$18 [311] = 32'd0;
+    \mem$18 [312] = 32'd0;
+    \mem$18 [313] = 32'd0;
+    \mem$18 [314] = 32'd0;
+    \mem$18 [315] = 32'd0;
+    \mem$18 [316] = 32'd0;
+    \mem$18 [317] = 32'd0;
+    \mem$18 [318] = 32'd0;
+    \mem$18 [319] = 32'd0;
+    \mem$18 [320] = 32'd0;
+    \mem$18 [321] = 32'd0;
+    \mem$18 [322] = 32'd0;
+    \mem$18 [323] = 32'd0;
+    \mem$18 [324] = 32'd0;
+    \mem$18 [325] = 32'd0;
+    \mem$18 [326] = 32'd0;
+    \mem$18 [327] = 32'd0;
+    \mem$18 [328] = 32'd0;
+    \mem$18 [329] = 32'd0;
+    \mem$18 [330] = 32'd0;
+    \mem$18 [331] = 32'd0;
+    \mem$18 [332] = 32'd0;
+    \mem$18 [333] = 32'd0;
+    \mem$18 [334] = 32'd0;
+    \mem$18 [335] = 32'd0;
+    \mem$18 [336] = 32'd0;
+    \mem$18 [337] = 32'd0;
+    \mem$18 [338] = 32'd0;
+    \mem$18 [339] = 32'd0;
+    \mem$18 [340] = 32'd0;
+    \mem$18 [341] = 32'd0;
+    \mem$18 [342] = 32'd0;
+    \mem$18 [343] = 32'd0;
+    \mem$18 [344] = 32'd0;
+    \mem$18 [345] = 32'd0;
+    \mem$18 [346] = 32'd0;
+    \mem$18 [347] = 32'd0;
+    \mem$18 [348] = 32'd0;
+    \mem$18 [349] = 32'd0;
+    \mem$18 [350] = 32'd0;
+    \mem$18 [351] = 32'd0;
+    \mem$18 [352] = 32'd0;
+    \mem$18 [353] = 32'd0;
+    \mem$18 [354] = 32'd0;
+    \mem$18 [355] = 32'd0;
+    \mem$18 [356] = 32'd0;
+    \mem$18 [357] = 32'd0;
+    \mem$18 [358] = 32'd0;
+    \mem$18 [359] = 32'd0;
+    \mem$18 [360] = 32'd0;
+    \mem$18 [361] = 32'd0;
+    \mem$18 [362] = 32'd0;
+    \mem$18 [363] = 32'd0;
+    \mem$18 [364] = 32'd0;
+    \mem$18 [365] = 32'd0;
+    \mem$18 [366] = 32'd0;
+    \mem$18 [367] = 32'd0;
+    \mem$18 [368] = 32'd0;
+    \mem$18 [369] = 32'd0;
+    \mem$18 [370] = 32'd0;
+    \mem$18 [371] = 32'd0;
+    \mem$18 [372] = 32'd0;
+    \mem$18 [373] = 32'd0;
+    \mem$18 [374] = 32'd0;
+    \mem$18 [375] = 32'd0;
+    \mem$18 [376] = 32'd0;
+    \mem$18 [377] = 32'd0;
+    \mem$18 [378] = 32'd0;
+    \mem$18 [379] = 32'd0;
+    \mem$18 [380] = 32'd0;
+    \mem$18 [381] = 32'd0;
+    \mem$18 [382] = 32'd0;
+    \mem$18 [383] = 32'd0;
+    \mem$18 [384] = 32'd0;
+    \mem$18 [385] = 32'd0;
+    \mem$18 [386] = 32'd0;
+    \mem$18 [387] = 32'd0;
+    \mem$18 [388] = 32'd0;
+    \mem$18 [389] = 32'd0;
+    \mem$18 [390] = 32'd0;
+    \mem$18 [391] = 32'd0;
+    \mem$18 [392] = 32'd0;
+    \mem$18 [393] = 32'd0;
+    \mem$18 [394] = 32'd0;
+    \mem$18 [395] = 32'd0;
+    \mem$18 [396] = 32'd0;
+    \mem$18 [397] = 32'd0;
+    \mem$18 [398] = 32'd0;
+    \mem$18 [399] = 32'd0;
+    \mem$18 [400] = 32'd0;
+    \mem$18 [401] = 32'd0;
+    \mem$18 [402] = 32'd0;
+    \mem$18 [403] = 32'd0;
+    \mem$18 [404] = 32'd0;
+    \mem$18 [405] = 32'd0;
+    \mem$18 [406] = 32'd0;
+    \mem$18 [407] = 32'd0;
+    \mem$18 [408] = 32'd0;
+    \mem$18 [409] = 32'd0;
+    \mem$18 [410] = 32'd0;
+    \mem$18 [411] = 32'd0;
+    \mem$18 [412] = 32'd0;
+    \mem$18 [413] = 32'd0;
+    \mem$18 [414] = 32'd0;
+    \mem$18 [415] = 32'd0;
+    \mem$18 [416] = 32'd0;
+    \mem$18 [417] = 32'd0;
+    \mem$18 [418] = 32'd0;
+    \mem$18 [419] = 32'd0;
+    \mem$18 [420] = 32'd0;
+    \mem$18 [421] = 32'd0;
+    \mem$18 [422] = 32'd0;
+    \mem$18 [423] = 32'd0;
+    \mem$18 [424] = 32'd0;
+    \mem$18 [425] = 32'd0;
+    \mem$18 [426] = 32'd0;
+    \mem$18 [427] = 32'd0;
+    \mem$18 [428] = 32'd0;
+    \mem$18 [429] = 32'd0;
+    \mem$18 [430] = 32'd0;
+    \mem$18 [431] = 32'd0;
+    \mem$18 [432] = 32'd0;
+    \mem$18 [433] = 32'd0;
+    \mem$18 [434] = 32'd0;
+    \mem$18 [435] = 32'd0;
+    \mem$18 [436] = 32'd0;
+    \mem$18 [437] = 32'd0;
+    \mem$18 [438] = 32'd0;
+    \mem$18 [439] = 32'd0;
+    \mem$18 [440] = 32'd0;
+    \mem$18 [441] = 32'd0;
+    \mem$18 [442] = 32'd0;
+    \mem$18 [443] = 32'd0;
+    \mem$18 [444] = 32'd0;
+    \mem$18 [445] = 32'd0;
+    \mem$18 [446] = 32'd0;
+    \mem$18 [447] = 32'd0;
+    \mem$18 [448] = 32'd0;
+    \mem$18 [449] = 32'd0;
+    \mem$18 [450] = 32'd0;
+    \mem$18 [451] = 32'd0;
+    \mem$18 [452] = 32'd0;
+    \mem$18 [453] = 32'd0;
+    \mem$18 [454] = 32'd0;
+    \mem$18 [455] = 32'd0;
+    \mem$18 [456] = 32'd0;
+    \mem$18 [457] = 32'd0;
+    \mem$18 [458] = 32'd0;
+    \mem$18 [459] = 32'd0;
+    \mem$18 [460] = 32'd0;
+    \mem$18 [461] = 32'd0;
+    \mem$18 [462] = 32'd0;
+    \mem$18 [463] = 32'd0;
+    \mem$18 [464] = 32'd0;
+    \mem$18 [465] = 32'd0;
+    \mem$18 [466] = 32'd0;
+    \mem$18 [467] = 32'd0;
+    \mem$18 [468] = 32'd0;
+    \mem$18 [469] = 32'd0;
+    \mem$18 [470] = 32'd0;
+    \mem$18 [471] = 32'd0;
+    \mem$18 [472] = 32'd0;
+    \mem$18 [473] = 32'd0;
+    \mem$18 [474] = 32'd0;
+    \mem$18 [475] = 32'd0;
+    \mem$18 [476] = 32'd0;
+    \mem$18 [477] = 32'd0;
+    \mem$18 [478] = 32'd0;
+    \mem$18 [479] = 32'd0;
+    \mem$18 [480] = 32'd0;
+    \mem$18 [481] = 32'd0;
+    \mem$18 [482] = 32'd0;
+    \mem$18 [483] = 32'd0;
+    \mem$18 [484] = 32'd0;
+    \mem$18 [485] = 32'd0;
+    \mem$18 [486] = 32'd0;
+    \mem$18 [487] = 32'd0;
+    \mem$18 [488] = 32'd0;
+    \mem$18 [489] = 32'd0;
+    \mem$18 [490] = 32'd0;
+    \mem$18 [491] = 32'd0;
+    \mem$18 [492] = 32'd0;
+    \mem$18 [493] = 32'd0;
+    \mem$18 [494] = 32'd0;
+    \mem$18 [495] = 32'd0;
+    \mem$18 [496] = 32'd0;
+    \mem$18 [497] = 32'd0;
+    \mem$18 [498] = 32'd0;
+    \mem$18 [499] = 32'd0;
+    \mem$18 [500] = 32'd0;
+    \mem$18 [501] = 32'd0;
+    \mem$18 [502] = 32'd0;
+    \mem$18 [503] = 32'd0;
+    \mem$18 [504] = 32'd0;
+    \mem$18 [505] = 32'd0;
+    \mem$18 [506] = 32'd0;
+    \mem$18 [507] = 32'd0;
+    \mem$18 [508] = 32'd0;
+    \mem$18 [509] = 32'd0;
+    \mem$18 [510] = 32'd0;
+    \mem$18 [511] = 32'd0;
   end
   always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
+    if (\mem_w_en$23 )
+      \mem$18 [\mem_w_addr$24 ] <= \mem_w_data$25 ;
   end
-  reg [31:0] _0_;
+  reg [31:0] _2_;
   always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
+    if (\mem_r_en$20 ) begin
+      _2_ <= \mem$18 [\mem_r_addr$21 ];
     end
   end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$8  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(1'h0),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 9'h000;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign reset = 1'h0;
-  assign read_buffer_reset = 1'h0;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_2" *)
-(* generator = "nMigen" *)
-module mem_2(clk, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, read_data_output__valid, read_data_output__payload, read_data_output__ready, reset, write_input__ready, write_input__valid, write_input__payload__data, write_input__payload__addr, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [5:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [5:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [5:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [5:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  output write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [63:0];
+  assign \mem_r_data$22  = _2_;
+  reg [31:0] \mem$2  [511:0];
   initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
+    \mem$2 [0] = 32'd0;
+    \mem$2 [1] = 32'd0;
+    \mem$2 [2] = 32'd0;
+    \mem$2 [3] = 32'd0;
+    \mem$2 [4] = 32'd0;
+    \mem$2 [5] = 32'd0;
+    \mem$2 [6] = 32'd0;
+    \mem$2 [7] = 32'd0;
+    \mem$2 [8] = 32'd0;
+    \mem$2 [9] = 32'd0;
+    \mem$2 [10] = 32'd0;
+    \mem$2 [11] = 32'd0;
+    \mem$2 [12] = 32'd0;
+    \mem$2 [13] = 32'd0;
+    \mem$2 [14] = 32'd0;
+    \mem$2 [15] = 32'd0;
+    \mem$2 [16] = 32'd0;
+    \mem$2 [17] = 32'd0;
+    \mem$2 [18] = 32'd0;
+    \mem$2 [19] = 32'd0;
+    \mem$2 [20] = 32'd0;
+    \mem$2 [21] = 32'd0;
+    \mem$2 [22] = 32'd0;
+    \mem$2 [23] = 32'd0;
+    \mem$2 [24] = 32'd0;
+    \mem$2 [25] = 32'd0;
+    \mem$2 [26] = 32'd0;
+    \mem$2 [27] = 32'd0;
+    \mem$2 [28] = 32'd0;
+    \mem$2 [29] = 32'd0;
+    \mem$2 [30] = 32'd0;
+    \mem$2 [31] = 32'd0;
+    \mem$2 [32] = 32'd0;
+    \mem$2 [33] = 32'd0;
+    \mem$2 [34] = 32'd0;
+    \mem$2 [35] = 32'd0;
+    \mem$2 [36] = 32'd0;
+    \mem$2 [37] = 32'd0;
+    \mem$2 [38] = 32'd0;
+    \mem$2 [39] = 32'd0;
+    \mem$2 [40] = 32'd0;
+    \mem$2 [41] = 32'd0;
+    \mem$2 [42] = 32'd0;
+    \mem$2 [43] = 32'd0;
+    \mem$2 [44] = 32'd0;
+    \mem$2 [45] = 32'd0;
+    \mem$2 [46] = 32'd0;
+    \mem$2 [47] = 32'd0;
+    \mem$2 [48] = 32'd0;
+    \mem$2 [49] = 32'd0;
+    \mem$2 [50] = 32'd0;
+    \mem$2 [51] = 32'd0;
+    \mem$2 [52] = 32'd0;
+    \mem$2 [53] = 32'd0;
+    \mem$2 [54] = 32'd0;
+    \mem$2 [55] = 32'd0;
+    \mem$2 [56] = 32'd0;
+    \mem$2 [57] = 32'd0;
+    \mem$2 [58] = 32'd0;
+    \mem$2 [59] = 32'd0;
+    \mem$2 [60] = 32'd0;
+    \mem$2 [61] = 32'd0;
+    \mem$2 [62] = 32'd0;
+    \mem$2 [63] = 32'd0;
+    \mem$2 [64] = 32'd0;
+    \mem$2 [65] = 32'd0;
+    \mem$2 [66] = 32'd0;
+    \mem$2 [67] = 32'd0;
+    \mem$2 [68] = 32'd0;
+    \mem$2 [69] = 32'd0;
+    \mem$2 [70] = 32'd0;
+    \mem$2 [71] = 32'd0;
+    \mem$2 [72] = 32'd0;
+    \mem$2 [73] = 32'd0;
+    \mem$2 [74] = 32'd0;
+    \mem$2 [75] = 32'd0;
+    \mem$2 [76] = 32'd0;
+    \mem$2 [77] = 32'd0;
+    \mem$2 [78] = 32'd0;
+    \mem$2 [79] = 32'd0;
+    \mem$2 [80] = 32'd0;
+    \mem$2 [81] = 32'd0;
+    \mem$2 [82] = 32'd0;
+    \mem$2 [83] = 32'd0;
+    \mem$2 [84] = 32'd0;
+    \mem$2 [85] = 32'd0;
+    \mem$2 [86] = 32'd0;
+    \mem$2 [87] = 32'd0;
+    \mem$2 [88] = 32'd0;
+    \mem$2 [89] = 32'd0;
+    \mem$2 [90] = 32'd0;
+    \mem$2 [91] = 32'd0;
+    \mem$2 [92] = 32'd0;
+    \mem$2 [93] = 32'd0;
+    \mem$2 [94] = 32'd0;
+    \mem$2 [95] = 32'd0;
+    \mem$2 [96] = 32'd0;
+    \mem$2 [97] = 32'd0;
+    \mem$2 [98] = 32'd0;
+    \mem$2 [99] = 32'd0;
+    \mem$2 [100] = 32'd0;
+    \mem$2 [101] = 32'd0;
+    \mem$2 [102] = 32'd0;
+    \mem$2 [103] = 32'd0;
+    \mem$2 [104] = 32'd0;
+    \mem$2 [105] = 32'd0;
+    \mem$2 [106] = 32'd0;
+    \mem$2 [107] = 32'd0;
+    \mem$2 [108] = 32'd0;
+    \mem$2 [109] = 32'd0;
+    \mem$2 [110] = 32'd0;
+    \mem$2 [111] = 32'd0;
+    \mem$2 [112] = 32'd0;
+    \mem$2 [113] = 32'd0;
+    \mem$2 [114] = 32'd0;
+    \mem$2 [115] = 32'd0;
+    \mem$2 [116] = 32'd0;
+    \mem$2 [117] = 32'd0;
+    \mem$2 [118] = 32'd0;
+    \mem$2 [119] = 32'd0;
+    \mem$2 [120] = 32'd0;
+    \mem$2 [121] = 32'd0;
+    \mem$2 [122] = 32'd0;
+    \mem$2 [123] = 32'd0;
+    \mem$2 [124] = 32'd0;
+    \mem$2 [125] = 32'd0;
+    \mem$2 [126] = 32'd0;
+    \mem$2 [127] = 32'd0;
+    \mem$2 [128] = 32'd0;
+    \mem$2 [129] = 32'd0;
+    \mem$2 [130] = 32'd0;
+    \mem$2 [131] = 32'd0;
+    \mem$2 [132] = 32'd0;
+    \mem$2 [133] = 32'd0;
+    \mem$2 [134] = 32'd0;
+    \mem$2 [135] = 32'd0;
+    \mem$2 [136] = 32'd0;
+    \mem$2 [137] = 32'd0;
+    \mem$2 [138] = 32'd0;
+    \mem$2 [139] = 32'd0;
+    \mem$2 [140] = 32'd0;
+    \mem$2 [141] = 32'd0;
+    \mem$2 [142] = 32'd0;
+    \mem$2 [143] = 32'd0;
+    \mem$2 [144] = 32'd0;
+    \mem$2 [145] = 32'd0;
+    \mem$2 [146] = 32'd0;
+    \mem$2 [147] = 32'd0;
+    \mem$2 [148] = 32'd0;
+    \mem$2 [149] = 32'd0;
+    \mem$2 [150] = 32'd0;
+    \mem$2 [151] = 32'd0;
+    \mem$2 [152] = 32'd0;
+    \mem$2 [153] = 32'd0;
+    \mem$2 [154] = 32'd0;
+    \mem$2 [155] = 32'd0;
+    \mem$2 [156] = 32'd0;
+    \mem$2 [157] = 32'd0;
+    \mem$2 [158] = 32'd0;
+    \mem$2 [159] = 32'd0;
+    \mem$2 [160] = 32'd0;
+    \mem$2 [161] = 32'd0;
+    \mem$2 [162] = 32'd0;
+    \mem$2 [163] = 32'd0;
+    \mem$2 [164] = 32'd0;
+    \mem$2 [165] = 32'd0;
+    \mem$2 [166] = 32'd0;
+    \mem$2 [167] = 32'd0;
+    \mem$2 [168] = 32'd0;
+    \mem$2 [169] = 32'd0;
+    \mem$2 [170] = 32'd0;
+    \mem$2 [171] = 32'd0;
+    \mem$2 [172] = 32'd0;
+    \mem$2 [173] = 32'd0;
+    \mem$2 [174] = 32'd0;
+    \mem$2 [175] = 32'd0;
+    \mem$2 [176] = 32'd0;
+    \mem$2 [177] = 32'd0;
+    \mem$2 [178] = 32'd0;
+    \mem$2 [179] = 32'd0;
+    \mem$2 [180] = 32'd0;
+    \mem$2 [181] = 32'd0;
+    \mem$2 [182] = 32'd0;
+    \mem$2 [183] = 32'd0;
+    \mem$2 [184] = 32'd0;
+    \mem$2 [185] = 32'd0;
+    \mem$2 [186] = 32'd0;
+    \mem$2 [187] = 32'd0;
+    \mem$2 [188] = 32'd0;
+    \mem$2 [189] = 32'd0;
+    \mem$2 [190] = 32'd0;
+    \mem$2 [191] = 32'd0;
+    \mem$2 [192] = 32'd0;
+    \mem$2 [193] = 32'd0;
+    \mem$2 [194] = 32'd0;
+    \mem$2 [195] = 32'd0;
+    \mem$2 [196] = 32'd0;
+    \mem$2 [197] = 32'd0;
+    \mem$2 [198] = 32'd0;
+    \mem$2 [199] = 32'd0;
+    \mem$2 [200] = 32'd0;
+    \mem$2 [201] = 32'd0;
+    \mem$2 [202] = 32'd0;
+    \mem$2 [203] = 32'd0;
+    \mem$2 [204] = 32'd0;
+    \mem$2 [205] = 32'd0;
+    \mem$2 [206] = 32'd0;
+    \mem$2 [207] = 32'd0;
+    \mem$2 [208] = 32'd0;
+    \mem$2 [209] = 32'd0;
+    \mem$2 [210] = 32'd0;
+    \mem$2 [211] = 32'd0;
+    \mem$2 [212] = 32'd0;
+    \mem$2 [213] = 32'd0;
+    \mem$2 [214] = 32'd0;
+    \mem$2 [215] = 32'd0;
+    \mem$2 [216] = 32'd0;
+    \mem$2 [217] = 32'd0;
+    \mem$2 [218] = 32'd0;
+    \mem$2 [219] = 32'd0;
+    \mem$2 [220] = 32'd0;
+    \mem$2 [221] = 32'd0;
+    \mem$2 [222] = 32'd0;
+    \mem$2 [223] = 32'd0;
+    \mem$2 [224] = 32'd0;
+    \mem$2 [225] = 32'd0;
+    \mem$2 [226] = 32'd0;
+    \mem$2 [227] = 32'd0;
+    \mem$2 [228] = 32'd0;
+    \mem$2 [229] = 32'd0;
+    \mem$2 [230] = 32'd0;
+    \mem$2 [231] = 32'd0;
+    \mem$2 [232] = 32'd0;
+    \mem$2 [233] = 32'd0;
+    \mem$2 [234] = 32'd0;
+    \mem$2 [235] = 32'd0;
+    \mem$2 [236] = 32'd0;
+    \mem$2 [237] = 32'd0;
+    \mem$2 [238] = 32'd0;
+    \mem$2 [239] = 32'd0;
+    \mem$2 [240] = 32'd0;
+    \mem$2 [241] = 32'd0;
+    \mem$2 [242] = 32'd0;
+    \mem$2 [243] = 32'd0;
+    \mem$2 [244] = 32'd0;
+    \mem$2 [245] = 32'd0;
+    \mem$2 [246] = 32'd0;
+    \mem$2 [247] = 32'd0;
+    \mem$2 [248] = 32'd0;
+    \mem$2 [249] = 32'd0;
+    \mem$2 [250] = 32'd0;
+    \mem$2 [251] = 32'd0;
+    \mem$2 [252] = 32'd0;
+    \mem$2 [253] = 32'd0;
+    \mem$2 [254] = 32'd0;
+    \mem$2 [255] = 32'd0;
+    \mem$2 [256] = 32'd0;
+    \mem$2 [257] = 32'd0;
+    \mem$2 [258] = 32'd0;
+    \mem$2 [259] = 32'd0;
+    \mem$2 [260] = 32'd0;
+    \mem$2 [261] = 32'd0;
+    \mem$2 [262] = 32'd0;
+    \mem$2 [263] = 32'd0;
+    \mem$2 [264] = 32'd0;
+    \mem$2 [265] = 32'd0;
+    \mem$2 [266] = 32'd0;
+    \mem$2 [267] = 32'd0;
+    \mem$2 [268] = 32'd0;
+    \mem$2 [269] = 32'd0;
+    \mem$2 [270] = 32'd0;
+    \mem$2 [271] = 32'd0;
+    \mem$2 [272] = 32'd0;
+    \mem$2 [273] = 32'd0;
+    \mem$2 [274] = 32'd0;
+    \mem$2 [275] = 32'd0;
+    \mem$2 [276] = 32'd0;
+    \mem$2 [277] = 32'd0;
+    \mem$2 [278] = 32'd0;
+    \mem$2 [279] = 32'd0;
+    \mem$2 [280] = 32'd0;
+    \mem$2 [281] = 32'd0;
+    \mem$2 [282] = 32'd0;
+    \mem$2 [283] = 32'd0;
+    \mem$2 [284] = 32'd0;
+    \mem$2 [285] = 32'd0;
+    \mem$2 [286] = 32'd0;
+    \mem$2 [287] = 32'd0;
+    \mem$2 [288] = 32'd0;
+    \mem$2 [289] = 32'd0;
+    \mem$2 [290] = 32'd0;
+    \mem$2 [291] = 32'd0;
+    \mem$2 [292] = 32'd0;
+    \mem$2 [293] = 32'd0;
+    \mem$2 [294] = 32'd0;
+    \mem$2 [295] = 32'd0;
+    \mem$2 [296] = 32'd0;
+    \mem$2 [297] = 32'd0;
+    \mem$2 [298] = 32'd0;
+    \mem$2 [299] = 32'd0;
+    \mem$2 [300] = 32'd0;
+    \mem$2 [301] = 32'd0;
+    \mem$2 [302] = 32'd0;
+    \mem$2 [303] = 32'd0;
+    \mem$2 [304] = 32'd0;
+    \mem$2 [305] = 32'd0;
+    \mem$2 [306] = 32'd0;
+    \mem$2 [307] = 32'd0;
+    \mem$2 [308] = 32'd0;
+    \mem$2 [309] = 32'd0;
+    \mem$2 [310] = 32'd0;
+    \mem$2 [311] = 32'd0;
+    \mem$2 [312] = 32'd0;
+    \mem$2 [313] = 32'd0;
+    \mem$2 [314] = 32'd0;
+    \mem$2 [315] = 32'd0;
+    \mem$2 [316] = 32'd0;
+    \mem$2 [317] = 32'd0;
+    \mem$2 [318] = 32'd0;
+    \mem$2 [319] = 32'd0;
+    \mem$2 [320] = 32'd0;
+    \mem$2 [321] = 32'd0;
+    \mem$2 [322] = 32'd0;
+    \mem$2 [323] = 32'd0;
+    \mem$2 [324] = 32'd0;
+    \mem$2 [325] = 32'd0;
+    \mem$2 [326] = 32'd0;
+    \mem$2 [327] = 32'd0;
+    \mem$2 [328] = 32'd0;
+    \mem$2 [329] = 32'd0;
+    \mem$2 [330] = 32'd0;
+    \mem$2 [331] = 32'd0;
+    \mem$2 [332] = 32'd0;
+    \mem$2 [333] = 32'd0;
+    \mem$2 [334] = 32'd0;
+    \mem$2 [335] = 32'd0;
+    \mem$2 [336] = 32'd0;
+    \mem$2 [337] = 32'd0;
+    \mem$2 [338] = 32'd0;
+    \mem$2 [339] = 32'd0;
+    \mem$2 [340] = 32'd0;
+    \mem$2 [341] = 32'd0;
+    \mem$2 [342] = 32'd0;
+    \mem$2 [343] = 32'd0;
+    \mem$2 [344] = 32'd0;
+    \mem$2 [345] = 32'd0;
+    \mem$2 [346] = 32'd0;
+    \mem$2 [347] = 32'd0;
+    \mem$2 [348] = 32'd0;
+    \mem$2 [349] = 32'd0;
+    \mem$2 [350] = 32'd0;
+    \mem$2 [351] = 32'd0;
+    \mem$2 [352] = 32'd0;
+    \mem$2 [353] = 32'd0;
+    \mem$2 [354] = 32'd0;
+    \mem$2 [355] = 32'd0;
+    \mem$2 [356] = 32'd0;
+    \mem$2 [357] = 32'd0;
+    \mem$2 [358] = 32'd0;
+    \mem$2 [359] = 32'd0;
+    \mem$2 [360] = 32'd0;
+    \mem$2 [361] = 32'd0;
+    \mem$2 [362] = 32'd0;
+    \mem$2 [363] = 32'd0;
+    \mem$2 [364] = 32'd0;
+    \mem$2 [365] = 32'd0;
+    \mem$2 [366] = 32'd0;
+    \mem$2 [367] = 32'd0;
+    \mem$2 [368] = 32'd0;
+    \mem$2 [369] = 32'd0;
+    \mem$2 [370] = 32'd0;
+    \mem$2 [371] = 32'd0;
+    \mem$2 [372] = 32'd0;
+    \mem$2 [373] = 32'd0;
+    \mem$2 [374] = 32'd0;
+    \mem$2 [375] = 32'd0;
+    \mem$2 [376] = 32'd0;
+    \mem$2 [377] = 32'd0;
+    \mem$2 [378] = 32'd0;
+    \mem$2 [379] = 32'd0;
+    \mem$2 [380] = 32'd0;
+    \mem$2 [381] = 32'd0;
+    \mem$2 [382] = 32'd0;
+    \mem$2 [383] = 32'd0;
+    \mem$2 [384] = 32'd0;
+    \mem$2 [385] = 32'd0;
+    \mem$2 [386] = 32'd0;
+    \mem$2 [387] = 32'd0;
+    \mem$2 [388] = 32'd0;
+    \mem$2 [389] = 32'd0;
+    \mem$2 [390] = 32'd0;
+    \mem$2 [391] = 32'd0;
+    \mem$2 [392] = 32'd0;
+    \mem$2 [393] = 32'd0;
+    \mem$2 [394] = 32'd0;
+    \mem$2 [395] = 32'd0;
+    \mem$2 [396] = 32'd0;
+    \mem$2 [397] = 32'd0;
+    \mem$2 [398] = 32'd0;
+    \mem$2 [399] = 32'd0;
+    \mem$2 [400] = 32'd0;
+    \mem$2 [401] = 32'd0;
+    \mem$2 [402] = 32'd0;
+    \mem$2 [403] = 32'd0;
+    \mem$2 [404] = 32'd0;
+    \mem$2 [405] = 32'd0;
+    \mem$2 [406] = 32'd0;
+    \mem$2 [407] = 32'd0;
+    \mem$2 [408] = 32'd0;
+    \mem$2 [409] = 32'd0;
+    \mem$2 [410] = 32'd0;
+    \mem$2 [411] = 32'd0;
+    \mem$2 [412] = 32'd0;
+    \mem$2 [413] = 32'd0;
+    \mem$2 [414] = 32'd0;
+    \mem$2 [415] = 32'd0;
+    \mem$2 [416] = 32'd0;
+    \mem$2 [417] = 32'd0;
+    \mem$2 [418] = 32'd0;
+    \mem$2 [419] = 32'd0;
+    \mem$2 [420] = 32'd0;
+    \mem$2 [421] = 32'd0;
+    \mem$2 [422] = 32'd0;
+    \mem$2 [423] = 32'd0;
+    \mem$2 [424] = 32'd0;
+    \mem$2 [425] = 32'd0;
+    \mem$2 [426] = 32'd0;
+    \mem$2 [427] = 32'd0;
+    \mem$2 [428] = 32'd0;
+    \mem$2 [429] = 32'd0;
+    \mem$2 [430] = 32'd0;
+    \mem$2 [431] = 32'd0;
+    \mem$2 [432] = 32'd0;
+    \mem$2 [433] = 32'd0;
+    \mem$2 [434] = 32'd0;
+    \mem$2 [435] = 32'd0;
+    \mem$2 [436] = 32'd0;
+    \mem$2 [437] = 32'd0;
+    \mem$2 [438] = 32'd0;
+    \mem$2 [439] = 32'd0;
+    \mem$2 [440] = 32'd0;
+    \mem$2 [441] = 32'd0;
+    \mem$2 [442] = 32'd0;
+    \mem$2 [443] = 32'd0;
+    \mem$2 [444] = 32'd0;
+    \mem$2 [445] = 32'd0;
+    \mem$2 [446] = 32'd0;
+    \mem$2 [447] = 32'd0;
+    \mem$2 [448] = 32'd0;
+    \mem$2 [449] = 32'd0;
+    \mem$2 [450] = 32'd0;
+    \mem$2 [451] = 32'd0;
+    \mem$2 [452] = 32'd0;
+    \mem$2 [453] = 32'd0;
+    \mem$2 [454] = 32'd0;
+    \mem$2 [455] = 32'd0;
+    \mem$2 [456] = 32'd0;
+    \mem$2 [457] = 32'd0;
+    \mem$2 [458] = 32'd0;
+    \mem$2 [459] = 32'd0;
+    \mem$2 [460] = 32'd0;
+    \mem$2 [461] = 32'd0;
+    \mem$2 [462] = 32'd0;
+    \mem$2 [463] = 32'd0;
+    \mem$2 [464] = 32'd0;
+    \mem$2 [465] = 32'd0;
+    \mem$2 [466] = 32'd0;
+    \mem$2 [467] = 32'd0;
+    \mem$2 [468] = 32'd0;
+    \mem$2 [469] = 32'd0;
+    \mem$2 [470] = 32'd0;
+    \mem$2 [471] = 32'd0;
+    \mem$2 [472] = 32'd0;
+    \mem$2 [473] = 32'd0;
+    \mem$2 [474] = 32'd0;
+    \mem$2 [475] = 32'd0;
+    \mem$2 [476] = 32'd0;
+    \mem$2 [477] = 32'd0;
+    \mem$2 [478] = 32'd0;
+    \mem$2 [479] = 32'd0;
+    \mem$2 [480] = 32'd0;
+    \mem$2 [481] = 32'd0;
+    \mem$2 [482] = 32'd0;
+    \mem$2 [483] = 32'd0;
+    \mem$2 [484] = 32'd0;
+    \mem$2 [485] = 32'd0;
+    \mem$2 [486] = 32'd0;
+    \mem$2 [487] = 32'd0;
+    \mem$2 [488] = 32'd0;
+    \mem$2 [489] = 32'd0;
+    \mem$2 [490] = 32'd0;
+    \mem$2 [491] = 32'd0;
+    \mem$2 [492] = 32'd0;
+    \mem$2 [493] = 32'd0;
+    \mem$2 [494] = 32'd0;
+    \mem$2 [495] = 32'd0;
+    \mem$2 [496] = 32'd0;
+    \mem$2 [497] = 32'd0;
+    \mem$2 [498] = 32'd0;
+    \mem$2 [499] = 32'd0;
+    \mem$2 [500] = 32'd0;
+    \mem$2 [501] = 32'd0;
+    \mem$2 [502] = 32'd0;
+    \mem$2 [503] = 32'd0;
+    \mem$2 [504] = 32'd0;
+    \mem$2 [505] = 32'd0;
+    \mem$2 [506] = 32'd0;
+    \mem$2 [507] = 32'd0;
+    \mem$2 [508] = 32'd0;
+    \mem$2 [509] = 32'd0;
+    \mem$2 [510] = 32'd0;
+    \mem$2 [511] = 32'd0;
   end
   always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
+    if (\mem_w_en$7 )
+      \mem$2 [\mem_w_addr$8 ] <= \mem_w_data$9 ;
   end
-  reg [31:0] _0_;
+  reg [31:0] _3_;
   always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
+    if (\mem_r_en$4 ) begin
+      _3_ <= \mem$2 [\mem_r_addr$5 ];
     end
   end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$3  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(read_buffer_reset),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign read_buffer_reset = reset;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_2" *)
-(* generator = "nMigen" *)
-module \mem_2$9 (clk, write_input__payload__addr, write_input__payload__data, write_input__valid, read_data_output__valid, read_data_output__payload, read_data_output__ready, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [8:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [8:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [8:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  wire reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [8:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [511:0];
-  initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
-    memory[64] = 32'd0;
-    memory[65] = 32'd0;
-    memory[66] = 32'd0;
-    memory[67] = 32'd0;
-    memory[68] = 32'd0;
-    memory[69] = 32'd0;
-    memory[70] = 32'd0;
-    memory[71] = 32'd0;
-    memory[72] = 32'd0;
-    memory[73] = 32'd0;
-    memory[74] = 32'd0;
-    memory[75] = 32'd0;
-    memory[76] = 32'd0;
-    memory[77] = 32'd0;
-    memory[78] = 32'd0;
-    memory[79] = 32'd0;
-    memory[80] = 32'd0;
-    memory[81] = 32'd0;
-    memory[82] = 32'd0;
-    memory[83] = 32'd0;
-    memory[84] = 32'd0;
-    memory[85] = 32'd0;
-    memory[86] = 32'd0;
-    memory[87] = 32'd0;
-    memory[88] = 32'd0;
-    memory[89] = 32'd0;
-    memory[90] = 32'd0;
-    memory[91] = 32'd0;
-    memory[92] = 32'd0;
-    memory[93] = 32'd0;
-    memory[94] = 32'd0;
-    memory[95] = 32'd0;
-    memory[96] = 32'd0;
-    memory[97] = 32'd0;
-    memory[98] = 32'd0;
-    memory[99] = 32'd0;
-    memory[100] = 32'd0;
-    memory[101] = 32'd0;
-    memory[102] = 32'd0;
-    memory[103] = 32'd0;
-    memory[104] = 32'd0;
-    memory[105] = 32'd0;
-    memory[106] = 32'd0;
-    memory[107] = 32'd0;
-    memory[108] = 32'd0;
-    memory[109] = 32'd0;
-    memory[110] = 32'd0;
-    memory[111] = 32'd0;
-    memory[112] = 32'd0;
-    memory[113] = 32'd0;
-    memory[114] = 32'd0;
-    memory[115] = 32'd0;
-    memory[116] = 32'd0;
-    memory[117] = 32'd0;
-    memory[118] = 32'd0;
-    memory[119] = 32'd0;
-    memory[120] = 32'd0;
-    memory[121] = 32'd0;
-    memory[122] = 32'd0;
-    memory[123] = 32'd0;
-    memory[124] = 32'd0;
-    memory[125] = 32'd0;
-    memory[126] = 32'd0;
-    memory[127] = 32'd0;
-    memory[128] = 32'd0;
-    memory[129] = 32'd0;
-    memory[130] = 32'd0;
-    memory[131] = 32'd0;
-    memory[132] = 32'd0;
-    memory[133] = 32'd0;
-    memory[134] = 32'd0;
-    memory[135] = 32'd0;
-    memory[136] = 32'd0;
-    memory[137] = 32'd0;
-    memory[138] = 32'd0;
-    memory[139] = 32'd0;
-    memory[140] = 32'd0;
-    memory[141] = 32'd0;
-    memory[142] = 32'd0;
-    memory[143] = 32'd0;
-    memory[144] = 32'd0;
-    memory[145] = 32'd0;
-    memory[146] = 32'd0;
-    memory[147] = 32'd0;
-    memory[148] = 32'd0;
-    memory[149] = 32'd0;
-    memory[150] = 32'd0;
-    memory[151] = 32'd0;
-    memory[152] = 32'd0;
-    memory[153] = 32'd0;
-    memory[154] = 32'd0;
-    memory[155] = 32'd0;
-    memory[156] = 32'd0;
-    memory[157] = 32'd0;
-    memory[158] = 32'd0;
-    memory[159] = 32'd0;
-    memory[160] = 32'd0;
-    memory[161] = 32'd0;
-    memory[162] = 32'd0;
-    memory[163] = 32'd0;
-    memory[164] = 32'd0;
-    memory[165] = 32'd0;
-    memory[166] = 32'd0;
-    memory[167] = 32'd0;
-    memory[168] = 32'd0;
-    memory[169] = 32'd0;
-    memory[170] = 32'd0;
-    memory[171] = 32'd0;
-    memory[172] = 32'd0;
-    memory[173] = 32'd0;
-    memory[174] = 32'd0;
-    memory[175] = 32'd0;
-    memory[176] = 32'd0;
-    memory[177] = 32'd0;
-    memory[178] = 32'd0;
-    memory[179] = 32'd0;
-    memory[180] = 32'd0;
-    memory[181] = 32'd0;
-    memory[182] = 32'd0;
-    memory[183] = 32'd0;
-    memory[184] = 32'd0;
-    memory[185] = 32'd0;
-    memory[186] = 32'd0;
-    memory[187] = 32'd0;
-    memory[188] = 32'd0;
-    memory[189] = 32'd0;
-    memory[190] = 32'd0;
-    memory[191] = 32'd0;
-    memory[192] = 32'd0;
-    memory[193] = 32'd0;
-    memory[194] = 32'd0;
-    memory[195] = 32'd0;
-    memory[196] = 32'd0;
-    memory[197] = 32'd0;
-    memory[198] = 32'd0;
-    memory[199] = 32'd0;
-    memory[200] = 32'd0;
-    memory[201] = 32'd0;
-    memory[202] = 32'd0;
-    memory[203] = 32'd0;
-    memory[204] = 32'd0;
-    memory[205] = 32'd0;
-    memory[206] = 32'd0;
-    memory[207] = 32'd0;
-    memory[208] = 32'd0;
-    memory[209] = 32'd0;
-    memory[210] = 32'd0;
-    memory[211] = 32'd0;
-    memory[212] = 32'd0;
-    memory[213] = 32'd0;
-    memory[214] = 32'd0;
-    memory[215] = 32'd0;
-    memory[216] = 32'd0;
-    memory[217] = 32'd0;
-    memory[218] = 32'd0;
-    memory[219] = 32'd0;
-    memory[220] = 32'd0;
-    memory[221] = 32'd0;
-    memory[222] = 32'd0;
-    memory[223] = 32'd0;
-    memory[224] = 32'd0;
-    memory[225] = 32'd0;
-    memory[226] = 32'd0;
-    memory[227] = 32'd0;
-    memory[228] = 32'd0;
-    memory[229] = 32'd0;
-    memory[230] = 32'd0;
-    memory[231] = 32'd0;
-    memory[232] = 32'd0;
-    memory[233] = 32'd0;
-    memory[234] = 32'd0;
-    memory[235] = 32'd0;
-    memory[236] = 32'd0;
-    memory[237] = 32'd0;
-    memory[238] = 32'd0;
-    memory[239] = 32'd0;
-    memory[240] = 32'd0;
-    memory[241] = 32'd0;
-    memory[242] = 32'd0;
-    memory[243] = 32'd0;
-    memory[244] = 32'd0;
-    memory[245] = 32'd0;
-    memory[246] = 32'd0;
-    memory[247] = 32'd0;
-    memory[248] = 32'd0;
-    memory[249] = 32'd0;
-    memory[250] = 32'd0;
-    memory[251] = 32'd0;
-    memory[252] = 32'd0;
-    memory[253] = 32'd0;
-    memory[254] = 32'd0;
-    memory[255] = 32'd0;
-    memory[256] = 32'd0;
-    memory[257] = 32'd0;
-    memory[258] = 32'd0;
-    memory[259] = 32'd0;
-    memory[260] = 32'd0;
-    memory[261] = 32'd0;
-    memory[262] = 32'd0;
-    memory[263] = 32'd0;
-    memory[264] = 32'd0;
-    memory[265] = 32'd0;
-    memory[266] = 32'd0;
-    memory[267] = 32'd0;
-    memory[268] = 32'd0;
-    memory[269] = 32'd0;
-    memory[270] = 32'd0;
-    memory[271] = 32'd0;
-    memory[272] = 32'd0;
-    memory[273] = 32'd0;
-    memory[274] = 32'd0;
-    memory[275] = 32'd0;
-    memory[276] = 32'd0;
-    memory[277] = 32'd0;
-    memory[278] = 32'd0;
-    memory[279] = 32'd0;
-    memory[280] = 32'd0;
-    memory[281] = 32'd0;
-    memory[282] = 32'd0;
-    memory[283] = 32'd0;
-    memory[284] = 32'd0;
-    memory[285] = 32'd0;
-    memory[286] = 32'd0;
-    memory[287] = 32'd0;
-    memory[288] = 32'd0;
-    memory[289] = 32'd0;
-    memory[290] = 32'd0;
-    memory[291] = 32'd0;
-    memory[292] = 32'd0;
-    memory[293] = 32'd0;
-    memory[294] = 32'd0;
-    memory[295] = 32'd0;
-    memory[296] = 32'd0;
-    memory[297] = 32'd0;
-    memory[298] = 32'd0;
-    memory[299] = 32'd0;
-    memory[300] = 32'd0;
-    memory[301] = 32'd0;
-    memory[302] = 32'd0;
-    memory[303] = 32'd0;
-    memory[304] = 32'd0;
-    memory[305] = 32'd0;
-    memory[306] = 32'd0;
-    memory[307] = 32'd0;
-    memory[308] = 32'd0;
-    memory[309] = 32'd0;
-    memory[310] = 32'd0;
-    memory[311] = 32'd0;
-    memory[312] = 32'd0;
-    memory[313] = 32'd0;
-    memory[314] = 32'd0;
-    memory[315] = 32'd0;
-    memory[316] = 32'd0;
-    memory[317] = 32'd0;
-    memory[318] = 32'd0;
-    memory[319] = 32'd0;
-    memory[320] = 32'd0;
-    memory[321] = 32'd0;
-    memory[322] = 32'd0;
-    memory[323] = 32'd0;
-    memory[324] = 32'd0;
-    memory[325] = 32'd0;
-    memory[326] = 32'd0;
-    memory[327] = 32'd0;
-    memory[328] = 32'd0;
-    memory[329] = 32'd0;
-    memory[330] = 32'd0;
-    memory[331] = 32'd0;
-    memory[332] = 32'd0;
-    memory[333] = 32'd0;
-    memory[334] = 32'd0;
-    memory[335] = 32'd0;
-    memory[336] = 32'd0;
-    memory[337] = 32'd0;
-    memory[338] = 32'd0;
-    memory[339] = 32'd0;
-    memory[340] = 32'd0;
-    memory[341] = 32'd0;
-    memory[342] = 32'd0;
-    memory[343] = 32'd0;
-    memory[344] = 32'd0;
-    memory[345] = 32'd0;
-    memory[346] = 32'd0;
-    memory[347] = 32'd0;
-    memory[348] = 32'd0;
-    memory[349] = 32'd0;
-    memory[350] = 32'd0;
-    memory[351] = 32'd0;
-    memory[352] = 32'd0;
-    memory[353] = 32'd0;
-    memory[354] = 32'd0;
-    memory[355] = 32'd0;
-    memory[356] = 32'd0;
-    memory[357] = 32'd0;
-    memory[358] = 32'd0;
-    memory[359] = 32'd0;
-    memory[360] = 32'd0;
-    memory[361] = 32'd0;
-    memory[362] = 32'd0;
-    memory[363] = 32'd0;
-    memory[364] = 32'd0;
-    memory[365] = 32'd0;
-    memory[366] = 32'd0;
-    memory[367] = 32'd0;
-    memory[368] = 32'd0;
-    memory[369] = 32'd0;
-    memory[370] = 32'd0;
-    memory[371] = 32'd0;
-    memory[372] = 32'd0;
-    memory[373] = 32'd0;
-    memory[374] = 32'd0;
-    memory[375] = 32'd0;
-    memory[376] = 32'd0;
-    memory[377] = 32'd0;
-    memory[378] = 32'd0;
-    memory[379] = 32'd0;
-    memory[380] = 32'd0;
-    memory[381] = 32'd0;
-    memory[382] = 32'd0;
-    memory[383] = 32'd0;
-    memory[384] = 32'd0;
-    memory[385] = 32'd0;
-    memory[386] = 32'd0;
-    memory[387] = 32'd0;
-    memory[388] = 32'd0;
-    memory[389] = 32'd0;
-    memory[390] = 32'd0;
-    memory[391] = 32'd0;
-    memory[392] = 32'd0;
-    memory[393] = 32'd0;
-    memory[394] = 32'd0;
-    memory[395] = 32'd0;
-    memory[396] = 32'd0;
-    memory[397] = 32'd0;
-    memory[398] = 32'd0;
-    memory[399] = 32'd0;
-    memory[400] = 32'd0;
-    memory[401] = 32'd0;
-    memory[402] = 32'd0;
-    memory[403] = 32'd0;
-    memory[404] = 32'd0;
-    memory[405] = 32'd0;
-    memory[406] = 32'd0;
-    memory[407] = 32'd0;
-    memory[408] = 32'd0;
-    memory[409] = 32'd0;
-    memory[410] = 32'd0;
-    memory[411] = 32'd0;
-    memory[412] = 32'd0;
-    memory[413] = 32'd0;
-    memory[414] = 32'd0;
-    memory[415] = 32'd0;
-    memory[416] = 32'd0;
-    memory[417] = 32'd0;
-    memory[418] = 32'd0;
-    memory[419] = 32'd0;
-    memory[420] = 32'd0;
-    memory[421] = 32'd0;
-    memory[422] = 32'd0;
-    memory[423] = 32'd0;
-    memory[424] = 32'd0;
-    memory[425] = 32'd0;
-    memory[426] = 32'd0;
-    memory[427] = 32'd0;
-    memory[428] = 32'd0;
-    memory[429] = 32'd0;
-    memory[430] = 32'd0;
-    memory[431] = 32'd0;
-    memory[432] = 32'd0;
-    memory[433] = 32'd0;
-    memory[434] = 32'd0;
-    memory[435] = 32'd0;
-    memory[436] = 32'd0;
-    memory[437] = 32'd0;
-    memory[438] = 32'd0;
-    memory[439] = 32'd0;
-    memory[440] = 32'd0;
-    memory[441] = 32'd0;
-    memory[442] = 32'd0;
-    memory[443] = 32'd0;
-    memory[444] = 32'd0;
-    memory[445] = 32'd0;
-    memory[446] = 32'd0;
-    memory[447] = 32'd0;
-    memory[448] = 32'd0;
-    memory[449] = 32'd0;
-    memory[450] = 32'd0;
-    memory[451] = 32'd0;
-    memory[452] = 32'd0;
-    memory[453] = 32'd0;
-    memory[454] = 32'd0;
-    memory[455] = 32'd0;
-    memory[456] = 32'd0;
-    memory[457] = 32'd0;
-    memory[458] = 32'd0;
-    memory[459] = 32'd0;
-    memory[460] = 32'd0;
-    memory[461] = 32'd0;
-    memory[462] = 32'd0;
-    memory[463] = 32'd0;
-    memory[464] = 32'd0;
-    memory[465] = 32'd0;
-    memory[466] = 32'd0;
-    memory[467] = 32'd0;
-    memory[468] = 32'd0;
-    memory[469] = 32'd0;
-    memory[470] = 32'd0;
-    memory[471] = 32'd0;
-    memory[472] = 32'd0;
-    memory[473] = 32'd0;
-    memory[474] = 32'd0;
-    memory[475] = 32'd0;
-    memory[476] = 32'd0;
-    memory[477] = 32'd0;
-    memory[478] = 32'd0;
-    memory[479] = 32'd0;
-    memory[480] = 32'd0;
-    memory[481] = 32'd0;
-    memory[482] = 32'd0;
-    memory[483] = 32'd0;
-    memory[484] = 32'd0;
-    memory[485] = 32'd0;
-    memory[486] = 32'd0;
-    memory[487] = 32'd0;
-    memory[488] = 32'd0;
-    memory[489] = 32'd0;
-    memory[490] = 32'd0;
-    memory[491] = 32'd0;
-    memory[492] = 32'd0;
-    memory[493] = 32'd0;
-    memory[494] = 32'd0;
-    memory[495] = 32'd0;
-    memory[496] = 32'd0;
-    memory[497] = 32'd0;
-    memory[498] = 32'd0;
-    memory[499] = 32'd0;
-    memory[500] = 32'd0;
-    memory[501] = 32'd0;
-    memory[502] = 32'd0;
-    memory[503] = 32'd0;
-    memory[504] = 32'd0;
-    memory[505] = 32'd0;
-    memory[506] = 32'd0;
-    memory[507] = 32'd0;
-    memory[508] = 32'd0;
-    memory[509] = 32'd0;
-    memory[510] = 32'd0;
-    memory[511] = 32'd0;
-  end
-  always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
-  end
-  reg [31:0] _0_;
-  always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
-    end
-  end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$10  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(1'h0),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 9'h000;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign reset = 1'h0;
-  assign read_buffer_reset = 1'h0;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_3" *)
-(* generator = "nMigen" *)
-module mem_3(clk, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, read_data_output__valid, read_data_output__payload, read_data_output__ready, reset, write_input__ready, write_input__valid, write_input__payload__data, write_input__payload__addr, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [5:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [5:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [5:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [5:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  output write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [63:0];
-  initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
-  end
-  always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
-  end
-  reg [31:0] _0_;
-  always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
-    end
-  end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$4  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(read_buffer_reset),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 6'h00;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign read_buffer_reset = reset;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_3" *)
-(* generator = "nMigen" *)
-module \mem_3$11 (clk, write_input__payload__addr, write_input__payload__data, write_input__valid, read_data_output__valid, read_data_output__payload, read_data_output__ready, read_addr_input__payload, read_addr_input__valid, read_addr_input__ready, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *)
-  wire \$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *)
-  wire \$8 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [8:0] memory_r_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire [31:0] memory_r_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:120" *)
-  wire memory_r_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [8:0] memory_w_addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg [31:0] memory_w_data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:124" *)
-  reg memory_w_en;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input [8:0] read_addr_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  output read_addr_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:114" *)
-  input read_addr_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire [31:0] read_buffer_input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire read_buffer_input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire [31:0] read_buffer_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  wire read_buffer_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  wire read_buffer_reset;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output [31:0] read_data_output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  input read_data_output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:115" *)
-  output read_data_output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg read_in_progress = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:141" *)
-  reg \read_in_progress$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:116" *)
-  wire reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [8:0] write_input__payload__addr;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input [31:0] write_input__payload__data;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  wire write_input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:113" *)
-  input write_input__valid;
-  reg [31:0] memory [511:0];
-  initial begin
-    memory[0] = 32'd0;
-    memory[1] = 32'd0;
-    memory[2] = 32'd0;
-    memory[3] = 32'd0;
-    memory[4] = 32'd0;
-    memory[5] = 32'd0;
-    memory[6] = 32'd0;
-    memory[7] = 32'd0;
-    memory[8] = 32'd0;
-    memory[9] = 32'd0;
-    memory[10] = 32'd0;
-    memory[11] = 32'd0;
-    memory[12] = 32'd0;
-    memory[13] = 32'd0;
-    memory[14] = 32'd0;
-    memory[15] = 32'd0;
-    memory[16] = 32'd0;
-    memory[17] = 32'd0;
-    memory[18] = 32'd0;
-    memory[19] = 32'd0;
-    memory[20] = 32'd0;
-    memory[21] = 32'd0;
-    memory[22] = 32'd0;
-    memory[23] = 32'd0;
-    memory[24] = 32'd0;
-    memory[25] = 32'd0;
-    memory[26] = 32'd0;
-    memory[27] = 32'd0;
-    memory[28] = 32'd0;
-    memory[29] = 32'd0;
-    memory[30] = 32'd0;
-    memory[31] = 32'd0;
-    memory[32] = 32'd0;
-    memory[33] = 32'd0;
-    memory[34] = 32'd0;
-    memory[35] = 32'd0;
-    memory[36] = 32'd0;
-    memory[37] = 32'd0;
-    memory[38] = 32'd0;
-    memory[39] = 32'd0;
-    memory[40] = 32'd0;
-    memory[41] = 32'd0;
-    memory[42] = 32'd0;
-    memory[43] = 32'd0;
-    memory[44] = 32'd0;
-    memory[45] = 32'd0;
-    memory[46] = 32'd0;
-    memory[47] = 32'd0;
-    memory[48] = 32'd0;
-    memory[49] = 32'd0;
-    memory[50] = 32'd0;
-    memory[51] = 32'd0;
-    memory[52] = 32'd0;
-    memory[53] = 32'd0;
-    memory[54] = 32'd0;
-    memory[55] = 32'd0;
-    memory[56] = 32'd0;
-    memory[57] = 32'd0;
-    memory[58] = 32'd0;
-    memory[59] = 32'd0;
-    memory[60] = 32'd0;
-    memory[61] = 32'd0;
-    memory[62] = 32'd0;
-    memory[63] = 32'd0;
-    memory[64] = 32'd0;
-    memory[65] = 32'd0;
-    memory[66] = 32'd0;
-    memory[67] = 32'd0;
-    memory[68] = 32'd0;
-    memory[69] = 32'd0;
-    memory[70] = 32'd0;
-    memory[71] = 32'd0;
-    memory[72] = 32'd0;
-    memory[73] = 32'd0;
-    memory[74] = 32'd0;
-    memory[75] = 32'd0;
-    memory[76] = 32'd0;
-    memory[77] = 32'd0;
-    memory[78] = 32'd0;
-    memory[79] = 32'd0;
-    memory[80] = 32'd0;
-    memory[81] = 32'd0;
-    memory[82] = 32'd0;
-    memory[83] = 32'd0;
-    memory[84] = 32'd0;
-    memory[85] = 32'd0;
-    memory[86] = 32'd0;
-    memory[87] = 32'd0;
-    memory[88] = 32'd0;
-    memory[89] = 32'd0;
-    memory[90] = 32'd0;
-    memory[91] = 32'd0;
-    memory[92] = 32'd0;
-    memory[93] = 32'd0;
-    memory[94] = 32'd0;
-    memory[95] = 32'd0;
-    memory[96] = 32'd0;
-    memory[97] = 32'd0;
-    memory[98] = 32'd0;
-    memory[99] = 32'd0;
-    memory[100] = 32'd0;
-    memory[101] = 32'd0;
-    memory[102] = 32'd0;
-    memory[103] = 32'd0;
-    memory[104] = 32'd0;
-    memory[105] = 32'd0;
-    memory[106] = 32'd0;
-    memory[107] = 32'd0;
-    memory[108] = 32'd0;
-    memory[109] = 32'd0;
-    memory[110] = 32'd0;
-    memory[111] = 32'd0;
-    memory[112] = 32'd0;
-    memory[113] = 32'd0;
-    memory[114] = 32'd0;
-    memory[115] = 32'd0;
-    memory[116] = 32'd0;
-    memory[117] = 32'd0;
-    memory[118] = 32'd0;
-    memory[119] = 32'd0;
-    memory[120] = 32'd0;
-    memory[121] = 32'd0;
-    memory[122] = 32'd0;
-    memory[123] = 32'd0;
-    memory[124] = 32'd0;
-    memory[125] = 32'd0;
-    memory[126] = 32'd0;
-    memory[127] = 32'd0;
-    memory[128] = 32'd0;
-    memory[129] = 32'd0;
-    memory[130] = 32'd0;
-    memory[131] = 32'd0;
-    memory[132] = 32'd0;
-    memory[133] = 32'd0;
-    memory[134] = 32'd0;
-    memory[135] = 32'd0;
-    memory[136] = 32'd0;
-    memory[137] = 32'd0;
-    memory[138] = 32'd0;
-    memory[139] = 32'd0;
-    memory[140] = 32'd0;
-    memory[141] = 32'd0;
-    memory[142] = 32'd0;
-    memory[143] = 32'd0;
-    memory[144] = 32'd0;
-    memory[145] = 32'd0;
-    memory[146] = 32'd0;
-    memory[147] = 32'd0;
-    memory[148] = 32'd0;
-    memory[149] = 32'd0;
-    memory[150] = 32'd0;
-    memory[151] = 32'd0;
-    memory[152] = 32'd0;
-    memory[153] = 32'd0;
-    memory[154] = 32'd0;
-    memory[155] = 32'd0;
-    memory[156] = 32'd0;
-    memory[157] = 32'd0;
-    memory[158] = 32'd0;
-    memory[159] = 32'd0;
-    memory[160] = 32'd0;
-    memory[161] = 32'd0;
-    memory[162] = 32'd0;
-    memory[163] = 32'd0;
-    memory[164] = 32'd0;
-    memory[165] = 32'd0;
-    memory[166] = 32'd0;
-    memory[167] = 32'd0;
-    memory[168] = 32'd0;
-    memory[169] = 32'd0;
-    memory[170] = 32'd0;
-    memory[171] = 32'd0;
-    memory[172] = 32'd0;
-    memory[173] = 32'd0;
-    memory[174] = 32'd0;
-    memory[175] = 32'd0;
-    memory[176] = 32'd0;
-    memory[177] = 32'd0;
-    memory[178] = 32'd0;
-    memory[179] = 32'd0;
-    memory[180] = 32'd0;
-    memory[181] = 32'd0;
-    memory[182] = 32'd0;
-    memory[183] = 32'd0;
-    memory[184] = 32'd0;
-    memory[185] = 32'd0;
-    memory[186] = 32'd0;
-    memory[187] = 32'd0;
-    memory[188] = 32'd0;
-    memory[189] = 32'd0;
-    memory[190] = 32'd0;
-    memory[191] = 32'd0;
-    memory[192] = 32'd0;
-    memory[193] = 32'd0;
-    memory[194] = 32'd0;
-    memory[195] = 32'd0;
-    memory[196] = 32'd0;
-    memory[197] = 32'd0;
-    memory[198] = 32'd0;
-    memory[199] = 32'd0;
-    memory[200] = 32'd0;
-    memory[201] = 32'd0;
-    memory[202] = 32'd0;
-    memory[203] = 32'd0;
-    memory[204] = 32'd0;
-    memory[205] = 32'd0;
-    memory[206] = 32'd0;
-    memory[207] = 32'd0;
-    memory[208] = 32'd0;
-    memory[209] = 32'd0;
-    memory[210] = 32'd0;
-    memory[211] = 32'd0;
-    memory[212] = 32'd0;
-    memory[213] = 32'd0;
-    memory[214] = 32'd0;
-    memory[215] = 32'd0;
-    memory[216] = 32'd0;
-    memory[217] = 32'd0;
-    memory[218] = 32'd0;
-    memory[219] = 32'd0;
-    memory[220] = 32'd0;
-    memory[221] = 32'd0;
-    memory[222] = 32'd0;
-    memory[223] = 32'd0;
-    memory[224] = 32'd0;
-    memory[225] = 32'd0;
-    memory[226] = 32'd0;
-    memory[227] = 32'd0;
-    memory[228] = 32'd0;
-    memory[229] = 32'd0;
-    memory[230] = 32'd0;
-    memory[231] = 32'd0;
-    memory[232] = 32'd0;
-    memory[233] = 32'd0;
-    memory[234] = 32'd0;
-    memory[235] = 32'd0;
-    memory[236] = 32'd0;
-    memory[237] = 32'd0;
-    memory[238] = 32'd0;
-    memory[239] = 32'd0;
-    memory[240] = 32'd0;
-    memory[241] = 32'd0;
-    memory[242] = 32'd0;
-    memory[243] = 32'd0;
-    memory[244] = 32'd0;
-    memory[245] = 32'd0;
-    memory[246] = 32'd0;
-    memory[247] = 32'd0;
-    memory[248] = 32'd0;
-    memory[249] = 32'd0;
-    memory[250] = 32'd0;
-    memory[251] = 32'd0;
-    memory[252] = 32'd0;
-    memory[253] = 32'd0;
-    memory[254] = 32'd0;
-    memory[255] = 32'd0;
-    memory[256] = 32'd0;
-    memory[257] = 32'd0;
-    memory[258] = 32'd0;
-    memory[259] = 32'd0;
-    memory[260] = 32'd0;
-    memory[261] = 32'd0;
-    memory[262] = 32'd0;
-    memory[263] = 32'd0;
-    memory[264] = 32'd0;
-    memory[265] = 32'd0;
-    memory[266] = 32'd0;
-    memory[267] = 32'd0;
-    memory[268] = 32'd0;
-    memory[269] = 32'd0;
-    memory[270] = 32'd0;
-    memory[271] = 32'd0;
-    memory[272] = 32'd0;
-    memory[273] = 32'd0;
-    memory[274] = 32'd0;
-    memory[275] = 32'd0;
-    memory[276] = 32'd0;
-    memory[277] = 32'd0;
-    memory[278] = 32'd0;
-    memory[279] = 32'd0;
-    memory[280] = 32'd0;
-    memory[281] = 32'd0;
-    memory[282] = 32'd0;
-    memory[283] = 32'd0;
-    memory[284] = 32'd0;
-    memory[285] = 32'd0;
-    memory[286] = 32'd0;
-    memory[287] = 32'd0;
-    memory[288] = 32'd0;
-    memory[289] = 32'd0;
-    memory[290] = 32'd0;
-    memory[291] = 32'd0;
-    memory[292] = 32'd0;
-    memory[293] = 32'd0;
-    memory[294] = 32'd0;
-    memory[295] = 32'd0;
-    memory[296] = 32'd0;
-    memory[297] = 32'd0;
-    memory[298] = 32'd0;
-    memory[299] = 32'd0;
-    memory[300] = 32'd0;
-    memory[301] = 32'd0;
-    memory[302] = 32'd0;
-    memory[303] = 32'd0;
-    memory[304] = 32'd0;
-    memory[305] = 32'd0;
-    memory[306] = 32'd0;
-    memory[307] = 32'd0;
-    memory[308] = 32'd0;
-    memory[309] = 32'd0;
-    memory[310] = 32'd0;
-    memory[311] = 32'd0;
-    memory[312] = 32'd0;
-    memory[313] = 32'd0;
-    memory[314] = 32'd0;
-    memory[315] = 32'd0;
-    memory[316] = 32'd0;
-    memory[317] = 32'd0;
-    memory[318] = 32'd0;
-    memory[319] = 32'd0;
-    memory[320] = 32'd0;
-    memory[321] = 32'd0;
-    memory[322] = 32'd0;
-    memory[323] = 32'd0;
-    memory[324] = 32'd0;
-    memory[325] = 32'd0;
-    memory[326] = 32'd0;
-    memory[327] = 32'd0;
-    memory[328] = 32'd0;
-    memory[329] = 32'd0;
-    memory[330] = 32'd0;
-    memory[331] = 32'd0;
-    memory[332] = 32'd0;
-    memory[333] = 32'd0;
-    memory[334] = 32'd0;
-    memory[335] = 32'd0;
-    memory[336] = 32'd0;
-    memory[337] = 32'd0;
-    memory[338] = 32'd0;
-    memory[339] = 32'd0;
-    memory[340] = 32'd0;
-    memory[341] = 32'd0;
-    memory[342] = 32'd0;
-    memory[343] = 32'd0;
-    memory[344] = 32'd0;
-    memory[345] = 32'd0;
-    memory[346] = 32'd0;
-    memory[347] = 32'd0;
-    memory[348] = 32'd0;
-    memory[349] = 32'd0;
-    memory[350] = 32'd0;
-    memory[351] = 32'd0;
-    memory[352] = 32'd0;
-    memory[353] = 32'd0;
-    memory[354] = 32'd0;
-    memory[355] = 32'd0;
-    memory[356] = 32'd0;
-    memory[357] = 32'd0;
-    memory[358] = 32'd0;
-    memory[359] = 32'd0;
-    memory[360] = 32'd0;
-    memory[361] = 32'd0;
-    memory[362] = 32'd0;
-    memory[363] = 32'd0;
-    memory[364] = 32'd0;
-    memory[365] = 32'd0;
-    memory[366] = 32'd0;
-    memory[367] = 32'd0;
-    memory[368] = 32'd0;
-    memory[369] = 32'd0;
-    memory[370] = 32'd0;
-    memory[371] = 32'd0;
-    memory[372] = 32'd0;
-    memory[373] = 32'd0;
-    memory[374] = 32'd0;
-    memory[375] = 32'd0;
-    memory[376] = 32'd0;
-    memory[377] = 32'd0;
-    memory[378] = 32'd0;
-    memory[379] = 32'd0;
-    memory[380] = 32'd0;
-    memory[381] = 32'd0;
-    memory[382] = 32'd0;
-    memory[383] = 32'd0;
-    memory[384] = 32'd0;
-    memory[385] = 32'd0;
-    memory[386] = 32'd0;
-    memory[387] = 32'd0;
-    memory[388] = 32'd0;
-    memory[389] = 32'd0;
-    memory[390] = 32'd0;
-    memory[391] = 32'd0;
-    memory[392] = 32'd0;
-    memory[393] = 32'd0;
-    memory[394] = 32'd0;
-    memory[395] = 32'd0;
-    memory[396] = 32'd0;
-    memory[397] = 32'd0;
-    memory[398] = 32'd0;
-    memory[399] = 32'd0;
-    memory[400] = 32'd0;
-    memory[401] = 32'd0;
-    memory[402] = 32'd0;
-    memory[403] = 32'd0;
-    memory[404] = 32'd0;
-    memory[405] = 32'd0;
-    memory[406] = 32'd0;
-    memory[407] = 32'd0;
-    memory[408] = 32'd0;
-    memory[409] = 32'd0;
-    memory[410] = 32'd0;
-    memory[411] = 32'd0;
-    memory[412] = 32'd0;
-    memory[413] = 32'd0;
-    memory[414] = 32'd0;
-    memory[415] = 32'd0;
-    memory[416] = 32'd0;
-    memory[417] = 32'd0;
-    memory[418] = 32'd0;
-    memory[419] = 32'd0;
-    memory[420] = 32'd0;
-    memory[421] = 32'd0;
-    memory[422] = 32'd0;
-    memory[423] = 32'd0;
-    memory[424] = 32'd0;
-    memory[425] = 32'd0;
-    memory[426] = 32'd0;
-    memory[427] = 32'd0;
-    memory[428] = 32'd0;
-    memory[429] = 32'd0;
-    memory[430] = 32'd0;
-    memory[431] = 32'd0;
-    memory[432] = 32'd0;
-    memory[433] = 32'd0;
-    memory[434] = 32'd0;
-    memory[435] = 32'd0;
-    memory[436] = 32'd0;
-    memory[437] = 32'd0;
-    memory[438] = 32'd0;
-    memory[439] = 32'd0;
-    memory[440] = 32'd0;
-    memory[441] = 32'd0;
-    memory[442] = 32'd0;
-    memory[443] = 32'd0;
-    memory[444] = 32'd0;
-    memory[445] = 32'd0;
-    memory[446] = 32'd0;
-    memory[447] = 32'd0;
-    memory[448] = 32'd0;
-    memory[449] = 32'd0;
-    memory[450] = 32'd0;
-    memory[451] = 32'd0;
-    memory[452] = 32'd0;
-    memory[453] = 32'd0;
-    memory[454] = 32'd0;
-    memory[455] = 32'd0;
-    memory[456] = 32'd0;
-    memory[457] = 32'd0;
-    memory[458] = 32'd0;
-    memory[459] = 32'd0;
-    memory[460] = 32'd0;
-    memory[461] = 32'd0;
-    memory[462] = 32'd0;
-    memory[463] = 32'd0;
-    memory[464] = 32'd0;
-    memory[465] = 32'd0;
-    memory[466] = 32'd0;
-    memory[467] = 32'd0;
-    memory[468] = 32'd0;
-    memory[469] = 32'd0;
-    memory[470] = 32'd0;
-    memory[471] = 32'd0;
-    memory[472] = 32'd0;
-    memory[473] = 32'd0;
-    memory[474] = 32'd0;
-    memory[475] = 32'd0;
-    memory[476] = 32'd0;
-    memory[477] = 32'd0;
-    memory[478] = 32'd0;
-    memory[479] = 32'd0;
-    memory[480] = 32'd0;
-    memory[481] = 32'd0;
-    memory[482] = 32'd0;
-    memory[483] = 32'd0;
-    memory[484] = 32'd0;
-    memory[485] = 32'd0;
-    memory[486] = 32'd0;
-    memory[487] = 32'd0;
-    memory[488] = 32'd0;
-    memory[489] = 32'd0;
-    memory[490] = 32'd0;
-    memory[491] = 32'd0;
-    memory[492] = 32'd0;
-    memory[493] = 32'd0;
-    memory[494] = 32'd0;
-    memory[495] = 32'd0;
-    memory[496] = 32'd0;
-    memory[497] = 32'd0;
-    memory[498] = 32'd0;
-    memory[499] = 32'd0;
-    memory[500] = 32'd0;
-    memory[501] = 32'd0;
-    memory[502] = 32'd0;
-    memory[503] = 32'd0;
-    memory[504] = 32'd0;
-    memory[505] = 32'd0;
-    memory[506] = 32'd0;
-    memory[507] = 32'd0;
-    memory[508] = 32'd0;
-    memory[509] = 32'd0;
-    memory[510] = 32'd0;
-    memory[511] = 32'd0;
-  end
-  always @(posedge clk) begin
-    if (memory_w_en)
-      memory[memory_w_addr] <= memory_w_data;
-  end
-  reg [31:0] _0_;
-  always @(posedge clk) begin
-    if (memory_r_en) begin
-      _0_ <= memory[memory_r_addr];
-    end
-  end
-  assign memory_r_data = _0_;
-  assign \$10  = read_addr_input__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) read_addr_input__ready;
-  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) write_input__valid;
-  assign \$14  = \$12  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:150" *) read_data_output__ready;
-  assign \$8  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:137" *) memory_w_en;
-  always @(posedge clk)
-    read_in_progress <= \read_in_progress$next ;
-  \read_buffer$12  read_buffer (
-    .clk(clk),
-    .input__payload(read_buffer_input__payload),
-    .input__valid(read_buffer_input__valid),
-    .output__payload(read_buffer_output__payload),
-    .output__ready(read_buffer_output__ready),
-    .output__valid(read_buffer_output__valid),
-    .reset(1'h0),
-    .rst(rst)
-  );
-  always @* begin
-    if (\initial ) begin end
-    memory_w_en = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$2 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_en = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_addr = 9'h000;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_addr = write_input__payload__addr;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    memory_w_data = 32'd0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" *)
-    casez (\$6 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/sp_mem.py:129" */
-      1'h1:
-          memory_w_data = write_input__payload__data;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \read_in_progress$next  = \$10 ;
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \read_in_progress$next  = 1'h0;
-    endcase
-  end
-  assign reset = 1'h0;
-  assign read_buffer_reset = 1'h0;
-  assign read_addr_input__ready = \$14 ;
-  assign read_buffer_input__payload = memory_r_data;
-  assign read_buffer_input__valid = read_in_progress;
-  assign memory_r_addr = read_addr_input__payload;
-  assign memory_r_en = \$8 ;
-  assign write_input__ready = 1'h1;
-  assign read_buffer_output__ready = read_data_output__ready;
-  assign read_data_output__payload = read_buffer_output__payload;
-  assign read_data_output__valid = read_buffer_output__valid;
-  assign \$2  = write_input__valid;
-  assign \$4  = write_input__valid;
-  assign \$6  = write_input__valid;
+  assign \mem_r_data$6  = _3_;
+  assign \$26  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$28  = ! (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) write_addr[1:0];
+  assign \$30  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$28 ;
+  assign \$32  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$34  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 1'h1;
+  assign \$36  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$34 ;
+  assign \$38  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$40  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 2'h2;
+  assign \$42  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$40 ;
+  assign \$44  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:65" *) write_enable;
+  assign \$46  = write_addr[1:0] == (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:72" *) 2'h3;
+  assign \$48  = write_enable & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/mem.py:71" *) \$46 ;
+  assign read_data = { \mem_r_data$22 , \mem_r_data$14 , \mem_r_data$6 , mem_r_data };
+  assign \mem_w_en$23  = \$48 ;
+  assign \mem_w_data$25  = write_data;
+  assign \mem_w_addr$24  = write_addr[10:2];
+  assign \mem_r_en$20  = \$44 ;
+  assign \mem_r_addr$21  = read_addr;
+  assign \mem_w_en$15  = \$42 ;
+  assign \mem_w_data$17  = write_data;
+  assign \mem_w_addr$16  = write_addr[10:2];
+  assign \mem_r_en$12  = \$38 ;
+  assign \mem_r_addr$13  = read_addr;
+  assign \mem_w_en$7  = \$36 ;
+  assign \mem_w_data$9  = write_data;
+  assign \mem_w_addr$8  = write_addr[10:2];
+  assign \mem_r_en$4  = \$32 ;
+  assign \mem_r_addr$5  = read_addr;
+  assign mem_w_en = \$30 ;
+  assign mem_w_data = write_data;
+  assign mem_w_addr = write_addr[10:2];
+  assign mem_r_en = \$26 ;
+  assign mem_r_addr = read_addr;
 endmodule
 
 (* \nmigen.hierarchy  = "Cfu.op_store" *)
@@ -9747,354 +7345,102 @@ endmodule
 
 (* \nmigen.hierarchy  = "Cfu.operands_buffer" *)
 (* generator = "nMigen" *)
-module operands_buffer(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payload$5 , \ready$6 , \valid$7 , \payload$8 , \ready$9 , \valid$10 , \payload$11 , \ready$12 , \valid$13 , \payload$14 , \ready$15 , \valid$16 , \payload$17 , \ready$18 , \valid$19 , \payload$20 , \ready$21 , output__valid, output__payload__input_0, output__payload__input_1, output__payload__input_2, output__payload__input_3, output__payload__filter_0, output__payload__filter_1, output__payload__filter_2, output__payload__filter_3, output__ready, rst, clk, valid);
+module operands_buffer(payload, ready, \valid$1 , \payload$2 , \ready$3 , output__valid, output__payload__inputs, output__payload__filters, output__ready, rst, clk, valid);
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$100 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$102 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$103 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$106 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$108 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$110 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$112 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$113 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$116 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$118 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$120 ;
+  wire \$12 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$122 ;
+  wire \$14 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$124 ;
+  wire \$16 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$126 ;
+  wire \$18 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$128 ;
+  wire \$20 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$129 ;
+  wire \$21 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$132 ;
+  wire \$24 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$134 ;
+  wire \$26 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$136 ;
+  wire \$28 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$138 ;
+  wire \$30 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$139 ;
+  wire \$31 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$142 ;
+  wire \$34 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$144 ;
+  wire \$36 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$146 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$148 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$150 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$152 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$154 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$155 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$158 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$160 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$162 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$164 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$165 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$168 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$170 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$172 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$174 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$176 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$178 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$180 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$181 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$184 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$186 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$188 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$190 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$191 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$194 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$196 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$198 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$200 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$202 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$204 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$206 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$207 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$210 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$212 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$214 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$216 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$217 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$22 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$220 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$222 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$224 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$226 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$228 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$230 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$232 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$233 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$236 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$238 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$24 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$240 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$242 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$243 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$246 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$248 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$26 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$28 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$30 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$32 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$34 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
-  wire [31:0] \$36 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:148" *)
   wire \$38 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:146" *)
-  wire [7:0] \$39 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
+  wire [127:0] \$4 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$40 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
   wire \$42 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$44 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$46 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$48 ;
+  wire \$44 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
+  wire \$46 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$47 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
   wire \$50 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$51 ;
+  wire \$52 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
   wire \$54 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$56 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$58 ;
+  wire \$56 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$57 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *)
+  wire [127:0] \$6 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
   wire \$60 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$61 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$64 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$66 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$68 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$70 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$72 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$74 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$76 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$77 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$80 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$82 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$84 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$86 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$87 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-  wire \$90 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$92 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$94 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$96 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *)
-  wire \$98 ;
+  wire \$62 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:148" *)
+  wire \$8 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:146" *)
+  wire [1:0] \$9 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_filter_0 = 32'd0;
+  reg [127:0] buffered_filters = 128'h00000000000000000000000000000000;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_filter_0$next ;
+  reg [127:0] \buffered_filters$next ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_filter_1 = 32'd0;
+  reg [127:0] buffered_inputs = 128'h00000000000000000000000000000000;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_filter_1$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_filter_2 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_filter_2$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_filter_3 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_filter_3$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_input_0 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_input_0$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_input_1 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_input_1$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_input_2 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_input_2$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] buffered_input_3 = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:133" *)
-  reg [31:0] \buffered_input_3$next ;
+  reg [127:0] \buffered_inputs$next ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_filter_0 = 1'h0;
+  reg buffering_filters = 1'h0;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_filter_0$next ;
+  reg \buffering_filters$next ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_filter_1 = 1'h0;
+  reg buffering_inputs = 1'h0;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_filter_1$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_filter_2 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_filter_2$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_filter_3 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_filter_3$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_input_0 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_input_0$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_input_1 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_input_1$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_input_2 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_input_2$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg buffering_input_3 = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:129" *)
-  reg \buffering_input_3$next ;
+  reg \buffering_inputs$next ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__filter_0;
+  output [127:0] output__payload__filters;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__filter_1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__filter_2;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__filter_3;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__input_0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__input_1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__input_2;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
-  output [31:0] output__payload__input_3;
+  output [127:0] output__payload__inputs;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
   input output__ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:123" *)
   output output__valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] payload;
+  input [127:0] payload;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$2 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$20 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input [31:0] \payload$8 ;
+  input [127:0] \payload$2 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
   output ready;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$12 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$18 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
   output \ready$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$6 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  output \ready$9 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:124" *)
   wire reset;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
@@ -10103,218 +7449,98 @@ module operands_buffer(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid
   input valid;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
   input \valid$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$10 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$16 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$4 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:122" *)
-  input \valid$7 ;
-  assign \$100  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_2;
-  assign \$103  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$102  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$103 ;
-  assign \$106  = \$100  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$102 ;
-  assign \$108  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$110  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_2;
-  assign \$113  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$112  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$113 ;
-  assign \$116  = \$110  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$112 ;
-  assign \$118  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$120  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_input_3;
-  assign \$122  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$124  = \$120  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$122 ;
-  assign \$126  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_3;
-  assign \$129  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$128  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$129 ;
-  assign \$132  = \$126  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$128 ;
-  assign \$134  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$136  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_3;
-  assign \$139  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$138  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$139 ;
-  assign \$142  = \$136  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$138 ;
-  assign \$144  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$146  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_filter_0;
-  assign \$148  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$150  = \$146  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$148 ;
-  assign \$152  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_0;
-  assign \$155  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$154  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$155 ;
-  assign \$158  = \$152  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$154 ;
-  assign \$160  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$162  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_0;
-  assign \$165  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$164  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$165 ;
-  assign \$168  = \$162  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$164 ;
-  assign \$170  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$172  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_filter_1;
-  assign \$174  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$176  = \$172  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$174 ;
-  assign \$178  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_1;
-  assign \$181  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$180  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$181 ;
-  assign \$184  = \$178  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$180 ;
-  assign \$186  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$188  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_1;
-  assign \$191  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$190  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$191 ;
-  assign \$194  = \$188  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$190 ;
-  assign \$196  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$198  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_filter_2;
-  assign \$200  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$202  = \$198  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$200 ;
-  assign \$204  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_2;
-  assign \$207  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$206  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$207 ;
-  assign \$210  = \$204  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$206 ;
-  assign \$212  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$214  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_2;
-  assign \$217  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$216  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$217 ;
-  assign \$220  = \$214  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$216 ;
-  assign \$222  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$224  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_filter_3;
-  assign \$226  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$228  = \$224  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$226 ;
-  assign \$22  = buffering_input_0 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_input_0 : payload;
-  assign \$230  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_3;
-  assign \$233  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$232  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$233 ;
-  assign \$236  = \$230  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$232 ;
-  assign \$238  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$240  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filter_3;
-  assign \$243  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$242  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$243 ;
-  assign \$246  = \$240  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$242 ;
-  assign \$248  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$24  = buffering_input_1 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_input_1 : \payload$2 ;
-  assign \$26  = buffering_input_2 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_input_2 : \payload$5 ;
-  assign \$28  = buffering_input_3 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_input_3 : \payload$8 ;
-  assign \$30  = buffering_filter_0 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_filter_0 : \payload$11 ;
-  assign \$32  = buffering_filter_1 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_filter_1 : \payload$14 ;
-  assign \$34  = buffering_filter_2 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_filter_2 : \payload$17 ;
-  assign \$36  = buffering_filter_3 ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_filter_3 : \payload$20 ;
-  assign \$39  = { \valid$19 , \valid$16 , \valid$13 , \valid$10 , \valid$7 , \valid$4 , \valid$1 , valid } | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:146" *) { buffering_filter_3, buffering_filter_2, buffering_filter_1, buffering_filter_0, buffering_input_3, buffering_input_2, buffering_input_1, buffering_input_0 };
-  assign \$38  = & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:148" *) \$39 ;
-  assign \$42  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_input_0;
-  assign \$44  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$46  = \$42  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$44 ;
-  assign \$48  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_0;
-  assign \$51  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$50  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$51 ;
-  assign \$54  = \$48  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$50 ;
-  assign \$56  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$58  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_0;
-  assign \$61  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$60  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$61 ;
-  assign \$64  = \$58  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$60 ;
-  assign \$66  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$68  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_input_1;
-  assign \$70  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$72  = \$68  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$70 ;
-  assign \$74  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_1;
-  assign \$77  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$76  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$77 ;
-  assign \$80  = \$74  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$76 ;
-  assign \$82  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$84  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_input_1;
-  assign \$87  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$86  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$87 ;
-  assign \$90  = \$84  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$86 ;
-  assign \$92  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$94  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_input_2;
-  assign \$96  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
-  assign \$98  = \$94  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$96 ;
+  assign \$9  = { \valid$1 , valid } | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:146" *) { buffering_filters, buffering_inputs };
+  assign \$8  = & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:148" *) \$9 ;
+  assign \$12  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_inputs;
+  assign \$14  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$16  = \$12  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$14 ;
+  assign \$18  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_inputs;
+  assign \$21  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$20  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$21 ;
+  assign \$24  = \$18  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$20 ;
+  assign \$26  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$28  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_inputs;
+  assign \$31  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$30  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$31 ;
+  assign \$34  = \$28  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$30 ;
+  assign \$36  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$38  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) buffering_filters;
+  assign \$40  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$42  = \$38  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:153" *) \$40 ;
+  assign \$44  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filters;
+  assign \$47  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$46  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$47 ;
+  assign \$4  = buffering_inputs ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_inputs : payload;
+  assign \$50  = \$44  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$46 ;
+  assign \$52  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$54  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) buffering_filters;
+  assign \$57  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$56  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$57 ;
+  assign \$60  = \$54  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *) \$56 ;
+  assign \$62  = output__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) output__ready;
+  assign \$6  = buffering_filters ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:140" *) buffered_filters : \payload$2 ;
   always @(posedge clk)
-    buffered_filter_3 <= \buffered_filter_3$next ;
+    buffered_filters <= \buffered_filters$next ;
   always @(posedge clk)
-    buffering_filter_3 <= \buffering_filter_3$next ;
+    buffering_filters <= \buffering_filters$next ;
   always @(posedge clk)
-    buffered_filter_2 <= \buffered_filter_2$next ;
+    buffered_inputs <= \buffered_inputs$next ;
   always @(posedge clk)
-    buffering_filter_2 <= \buffering_filter_2$next ;
-  always @(posedge clk)
-    buffered_filter_1 <= \buffered_filter_1$next ;
-  always @(posedge clk)
-    buffering_filter_1 <= \buffering_filter_1$next ;
-  always @(posedge clk)
-    buffered_filter_0 <= \buffered_filter_0$next ;
-  always @(posedge clk)
-    buffering_filter_0 <= \buffering_filter_0$next ;
-  always @(posedge clk)
-    buffered_input_3 <= \buffered_input_3$next ;
-  always @(posedge clk)
-    buffering_input_3 <= \buffering_input_3$next ;
-  always @(posedge clk)
-    buffered_input_2 <= \buffered_input_2$next ;
-  always @(posedge clk)
-    buffering_input_2 <= \buffering_input_2$next ;
-  always @(posedge clk)
-    buffered_input_1 <= \buffered_input_1$next ;
-  always @(posedge clk)
-    buffering_input_1 <= \buffering_input_1$next ;
-  always @(posedge clk)
-    buffered_input_0 <= \buffered_input_0$next ;
-  always @(posedge clk)
-    buffering_input_0 <= \buffering_input_0$next ;
+    buffering_inputs <= \buffering_inputs$next ;
   always @* begin
     if (\initial ) begin end
-    \buffering_input_0$next  = buffering_input_0;
+    \buffering_inputs$next  = buffering_inputs;
     (* full_case = 32'd1 *)
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
     casez (valid)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
       1'h1:
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$54 )
+          casez (\$24 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
             1'h1:
-                \buffering_input_0$next  = 1'h1;
+                \buffering_inputs$next  = 1'h1;
           endcase
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
       default:
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$56 )
+          casez (\$26 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
             1'h1:
-                \buffering_input_0$next  = 1'h0;
+                \buffering_inputs$next  = 1'h0;
           endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
     casez (reset)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
       1'h1:
-          \buffering_input_0$next  = 1'h0;
+          \buffering_inputs$next  = 1'h0;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \buffering_input_0$next  = 1'h0;
+          \buffering_inputs$next  = 1'h0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \buffered_input_0$next  = buffered_input_0;
+    \buffered_inputs$next  = buffered_inputs;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
     casez (valid)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
       1'h1:
         begin
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$64 )
+          casez (\$34 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
             1'h1:
-                \buffered_input_0$next  = payload;
+                \buffered_inputs$next  = payload;
           endcase
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$66 )
+          casez (\$36 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
             1'h1:
-                \buffered_input_0$next  = payload;
+                \buffered_inputs$next  = payload;
           endcase
         end
     endcase
@@ -10322,68 +7548,68 @@ module operands_buffer(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid
     casez (reset)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
       1'h1:
-          \buffered_input_0$next  = 32'd0;
+          \buffered_inputs$next  = 128'h00000000000000000000000000000000;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \buffered_input_0$next  = 32'd0;
+          \buffered_inputs$next  = 128'h00000000000000000000000000000000;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \buffering_input_1$next  = buffering_input_1;
+    \buffering_filters$next  = buffering_filters;
     (* full_case = 32'd1 *)
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
     casez (\valid$1 )
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
       1'h1:
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$80 )
+          casez (\$50 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
             1'h1:
-                \buffering_input_1$next  = 1'h1;
+                \buffering_filters$next  = 1'h1;
           endcase
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
       default:
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$82 )
+          casez (\$52 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
             1'h1:
-                \buffering_input_1$next  = 1'h0;
+                \buffering_filters$next  = 1'h0;
           endcase
     endcase
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
     casez (reset)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
       1'h1:
-          \buffering_input_1$next  = 1'h0;
+          \buffering_filters$next  = 1'h0;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \buffering_input_1$next  = 1'h0;
+          \buffering_filters$next  = 1'h0;
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \buffered_input_1$next  = buffered_input_1;
+    \buffered_filters$next  = buffered_filters;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
     casez (\valid$1 )
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
       1'h1:
         begin
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$90 )
+          casez (\$60 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
             1'h1:
-                \buffered_input_1$next  = \payload$2 ;
+                \buffered_filters$next  = \payload$2 ;
           endcase
           (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$92 )
+          casez (\$62 )
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
             1'h1:
-                \buffered_input_1$next  = \payload$2 ;
+                \buffered_filters$next  = \payload$2 ;
           endcase
         end
     endcase
@@ -10391,455 +7617,29 @@ module operands_buffer(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid
     casez (reset)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
       1'h1:
-          \buffered_input_1$next  = 32'd0;
+          \buffered_filters$next  = 128'h00000000000000000000000000000000;
     endcase
     (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
     casez (rst)
       1'h1:
-          \buffered_input_1$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_input_2$next  = buffering_input_2;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$106 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_input_2$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$108 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_input_2$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_input_2$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_input_2$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_input_2$next  = buffered_input_2;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$4 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$116 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_input_2$next  = \payload$5 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$118 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_input_2$next  = \payload$5 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_input_2$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_input_2$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_input_3$next  = buffering_input_3;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$7 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$132 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_input_3$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$134 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_input_3$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_input_3$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_input_3$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_input_3$next  = buffered_input_3;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$7 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$142 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_input_3$next  = \payload$8 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$144 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_input_3$next  = \payload$8 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_input_3$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_input_3$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_filter_0$next  = buffering_filter_0;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$10 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$158 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_filter_0$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$160 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_filter_0$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_filter_0$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_filter_0$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_filter_0$next  = buffered_filter_0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$10 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$168 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_filter_0$next  = \payload$11 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$170 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_filter_0$next  = \payload$11 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_filter_0$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_filter_0$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_filter_1$next  = buffering_filter_1;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$13 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$184 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_filter_1$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$186 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_filter_1$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_filter_1$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_filter_1$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_filter_1$next  = buffered_filter_1;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$13 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$194 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_filter_1$next  = \payload$14 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$196 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_filter_1$next  = \payload$14 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_filter_1$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_filter_1$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_filter_2$next  = buffering_filter_2;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$16 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$210 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_filter_2$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$212 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_filter_2$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_filter_2$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_filter_2$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_filter_2$next  = buffered_filter_2;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$16 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$220 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_filter_2$next  = \payload$17 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$222 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_filter_2$next  = \payload$17 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_filter_2$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_filter_2$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffering_filter_3$next  = buffering_filter_3;
-    (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$19 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$236 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffering_filter_3$next  = 1'h1;
-          endcase
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:164" */
-      default:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" *)
-          casez (\$238 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:165" */
-            1'h1:
-                \buffering_filter_3$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffering_filter_3$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering_filter_3$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_filter_3$next  = buffered_filter_3;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" *)
-    casez (\valid$19 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:156" */
-      1'h1:
-        begin
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" *)
-          casez (\$246 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:158" */
-            1'h1:
-                \buffered_filter_3$next  = \payload$20 ;
-          endcase
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" *)
-          casez (\$248 )
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:162" */
-            1'h1:
-                \buffered_filter_3$next  = \payload$20 ;
-          endcase
-        end
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:169" */
-      1'h1:
-          \buffered_filter_3$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_filter_3$next  = 32'd0;
+          \buffered_filters$next  = 128'h00000000000000000000000000000000;
     endcase
   end
   assign reset = 1'h0;
-  assign \ready$21  = \$228 ;
-  assign \ready$18  = \$202 ;
-  assign \ready$15  = \$176 ;
-  assign \ready$12  = \$150 ;
-  assign \ready$9  = \$124 ;
-  assign \ready$6  = \$98 ;
-  assign \ready$3  = \$72 ;
-  assign ready = \$46 ;
-  assign output__valid = \$38 ;
-  assign output__payload__filter_3 = \$36 ;
-  assign output__payload__filter_2 = \$34 ;
-  assign output__payload__filter_1 = \$32 ;
-  assign output__payload__filter_0 = \$30 ;
-  assign output__payload__input_3 = \$28 ;
-  assign output__payload__input_2 = \$26 ;
-  assign output__payload__input_1 = \$24 ;
-  assign output__payload__input_0 = \$22 ;
+  assign \ready$3  = \$42 ;
+  assign ready = \$16 ;
+  assign output__valid = \$8 ;
+  assign output__payload__filters = \$6 ;
+  assign output__payload__inputs = \$4 ;
 endmodule
 
 (* \nmigen.hierarchy  = "Cfu.ping" *)
 (* generator = "nMigen" *)
 module ping(done, start, in0, in1, rst, clk, \output );
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:40" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:41" *)
   wire [32:0] \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:40" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:41" *)
   wire [32:0] \$2 ;
   (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
   input clk;
@@ -10865,11 +7665,11 @@ module ping(done, start, in0, in1, rst, clk, \output );
   input rst;
   (* src = "/home/jakubm/CFU-Playground/python/nmigen_cfu/cfu.py:52" *)
   input start;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:37" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" *)
   reg [31:0] stored_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:37" *)
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" *)
   reg [31:0] \stored_value$next ;
-  assign \$2  = in0 + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:40" *) in1;
+  assign \$2  = in0 + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:41" *) in1;
   always @(posedge clk)
     done <= \done$next ;
   always @(posedge clk)
@@ -10879,9 +7679,9 @@ module ping(done, start, in0, in1, rst, clk, \output );
   always @* begin
     if (\initial ) begin end
     \stored_value$next  = stored_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" *)
     casez (start)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" */
       1'h1:
           \stored_value$next  = \$2 [31:0];
     endcase
@@ -10894,9 +7694,9 @@ module ping(done, start, in0, in1, rst, clk, \output );
   always @* begin
     if (\initial ) begin end
     \output$next  = \output ;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" *)
     casez (start)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" */
       1'h1:
           \output$next  = stored_value;
     endcase
@@ -10909,12 +7709,12 @@ module ping(done, start, in0, in1, rst, clk, \output );
   always @* begin
     if (\initial ) begin end
     (* full_case = 32'd1 *)
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" *)
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" *)
     casez (start)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:38" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:39" */
       1'h1:
           \done$next  = 1'h1;
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:44" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:45" */
       default:
           \done$next  = 1'h0;
     endcase
@@ -11763,1198 +8563,6 @@ module rdbpot(clk, input__ready, input__valid, input__payload__dividend, input__
   assign \$99  = { dividend[31], dividend[31], dividend[31], dividend[31], dividend[31], dividend[31], dividend[31], dividend[31:7] };
 endmodule
 
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_0.read_buffer" *)
-(* generator = "nMigen" *)
-module read_buffer(clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_2.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$10 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_3.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$12 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_1.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$2 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_2.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$3 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.input_store.mem_3.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$4 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_0.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$6 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.filter_store.mem_1.read_buffer" *)
-(* generator = "nMigen" *)
-module \read_buffer$8 (clk, output__valid, output__payload, output__ready, input__valid, input__payload, reset, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$11 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$15 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$19 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$21 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$23 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-  wire \$27 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *)
-  wire \$5 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *)
-  wire [31:0] \$7 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-  wire \$9 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] buffered_value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:61" *)
-  reg [31:0] \buffered_value$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg buffering = 1'h0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:60" *)
-  reg \buffering$next ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  wire input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:55" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output [31:0] output__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  input output__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:56" *)
-  output output__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:57" *)
-  input reset;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  assign \$9  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$11  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$13  = \$9  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$11 ;
-  assign \$15  = \$13  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$17  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$1  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) buffering;
-  assign \$19  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) buffering;
-  assign \$21  = ~ (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) output__ready;
-  assign \$23  = \$19  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) \$21 ;
-  assign \$25  = \$23  & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *) input__valid;
-  assign \$27  = buffering & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *) output__ready;
-  assign \$3  = \$1  | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:65" *) output__ready;
-  assign \$5  = buffering | (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:66" *) input__valid;
-  assign \$7  = buffering ? (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:68" *) buffered_value : input__payload;
-  always @(posedge clk)
-    buffering <= \buffering$next ;
-  always @(posedge clk)
-    buffered_value <= \buffered_value$next ;
-  always @* begin
-    if (\initial ) begin end
-    \buffering$next  = buffering;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$15 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffering$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$17 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* full_case = 32'd1 *)
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:80" */
-            default:
-                \buffering$next  = 1'h0;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffering$next  = 1'h0;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \buffered_value$next  = buffered_value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" *)
-    casez (\$25 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:72" */
-      1'h1:
-          \buffered_value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" *)
-    casez (\$27 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:77" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" *)
-          casez (input__valid)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:78" */
-            1'h1:
-                \buffered_value$next  = input__payload;
-          endcase
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" *)
-    casez (reset)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/buffer.py:84" */
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \buffered_value$next  = 32'd0;
-    endcase
-  end
-  assign output__payload = \$7 ;
-  assign output__valid = \$5 ;
-  assign input__ready = \$3 ;
-endmodule
-
 (* \nmigen.hierarchy  = "Cfu.set.reg_01" *)
 (* generator = "nMigen" *)
 module reg_01(clk, output__valid, output__payload, output__ready, new_en, new_value, rst);
@@ -13505,606 +9113,6 @@ module reg_08(clk, output__valid, output__payload, output__ready, new_en, new_va
           \output__payload$next  = 32'd0;
     endcase
   end
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_10" *)
-(* generator = "nMigen" *)
-module reg_10(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_11" *)
-(* generator = "nMigen" *)
-module reg_11(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_12" *)
-(* generator = "nMigen" *)
-module reg_12(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_13" *)
-(* generator = "nMigen" *)
-module reg_13(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_18" *)
-(* generator = "nMigen" *)
-module reg_18(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_19" *)
-(* generator = "nMigen" *)
-module reg_19(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_1a" *)
-(* generator = "nMigen" *)
-module reg_1a(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
-endmodule
-
-(* \nmigen.hierarchy  = "Cfu.get.reg_1b" *)
-(* generator = "nMigen" *)
-module reg_1b(clk, input__valid, input__payload, input__ready, invalidate, valid, value, rst);
-  reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$1 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
-  wire \$3 ;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input clk;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input [31:0] input__payload;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  output input__ready;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:63" *)
-  input input__valid;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:64" *)
-  input invalidate;
-  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
-  input rst;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  output valid;
-  reg valid = 1'h1;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:65" *)
-  reg \valid$next ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  output [31:0] value;
-  reg [31:0] value = 32'd0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:66" *)
-  reg [31:0] \value$next ;
-  always @(posedge clk)
-    value <= \value$next ;
-  always @(posedge clk)
-    valid <= \valid$next ;
-  always @* begin
-    if (\initial ) begin end
-    \valid$next  = valid;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" *)
-    casez (invalidate)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:73" */
-      1'h1:
-          \valid$next  = 1'h0;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$1 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \valid$next  = 1'h1;
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
-    \value$next  = value;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" *)
-    casez (\$3 )
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/get.py:75" */
-      1'h1:
-          \value$next  = input__payload;
-    endcase
-    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
-    casez (rst)
-      1'h1:
-          \value$next  = 32'd0;
-    endcase
-  end
-  assign input__ready = 1'h1;
-  assign \$1  = input__valid;
-  assign \$3  = input__valid;
 endmodule
 
 (* \nmigen.hierarchy  = "Cfu.set.reg_1f" *)
@@ -14674,6 +9682,300 @@ module \reg_70$1 (clk, input__valid, input__payload, input__ready, invalidate, v
   assign \$3  = input__valid;
 endmodule
 
+(* \nmigen.hierarchy  = "Cfu.result_accumulator" *)
+(* generator = "nMigen" *)
+module result_accumulator(results__payload, results__ready, num_results__payload, num_results__valid, accumulated__valid, accumulated__payload, accumulated__ready, rst, clk, results__valid);
+  reg \initial  = 0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$1 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$10 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$12 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *)
+  wire \$14 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$16 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$18 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:97" *)
+  wire [32:0] \$20 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:97" *)
+  wire [32:0] \$21 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$23 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *)
+  wire \$3 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *)
+  wire \$5 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:100" *)
+  wire [32:0] \$7 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:100" *)
+  wire [32:0] \$8 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  output [31:0] accumulated__payload;
+  reg [31:0] accumulated__payload = 32'd0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  reg [31:0] \accumulated__payload$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  input accumulated__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  output accumulated__valid;
+  reg accumulated__valid = 1'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:83" *)
+  reg \accumulated__valid$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:87" *)
+  reg [31:0] accumulator = 32'd0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:87" *)
+  reg [31:0] \accumulator$next ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input clk;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+  reg [1:0] fsm_state = 2'h0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+  reg [1:0] \fsm_state$next ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:81" *)
+  input [31:0] num_results__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:81" *)
+  reg num_results__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:81" *)
+  input num_results__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  input [31:0] results__payload;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  output results__ready;
+  reg results__ready;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:82" *)
+  input results__valid;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:86" *)
+  reg [31:0] results_counter = 32'd0;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:86" *)
+  reg [31:0] \results_counter$next ;
+  (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/ir.py:524" *)
+  input rst;
+  assign \$10  = num_results__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_results__ready;
+  assign \$12  = results__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) results__ready;
+  assign \$14  = results_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *) 1'h1;
+  assign \$16  = accumulated__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) accumulated__ready;
+  assign \$18  = results__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) results__ready;
+  assign \$1  = num_results__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) num_results__ready;
+  assign \$21  = $signed(accumulator) + (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:97" *) $signed(results__payload);
+  assign \$23  = accumulated__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) accumulated__ready;
+  assign \$3  = results__valid & (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/stream/stream.py:98" *) results__ready;
+  assign \$5  = results_counter > (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *) 1'h1;
+  assign \$8  = results_counter - (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:100" *) 1'h1;
+  always @(posedge clk)
+    accumulated__valid <= \accumulated__valid$next ;
+  always @(posedge clk)
+    accumulated__payload <= \accumulated__payload$next ;
+  always @(posedge clk)
+    accumulator <= \accumulator$next ;
+  always @(posedge clk)
+    fsm_state <= \fsm_state$next ;
+  always @(posedge clk)
+    results_counter <= \results_counter$next ;
+  always @* begin
+    if (\initial ) begin end
+    num_results__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          num_results__ready = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \results_counter$next  = results_counter;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:91" *)
+          casez (\$1 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:91" */
+            1'h1:
+                \results_counter$next  = num_results__payload;
+          endcase
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" *)
+          casez (\$3 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" */
+            1'h1:
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *)
+                casez (\$5 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" */
+                  1'h1:
+                      \results_counter$next  = \$8 [31:0];
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:101" */
+                  default:
+                      \results_counter$next  = 32'd0;
+                endcase
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \results_counter$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \fsm_state$next  = fsm_state;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:91" *)
+          casez (\$10 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:91" */
+            1'h1:
+                \fsm_state$next  = 2'h1;
+          endcase
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" *)
+          casez (\$12 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" */
+            1'h1:
+                (* full_case = 32'd1 *)
+                (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" *)
+                casez (\$14 )
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:99" */
+                  1'h1:
+                      /* empty */;
+                  /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:101" */
+                  default:
+                      \fsm_state$next  = 2'h2;
+                endcase
+          endcase
+      /* \nmigen.decoding  = "DONE/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:104" */
+      2'h2:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:108" *)
+          casez (\$16 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:108" */
+            1'h1:
+                \fsm_state$next  = 2'h0;
+          endcase
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \fsm_state$next  = 2'h0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    results__ready = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          results__ready = 1'h1;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \accumulator$next  = accumulator;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" *)
+          casez (\$18 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:96" */
+            1'h1:
+                \accumulator$next  = \$21 [31:0];
+          endcase
+      /* \nmigen.decoding  = "DONE/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:104" */
+      2'h2:
+          \accumulator$next  = 32'd0;
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \accumulator$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \accumulated__payload$next  = accumulated__payload;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "DONE/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:104" */
+      2'h2:
+          \accumulated__payload$next  = accumulator;
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \accumulated__payload$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \accumulated__valid$next  = accumulated__valid;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:88" *)
+    casez (fsm_state)
+      /* \nmigen.decoding  = "IDLE/0" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:89" */
+      2'h0:
+          /* empty */;
+      /* \nmigen.decoding  = "ACCUMULATING/1" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:94" */
+      2'h1:
+          /* empty */;
+      /* \nmigen.decoding  = "DONE/2" */
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:104" */
+      2'h2:
+        begin
+          \accumulated__valid$next  = 1'h1;
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:108" *)
+          casez (\$23 )
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/hps_cfu.py:108" */
+            1'h1:
+                \accumulated__valid$next  = 1'h0;
+          endcase
+        end
+    endcase
+    (* src = "/home/jakubm/CFU-Playground/third_party/python/nmigen/nmigen/hdl/xfrm.py:519" *)
+    casez (rst)
+      1'h1:
+          \accumulated__valid$next  = 1'h0;
+    endcase
+  end
+  assign \$7  = \$8 ;
+  assign \$20  = \$21 ;
+endmodule
+
 (* \nmigen.hierarchy  = "Cfu.pp.ppp.sap" *)
 (* generator = "nMigen" *)
 module sap(clk, input__valid, input__payload, input__ready, offset, min, max, output__valid, output__payload, output__ready, rst);
@@ -14762,57 +10064,56 @@ endmodule
 
 (* \nmigen.hierarchy  = "Cfu.set" *)
 (* generator = "nMigen" *)
-module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payload$5 , \ready$6 , \$signal , \valid$7 , \payload$8 , \ready$9 , \valid$10 , \payload$11 , \ready$12 , \$signal$13 , \$signal$14 , \$signal$15 , \$signal$16 , \$signal$17 , \$signal$18 , \$signal$19 , \$signal$20 , \$signal$21 , done, start, in0, in1, funct7, rst, clk, valid);
+module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payload$5 , \ready$6 , \valid$7 , \payload$8 , \ready$9 , \valid$10 , \payload$11 , \ready$12 , \$signal , \payload$13 , \valid$14 , \ready$15 , \$signal$16 , \$signal$17 , \$signal$18 , \$signal$19 , \$signal$20 , \$signal$21 , \$signal$22 , \$signal$23 , done, start, in0, in1, funct7, rst, clk, valid);
   reg \initial  = 0;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  output \$signal ;
-  reg \$signal ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  output [31:0] \$signal$13 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  output [31:0] \$signal$14 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  output [31:0] \$signal$15 ;
+  output [31:0] \$signal ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   output [31:0] \$signal$16 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  output \$signal$17 ;
-  reg \$signal$17 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  output \$signal$18 ;
-  reg \$signal$18 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  output [31:0] \$signal$19 ;
+  output [31:0] \$signal$17 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  output [31:0] \$signal$20 ;
+  output [31:0] \$signal$18 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  output \$signal$19 ;
+  reg \$signal$19 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  output \$signal$20 ;
+  reg \$signal$20 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   output [31:0] \$signal$21 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \$signal$22 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  reg \$signal$23 ;
+  output [31:0] \$signal$22 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
+  output [31:0] \$signal$23 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   wire [31:0] \$signal$24 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
   reg \$signal$25 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  reg \$signal$29 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \$signal$30 ;
+  wire [31:0] \$signal$26 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$27 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
   reg \$signal$31 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   wire [31:0] \$signal$32 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
   reg \$signal$33 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  reg \$signal$37 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  reg \$signal$41 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
-  reg \$signal$45 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
-  wire [31:0] \$signal$49 ;
+  wire [31:0] \$signal$34 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$35 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$39 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$43 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$47 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
+  wire [31:0] \$signal$48 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
+  reg \$signal$49 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:102" *)
   wire [31:0] \$signal$50 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:103" *)
@@ -14845,17 +10146,17 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   output [31:0] \payload$11 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
+  output [31:0] \payload$13 ;
+  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   output [31:0] \payload$2 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire [31:0] \payload$27 ;
+  wire [31:0] \payload$29 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire [31:0] \payload$35 ;
+  wire [31:0] \payload$37 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire [31:0] \payload$39 ;
+  wire [31:0] \payload$41 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire [31:0] \payload$43 ;
-  (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire [31:0] \payload$47 ;
+  wire [31:0] \payload$45 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   output [31:0] \payload$5 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
@@ -14873,17 +10174,17 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   input \ready$12 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \ready$28 ;
+  input \ready$15 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   input \ready$3 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \ready$36 ;
+  wire \ready$30 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \ready$40 ;
+  wire \ready$38 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \ready$44 ;
+  wire \ready$42 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \ready$48 ;
+  wire \ready$46 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \ready$54 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
@@ -15047,17 +10348,17 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   output \valid$10 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \valid$26 ;
+  output \valid$14 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \valid$34 ;
+  wire \valid$28 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \valid$38 ;
+  wire \valid$36 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   output \valid$4 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \valid$42 ;
+  wire \valid$40 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
-  wire \valid$46 ;
+  wire \valid$44 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
   wire \valid$52 ;
   (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:100" *)
@@ -15147,7 +10448,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
     .new_en(reg_1f_new_en),
     .new_value(reg_1f_new_value),
     .output__payload(reg_1f_output__payload),
-    .output__ready(1'h0),
+    .output__ready(reg_1f_output__ready),
     .output__valid(reg_1f_output__valid),
     .rst(rst)
   );
@@ -15198,27 +10499,6 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   );
   always @* begin
     if (\initial ) begin end
-    \$signal$29  = 1'h0;
-    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
-    casez (start)
-      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
-      1'h1:
-          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:116" *)
-          casez (funct7)
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
-            7'h01:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
-            7'h02:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
-            7'h03:
-                \$signal$29  = 1'h1;
-          endcase
-    endcase
-  end
-  always @* begin
-    if (\initial ) begin end
     \$signal$31  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
@@ -15234,9 +10514,6 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h03:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
-            7'h04:
                 \$signal$31  = 1'h1;
           endcase
     endcase
@@ -15261,16 +10538,40 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h04:
-                /* empty */;
-            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
-            7'h05:
                 \$signal$33  = 1'h1;
           endcase
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$37  = 1'h0;
+    \$signal$35  = 1'h0;
+    (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
+    casez (start)
+      /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
+      1'h1:
+          (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:116" *)
+          casez (funct7)
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
+            7'h01:
+                /* empty */;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
+            7'h02:
+                /* empty */;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
+            7'h03:
+                /* empty */;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
+            7'h04:
+                /* empty */;
+            /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
+            7'h05:
+                \$signal$35  = 1'h1;
+          endcase
+    endcase
+  end
+  always @* begin
+    if (\initial ) begin end
+    \$signal$39  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15294,13 +10595,13 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h06:
-                \$signal$37  = 1'h1;
+                \$signal$39  = 1'h1;
           endcase
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$41  = 1'h0;
+    \$signal$43  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15327,13 +10628,13 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h07:
-                \$signal$41  = 1'h1;
+                \$signal$43  = 1'h1;
           endcase
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$45  = 1'h0;
+    \$signal$47  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15363,13 +10664,13 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h08:
-                \$signal$45  = 1'h1;
+                \$signal$47  = 1'h1;
           endcase
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$23  = 1'h0;
+    \$signal$25  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15378,13 +10679,13 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
           casez (funct7)
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h01:
-                \$signal$23  = 1'h1;
+                \$signal$25  = 1'h1;
           endcase
     endcase
   end
   always @* begin
     if (\initial ) begin end
-    \$signal  = 1'h0;
+    \$signal$49  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15417,7 +10718,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h1f:
-                \$signal  = 1'h1;
+                \$signal$49  = 1'h1;
           endcase
     endcase
   end
@@ -15465,7 +10766,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$18  = 1'h0;
+    \$signal$20  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15504,7 +10805,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h40:
-                \$signal$18  = 1'h1;
+                \$signal$20  = 1'h1;
           endcase
     endcase
   end
@@ -15609,7 +10910,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$17  = 1'h0;
+    \$signal$19  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -15657,7 +10958,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h43:
-                \$signal$17  = 1'h1;
+                \$signal$19  = 1'h1;
           endcase
     endcase
   end
@@ -16209,7 +11510,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   end
   always @* begin
     if (\initial ) begin end
-    \$signal$25  = 1'h0;
+    \$signal$27  = 1'h0;
     (* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" *)
     casez (start)
       /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:113" */
@@ -16221,7 +11522,7 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
                 /* empty */;
             /* src = "/home/jakubm/CFU-Playground/proj/hps_accel/gateware/set.py:118" */
             7'h02:
-                \$signal$25  = 1'h1;
+                \$signal$27  = 1'h1;
           endcase
     endcase
   end
@@ -16663,26 +11964,25 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
           endcase
     endcase
   end
-  assign \ready$28  = 1'h0;
-  assign \ready$36  = 1'h0;
-  assign \ready$40  = 1'h0;
-  assign \ready$44  = 1'h0;
-  assign \ready$48  = 1'h0;
+  assign \ready$30  = 1'h0;
+  assign \ready$38  = 1'h0;
+  assign \ready$42  = 1'h0;
+  assign \ready$46  = 1'h0;
   assign \ready$54  = 1'h0;
   assign \ready$58  = 1'h0;
   assign \ready$62  = 1'h0;
   assign \ready$66  = 1'h0;
   assign in1s = in1;
   assign in0s = in0;
-  assign \$signal$16  = reg_43_output__payload;
+  assign \$signal$18  = reg_43_output__payload;
   assign reg_43_output__ready = 1'h0;
   assign \payload$65  = reg_43_output__payload;
   assign \valid$64  = reg_43_output__valid;
-  assign \$signal$15  = reg_42_output__payload;
+  assign \$signal$17  = reg_42_output__payload;
   assign reg_42_output__ready = 1'h0;
   assign \payload$61  = reg_42_output__payload;
   assign \valid$60  = reg_42_output__valid;
-  assign \$signal$14  = reg_41_output__payload;
+  assign \$signal$16  = reg_41_output__payload;
   assign reg_41_output__ready = 1'h0;
   assign \payload$57  = reg_41_output__payload;
   assign \valid$56  = reg_41_output__valid;
@@ -16694,39 +11994,39 @@ module set(payload, ready, \valid$1 , \payload$2 , \ready$3 , \valid$4 , \payloa
   assign reg_70_output__ready = ready;
   assign payload = reg_70_output__payload;
   assign valid = reg_70_output__valid;
-  assign \$signal$49  = reg_1f_output__payload;
-  assign reg_1f_output__ready = 1'h0;
-  assign \payload$47  = reg_1f_output__payload;
-  assign \valid$46  = reg_1f_output__valid;
-  assign \$signal$21  = reg_08_output__payload;
+  assign \$signal$48  = reg_1f_output__payload;
+  assign reg_1f_output__ready = \ready$15 ;
+  assign \payload$13  = reg_1f_output__payload;
+  assign \valid$14  = reg_1f_output__valid;
+  assign \$signal$23  = reg_08_output__payload;
   assign reg_08_output__ready = 1'h0;
-  assign \payload$43  = reg_08_output__payload;
-  assign \valid$42  = reg_08_output__valid;
-  assign \$signal$20  = reg_07_output__payload;
+  assign \payload$45  = reg_08_output__payload;
+  assign \valid$44  = reg_08_output__valid;
+  assign \$signal$22  = reg_07_output__payload;
   assign reg_07_output__ready = 1'h0;
-  assign \payload$39  = reg_07_output__payload;
-  assign \valid$38  = reg_07_output__valid;
-  assign \$signal$19  = reg_06_output__payload;
+  assign \payload$41  = reg_07_output__payload;
+  assign \valid$40  = reg_07_output__valid;
+  assign \$signal$21  = reg_06_output__payload;
   assign reg_06_output__ready = 1'h0;
-  assign \payload$35  = reg_06_output__payload;
-  assign \valid$34  = reg_06_output__valid;
-  assign \$signal$32  = reg_05_output__payload;
+  assign \payload$37  = reg_06_output__payload;
+  assign \valid$36  = reg_06_output__valid;
+  assign \$signal$34  = reg_05_output__payload;
   assign reg_05_output__ready = \ready$6 ;
   assign \payload$5  = reg_05_output__payload;
   assign \valid$4  = reg_05_output__valid;
-  assign \$signal$30  = reg_04_output__payload;
+  assign \$signal$32  = reg_04_output__payload;
   assign reg_04_output__ready = \ready$12 ;
   assign \payload$11  = reg_04_output__payload;
   assign \valid$10  = reg_04_output__valid;
-  assign \$signal$13  = reg_03_output__payload;
+  assign \$signal  = reg_03_output__payload;
   assign reg_03_output__ready = 1'h0;
-  assign \payload$27  = reg_03_output__payload;
-  assign \valid$26  = reg_03_output__valid;
-  assign \$signal$24  = reg_02_output__payload;
+  assign \payload$29  = reg_03_output__payload;
+  assign \valid$28  = reg_03_output__valid;
+  assign \$signal$26  = reg_02_output__payload;
   assign reg_02_output__ready = \ready$3 ;
   assign \payload$2  = reg_02_output__payload;
   assign \valid$1  = reg_02_output__valid;
-  assign \$signal$22  = reg_01_output__payload;
+  assign \$signal$24  = reg_01_output__payload;
   assign reg_01_output__ready = \ready$9 ;
   assign \payload$8  = reg_01_output__payload;
   assign \valid$7  = reg_01_output__valid;

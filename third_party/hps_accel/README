@@ -13,4 +13,5 @@ How to update TensorFlow Lite Micro with custom kernels?
 
 1. Copy / Paste (or replace) CFU-Playground files (tensorflow/lite/kernels/internal/reference/integer_ops/).
 2. Update the imports to `#include "hps_accel/.." for CFU .h files.
-3. (optional) Comment out the print methods in custom kernels, as they print libraries are not included in the shim.
+3. Enter third_party/tflm_gen directory and execute `make clean`.
+4. Comment out the print methods in custom kernels, as they print libraries are not included in the shim.
