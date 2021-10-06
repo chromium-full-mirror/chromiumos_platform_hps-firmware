@@ -172,6 +172,20 @@ if [ ! -f "${HOME}/.cargo/bin/cargo-objcopy" ]; then
     cargo install cargo-binutils
 fi
 
+MCP_UDEV_RULES=/etc/udev/rules.d/71-mcp.rules
+if [ ! -f "${MCP_UDEV_RULES}" ]; then
+    echo -n "OK to create ${MCP_UDEV_RULES} [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        (
+            cat <<'EOF'
+# MCP2221A rules
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
+EOF
+        ) | sudo tee "${MCP_UDEV_RULES}"
+    fi
+fi
+
 # Warn about different versions
 if ! arm-none-eabi-gcc --version | grep ' 8.3.' >/dev/null; then
     echo "Possibly unsupported version of arm-none-eabi-gcc. 8.3.1 works." >&2
