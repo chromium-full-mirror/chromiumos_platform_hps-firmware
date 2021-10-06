@@ -12,6 +12,7 @@ mod write_spi_flash;
 #[cfg(feature = "direct")]
 mod direct;
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
@@ -225,7 +226,8 @@ fn main() -> Result<()> {
 fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps>>> {
     let mut config = mcp2221::I2cConfig::default();
     config.speed_hz = 400_000;
-    let mut dev = mcp2221::I2c::open_first(&config)?;
+    let mut dev = mcp2221::I2c::open_first(&config)
+        .map_err(|error| anyhow!("Failed to open HPS via I2C: {}", error))?;
     let mut gpio_config = mcp2221::GpioConfig::default();
     gpio_config.set_direction(0, mcp2221::Direction::Output);
     gpio_config.set_value(0, true);
