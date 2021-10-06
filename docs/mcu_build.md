@@ -70,37 +70,6 @@ MCU> MCU application started. CPU is running at 60MHz
 MCU> Resetting FPGA
 ```
 
-## proto0
-
-### Connecting proto0
-
-Connect ST/Link via a 1.8V converter in this way:
-
-ST/Link | proto0
---------|-------
- GND    | J6-8
- SWDIO  | J6-9
- SWDCLK | J6-10
-
-The UART is connected via J7:
-
-UART    | proto0
---------|--------------
- GND    | J7-12
- RX     | J7-8 (MCU RX)
- TX     | J7-9 (MCU TX)
-
-![Proto0 Top and Bottom](./proto0-layout.jpg "Proto0 layout")
-
-### Building and Running on proto0
-
-By default, the MCU application builds for the stm32g071, however if you'd like to run it on
-proto0, which has an stm32g031, you can do so with the following command.
-
-```bash
-./scripts/proto0-run
-```
-
 ### Collecting images
 
 Images can be collected from the HPS using the `hps-mon` tool. Sample usage:
@@ -130,4 +99,3 @@ cargo run --features mcu_common/dev
 ```
 
 This enables features that we don't want in production, but which can be useful for testing. e.g. a register that is slow to read and causes an i2c underrun.
-
