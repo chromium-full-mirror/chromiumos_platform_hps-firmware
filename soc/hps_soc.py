@@ -24,6 +24,7 @@ from litespi import LiteSPI
 
 from .hps_platform import Platform
 from .cam_control import CameraControl
+from .patch_cpu_variant import patch_cpu_variant
 from .spi_controller import SpiController
 
 
@@ -230,6 +231,8 @@ def create_builder(soc, args):
 
 
 def main():
+    patch_cpu_variant()
+
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
     parser.add_argument(
@@ -257,7 +260,7 @@ def main():
 
     variant, variantName = 'full', 'Full'
     if args.cpu_cfu:
-        variant, variantName = 'full+cfu', 'FullCfu'
+        variant, variantName = 'slim+cfu', 'SlimCfu'
     print(f'{variantName} variant selected')
 
     soc = HpsSoC(
