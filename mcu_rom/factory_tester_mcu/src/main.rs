@@ -218,7 +218,11 @@ fn init_peripherals(
     // of RAM. Our linker script makes sure the first 1KB of RAM is kept free.
     const VECTOR_TABLE_DEST: usize = 0x20000000;
     unsafe {
-        core::ptr::copy_nonoverlapping(&VECTOR_TABLE as *const _, VECTOR_TABLE_DEST as *mut _, 256)
+        core::ptr::copy_nonoverlapping::<u32>(
+            &VECTOR_TABLE as *const _,
+            VECTOR_TABLE_DEST as *mut _,
+            64,
+        )
     };
     unsafe { cp.SCB.vtor.write(VECTOR_TABLE_DEST as u32) };
     // Enable DMA clock so that RTT (the mechanism used to send defmt messages)

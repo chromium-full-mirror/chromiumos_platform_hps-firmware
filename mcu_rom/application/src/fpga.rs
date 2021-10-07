@@ -88,9 +88,9 @@ pub fn read_config_registers(buffer: &mut MemBlock, state: &ApplicationState) {
     let payload_out = &mut buffer[2..];
     // safety: We're careful not to write beyond the end of the buffer.
     unsafe {
-        core::ptr::copy_nonoverlapping(
-            &state.configuration,
-            payload_out.as_mut_ptr() as *mut Configuration,
+        core::ptr::copy_nonoverlapping::<u8>(
+            &state.configuration as *const _ as *const u8,
+            payload_out.as_mut_ptr(),
             usize::min(payload_out.len(), core::mem::size_of::<Configuration>()),
         );
     }
@@ -102,9 +102,9 @@ pub fn write_status_registers(buffer: &MemBlock, state: &mut ApplicationState) {
     // contains only types for which every bit pattern is valid. In particular,
     // it contains no bools.
     unsafe {
-        core::ptr::copy_nonoverlapping(
-            payload_in.as_ptr() as *const Status,
-            &mut state.status,
+        core::ptr::copy_nonoverlapping::<u8>(
+            payload_in.as_ptr(),
+            &mut state.status as *mut _ as *mut u8,
             usize::min(payload_in.len(), core::mem::size_of::<Status>()),
         );
     }
