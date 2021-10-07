@@ -7,6 +7,7 @@ use crc::Crc;
 use hal::prelude::OutputPin;
 use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
+use mcu_common::Error;
 use rtt_target::rprint;
 use rtt_target::rprintln;
 use spi_memory::series25::Flash;
@@ -23,23 +24,23 @@ pub(crate) fn write(
     spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     address: u32,
     data: &mut [u8],
-) {
+) -> Result<(), Error> {
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
             rprintln!("SPI flash not available, cannot write");
-            return;
+            return Err(Error::HostI2cBadRequest);
         }
     };
     if data.len() > 256 {
         rprintln!("SPI flash must currently be written in blocks of 256 bytes at a time");
-        return;
+        return Err(Error::HostI2cBadRequest);
     }
     // We erase the entire SPI flash prior to writing the first bit of data.
     // Host must send data in blocks that evenly divides this size.
     if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
         rprintln!("SPI write crosses block boundary");
-        return;
+        return Err(Error::HostI2cBadRequest);
     }
     if address % BLOCK_SIZE == 0 {
         // The spi-memory crate doesn't support erasing blocks, so we do it
@@ -47,11 +48,14 @@ pub(crate) fn write(
         let mut spi = unsafe { SpiFlash::steal() };
         if spi.erase_block(address).is_err() {
             rprintln!("Failed to erase to block");
+            return Err(Error::SpiFlash);
         }
     }
     if spi_flash.write_bytes(address, data).is_err() {
         rprintln!("Failed to write to SPI flash");
+        return Err(Error::SpiFlash);
     }
+    Ok(())
 }
 
 pub(crate) fn debug_read(

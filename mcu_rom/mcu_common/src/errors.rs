@@ -29,6 +29,9 @@ pub enum Error {
 
     /// Something is wrong with the SPI flash.
     SpiFlash = 1 << 6,
+
+    /// Something was wrong with a request from the host.
+    HostI2cBadRequest = 1 << 7,
 }
 
 impl Error {
