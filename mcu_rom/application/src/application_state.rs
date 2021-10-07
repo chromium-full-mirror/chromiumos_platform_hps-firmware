@@ -12,6 +12,7 @@ pub struct ApplicationState {
     /// because `status` is only ever written by the FPGA, never read and we
     /// want a persistent count.
     pub(crate) fpga_boot_count: Wrapping<u16>,
+    pub fpga_rom_version: u8,
 }
 
 /// The current configuration of the HPS. This is writable by the host over I2C

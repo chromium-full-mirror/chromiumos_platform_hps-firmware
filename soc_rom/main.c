@@ -34,6 +34,12 @@ static hm01b0_snr_expo_gain_ctrl_t expo_gain_ctrl;
 static bool automatic_exposure_enabled = true;
 static int recalibration_threshold = 0;
 
+// This version is exposed via an I2C register and has no semantic meaning. It's
+// bumped whenever a developer decides to bump it and is just for development
+// and debugging purposes. Maximum supported value is currently 255, although
+// expanding that to a 16 bit value is trivial.
+#define SOC_ROM_VERSION 1
+
 #define CALIBRATION_FRAMES 15
 
 #define HM01B0_REG_AE_CTRL (0x2100)
@@ -418,6 +424,7 @@ void tflite_error_callback(const char* format, va_list args) {
 void report_boot(void) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_REPORT_BOOT;
+  mcu_buf_out[1] = SOC_ROM_VERSION;
   mcu_transaction();
 }
 

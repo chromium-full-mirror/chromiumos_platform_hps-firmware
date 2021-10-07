@@ -100,6 +100,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::ENABLED_FEATURES => state.status.enabled_features,
             registers::FPGA_BOOT_COUNT => state.fpga_boot_count.0,
             registers::FPGA_LOOP_COUNT => state.status.loop_count,
+            registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
             _ => common_value,
         }
     }

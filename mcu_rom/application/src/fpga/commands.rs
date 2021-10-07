@@ -21,7 +21,8 @@ pub const READ_CONFIG_REGISTERS: u8 = 0x20;
 pub const WRITE_STATUS_REGISTERS: u8 = 0x21;
 
 /// Report that the FPGA has booted. We'll update the register that reports how
-/// many times the FPGA has booted.
+/// many times the FPGA has booted. Takes a 1 byte argument that is a SOC ROM
+/// version number.
 pub const REPORT_FPGA_BOOT: u8 = 0x22;
 
 /// Resets the FPGA.

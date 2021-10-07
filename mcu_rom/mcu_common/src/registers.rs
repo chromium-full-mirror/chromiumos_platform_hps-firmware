@@ -40,6 +40,10 @@ pub const FPGA_BOOT_COUNT: u8 = 12;
 /// booted).
 pub const FPGA_LOOP_COUNT: u8 = 13;
 
+/// RO: FPGA ROM version. This version has no semantic meaning. It is
+/// incremented at the whim of developers and is mostly for debugging purposes.
+pub const FPGA_ROM_VERSION: u8 = 14;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

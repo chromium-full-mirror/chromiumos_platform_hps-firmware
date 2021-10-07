@@ -114,8 +114,9 @@ pub fn write_status_registers(buffer: &MemBlock, state: &mut ApplicationState) {
     }
 }
 
-pub fn report_boot(state: &mut ApplicationState) -> u16 {
+pub fn report_boot(state: &mut ApplicationState, buffer: &MemBlock) -> u16 {
     state.fpga_boot_count += core::num::Wrapping(1);
+    state.fpga_rom_version = buffer[1];
     state.fpga_boot_count.0
 }
 

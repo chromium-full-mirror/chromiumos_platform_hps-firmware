@@ -153,7 +153,7 @@ const APP: () = {
                 let count = ctx
                     .resources
                     .state
-                    .lock(|state| fpga::report_boot(state));
+                    .lock(|state| fpga::report_boot(state, &buffer));
                 rprintln!("FPGA reported boot #{}", count);
             }
             fpga::Action::DebugLog => {
