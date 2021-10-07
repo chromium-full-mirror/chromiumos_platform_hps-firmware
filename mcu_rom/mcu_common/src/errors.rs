@@ -26,6 +26,9 @@ pub enum Error {
 
     /// Something is wrong with the camera.
     Camera = 1 << 5,
+
+    /// Something is wrong with the SPI flash.
+    SpiFlash = 1 << 6,
 }
 
 impl Error {

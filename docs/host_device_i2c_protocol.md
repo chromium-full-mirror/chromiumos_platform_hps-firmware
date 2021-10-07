@@ -125,7 +125,7 @@ The host should poll this register before issuing a Memory Write command.
 | 9   |          |                            |
 | 8   |          |                            |
 | 7   |          |                            |
-| 6   |          |                            |
+| 6   | SPIFLASH | SPI flash access failed    |
 | 5   | CAMERA   | Camera not functional      |
 | 4   | I2CORUN  | I2C overrun                |
 | 3   | I2CBERR  | I2C bus error              |

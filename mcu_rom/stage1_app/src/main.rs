@@ -447,6 +447,7 @@ fn init_peripherals(
             cs: flash_spi_cs,
         };
         if f.enable_quad_spi().is_err() {
+            host_interface.report_error(mcu_common::Error::SpiFlash);
             rprintln!("Failed to enable quad SPI");
         }
         let flash_spi = f.spi;
@@ -461,6 +462,7 @@ fn init_peripherals(
                         rprintln!("Found expected flash chip");
                         spi_flash = Some(flash);
                     } else {
+                        host_interface.report_error(mcu_common::Error::SpiFlash);
                         rprintln!(
                             "Unexpected flash ID {}, [{}, {}]",
                             id.mfr_code(),
@@ -469,9 +471,13 @@ fn init_peripherals(
                         );
                     }
                 }
-                Err(_) => rprintln!("Failed to read flash ID"),
+                Err(_) => {
+                    host_interface.report_error(mcu_common::Error::SpiFlash);
+                    rprintln!("Failed to read flash ID");
+                }
             },
             Err(e) => {
+                host_interface.report_error(mcu_common::Error::SpiFlash);
                 rprintln!("Failed to initialize SPI flash: {:?}", e);
             }
         };
