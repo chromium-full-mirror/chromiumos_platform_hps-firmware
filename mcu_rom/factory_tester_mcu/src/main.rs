@@ -11,7 +11,7 @@ mod image_receiver;
 use cortex_m::asm;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
-use factory_tester_common::TEST_CONTROLLER_I2C_ADDRESS;
+use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
 use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
@@ -438,7 +438,7 @@ fn report_result(i2c: &mut I2C1, mlb_int: &mut PB8<Output<OpenDrain>>, result: u
     // Clear oar1 must be disabled while we configure it.
     i2c.oar1.write(|w| w);
     i2c.oar1
-        .modify(|_, w| unsafe { w.oa1_7_1().bits(TEST_CONTROLLER_I2C_ADDRESS) });
+        .modify(|_, w| unsafe { w.oa1_7_1().bits(MCU_TESTER_I2C_ADDRESS) });
     i2c.oar1.modify(|_, w| w.oa1en().set_bit());
 
     // Signal to the tester that we're ready.

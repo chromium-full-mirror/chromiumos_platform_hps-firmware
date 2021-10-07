@@ -11,9 +11,9 @@ use core::convert::Infallible;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 
-/// The I2C address that the test controller listens on to receive data from the
-/// test code that runs on the HPS MCU.
-pub const TEST_CONTROLLER_I2C_ADDRESS: u8 = 0x20;
+/// The I2C address that the MCU test program listens on to send data back to
+/// the test controller.
+pub const MCU_TESTER_I2C_ADDRESS: u8 = 0x20;
 
 /// Status code returned by the MCU to indicate that the test passed.
 pub const TEST_STATUS_OK: u8 = 0;
