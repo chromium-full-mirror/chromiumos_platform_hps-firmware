@@ -249,7 +249,7 @@ def main():
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi.')
     parser.add_argument(
-        '--cpu-cfu', default=None,
+        '--cpu-cfu', default='soc/cfu.v',
         help='Specify file containing CFU Verilog module.')
     parser.add_argument(
         '--prog', action='store_true',
