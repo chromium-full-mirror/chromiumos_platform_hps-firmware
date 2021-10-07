@@ -85,7 +85,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 // to be set unconditionally once we're integrated with stage1.
                 common_value | status::APPLRUN | status::APPLREADY | status::AVERIFY
             }
-            registers::USER_PRESENT_STATUS => state.status.person_score as u16,
+            registers::USER_PRESENT_STATUS => state.status.score as u16,
             registers::MEMORY_BANK_AVAILABLE => {
                 if self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn test_read_user_present() {
         let mut state = ApplicationState::default();
-        state.status.person_score = -55;
+        state.status.score = -55;
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(

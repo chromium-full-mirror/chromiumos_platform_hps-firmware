@@ -43,7 +43,7 @@ void tflite_load_person();
 void tflite_load_no_person();
 
 // Run a classification and return result
-void tflite_classify(int8_t *person_score, int8_t *no_person_score);
+void tflite_classify(int8_t* score);
 
 #ifdef __cplusplus
 }

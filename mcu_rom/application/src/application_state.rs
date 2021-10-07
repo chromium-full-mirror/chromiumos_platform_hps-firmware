@@ -23,8 +23,7 @@ pub(crate) struct Configuration {
 #[repr(C)]
 #[derive(Default)]
 pub(crate) struct Status {
-    pub(crate) person_score: i8,
-    pub(crate) not_person_score: i8,
+    pub(crate) score: i8,
     /// A copy of `Configuration::enabled_features` as used by the last
     /// inference loop.
     pub(crate) enabled_features: u16,

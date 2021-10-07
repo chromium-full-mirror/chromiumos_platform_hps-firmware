@@ -101,7 +101,7 @@ int8_t* tflite_get_input() {
   return input->data.int8;
 }
 
-void tflite_classify(int8_t* person_score, int8_t* no_person_score) {
+void tflite_classify(int8_t* score) {
   // Run inference
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
@@ -109,6 +109,5 @@ void tflite_classify(int8_t* person_score, int8_t* no_person_score) {
 
   // Fetch output
   TfLiteTensor* output = interpreter->output(0);
-  *person_score = output->data.uint8[1];
-  *no_person_score = output->data.uint8[0];
+  *score = output->data.int8[0];
 }

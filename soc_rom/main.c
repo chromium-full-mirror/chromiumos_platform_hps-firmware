@@ -45,8 +45,7 @@ struct configuration {
 };
 
 struct status {
-  int8_t person_score;
-  int8_t not_person_score;
+  int8_t score;
   uint16_t enabled_features;
 };
 
@@ -197,7 +196,7 @@ void run_classify(struct status* status) {
   timer0_load_write(UINT32_MAX);
   timer0_en_write(1);
 
-  tflite_classify(&status->person_score, &status->not_person_score);
+  tflite_classify(&status->score);
 
   // Report how long the classification took.
   timer0_update_value_write(1);
@@ -211,8 +210,7 @@ void run_classify(struct status* status) {
                elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
-  mcu_printf("Person: %d, Not person %d\n", status->person_score,
-             status->not_person_score);
+  mcu_printf("Classification result: %d\n", status->score);
 }
 
 // Initializes the camera
