@@ -279,7 +279,7 @@ def main():
     builder_kwargs = {}
     if args.toolchain == 'radiant':
         builder_kwargs.update(radiant_build_argdict(args))
-    elif args.toolchain == "oxide":
+    elif args.toolchain == 'oxide':
         builder_kwargs.update(oxide_argdict(args))
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
