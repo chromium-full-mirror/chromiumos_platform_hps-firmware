@@ -12,6 +12,7 @@ TFLM_LIB   := $(TFLM_DIR)/libtensorflow-microlite.a
 # Build TFLM as well as the BIOS
 all:
 	$(QUIET) echo "  MAKE tflm"
+	$(QUIET) $(MAKE) -C $(TFLM_DIR) clean
 	$(QUIET) $(MAKE) -j -C $(TFLM_DIR) $(notdir $(TFLM_LIB))
 	gn gen --args=litex_out_dir=\""$(shell cd ../..; pwd)"\" out
 	ninja -C out
