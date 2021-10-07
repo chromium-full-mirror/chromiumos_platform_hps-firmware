@@ -45,7 +45,7 @@ impl Drop for TestingMemBlock {
                 // with as we please. We convert it back into a box which is
                 // then dropped.
                 unsafe {
-                    Box::from_raw(self.pointer);
+                    Box::from_raw(self.pointer as *mut [u8; BLOCK_SIZE]);
                 }
             }
         }
