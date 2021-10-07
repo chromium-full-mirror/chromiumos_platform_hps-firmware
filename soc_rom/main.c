@@ -47,6 +47,7 @@ struct configuration {
 struct status {
   int8_t score;
   uint16_t enabled_features;
+  uint16_t loop_count;
 };
 
 // Wait for DMA to finish
@@ -441,7 +442,7 @@ int main(void) {
 
   struct configuration configuration = {0};
 
-  uint32_t loop_counter = 0;
+  uint32_t loop_count = 0;
   bool do_run_classify = false;
   bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
@@ -450,7 +451,7 @@ int main(void) {
   uint16_t custom_register_address = 0;
   while (1) {
     // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, c, a, + , -, e, t)\n", loop_counter++);
+    printf("[%u] Press key (s, r, c, a, + , -, e, t)\n", loop_count++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
@@ -546,6 +547,7 @@ int main(void) {
     read_mcu_config(&configuration);
     struct status inference_status = {0};
     inference_status.enabled_features = configuration.enabled_features;
+    inference_status.loop_count = loop_count;
 
     write_ae_cfg();
     if (do_run_exposure_calibration) {
@@ -579,6 +581,6 @@ int main(void) {
       run_classify(&inference_status);
     }
     write_mcu_status(&inference_status);
-    set_mcu_led(loop_counter % 2);
+    set_mcu_led(loop_count % 2);
   }
 }

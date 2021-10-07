@@ -33,4 +33,5 @@ pub(crate) struct Status {
     /// A copy of `Configuration::enabled_features` as used by the last
     /// inference loop.
     pub(crate) enabled_features: u16,
+    pub(crate) loop_count: u16,
 }
