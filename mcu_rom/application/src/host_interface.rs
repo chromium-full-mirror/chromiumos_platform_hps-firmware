@@ -77,6 +77,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
+    pub fn report_error(&mut self, error: mcu_common::Error) {
+        self.common_interface.report_error(error);
+    }
+
     fn read_register(&self, register: u8, state: &ApplicationState) -> u16 {
         let common_value = self.common_interface.read_register(register).unwrap_or(0);
         match register {

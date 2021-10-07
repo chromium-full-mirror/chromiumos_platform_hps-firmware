@@ -126,7 +126,7 @@ The host should poll this register before issuing a Memory Write command.
 | 8   |          |                            |
 | 7   |          |                            |
 | 6   |          |                            |
-| 5   |          |                            |
+| 5   | CAMERA   | Camera not functional      |
 | 4   | I2CORUN  | I2C overrun                |
 | 3   | I2CBERR  | I2C bus error              |
 | 2   | PANIC    | A panic occurred           |

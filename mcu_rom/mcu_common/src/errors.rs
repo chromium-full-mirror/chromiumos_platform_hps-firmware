@@ -23,6 +23,9 @@ pub enum Error {
 
     /// An I2C overrun occurred.
     HostI2cOverrun = 1 << 4,
+
+    /// Something is wrong with the camera.
+    Camera = 1 << 5,
 }
 
 impl Error {

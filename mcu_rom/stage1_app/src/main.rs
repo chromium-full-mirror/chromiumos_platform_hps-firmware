@@ -33,6 +33,8 @@ use rtt_target::rtt_init;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
 
+const CAMERA_ID: u16 = 0x01b0;
+
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
@@ -387,7 +389,7 @@ fn init_peripherals(
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
     let mut exti = p.EXTI;
 
-    let host_interface = HostInterface::new(board.host_bus);
+    let mut host_interface = HostInterface::new(board.host_bus);
 
     // Set up a periodic timer. This is only needed for polling our debug
     // channels, so won't be needed in production. 100Hz is chosen in order to
@@ -415,7 +417,7 @@ fn init_peripherals(
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
 
-    let camera_i2c = board.camera_i2c.unwrap();
+    let mut camera_i2c = board.camera_i2c.unwrap();
 
     let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
@@ -473,6 +475,18 @@ fn init_peripherals(
                 rprintln!("Failed to initialize SPI flash: {:?}", e);
             }
         };
+    }
+
+    match hm01b0::Camera::new(&mut camera_i2c).get_camera_id() {
+        Err(_) => {
+            host_interface.report_error(mcu_common::Error::Camera);
+            rprintln!("Failed to read camera ID");
+        }
+        Ok(CAMERA_ID) => {}
+        Ok(id) => {
+            host_interface.report_error(mcu_common::Error::Camera);
+            rprintln!("Camera reported unexpected ID: {}", id);
+        }
     }
 
     rprintln!(
