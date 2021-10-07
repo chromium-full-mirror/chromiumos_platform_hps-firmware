@@ -20,8 +20,9 @@ pub const READ_CONFIG_REGISTERS: u8 = 0x20;
 /// These status registers are then available to the host individually over i2c.
 pub const WRITE_STATUS_REGISTERS: u8 = 0x21;
 
-/// Increment FPGA boot count.
-pub const INCREMENT_FPGA_BOOT_COUNT: u8 = 0x22;
+/// Report that the FPGA has booted. We'll update the register that reports how
+/// many times the FPGA has booted.
+pub const REPORT_FPGA_BOOT: u8 = 0x22;
 
 /// Resets the FPGA.
 pub const RESET_FPGA: u8 = 0x40;

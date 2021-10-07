@@ -149,11 +149,11 @@ const APP: () = {
                 .resources
                 .state
                 .lock(|state| fpga::write_status_registers(&buffer, state)),
-            fpga::Action::IncrementFpgaBootCount => {
+            fpga::Action::ReportFpgaBoot => {
                 let count = ctx
                     .resources
                     .state
-                    .lock(|state| fpga::increment_fpga_boot_count(state));
+                    .lock(|state| fpga::report_boot(state));
                 rprintln!("FPGA reported boot #{}", count);
             }
             fpga::Action::DebugLog => {
