@@ -46,8 +46,8 @@ All writes and reads are 16 bits.
 | 5        | RO     | All    | Memory Bank Status     |
 | 6        | RO     | All    | Common Error Status    |
 | 7        | RW     | Appl   | Feature Enable         |
-| 8        | RO     | Appl   | Feature 1 Status Bits  |
-| 9        | RO     | Appl   | Feature 2 Status Bits  |
+| 8        | RO     | Appl   | Feature 0 Status Bits  |
+| 9        | RO     | Appl   | Feature 1 Status Bits  |
 | 10       | RO     | Stage0 | Firmware Version HIGH  |
 | 11       | RO     | Stage0 | Firmware Version LOW   |
 | 12       | RO     | Appl   | FPGA boot count        |
@@ -151,18 +151,10 @@ The host should poll this register before issuing a Memory Write command.
 | 4   |          |                  |
 | 3   |          |                  |
 | 2   |          |                  |
-| 1   | FEATURE2 | Enable feature 2 |
-| 0   | FEATURE1 | Enable feature 2 |
+| 1   | FEATURE1 | Enable feature 1 |
+| 0   | FEATURE0 | Enable feature 0 |
 
-## Feature 1
-
-| BIT | NAME  | DESCRIPTION                         |
-|:----|:------|:------------------------------------|
-| 15  | VALID | The feature result is valid to use. |
-
-Bits 7-0 are the feature result.
-
-## Feature 2
+## Feature N
 
 | BIT | NAME  | DESCRIPTION                         |
 |:----|:------|:------------------------------------|
