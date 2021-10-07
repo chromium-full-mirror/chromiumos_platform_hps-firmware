@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use core::num::Wrapping;
+
 #[derive(Default)]
 pub struct ApplicationState {
     pub(crate) configuration: Configuration,
     pub(crate) status: Status,
+    /// The number of times the FPGA has started. This is not part of `status`
+    /// because `status` is only ever written by the FPGA, never read and we
+    /// want a persistent count.
+    pub(crate) fpga_boot_count: Wrapping<u16>,
 }
 
 /// The current configuration of the HPS. This is writable by the host over I2C

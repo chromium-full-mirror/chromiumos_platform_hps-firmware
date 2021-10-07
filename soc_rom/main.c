@@ -400,6 +400,12 @@ void tflite_error_callback(const char* format, va_list args) {
   mcu_printf("\n");
 }
 
+void report_boot(void) {
+  memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
+  mcu_buf_out[0] = MCU_COMMAND_REPORT_BOOT;
+  mcu_transaction();
+}
+
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
@@ -409,6 +415,8 @@ int main(void) {
   mcu_printf("HPS SoC application " HPS_VERSION);
   mcu_printf(" (built " HPS_BUILD_DATE);
   mcu_printf(" by " HPS_BUILD_USER ")\n");
+
+  report_boot();
 
   hm01b0_status_e status;
 

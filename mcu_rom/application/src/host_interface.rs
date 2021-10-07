@@ -94,6 +94,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 }
             }
             registers::ENABLED_FEATURES => state.status.enabled_features,
+            registers::FPGA_BOOT_COUNT => state.fpga_boot_count.0,
             _ => common_value,
         }
     }

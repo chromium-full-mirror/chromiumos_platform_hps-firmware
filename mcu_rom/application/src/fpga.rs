@@ -30,6 +30,7 @@ pub enum Action {
     GetDebugCommand,
     ReadCameraI2c,
     WriteCameraI2c,
+    IncrementFpgaBootCount,
 }
 
 impl Request {
@@ -65,6 +66,9 @@ impl Request {
             }
             crate::fpga::commands::WRITE_CAMERA_I2C => {
                 action = Action::WriteCameraI2c;
+            }
+            crate::fpga::commands::INCREMENT_FPGA_BOOT_COUNT => {
+                action = Action::IncrementFpgaBootCount;
             }
             _ => {
                 response_code = status::ERROR;
@@ -108,6 +112,11 @@ pub fn write_status_registers(buffer: &MemBlock, state: &mut ApplicationState) {
             usize::min(payload_in.len(), core::mem::size_of::<Status>()),
         );
     }
+}
+
+pub fn increment_fpga_boot_count(state: &mut ApplicationState) -> u16 {
+    state.fpga_boot_count += core::num::Wrapping(1);
+    state.fpga_boot_count.0
 }
 
 /// Returns the payload contained within `buffer`.

@@ -33,6 +33,9 @@ pub const USER_PRESENT_STATUS: u8 = 8;
 pub const FIRMWARE_VERSION_HIGH: u8 = 10;
 pub const FIRMWARE_VERSION_LOW: u8 = 11;
 
+/// RO: Number of times the FPGA soft CPU has reported to us that it's starting.
+pub const FPGA_BOOT_COUNT: u8 = 12;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.
