@@ -171,6 +171,9 @@ inline void ConvPerChannel(
   } else {
     printf("ConvPerChannel() not accelerated!\n");
   }
+#else
+  printf(
+      "ConvPerChannel() not accelerated because ACCEL_CONV was not defined!\n");
 #endif
 
   for (int batch = 0; batch < batches; ++batch) {
