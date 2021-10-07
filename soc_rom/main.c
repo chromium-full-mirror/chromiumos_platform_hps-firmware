@@ -13,6 +13,7 @@
 #include <uart.h>
 
 #include "camera.h"
+#include "cat_picture.h"
 #include "generated/csr.h"
 #include "hm01b0_platform.h"
 #include "hps_version.h"
@@ -212,6 +213,19 @@ void run_classify(struct status* status) {
   }
 
   mcu_printf("Classification result: %d\n", status->score);
+}
+
+static void model_selftest(void) {
+  struct status selftest_status = {0};
+  const int8_t expected_score = -116;
+  int8_t* input = tflite_get_input();
+  for (size_t i = 0; i < cat_picture_len; i++) {
+    input[i] = (int)cat_picture[i] - 128;
+  }
+  run_classify(&selftest_status);
+  if (selftest_status.score != expected_score)
+    printf("Model self-test FAILED: expected %d, actual %d\n", expected_score,
+           selftest_status.score);
 }
 
 // Initializes the camera
@@ -435,6 +449,9 @@ int main(void) {
 
   // Initialize TFLite
   tflite_init(tflite_error_callback);
+
+  // Perform model self-test
+  model_selftest();
 
   // Calibrate autoexposure
   write_ae_cfg();
