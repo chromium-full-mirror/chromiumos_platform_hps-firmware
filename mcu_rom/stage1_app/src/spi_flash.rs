@@ -23,7 +23,7 @@ const BLOCK_SIZE: u32 = 64 * 1024;
 pub(crate) fn write(
     spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     address: u32,
-    data: &mut [u8],
+    data: &[u8],
 ) -> Result<(), Error> {
     let spi_flash = match spi_flash {
         Some(x) => x,
@@ -32,8 +32,8 @@ pub(crate) fn write(
             return Err(Error::HostI2cBadRequest);
         }
     };
-    if data.len() > 256 {
-        rprintln!("SPI flash must currently be written in blocks of 256 bytes at a time");
+    if data.len() > PAGE_SIZE as usize {
+        rprintln!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
         return Err(Error::HostI2cBadRequest);
     }
     // We erase the entire SPI flash prior to writing the first bit of data.
@@ -51,10 +51,28 @@ pub(crate) fn write(
             return Err(Error::SpiFlash);
         }
     }
-    if spi_flash.write_bytes(address, data).is_err() {
+    let mut buffer = [0u8; PAGE_SIZE as usize];
+    let buffer = &mut buffer[..data.len()];
+    buffer.copy_from_slice(data);
+    if spi_flash.write_bytes(address, buffer).is_err() {
         rprintln!("Failed to write to SPI flash");
         return Err(Error::SpiFlash);
     }
+
+    if spi_flash.read(address, buffer).is_err() {
+        rprintln!("Failed to read back SPI flash");
+        return Err(Error::SpiFlash);
+    }
+
+    if buffer != data {
+        rprintln!(
+            "Read back of data showed mismatch after writing 0x{:x} bytes at address 0x{:x}",
+            data.len(),
+            address
+        );
+        return Err(Error::SpiFlash);
+    }
+
     Ok(())
 }
 

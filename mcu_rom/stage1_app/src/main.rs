@@ -197,14 +197,11 @@ const APP: () = {
     }
 
     #[task(resources = [fpga_device, host_interface, mcu_debug_handler])]
-    fn write_spi_flash(
-        mut ctx: write_spi_flash::Context,
-        mut request: i2c_protocol::WriteMemoryEvent,
-    ) {
+    fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
         if let Err(error) = spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device),
             request.address,
-            &mut *request.data,
+            &*request.data,
         ) {
             ctx.resources
                 .host_interface
@@ -234,14 +231,14 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             spi_flash::debug_read(get_spi_flash(resources.fpga_device), command.arg as u32)
         }
         McuDebugCommand::WriteSpiFlash => {
-            if let Some(mut write_request) = command.write_request {
+            if let Some(write_request) = command.write_request {
                 // For now, we ignore returned errors here, since the write
                 // function will have printed the error message in more detail
                 // already.
                 let _ = spi_flash::write(
                     get_spi_flash(resources.fpga_device),
                     write_request.address,
-                    &mut *write_request.data,
+                    &*write_request.data,
                 );
                 resources
                     .mcu_debug_handler
