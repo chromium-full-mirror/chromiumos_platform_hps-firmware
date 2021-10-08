@@ -29,7 +29,6 @@ exclude = [
     "factory_tester",
     "factory_tester_mcu",
     "stage0",
-    "stage1",
     "stage1_app",
     "stm32g0_i2c_peripheral"
 ]

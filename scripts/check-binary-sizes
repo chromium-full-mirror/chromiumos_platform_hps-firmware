@@ -13,7 +13,6 @@ source "${PROJECT_ROOT}/environment"
 
 set -e
 STAGE0="${PROJECT_ROOT}/mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0.bin"
-STAGE1="${PROJECT_ROOT}/mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1.bin"
 APPLICATION="${PROJECT_ROOT}/mcu_rom/stage1_app/target/thumbv6m-none-eabi/release/stage1_app.bin"
 (
     cd "${PROJECT_ROOT}/mcu_rom/stage0"
@@ -22,14 +21,6 @@ APPLICATION="${PROJECT_ROOT}/mcu_rom/stage1_app/target/thumbv6m-none-eabi/releas
         -O binary \
         target/thumbv6m-none-eabi/release/stage0 \
         "${STAGE0}"
-)
-(
-    cd "${PROJECT_ROOT}/mcu_rom/stage1"
-    cargo "+${RUST_VERSION}" build --release
-    arm-none-eabi-objcopy \
-        -O binary \
-        target/thumbv6m-none-eabi/release/stage1 \
-        "${STAGE1}"
 )
 (
     cd "${PROJECT_ROOT}/mcu_rom/stage1_app"
@@ -41,8 +32,6 @@ APPLICATION="${PROJECT_ROOT}/mcu_rom/stage1_app/target/thumbv6m-none-eabi/releas
 )
 echo
 STAGE0_SIZE=$(stat --printf='%s' "${STAGE0}")
-STAGE1_SIZE=$(stat --printf='%s' "${STAGE1}")
 APPLICATION_SIZE=$(stat --printf='%s' "${APPLICATION}")
 echo "Stage0: ${STAGE0_SIZE} bytes"
-echo "Stage1: ${STAGE1_SIZE} bytes"
 echo "Application: ${APPLICATION_SIZE} bytes"

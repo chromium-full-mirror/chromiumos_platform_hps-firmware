@@ -5,7 +5,6 @@
 To build all of the MCU code:
 ```bash
 (cd $HPS_ROOT/mcu_rom/stage0 && cargo build --release)
-(cd $HPS_ROOT/mcu_rom/stage1 && cargo build --release)
 (cd $HPS_ROOT/mcu_rom/stage1_app && cargo build --release)
 ```
 
@@ -15,7 +14,6 @@ MCU with the above staged firmware in the following way (choose the one you want
 ```bash
 cd $HPS_ROOT
 ./scripts/flash-mcu mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0
-./scripts/flash-mcu mcu_rom/stage1/target/thumbv6m-none-eabi/release/stage1
 ./scripts/flash-mcu \
     mcu_rom/stage1_app/target/thumbv6m-none-eabi/release/stage1_app
 ```

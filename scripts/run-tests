@@ -27,9 +27,6 @@ cargo +"${RUST_NIGHTLY_VERSION}" miri test
 cd "${PROJECT_ROOT}/mcu_rom/stage0"
 cargo +stable build
 
-cd "${PROJECT_ROOT}/mcu_rom/stage1"
-cargo +stable build
-
 cd "${PROJECT_ROOT}/mcu_rom/stage1_app"
 cargo +stable build
 for board in nucleo proto2; do
