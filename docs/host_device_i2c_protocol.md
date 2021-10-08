@@ -52,6 +52,7 @@ All writes and reads are 16 bits.
 | 11       | RO     | Stage0 | Firmware Version LOW   |
 | 12       | RO     | Appl   | FPGA boot count        |
 | 13       | RO     | Appl   | FPGA loop count        |
+| 14       | RO     | Appl   | FPGA ROM version       |
 
 ## Magic Number
 
