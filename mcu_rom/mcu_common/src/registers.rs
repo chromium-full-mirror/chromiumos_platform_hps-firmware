@@ -44,6 +44,9 @@ pub const FPGA_LOOP_COUNT: u8 = 13;
 /// incremented at the whim of developers and is mostly for debugging purposes.
 pub const FPGA_ROM_VERSION: u8 = 14;
 
+/// RO: SPI flash status registers as read at startup.
+pub const SPI_FLASH_STATUS: u8 = 15;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

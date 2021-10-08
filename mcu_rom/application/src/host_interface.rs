@@ -17,6 +17,7 @@ use crate::application_state::ApplicationState;
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
+    pub spi_flash_status: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -32,6 +33,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
+            spi_flash_status: 0xdead,
         }
     }
 
@@ -101,6 +103,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::FPGA_BOOT_COUNT => state.fpga_boot_count.0,
             registers::FPGA_LOOP_COUNT => state.status.loop_count,
             registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
+            registers::SPI_FLASH_STATUS => self.spi_flash_status,
             _ => common_value,
         }
     }

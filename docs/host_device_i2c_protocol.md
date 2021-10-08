@@ -53,6 +53,7 @@ All writes and reads are 16 bits.
 | 12       | RO     | Appl   | FPGA boot count        |
 | 13       | RO     | Appl   | FPGA loop count        |
 | 14       | RO     | Appl   | FPGA ROM version       |
+| 15       | RO     | Appl   | SPI flash status bits  |
 
 ## Magic Number
 

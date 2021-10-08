@@ -453,6 +453,11 @@ fn init_peripherals(
             spi: flash_spi,
             cs: flash_spi_cs,
         };
+
+        if let Ok(status) = f.read_status() {
+            host_interface.spi_flash_status = status;
+        }
+
         if f.enable_quad_spi().is_err() {
             host_interface.report_error(mcu_common::Error::SpiFlash);
             rprintln!("Failed to enable quad SPI");

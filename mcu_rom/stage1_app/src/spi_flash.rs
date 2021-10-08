@@ -256,6 +256,13 @@ enum StatusHigh {
 }
 
 impl SpiFlash {
+    pub(crate) fn read_status(&mut self) -> Result<u16, SpiFlashError> {
+        Ok(u16::from_le_bytes([
+            self.read_reg(Command::ReadStatusRegisterLow)?,
+            self.read_reg(Command::ReadStatusRegisterHigh)?,
+        ]))
+    }
+
     pub(crate) fn enable_quad_spi(&mut self) -> Result<(), SpiFlashError> {
         let high = self.read_reg(Command::ReadStatusRegisterHigh)?;
         if high & StatusHigh::QuadEnable as u8 != 0 {
