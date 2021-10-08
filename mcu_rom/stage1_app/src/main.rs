@@ -428,21 +428,24 @@ fn init_peripherals(
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
 
-    // Ensure FPGA and SPI flash are powered.
-    board.fpga_power_gate.set_low().unwrap();
-
     // Put the FPGA into reset, otherwise we won't be able to reliably access
     // the SPI flash.
     board.fpga_programn.set_low().unwrap();
 
-    // Give the SPI flash chip a chance to start after we powered it on. The
-    // datasheet says minimum time is 2.5ms. To be generous, we give it double
-    // that.
-    delay.delay(5.ms());
-
     let mut spi_flash = None;
 
-    if let (Some(flash_spi), Some(flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
+    if let (Some(flash_spi), Some(mut flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
+        // CS line must be set high before we power on the SPI flash.
+        flash_spi_cs.set_high().unwrap();
+
+        // Ensure FPGA and SPI flash are powered.
+        board.fpga_power_gate.set_low().unwrap();
+
+        // Give the SPI flash chip a chance to start after we powered it on. The
+        // datasheet says minimum time is 2.5ms. To be generous, we give it
+        // double that.
+        delay.delay(5.ms());
+
         // Enable quad SPI. This setting is non-volatile, so in theory we only
         // need do this once, however the cost of doing it every boot is only a
         // single read, which is very cheap.
