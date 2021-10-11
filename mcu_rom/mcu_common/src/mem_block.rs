@@ -10,6 +10,12 @@ use core::ops::DerefMut;
 /// have references. e.g. `&MemBlock` looks nicer than `&&'static mut [u8]`.
 pub struct MemBlock {
     data: &'static mut [u8],
+    /// The size of the original allocation if it was allocated on the heap. It
+    /// is critical when we reconstruct the Vec to free it, that we do so with
+    /// the same capacity as the original Vec. Will be None if `data` didn't
+    /// originate from the heap.
+    #[cfg(feature = "std")]
+    on_heap_capacity: Option<usize>,
 }
 
 impl MemBlock {
@@ -18,7 +24,22 @@ impl MemBlock {
     /// takes ownership of. It is the job of that code to make sure that it can
     /// only be called once, thus preventing aliasing.
     pub fn new(data: &'static mut [u8]) -> Self {
-        Self { data }
+        Self {
+            data,
+            #[cfg(feature = "std")]
+            on_heap_capacity: None,
+        }
+    }
+
+    /// Constructs a new instance on the heap with the requested capacity.
+    #[cfg(feature = "std")]
+    pub fn with_capacity(capacity: usize) -> Self {
+        let v = vec![0; capacity];
+        let on_heap_capacity = Some(v.capacity());
+        Self {
+            data: Vec::leak(v),
+            on_heap_capacity,
+        }
     }
 }
 
@@ -33,5 +54,18 @@ impl Deref for MemBlock {
 impl DerefMut for MemBlock {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut *self.data
+    }
+}
+
+#[cfg(feature = "std")]
+impl Drop for MemBlock {
+    fn drop(&mut self) {
+        if let Some(capacity) = self.on_heap_capacity {
+            // Safety: We're reconstructing a Vec using a pointer that was
+            // obtained originally from a Vec. The alignment and capacity are
+            // the same. The length doesn't matter, as long as it's less than
+            // the capacity.
+            unsafe { Vec::from_raw_parts(self.data.as_mut_ptr(), 0, capacity) };
+        }
     }
 }

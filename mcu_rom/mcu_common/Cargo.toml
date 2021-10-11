@@ -13,3 +13,4 @@ i2c_peripheral = { path = "../i2c_peripheral" }  # provided by ebuild
 
 [features]
 dev = []
+std = []
