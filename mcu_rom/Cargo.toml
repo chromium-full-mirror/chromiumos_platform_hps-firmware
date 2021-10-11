@@ -16,7 +16,6 @@ members = [
     "i2c_protocol",
     "mcp2221",
     "mcu_common",
-    "mcu_common_testing",
     "sign-rom",
     "stm32_bootloader_client",
 ]

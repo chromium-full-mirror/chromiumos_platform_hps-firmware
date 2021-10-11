@@ -1,7 +1,0 @@
-[package]
-name = "mcu_common_testing"
-version = "0.1.0"
-edition = "2018"
-
-[dependencies]
-mcu_common = { path = "../mcu_common" }
