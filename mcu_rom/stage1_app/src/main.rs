@@ -446,9 +446,6 @@ fn init_peripherals(
         // double that.
         delay.delay(5.ms());
 
-        // Enable quad SPI. This setting is non-volatile, so in theory we only
-        // need do this once, however the cost of doing it every boot is only a
-        // single read, which is very cheap.
         let mut f = spi_flash::SpiFlash {
             spi: flash_spi,
             cs: flash_spi_cs,
@@ -458,10 +455,6 @@ fn init_peripherals(
             host_interface.spi_flash_status = status;
         }
 
-        if f.enable_quad_spi().is_err() {
-            host_interface.report_error(mcu_common::Error::SpiFlash);
-            rprintln!("Failed to enable quad SPI");
-        }
         let flash_spi = f.spi;
         let flash_spi_cs = f.cs;
 
@@ -472,6 +465,16 @@ fn init_peripherals(
                         && id.device_id() == board::SPI_FLASH_DEVICE_ID
                     {
                         rprintln!("Found expected flash chip");
+
+                        // Enable quad SPI. This setting is non-volatile, so in
+                        // theory we only need do this once, however the cost of
+                        // doing it every boot is only a single read, which is
+                        // very cheap.
+                        if spi_flash::enable_quad_spi(&mut flash).is_err() {
+                            host_interface.report_error(mcu_common::Error::SpiFlash);
+                            rprintln!("Failed to enable quad SPI");
+                        }
+
                         spi_flash = Some(flash);
                     } else {
                         host_interface.report_error(mcu_common::Error::SpiFlash);

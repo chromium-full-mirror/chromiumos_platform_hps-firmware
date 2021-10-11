@@ -76,6 +76,14 @@ pub(crate) fn write(
     Ok(())
 }
 
+pub(crate) fn enable_quad_spi(
+    _flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+) -> Result<(), SpiFlashError> {
+    // Safety: We already have exclusive use of the flash.
+    let mut flash = unsafe { SpiFlash::steal() };
+    flash.enable_quad_spi()
+}
+
 pub(crate) fn debug_read(
     spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
     address: u32,
