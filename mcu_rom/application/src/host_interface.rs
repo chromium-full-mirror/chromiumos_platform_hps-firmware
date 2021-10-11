@@ -4,6 +4,7 @@
 
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
+use i2c_protocol::ReadRegisterEvent;
 use i2c_protocol::WriteMemoryEvent;
 use mcu_common::commands;
 use mcu_common::memory_banks;
@@ -46,8 +47,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         loop {
             match self.protocol_handler.next_event() {
                 i2c_protocol::Event::ReadRegister(event) => {
-                    let value = self.read_register(event.register, state);
-                    event.respond(value, &mut self.protocol_handler)
+                    self.read_register(event, state);
                 }
                 i2c_protocol::Event::WriteRegister(event) => {
                     if let Some(event) = self.write_register(event.register, event.value, state) {
@@ -83,9 +83,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
         self.common_interface.report_error(error);
     }
 
-    fn read_register(&self, register: u8, state: &ApplicationState) -> u16 {
-        let common_value = self.common_interface.read_register(register).unwrap_or(0);
-        match register {
+    fn read_register(&mut self, event: ReadRegisterEvent, state: &ApplicationState) {
+        let common_value = self
+            .common_interface
+            .read_register(event.register)
+            .unwrap_or(0);
+        let result = match event.register {
             registers::SYSTEM_STATUS => {
                 // TODO: Revisit whether APPLREADY and AVERIFY still make sense
                 // to be set unconditionally once we're integrated with stage1.
@@ -105,7 +108,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
             registers::SPI_FLASH_STATUS => self.spi_flash_status,
             _ => common_value,
-        }
+        };
+        event.respond(result, &mut self.protocol_handler);
     }
 
     fn write_register(
