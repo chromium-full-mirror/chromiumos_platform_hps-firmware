@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_buffer() {
         const CAPACITY: usize = 20;
-        let mut mem_block = MemBlock::new(Box::leak(Box::new([0u8; CAPACITY])));
+        let mut mem_block = MemBlock::with_capacity(CAPACITY);
         {
             let mut buffer = Buffer::new(mem_block);
 

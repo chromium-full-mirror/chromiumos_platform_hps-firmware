@@ -13,6 +13,7 @@ nb = "1.0.0"
 [dev-dependencies]
 embedded-hal = "0.2.4"
 fake_i2c = { path = "../fake_i2c" }
+mcu_common = { path = "../mcu_common", features = [ "std" ] }
 
 [target.'cfg(target_arch = "arm")'.dependencies]
 cortex-m = "0.7.1"

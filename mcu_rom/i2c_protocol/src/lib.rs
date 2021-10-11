@@ -335,7 +335,7 @@ mod tests {
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         assert!(!protocol_handler.has_receive_buffer());
-        protocol_handler.supply_mem_block(MemBlock::new(Box::leak(Box::new([0u8; 64]))));
+        protocol_handler.supply_mem_block(MemBlock::with_capacity(64));
         assert!(protocol_handler.has_receive_buffer());
         match protocol_handler.next_event() {
             Event::WriteMemory(event) => {
