@@ -13,10 +13,14 @@ NORMAL='\033[0m'
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
+source "${PROJECT_ROOT}/environment"
+
 # Crates that can be tested without hardware.
 
 cd "${PROJECT_ROOT}/mcu_rom"
 cargo +stable test
+
+cargo +"${RUST_NIGHTLY_VERSION}" miri test
 
 # Harware-specific crates. Just build these.
 
