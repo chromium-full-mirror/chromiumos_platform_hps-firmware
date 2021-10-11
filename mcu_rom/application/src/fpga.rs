@@ -138,14 +138,12 @@ pub fn payload_as_string(buffer: &MemBlock) -> Option<&str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mcu_common_testing::mem_block::TestingMemBlock;
 
     #[test]
     fn test_read_config() {
         let mut state = ApplicationState::default();
         state.configuration.enabled_features = 0x1234;
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = crate::fpga::commands::READ_CONFIG_REGISTERS;
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::ReadConfigRegisters);
@@ -157,14 +155,12 @@ mod tests {
         assert_eq!(buffer[2], 0x34);
         assert_eq!(buffer[3], 0x12);
         assert_eq!(buffer[4], 0);
-        testing_block.put(buffer);
     }
 
     #[test]
     fn test_write_status() {
         let mut state = ApplicationState::default();
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = crate::fpga::commands::WRITE_STATUS_REGISTERS;
         buffer[1] = 0x12;
         let request = Request::from_received_packet(&buffer);
@@ -175,48 +171,40 @@ mod tests {
         assert_eq!(buffer[0], status::OK);
         assert_eq!(buffer[1], crate::fpga::commands::WRITE_STATUS_REGISTERS);
         assert_eq!(state.status.score, 0x12);
-        testing_block.put(buffer);
     }
 
     #[test]
     fn test_poll_command() {
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::None);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::READY);
         assert_eq!(buffer[1], 0);
-        testing_block.put(buffer);
     }
 
     #[test]
     fn test_invalid_command() {
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = 0xff;
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::None);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::ERROR);
         assert_eq!(buffer[1], 0xff);
-        testing_block.put(buffer);
     }
 
     #[test]
     fn test_fpga_reset() {
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = crate::fpga::commands::RESET_FPGA;
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::ResetFpga);
-        testing_block.put(buffer);
     }
 
     #[test]
     fn test_string_from_buffer() {
-        let mut testing_block = TestingMemBlock::new();
-        let mut buffer = testing_block.take().unwrap();
+        let mut buffer = MemBlock::with_capacity(64);
 
         buffer[1..4].clone_from_slice(b"foo");
         assert_eq!(payload_as_string(&buffer).unwrap(), "foo");

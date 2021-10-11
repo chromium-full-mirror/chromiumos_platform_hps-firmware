@@ -12,4 +12,4 @@ mcu_common = { path = "../mcu_common" }
 [dev-dependencies]
 fake_i2c = { path = "../fake_i2c" }
 hps_interface = { path = "../hps_interface" }
-mcu_common_testing = { path = "../mcu_common_testing" }
+mcu_common = { path = "../mcu_common", features = [ "std" ] }
