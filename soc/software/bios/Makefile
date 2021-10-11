@@ -1,3 +1,7 @@
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # LiteX assumes all software is built with make. This makefile calls our
 # gn-based build, passing the required arguments to tell it where the current
 # LiteX output directory is located.
