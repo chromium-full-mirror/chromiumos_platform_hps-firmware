@@ -160,6 +160,10 @@ rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
+rustup toolchain install "${RUST_NIGHTLY_VERSION}"
+rustup component add miri --toolchain "${RUST_NIGHTLY_VERSION}"
+cargo +"${RUST_NIGHTLY_VERSION}" miri setup
+
 rustup component add llvm-tools-preview
 
 for i in flip-link probe-run; do

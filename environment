@@ -31,6 +31,10 @@ export HOSTPATH="${HPS_ROOT}/build/host"
 
 export RUST_VERSION=stable
 
+# Nightly is only used for running our tests with MIRI. None of our code
+# actually needs nightly.
+export RUST_NIGHTLY_VERSION=nightly-2021-10-10
+
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
