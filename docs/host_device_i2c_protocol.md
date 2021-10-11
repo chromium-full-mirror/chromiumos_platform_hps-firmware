@@ -54,6 +54,8 @@ All writes and reads are 16 bits.
 | 13       | RO     | Appl   | FPGA loop count        |
 | 14       | RO     | Appl   | FPGA ROM version       |
 | 15       | RO     | Appl   | SPI flash status bits  |
+| 16       | RO     | Appl   | Debug idx reg          |
+| 17       | RO     | Appl   | Debug val reg          |
 
 ## Magic Number
 

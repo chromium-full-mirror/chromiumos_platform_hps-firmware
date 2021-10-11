@@ -14,11 +14,14 @@ use mcu_common::CommonHostInterface;
 use mcu_common::MemBlock;
 
 use crate::application_state::ApplicationState;
+use crate::trace::Subsystem;
+use crate::trace::Trace;
 
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
     pub spi_flash_status: u16,
+    trace: Trace,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -35,7 +38,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
             spi_flash_status: 0xdead,
+            trace: Trace::new(),
         }
+    }
+
+    pub fn trace(&mut self, ss: Subsystem, device: u8, value: u16) {
+        self.trace.trace(ss, device, value)
     }
 
     /// Supply (or return) a memory block for the purpose of receiving data.
@@ -107,6 +115,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::FPGA_LOOP_COUNT => state.status.loop_count,
             registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
             registers::SPI_FLASH_STATUS => self.spi_flash_status,
+            registers::DEBUG_IDX_REG => self.trace.get_idx(),
+            registers::DEBUG_VAL_REG => self.trace.get_val(),
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);

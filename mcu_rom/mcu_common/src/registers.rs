@@ -47,6 +47,10 @@ pub const FPGA_ROM_VERSION: u8 = 14;
 /// RO: SPI flash status registers as read at startup.
 pub const SPI_FLASH_STATUS: u8 = 15;
 
+/// RO: Debug tracing registers.
+pub const DEBUG_IDX_REG: u8 = 16;
+pub const DEBUG_VAL_REG: u8 = 17;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.
