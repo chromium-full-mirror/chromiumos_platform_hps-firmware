@@ -153,6 +153,11 @@ fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
 
 fn access_registers(hps: &mut dyn Hps, flags: &AccessRegisters) -> Result<()> {
     for reg in &flags.values {
+        if let Some((register, length)) = parse_long_reg_spec(reg) {
+            let bytes = hps.read_register_bytes(register, length)?;
+            println!("Register {} = {:x?}", register, bytes);
+            continue;
+        }
         let mut parts = reg.split('=');
         match (
             parts.next().map(|part| part.parse::<u8>()),
@@ -169,6 +174,13 @@ fn access_registers(hps: &mut dyn Hps, flags: &AccessRegisters) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn parse_long_reg_spec(spec: &str) -> Option<(u8, usize)> {
+    let mut parts = spec.split('[');
+    let register = parts.next()?.parse::<u8>().ok()?;
+    let length = parts.next()?.split(']').next()?.parse::<usize>().ok()?;
+    Some((register, length))
 }
 
 fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {

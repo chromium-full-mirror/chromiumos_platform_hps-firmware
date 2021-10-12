@@ -17,6 +17,7 @@ use std::time::Instant;
 
 pub trait Hps: Send + 'static {
     fn read_register(&mut self, reg: u8) -> Result<u16>;
+    fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>>;
     fn write_register(&mut self, reg: u8, value: u16) -> Result<()>;
     fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()>;
 
@@ -109,6 +110,13 @@ where
         self.sink
             .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
         Ok(((buffer[0] as u16) << 8) | (buffer[1] as u16))
+    }
+
+    fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>> {
+        let mut buffer = vec![0u8; length];
+        self.sink
+            .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
+        Ok(buffer)
     }
 
     fn write_register(&mut self, reg: u8, value: u16) -> Result<()> {

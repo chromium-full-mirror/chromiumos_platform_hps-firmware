@@ -26,6 +26,10 @@ impl Hps for FakeHps {
         Ok(ret)
     }
 
+    fn read_register_bytes(&mut self, _reg: u8, _length: usize) -> anyhow::Result<Vec<u8>> {
+        Ok(vec![])
+    }
+
     fn write_register(&mut self, reg: u8, value: u16) -> anyhow::Result<()> {
         self.reg = Some((reg, value));
         Ok(())
