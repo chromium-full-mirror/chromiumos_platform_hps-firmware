@@ -46,6 +46,12 @@ impl ReadRegisterEvent {
     pub fn respond_u16<I: I2cPeripheral>(self, value: u16, handler: &mut I2cProtocolHandler<I>) {
         handler.write_u16(value);
     }
+
+    /// Sends the data contained in `buffer`. The MemBlock backing the buffer
+    /// should have been obtained by calling `take_mem_block` on `handler`.
+    pub fn respond<I: I2cPeripheral>(self, buffer: Buffer, handler: &mut I2cProtocolHandler<I>) {
+        handler.write_buffer(buffer);
+    }
 }
 
 /// Handler for an I2C protocol consisting of registers, which can be read and
@@ -63,9 +69,12 @@ enum State {
     /// In this state, we've received a register number. We don't yet know if
     /// we'll be reading or writing the register.
     AccessingRegister(u8),
-    /// Registers are two bytes. We send the first byte as soon as we get the
-    /// register value, so we only need to store the second byte here.
+    /// We special-case there being a single byte to send, since it allows us to
+    /// send 16 bit registers without needing a buffer.
     SendByteQueued(u8),
+    // A buffer of bytes to send and a count of how many bytes we've already
+    // sent.
+    SendBuffer(Buffer, usize),
     WritingRegister(WriteRegisterState),
     /// We enter this state when we have receive a memory bank number and remain
     /// in this state until we've receive the full address.
@@ -125,6 +134,12 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         self.mem_block.is_some()
     }
 
+    /// Returns the MemBlock which should be filled with data as a Buffer and
+    /// returned via `ReadRegisterEvent.respond`.
+    pub fn take_mem_block(&mut self) -> Option<MemBlock> {
+        self.mem_block.take()
+    }
+
     /// Returns the next event that needs to be handled, consuming that event in
     /// the process.
     pub fn next_event(&mut self) -> Event {
@@ -138,17 +153,31 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                 Ok(I2cEvent::StartWrite) => {
                     self.state = State::Initial;
                 }
-                Ok(I2cEvent::Stop) => {
-                    if let State::MemoryBankWrite(state) = core::mem::take(&mut self.state) {
+                Ok(I2cEvent::Stop) => match core::mem::take(&mut self.state) {
+                    State::MemoryBankWrite(state) => {
                         return Event::WriteMemory(WriteMemoryEvent {
                             bank: state.bank,
                             address: state.address,
                             data: state.buffer,
                         });
                     }
-                }
-                Ok(I2cEvent::NeedByte) => match self.state {
-                    State::SendByteQueued(byte) => self.i2c.write_byte(byte),
+                    State::SendBuffer(buffer, _) => {
+                        self.mem_block = Some(buffer.release());
+                    }
+                    _ => (),
+                },
+                Ok(I2cEvent::NeedByte) => match &mut self.state {
+                    State::SendByteQueued(byte) => self.i2c.write_byte(*byte),
+                    State::SendBuffer(buffer, offset) => {
+                        if let Some(value) = buffer.get(*offset) {
+                            self.i2c.write_byte(*value);
+                            *offset += 1;
+                        } else {
+                            // For now, once we reach the end of the buffer, we
+                            // just send zeros.
+                            self.i2c.write_byte(0);
+                        }
+                    }
                     _ => self.i2c.write_byte(0),
                 },
                 Ok(I2cEvent::ByteReceived(byte)) => match &mut self.state {
@@ -227,6 +256,15 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
         let bytes = value.to_be_bytes();
         self.i2c.write_byte(bytes[0]);
         self.state = State::SendByteQueued(bytes[1]);
+    }
+
+    fn write_buffer(&mut self, buffer: Buffer) {
+        if buffer.len() > 0 {
+            self.i2c.write_byte(buffer[0]);
+            self.state = State::SendBuffer(buffer, 1);
+        } else {
+            self.state = State::SendBuffer(buffer, 0);
+        }
     }
 
     pub fn i2c_mut(&mut self) -> &mut I {
