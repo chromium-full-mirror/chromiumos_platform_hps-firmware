@@ -28,8 +28,12 @@ struct Flags {
     sub_command: SubCommand,
 
     #[argh(option)]
-    /// ftdi device serial number or "fake"
-    device: Option<String>,
+    /// ftdi device serial number
+    ftdi_serial: Option<String>,
+
+    #[argh(switch)]
+    /// whether to use a fake HPS device instead of trying to open a real one
+    fake: bool,
 
     #[argh(option)]
     /// A "fake" value for the register USER_PRESENT.
@@ -121,7 +125,7 @@ struct Daemon {}
 
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     let ft_hal;
-    if let Some(serial_number) = &flags.device {
+    if let Some(serial_number) = &flags.ftdi_serial {
         ft_hal = Ft2232hHal::with_serial_number(serial_number);
     } else {
         ft_hal = Ft2232hHal::new();
@@ -177,16 +181,14 @@ fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {
 }
 
 fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
-    if let Some(device) = &flags.device {
-        if device == "fake" {
-            let mut fhps = hps_util::FakeHps::default();
-            // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
-            if let Some(reg) = &flags.fake_reg {
-                let v = reg.parse::<i16>()?;
-                fhps.write_register(registers::USER_PRESENT_STATUS, v as u16)?;
-            };
-            return Ok(Box::new(fhps));
-        }
+    if flags.fake {
+        let mut fhps = hps_util::FakeHps::default();
+        // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
+        if let Some(reg) = &flags.fake_reg {
+            let v = reg.parse::<i16>()?;
+            fhps.write_register(registers::USER_PRESENT_STATUS, v as u16)?;
+        };
+        return Ok(Box::new(fhps));
     }
     let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
     let i2c = ftdi.i2c()?;
