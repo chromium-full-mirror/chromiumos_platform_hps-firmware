@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
@@ -30,6 +31,10 @@ struct Flags {
     #[argh(option)]
     /// ftdi device serial number
     ftdi_serial: Option<String>,
+
+    #[argh(switch)]
+    /// open HPS via an MCP2221 I2C adapter
+    mcp: bool,
 
     #[argh(switch)]
     /// whether to use a fake HPS device instead of trying to open a real one
@@ -189,6 +194,20 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
             fhps.write_register(registers::USER_PRESENT_STATUS, v as u16)?;
         };
         return Ok(Box::new(fhps));
+    }
+    if flags.mcp {
+        let mut config = mcp2221::I2cConfig::default();
+        config.speed_hz = 400_000;
+        let mut dev = mcp2221::I2c::open_first(&config)
+            .map_err(|error| anyhow!("Failed to open HPS via I2C: {}", error))?;
+
+        // Enable the level shifter that connects the MCP2221 to the HPS.
+        let mut gpio_config = mcp2221::GpioConfig::default();
+        gpio_config.set_direction(0, mcp2221::Direction::Output);
+        gpio_config.set_value(0, true);
+        dev.configure_gpio(&gpio_config)?;
+
+        return Ok(Box::new(HpsAdapter::new(dev)?));
     }
     let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
     let i2c = ftdi.i2c()?;
