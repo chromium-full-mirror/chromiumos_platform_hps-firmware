@@ -109,7 +109,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::SPI_FLASH_STATUS => self.spi_flash_status,
             _ => common_value,
         };
-        event.respond(result, &mut self.protocol_handler);
+        event.respond_u16(result, &mut self.protocol_handler);
     }
 
     fn write_register(

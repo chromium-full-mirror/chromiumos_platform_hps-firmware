@@ -139,7 +139,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         }
                         _ => 0,
                     });
-                event.respond(result, &mut self.i2c);
+                event.respond_u16(result, &mut self.i2c);
             }
             i2c_protocol::Event::WriteRegister(event) => match event.register {
                 registers::COMMAND => match event.value {

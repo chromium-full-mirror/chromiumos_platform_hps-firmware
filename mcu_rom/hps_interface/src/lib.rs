@@ -152,7 +152,7 @@ mod tests {
         match i2c.next_event() {
             Event::ReadRegister(event) => {
                 assert_eq!(event.register, 42);
-                event.respond(99, &mut i2c);
+                event.respond_u16(99, &mut i2c);
             }
             event => panic!("Unexpected event {:?}", event),
         }

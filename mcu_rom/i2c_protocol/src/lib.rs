@@ -43,7 +43,7 @@ pub struct WriteMemoryEvent {
 }
 
 impl ReadRegisterEvent {
-    pub fn respond<I: I2cPeripheral>(self, value: u16, handler: &mut I2cProtocolHandler<I>) {
+    pub fn respond_u16<I: I2cPeripheral>(self, value: u16, handler: &mut I2cProtocolHandler<I>) {
         handler.write_u16(value);
     }
 }
@@ -281,7 +281,7 @@ mod tests {
         match protocol_handler.next_event() {
             Event::ReadRegister(event) => {
                 assert_eq!(event.register, 0x7f);
-                event.respond(0x1234, &mut protocol_handler);
+                event.respond_u16(0x1234, &mut protocol_handler);
             }
             x => panic!("Unexpected event {:?}", x),
         }
