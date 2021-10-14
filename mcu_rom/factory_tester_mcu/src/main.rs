@@ -168,6 +168,10 @@ fn init_peripherals(
     p: hal::stm32::Peripherals,
     cp: rtic::export::Peripherals,
 ) -> init::LateResources {
+    #[cfg(feature = "dev")]
+    {
+        rtt_target::rtt_init_print!();
+    }
     // SAFETY: Must be called during initialization while interrupts are
     // disabled.
     unsafe { debug_logger::initialize_logging() };

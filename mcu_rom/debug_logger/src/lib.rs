@@ -7,12 +7,14 @@
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
 
 /// Initializes logging, provided the dev feature is enabled.
-/// SAFETY: Caller must ensure that this function is called during
-/// initialization when interrupts are disabled.
+///
+/// # Safety
+///
+/// Caller must ensure that this function is called during initialization when
+/// interrupts are disabled.
 pub unsafe fn initialize_logging() {
     #[cfg(feature = "dev")]
     {
-        rtt_target::rtt_init_print!();
         // SAFETY: Safe because interrupts are disabled.
         log::set_logger_racy(&rtt_logger::LOGGER).unwrap();
         log::set_max_level(log::LevelFilter::Info);
