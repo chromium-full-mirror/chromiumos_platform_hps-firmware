@@ -52,6 +52,7 @@ const APP: () = {
         timer: Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
+        tick_count: u32,
     }
 
     #[init]
@@ -113,11 +114,12 @@ const APP: () = {
 
     #[task(binds = TIM16,
         resources = [mcu_debug_handler, fpga_device, timer, camera_i2c, stopwatch,
-            mcu_cmd_response_channel, debug_led])]
+            mcu_cmd_response_channel, debug_led, tick_count])]
     fn timer_tick(mut ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         let led = &mut ctx.resources.debug_led;
-        if led.is_high().unwrap_or_default() {
+        *ctx.resources.tick_count = (*ctx.resources.tick_count).wrapping_add(1);
+        if *ctx.resources.tick_count & 16 == 0 {
             led.set_low().unwrap();
         } else {
             led.set_high().unwrap();
@@ -535,5 +537,6 @@ fn init_peripherals(
         timer,
         camera_i2c,
         stopwatch,
+        tick_count: 0,
     }
 }
