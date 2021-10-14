@@ -4,7 +4,7 @@
 //
 
 use hal::prelude::{OutputPin, StatefulOutputPin};
-use rtt_target::rprintln;
+use log::info;
 use spi_memory::series25::Flash;
 
 use crate::board;
@@ -32,7 +32,7 @@ impl FpgaDevice {
         device
     }
     pub(crate) fn reset_fpga(&mut self) {
-        rprintln!("Resetting FPGA");
+        info!("Resetting FPGA");
         // Hold programn low for long enough to reset the FPGA. Experimentally 2
         // iterations is sufficient, so we do 4 just to be sure.
         for _ in 0..4 {

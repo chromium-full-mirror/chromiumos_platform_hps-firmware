@@ -5,12 +5,12 @@
 use core::convert::TryFrom;
 use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
+use log::error;
 use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
-use rtt_target::rprintln;
 use rtt_target::DownChannel;
 
 pub struct DebugCommandHandler {
@@ -85,7 +85,7 @@ impl DebugCommandHandler {
         let kind = match McuDebugCommand::try_from(cmd_buf[0]) {
             Ok(cmd) => cmd,
             Err(_) => {
-                rprintln!("Unknown MCU command {}", cmd_buf[0]);
+                error!("Unknown MCU command {}", cmd_buf[0]);
                 return None;
             }
         };
@@ -108,7 +108,7 @@ impl DebugCommandHandler {
                     data: buffer,
                 });
             } else {
-                rprintln!("Attempt to write SPI flash when buffer is unavailable");
+                error!("Attempt to write SPI flash when buffer is unavailable");
                 return None;
             }
             self.pending = Some(command);

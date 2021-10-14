@@ -7,9 +7,9 @@ use crc::Crc;
 use hal::prelude::OutputPin;
 use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
+use log::error;
+use log::info;
 use mcu_common::Error;
-use rtt_target::rprint;
-use rtt_target::rprintln;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
@@ -28,18 +28,18 @@ pub(crate) fn write(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available, cannot write");
+            error!("SPI flash not available, cannot write");
             return Err(Error::HostI2cBadRequest);
         }
     };
     if data.len() > PAGE_SIZE as usize {
-        rprintln!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
+        error!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
         return Err(Error::HostI2cBadRequest);
     }
     // We erase the entire SPI flash prior to writing the first bit of data.
     // Host must send data in blocks that evenly divides this size.
     if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
-        rprintln!("SPI write crosses block boundary");
+        error!("SPI write crosses block boundary");
         return Err(Error::HostI2cBadRequest);
     }
     if address % BLOCK_SIZE == 0 {
@@ -47,7 +47,7 @@ pub(crate) fn write(
         // ourselves. https://github.com/jonas-schievink/spi-memory/issues/37
         let mut spi = unsafe { SpiFlash::steal() };
         if spi.erase_block(address).is_err() {
-            rprintln!("Failed to erase to block");
+            error!("Failed to erase to block");
             return Err(Error::SpiFlash);
         }
     }
@@ -55,17 +55,17 @@ pub(crate) fn write(
     let buffer = &mut buffer[..data.len()];
     buffer.copy_from_slice(data);
     if spi_flash.write_bytes(address, buffer).is_err() {
-        rprintln!("Failed to write to SPI flash");
+        error!("Failed to write to SPI flash");
         return Err(Error::SpiFlash);
     }
 
     if spi_flash.read(address, buffer).is_err() {
-        rprintln!("Failed to read back SPI flash");
+        error!("Failed to read back SPI flash");
         return Err(Error::SpiFlash);
     }
 
     if buffer != data {
-        rprintln!(
+        error!(
             "Read back of data showed mismatch after writing 0x{:x} bytes at address 0x{:x}",
             data.len(),
             address
@@ -91,35 +91,35 @@ pub(crate) fn debug_read(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return;
         }
     };
     let mut buffer = [0u8; 16];
     if spi_flash.read(address, &mut buffer).is_err() {
-        rprintln!("Failed to read SPI flash");
+        error!("Failed to read SPI flash");
         return;
     }
-    rprintln!("SPI flash bytes");
+    info!("SPI flash bytes");
     for v in &buffer {
-        rprint!("{}, ", v);
+        info!("{}, ", v);
     }
-    rprintln!("===");
 }
 
 pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>) {
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return;
         }
     };
-    rprintln!("Erasing");
+    info!("Erasing");
     if spi_flash.erase_all().is_err() {
-        rprintln!("Failed to erase to SPI flash");
+        error!("Failed to erase to SPI flash");
+    } else {
+        info!("Erase complete");
     }
-    rprintln!("Erase complete");
 }
 
 pub(crate) fn hash(
@@ -130,7 +130,7 @@ pub(crate) fn hash(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return;
         }
     };
@@ -142,9 +142,9 @@ pub(crate) fn hash(
             hasher.update(&buf);
         }
         let hash = hasher.finalize();
-        rprintln!("Hash of first {} pages was: {:?}", num_pages, hash);
+        info!("Hash of first {} pages was: {:?}", num_pages, hash);
     });
-    rprintln!("Hashing took {}us", elapsed_us.0);
+    info!("Hashing took {}us", elapsed_us.0);
 }
 
 const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
@@ -156,7 +156,7 @@ pub(crate) fn crc_sector(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return [0, 0, 0, 0];
         }
     };
@@ -180,11 +180,11 @@ pub(crate) fn test_read_speed(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return;
         }
     };
-    rprintln!("Reading...");
+    info!("Reading...");
     const READ_SIZE: u32 = 1024 * 1024;
     let mut buf = [0u8; PAGE_SIZE as usize];
     let elapsed_us = stopwatch.trace(|| {
@@ -192,7 +192,7 @@ pub(crate) fn test_read_speed(
             let _ = spi_flash.read(page * PAGE_SIZE, &mut buf);
         }
     });
-    rprintln!("Reading 1MB took {}us", elapsed_us.0);
+    info!("Reading 1MB took {}us", elapsed_us.0);
 }
 
 pub(crate) fn test_write_speed(
@@ -202,11 +202,11 @@ pub(crate) fn test_write_speed(
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
-            rprintln!("SPI flash not available");
+            error!("SPI flash not available");
             return;
         }
     };
-    rprintln!("Writing...");
+    info!("Writing...");
     const READ_SIZE: u32 = 1024 * 1024;
     let mut buf = [42u8; PAGE_SIZE as usize];
     let mut erase_time = 0;
@@ -229,7 +229,7 @@ pub(crate) fn test_write_speed(
             })
             .0;
     }
-    rprintln!(
+    info!(
         "Erasing 1MB took {}ms. Writing 1MB took {}ms",
         erase_time / 1000,
         write_time / 1000

@@ -10,6 +10,7 @@ cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 crc = "2.0"
+debug_logger = { path = "../debug_logger" }
 embedded-hal = "0.2.4"
 git-version = "0.3.4"
 # TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
@@ -19,6 +20,7 @@ hm01b0 = { path = "../hm01b0" }
 hmac-sha256 = "0.1.6"
 i2c_peripheral = { path = "../i2c_peripheral" }
 i2c_protocol = { path = "../i2c_protocol" }
+log = {version = "0.4.14", features = [ "release_max_level_off" ] }
 mcu_common = { path = "../mcu_common" }
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"] }
 rtt-target = { version = "0.3.1", features = ["cortex-m"] }
@@ -38,6 +40,8 @@ no-i2c-clock-stretching = []
 
 # Build application such that it can be flashed as standalone.
 standalone = []
+
+dev = [ "debug_logger/dev" ]
 
 # Optimize all dependencies
 [profile.dev.package."*"]

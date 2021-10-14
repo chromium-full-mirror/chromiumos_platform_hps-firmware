@@ -24,11 +24,11 @@ use hal::delay::Delay;
 use hal::prelude::*;
 use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
+use log::info;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use panic_rtt_target as _;
 use rtic::app;
-use rtt_target::rprintln;
 use rtt_target::rtt_init;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
@@ -154,7 +154,7 @@ const APP: () = {
                     .resources
                     .state
                     .lock(|state| fpga::report_boot(state, &buffer));
-                rprintln!("FPGA reported boot #{}", count);
+                info!("FPGA reported boot #{}", count);
             }
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
@@ -162,7 +162,7 @@ const APP: () = {
                     use core::fmt::Write;
                     write!(channel, "{}", message).unwrap();
                 } else {
-                    rprintln!("FPGA sent invalid message");
+                    info!("FPGA sent invalid message");
                 }
             }
             fpga::Action::DebugImage => {
@@ -271,11 +271,11 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         }
         McuDebugCommand::FpgaPowerOff => {
             resources.fpga_device.power_gate.set_high().unwrap();
-            rprintln!("FPGA and SPI flash powered off");
+            info!("FPGA and SPI flash powered off");
         }
         McuDebugCommand::FpgaPowerOn => {
             resources.fpga_device.power_gate.set_low().unwrap();
-            rprintln!("FPGA and SPI flash powered on");
+            info!("FPGA and SPI flash powered on");
         }
         _ => {
             handled = false;
@@ -286,10 +286,10 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             resources.fpga_device.reset_fpga();
         }
         McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
-        McuDebugCommand::Ping => rprintln!("Pong!"),
+        McuDebugCommand::Ping => info!("Pong!"),
         _ => {
             if !handled {
-                rprintln!("Unsupported MCU debug command");
+                info!("Unsupported MCU debug command");
             }
         }
     }
@@ -357,6 +357,9 @@ fn init_peripherals(
         }
     );
     rtt_target::set_print_channel(channels.up.0);
+    // safety: We're calling this during initialization when interrupts are
+    // disabled as required.
+    unsafe { debug_logger::initialize_logging() };
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
     p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
@@ -464,7 +467,7 @@ fn init_peripherals(
                     if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
                         && id.device_id() == board::SPI_FLASH_DEVICE_ID
                     {
-                        rprintln!("Found expected flash chip");
+                        info!("Found expected flash chip");
 
                         // Enable quad SPI. This setting is non-volatile, so in
                         // theory we only need do this once, however the cost of
@@ -472,13 +475,13 @@ fn init_peripherals(
                         // very cheap.
                         if spi_flash::enable_quad_spi(&mut flash).is_err() {
                             host_interface.report_error(mcu_common::Error::SpiFlash);
-                            rprintln!("Failed to enable quad SPI");
+                            info!("Failed to enable quad SPI");
                         }
 
                         spi_flash = Some(flash);
                     } else {
                         host_interface.report_error(mcu_common::Error::SpiFlash);
-                        rprintln!(
+                        info!(
                             "Unexpected flash ID {}, [{}, {}]",
                             id.mfr_code(),
                             id.device_id()[0],
@@ -488,12 +491,12 @@ fn init_peripherals(
                 }
                 Err(_) => {
                     host_interface.report_error(mcu_common::Error::SpiFlash);
-                    rprintln!("Failed to read flash ID");
+                    info!("Failed to read flash ID");
                 }
             },
             Err(e) => {
                 host_interface.report_error(mcu_common::Error::SpiFlash);
-                rprintln!("Failed to initialize SPI flash: {:?}", e);
+                info!("Failed to initialize SPI flash: {:?}", e);
             }
         };
     }
@@ -501,16 +504,16 @@ fn init_peripherals(
     match hm01b0::Camera::new(&mut camera_i2c).get_camera_id() {
         Err(_) => {
             host_interface.report_error(mcu_common::Error::Camera);
-            rprintln!("Failed to read camera ID");
+            info!("Failed to read camera ID");
         }
         Ok(CAMERA_ID) => {}
         Ok(id) => {
             host_interface.report_error(mcu_common::Error::Camera);
-            rprintln!("Camera reported unexpected ID: {}", id);
+            info!("Camera reported unexpected ID: {}", id);
         }
     }
 
-    rprintln!(
+    info!(
         "MCU application started. CPU is running at {}MHz",
         rcc.clocks.sys_clk.0 / 1000000
     );

@@ -4,7 +4,8 @@
 
 use crate::boards::board;
 use hal::prelude::*;
-use rtt_target::rprintln;
+use log::error;
+use log::info;
 
 /// Camera HM01B0 I2C ID.
 const CAMERA_I2C_ID: u8 = 0x24;
@@ -21,15 +22,15 @@ pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
         Ok(_) => {
             camera_id |= (data[0] as u16) << 8;
         }
-        Err(_) => rprintln!("Failed"),
+        Err(_) => error!("Failed"),
     }
     match camera_i2c.write_read(CAMERA_I2C_ID, &MODEL_ID_L, &mut data) {
         Ok(_) => {
             camera_id |= data[0] as u16;
         }
-        Err(_) => rprintln!("Failed"),
+        Err(_) => error!("Failed"),
     }
-    rprintln!("0x{:04x}", camera_id);
+    info!("0x{:04x}", camera_id);
 }
 
 /// Provides a functionality to read one or more register addresses
@@ -41,7 +42,7 @@ pub fn read_camera_reg(camera_i2c: &mut board::CameraI2c, addrs: &mut [u8]) {
         let mut data: [u8; 1] = [0];
         match camera_i2c.write_read(CAMERA_I2C_ID, addr_pair, &mut data) {
             Ok(_) => addr_pair[0] = data[0],
-            Err(_) => rprintln!("Failed to read 0x{:02x}{:02x}", addr_pair[0], addr_pair[1]),
+            Err(_) => error!("Failed to read 0x{:02x}{:02x}", addr_pair[0], addr_pair[1]),
         }
     }
 }
@@ -53,11 +54,9 @@ pub fn write_camera_reg(camera_i2c: &mut board::CameraI2c, addrs_values: &mut [u
     for addr_pair_value in addrs_values.chunks_exact(3) {
         match camera_i2c.write(CAMERA_I2C_ID, addr_pair_value) {
             Ok(_) => {}
-            Err(_) => rprintln!(
+            Err(_) => error!(
                 "Failed to write 0x{:02x}{:02x}[{:02x}]",
-                addr_pair_value[0],
-                addr_pair_value[1],
-                addr_pair_value[2]
+                addr_pair_value[0], addr_pair_value[1], addr_pair_value[2]
             ),
         }
     }
