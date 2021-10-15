@@ -37,7 +37,7 @@ const MCP_READ_ENDPOINT: u8 = 0x83; // device to host
 
 const RESET_SEQUENCE: [u8; 4] = [COMMAND_RESET, 0xAB, 0xCD, 0xEF];
 
-const TIMEOUT: Duration = Duration::from_millis(1000);
+const DEFAULT_TIMEOUT: Duration = Duration::from_millis(1000);
 
 const I2C_BUSY: u8 = 1;
 
@@ -69,6 +69,7 @@ pub enum Error {
 pub struct I2c {
     handle: rusb::DeviceHandle<rusb::GlobalContext>,
     recv: [u8; MCP_TRANSFER_SIZE],
+    config: I2cConfig,
 }
 
 /// A supported device that hasn't yet been opened.
@@ -76,11 +77,12 @@ pub struct McpDevice {
     device: rusb::Device<rusb::GlobalContext>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[non_exhaustive]
 pub struct I2cConfig {
     pub speed_hz: u32,
     pub reset_on_open: bool,
+    pub timeout: Duration,
 }
 
 pub struct GpioConfig {
@@ -113,6 +115,7 @@ impl Default for I2cConfig {
         Self {
             speed_hz: 400_000,
             reset_on_open: true,
+            timeout: DEFAULT_TIMEOUT,
         }
     }
 }
@@ -140,6 +143,7 @@ impl McpDevice {
         let mut i2c = I2c {
             handle,
             recv: [0u8; MCP_TRANSFER_SIZE],
+            config: *config,
         };
         i2c.set_speed(config.speed_hz)?;
         Ok(i2c)
@@ -154,7 +158,7 @@ impl McpDevice {
             let handle = self.device.open()?;
             let mut buffer = [0u8; MCP_TRANSFER_SIZE];
             buffer[..RESET_SEQUENCE.len()].copy_from_slice(&RESET_SEQUENCE);
-            handle.write_interrupt(MCP_WRITE_ENDPOINT, &buffer, TIMEOUT)?;
+            handle.write_interrupt(MCP_WRITE_ENDPOINT, &buffer, config.timeout)?;
             std::thread::sleep(Duration::from_millis(1000));
 
             if let Some(device) = first_device_on_bus(bus_number)? {
@@ -262,7 +266,7 @@ impl I2c {
                     // Success
                     break;
                 }
-                if start_time.elapsed() >= TIMEOUT {
+                if start_time.elapsed() >= self.config.timeout {
                     let _ = self.cancel_transfer();
                     return Err(Error::Nack);
                 }
@@ -330,13 +334,12 @@ impl I2c {
         data: &[u8],
     ) -> Result<()> {
         let start_time = Instant::now();
-        const TIMEOUT: Duration = Duration::from_millis(50);
         loop {
             self.cmd(command, arg1, arg2, arg3, data)?;
             if self.recv[1] != I2C_BUSY {
                 return Ok(());
             }
-            if start_time.elapsed() > TIMEOUT {
+            if start_time.elapsed() > self.config.timeout {
                 let _ = self.cancel_transfer();
                 return Err(Error::ReadTimeout);
             }
@@ -356,11 +359,11 @@ impl I2c {
 
     fn transfer(&mut self, buffer: &[u8]) -> Result<()> {
         self.handle
-            .write_interrupt(MCP_WRITE_ENDPOINT, buffer, TIMEOUT)?;
+            .write_interrupt(MCP_WRITE_ENDPOINT, buffer, self.config.timeout)?;
 
-        let size = self
-            .handle
-            .read_interrupt(MCP_READ_ENDPOINT, &mut self.recv, TIMEOUT)?;
+        let size =
+            self.handle
+                .read_interrupt(MCP_READ_ENDPOINT, &mut self.recv, self.config.timeout)?;
         if size != MCP_TRANSFER_SIZE {
             return Err(Error::ShortRead);
         }
