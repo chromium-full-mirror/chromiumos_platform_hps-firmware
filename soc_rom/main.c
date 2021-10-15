@@ -593,7 +593,7 @@ int main(void) {
       calibrate(CALIBRATION_FRAMES);
       mcu_printf("Automatic re-calibration completed\n");
     }
-    if (do_transfer_image_to_host) {
+    if (do_transfer_image_to_host || configuration.enabled_features & 0x80) {
       transfer_image();
     }
     if (do_show_auto_exposure) {
