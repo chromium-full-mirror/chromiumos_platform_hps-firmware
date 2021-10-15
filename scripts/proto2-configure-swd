@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Initializes port B on the FT4232H. If we don't do this, then software resets
+# performed by the MCU don't work correctly. See b/197175065 for details. Note,
+# this is not needed if you're already using ./scripts/proto2-run or a similar
+# script, since they already initialize port B in order to program the device.
+
+from pyftdi.gpio import GpioAsyncController
+
+gpio = GpioAsyncController()
+# Note, it doesn't seem to matter which pins you set as inputs and output, nor
+# whether you set outputs high or low, it still results in software resets
+# working. Somewhat arbitrarily though, we enable the level shifter and set the
+# SWD output pins low.
+gpio.configure('ftdi://ftdi:ft4232/2', direction=0b100011, initial=0b100000)
