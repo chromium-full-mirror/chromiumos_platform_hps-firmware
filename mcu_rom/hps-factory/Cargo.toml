@@ -1,0 +1,23 @@
+[package]
+name = "hps-factory"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+anyhow = "1.0.42"
+# https://github.com/clap-rs/clap/issues/1684
+clap = "3.0.0-alpha.1"
+embedded-hal = "0.2.6"
+factory_tester_common = { path = "../factory_tester_common" }
+linux-embedded-hal = "0.3.1"
+# mcp2221 support is optional, since we only currently support statically
+# linking if this is disabled.
+mcp2221 = { path = "../mcp2221", optional = true }
+mcu_common = { path = "../mcu_common" }
+stm32_bootloader_client = { path = "../stm32_bootloader_client", features = ["std"] }
+
+[features]
+default = [
+    "mcp2221"
+]

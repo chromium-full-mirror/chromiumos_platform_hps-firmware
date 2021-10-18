@@ -58,6 +58,12 @@ This crate defines an interface for talking to a HPS over I2C from the host
 side. This is used by tests together with `fake_i2c` to test code in crates like
 the `application` crate.
 
+### Crate: hps-factory
+
+A Linux binary that is intended to be run while the Chromebook with HPS module
+is still in the factory. Responsible for post-install testing and initialization
+of the HPS.
+
 ### Crate: hps-mon
 
 A binary that talks to the HPS over SWD. Displays log messages received from the

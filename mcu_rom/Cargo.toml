@@ -10,6 +10,7 @@ members = [
     "gateware_compress",
     "hm01b0",
     "hps_interface",
+    "hps-factory",
     "hps-util",
     "hps-mon",
     "i2c_peripheral",
