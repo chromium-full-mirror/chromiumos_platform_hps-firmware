@@ -9,6 +9,9 @@ use core::convert::TryFrom;
 use core::ops::Range;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
+use factory_tester_common::EXPECTED_CHIP_ID;
+use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
+use factory_tester_common::MCU_LOAD_ADDRESS;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
 use hal::delay::DelayCM;
 use hal::device::I2C3;
@@ -45,17 +48,6 @@ use stm32_bootloader_client::Stm32;
 type Result<T, E = Error> = core::result::Result<T, E>;
 
 const MCU_CODE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
-/// The address at which we load our MCU code. This needs to be after the memory
-/// used by the factory bootloader. This address must be the same as what get
-/// written to memory.x by build.rs for the factory_test_mcu crate.
-const MCU_LOAD_ADDRESS: u32 = 0x20002700;
-
-/// The ID of the MCU used in the HPS. STM32G07xxx/08xxx - see AN2606 rev 49,
-/// table 152.
-const EXPECTED_CHIP_ID: u16 = 0x460;
-
-/// See AN2606 for the I2C address for each chip. 0x51 is STM32G07xxx/08xxx.
-const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
 
 // I2C timing configuration bits. This value was computed by STM32CubeMX with
 // mode set to "Fast Mode" and frequency set to 400KHz and PCLK at 20MHz. Using

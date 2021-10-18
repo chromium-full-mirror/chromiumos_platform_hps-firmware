@@ -15,6 +15,18 @@ use num_enum::TryFromPrimitive;
 /// the test controller.
 pub const MCU_TESTER_I2C_ADDRESS: u8 = 0x20;
 
+/// The address at which we load our MCU code. This needs to be after the memory
+/// used by the factory bootloader. This address must be the same as what get
+/// written to memory.x by build.rs for the factory_test_mcu crate.
+pub const MCU_LOAD_ADDRESS: u32 = 0x20002700;
+
+/// The ID of the MCU used in the HPS. STM32G07xxx/08xxx - see AN2606 rev 49,
+/// table 152.
+pub const EXPECTED_CHIP_ID: u16 = 0x460;
+
+/// See AN2606 for the I2C address for each chip. 0x51 is STM32G07xxx/08xxx.
+pub const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
+
 /// Status code returned by the MCU to indicate that the test passed.
 pub const TEST_STATUS_OK: u8 = 0;
 
