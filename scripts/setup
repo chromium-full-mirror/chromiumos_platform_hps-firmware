@@ -158,6 +158,7 @@ fi
 
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
+rustup "+${RUST_VERSION}" target add x86_64-unknown-linux-musl
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
 rustup toolchain install "${RUST_NIGHTLY_VERSION}"
