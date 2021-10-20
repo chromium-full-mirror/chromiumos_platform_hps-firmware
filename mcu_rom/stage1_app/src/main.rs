@@ -130,7 +130,8 @@ const APP: () = {
     }
 
     #[task(resources = [spi, state, debug_led, fpga_device, fpga_up_channel,
-        image_channel, fpga_debug_handler, mcu_debug_handler, camera_i2c])]
+        image_channel, fpga_debug_handler, mcu_debug_handler, camera_i2c, host_interface],
+        spawn = [handle_spi_packet])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
@@ -169,7 +170,17 @@ const APP: () = {
             }
             #[cfg(feature = "image-transfer")]
             fpga::Action::DebugImage => {
-                ctx.resources.image_channel.write(&buffer[1..]);
+                if !transfer_image(
+                    &buffer,
+                    ctx.resources.image_channel,
+                    ctx.resources.state,
+                    ctx.resources.host_interface,
+                ) {
+                    // Keep repeating this task until the I2C buffer becomes
+                    // available and the data can be sent.
+                    let _ = ctx.spawn.handle_spi_packet(buffer);
+                    return;
+                }
             }
             fpga::Action::GetDebugCommand => {
                 ctx.resources
@@ -226,6 +237,26 @@ const APP: () = {
         fn TIM17();
     }
 };
+
+#[cfg(feature = "image-transfer")]
+fn transfer_image(
+    buffer: &MemBlock,
+    image_channel: &mut UpChannel,
+    mut state: resources::state,
+    mut host_interface: resources::host_interface,
+) -> bool {
+    use rtic::Mutex;
+    let i2c_image_xfer_enabled = state.lock(|s| s.i2c_image_transfer_enabled());
+    let mut success = true;
+    if i2c_image_xfer_enabled {
+        host_interface.lock(|host_interface| {
+            success = host_interface.queue_image_data_for_i2c(&buffer[1..]);
+        });
+    } else {
+        image_channel.write(&buffer[1..]);
+    }
+    success
+}
 
 fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
     let mut handled = true;

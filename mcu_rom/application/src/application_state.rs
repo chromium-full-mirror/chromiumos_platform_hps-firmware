@@ -36,3 +36,10 @@ pub(crate) struct Status {
     pub(crate) enabled_features: u16,
     pub(crate) loop_count: u16,
 }
+
+#[cfg(feature = "image-transfer")]
+impl ApplicationState {
+    pub fn i2c_image_transfer_enabled(&self) -> bool {
+        self.configuration.enabled_features & 0x80 != 0
+    }
+}

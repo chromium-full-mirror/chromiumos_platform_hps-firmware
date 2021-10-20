@@ -56,3 +56,11 @@ pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.
     pub const SLOW_READ: u8 = 100;
 }
+
+/// RO: Whether there's a block of image data available to read.
+#[cfg(feature = "image-transfer")]
+pub const IMAGE_DATA_AVAILABLE: u8 = 101;
+
+/// RO: Image data. Always 63 bytes.
+#[cfg(feature = "image-transfer")]
+pub const IMAGE_DATA: u8 = 102;

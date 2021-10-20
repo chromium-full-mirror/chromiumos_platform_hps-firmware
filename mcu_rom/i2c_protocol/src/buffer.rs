@@ -20,6 +20,14 @@ impl Buffer {
         Self { mem_block, size: 0 }
     }
 
+    pub fn copied_from(mut mem_block: MemBlock, data: &[u8]) -> Self {
+        mem_block[..data.len()].copy_from_slice(data);
+        Self {
+            mem_block,
+            size: data.len(),
+        }
+    }
+
     /// Appends `value` to the end of the buffer or returns an error if the
     /// buffer is already full.
     pub fn push(&mut self, value: u8) -> Result<(), ()> {

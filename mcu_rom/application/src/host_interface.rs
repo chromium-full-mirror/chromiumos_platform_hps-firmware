@@ -22,6 +22,8 @@ pub struct HostInterface<I: I2cPeripheral> {
     common_interface: CommonHostInterface,
     pub spi_flash_status: u16,
     trace: Trace,
+    #[cfg(feature = "image-transfer")]
+    outgoing_image_data: Option<i2c_protocol::Buffer>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -39,6 +41,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
             common_interface: CommonHostInterface::new(),
             spi_flash_status: 0xdead,
             trace: Trace::new(),
+            #[cfg(feature = "image-transfer")]
+            outgoing_image_data: None,
         }
     }
 
@@ -117,6 +121,22 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::SPI_FLASH_STATUS => self.spi_flash_status,
             registers::DEBUG_IDX_REG => self.trace.get_idx(),
             registers::DEBUG_VAL_REG => self.trace.get_val(),
+            #[cfg(feature = "image-transfer")]
+            registers::IMAGE_DATA_AVAILABLE => {
+                if self.outgoing_image_data.is_some() {
+                    1
+                } else {
+                    0
+                }
+            }
+            #[cfg(feature = "image-transfer")]
+            registers::IMAGE_DATA => {
+                if let Some(data) = self.outgoing_image_data.take() {
+                    event.respond(data, &mut self.protocol_handler);
+                    return;
+                }
+                0
+            }
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);
@@ -144,6 +164,16 @@ impl<I: I2cPeripheral> HostInterface<I> {
             _ => (),
         }
         None
+    }
+
+    #[cfg(feature = "image-transfer")]
+    pub fn queue_image_data_for_i2c(&mut self, data: &[u8]) -> bool {
+        if let Some(i2c_buffer) = self.protocol_handler.take_mem_block() {
+            self.outgoing_image_data = Some(i2c_protocol::Buffer::copied_from(i2c_buffer, data));
+            true
+        } else {
+            false
+        }
     }
 }
 
