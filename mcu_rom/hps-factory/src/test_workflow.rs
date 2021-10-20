@@ -72,6 +72,10 @@ where
         .go(MCU_LOAD_ADDRESS)
         .map_err(|error| anyhow!("Failed to start MCU program: {}", &error))?;
 
+    // Without this sleep, we sometimes get stuck in the i2c.read call below.
+    // It's not clear why.
+    std::thread::sleep(Duration::from_millis(2000));
+
     // Read the result from the MCU test program (with retry until timeout).
     info!("Waiting for test result");
     let start = std::time::Instant::now();
