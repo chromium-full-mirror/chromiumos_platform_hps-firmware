@@ -167,6 +167,7 @@ const APP: () = {
                     info!("FPGA sent invalid message");
                 }
             }
+            #[cfg(feature = "image-transfer")]
             fpga::Action::DebugImage => {
                 ctx.resources.image_channel.write(&buffer[1..]);
             }

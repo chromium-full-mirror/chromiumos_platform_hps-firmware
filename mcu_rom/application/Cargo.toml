@@ -13,3 +13,6 @@ mcu_common = { path = "../mcu_common" }
 fake_i2c = { path = "../fake_i2c" }
 hps_interface = { path = "../hps_interface" }
 mcu_common = { path = "../mcu_common", features = [ "std" ] }
+
+[features]
+image-transfer = []

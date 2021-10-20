@@ -26,6 +26,7 @@ pub enum Action {
     ReadConfigRegisters,
     WriteStatusRegisters,
     DebugLog,
+    #[cfg(feature = "image-transfer")]
     DebugImage,
     GetDebugCommand,
     ReadCameraI2c,
@@ -55,6 +56,7 @@ impl Request {
             crate::fpga::commands::DEBUG_LOG => {
                 action = Action::DebugLog;
             }
+            #[cfg(feature = "image-transfer")]
             crate::fpga::commands::DEBUG_IMAGE => {
                 action = Action::DebugImage;
             }

@@ -46,6 +46,10 @@ standalone = []
 
 dev = [ "debug_logger/dev" ]
 
+# This is intended for internal testing only. Must never be enabled in
+# production.
+image-transfer = [ "application/image-transfer" ]
+
 # Optimize all dependencies
 [profile.dev.package."*"]
 opt-level = "z"

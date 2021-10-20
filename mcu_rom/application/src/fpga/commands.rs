@@ -36,6 +36,7 @@ pub const SET_DEBUG_LED: u8 = 0x60;
 pub const DEBUG_LOG: u8 = 0x61;
 
 /// Payload contains bytes of image data to send to the host.
+#[cfg(feature = "image-transfer")]
 pub const DEBUG_IMAGE: u8 = 0x62;
 
 /// Returns the next debug command sent over RTT if any.
