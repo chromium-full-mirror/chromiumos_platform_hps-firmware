@@ -51,7 +51,7 @@ pub trait Hps {
     }
 
     fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
-        const TIMEOUT: Duration = Duration::from_millis(500);
+        const TIMEOUT: Duration = Duration::from_millis(5000);
         let start = Instant::now();
         loop {
             if self.is_memory_bank_available(memory_bank) {
@@ -75,6 +75,13 @@ pub trait Hps {
         }
         Ok(())
     }
+
+    fn check_errors(&mut self) -> Result<()> {
+        match self.read_register(registers::ERRORS)? {
+            0 => Ok(()),
+            errors => bail!("HPS reports errors: 0x{:x}", errors),
+        }
+    }
 }
 
 pub struct HpsAdapter<I, E>
@@ -93,6 +100,10 @@ where
         let mut hps = Self::without_magic_check(sink);
         hps.check_magic()?;
         Ok(hps)
+    }
+
+    pub fn from_ref(sink: &mut I) -> Result<HpsAdapter<BorrowedI2c<I, E>, E>> {
+        HpsAdapter::new(BorrowedI2c { i2c: sink })
     }
 
     pub fn without_magic_check(sink: I) -> Self {
@@ -137,6 +148,47 @@ where
         buffer.extend_from_slice(&address.to_be_bytes());
         buffer.extend_from_slice(values);
         Ok(self.sink.write(HPS_ADDRESS, &buffer)?)
+    }
+}
+
+/// This struct wraps a mutable reference to an I2C implementation and
+/// implements the I2C traits. This won't be necessary once we're using
+/// embedded-hal 1.0 (not yet released), since it has blanket implementations of
+/// the I2C traits for references.
+pub struct BorrowedI2c<'a, I, E>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    i2c: &'a mut I,
+}
+
+impl<'a, I, E> i2c::WriteRead for BorrowedI2c<'a, I, E>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    type Error = E;
+
+    fn write_read(
+        &mut self,
+        address: u8,
+        bytes: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<(), Self::Error> {
+        (*self.i2c).write_read(address, bytes, buffer)
+    }
+}
+
+impl<'a, I, E> i2c::Write for BorrowedI2c<'a, I, E>
+where
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    type Error = E;
+
+    fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
+        (*self.i2c).write(address, bytes)
     }
 }
 
