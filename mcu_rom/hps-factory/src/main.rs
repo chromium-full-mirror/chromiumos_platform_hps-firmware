@@ -21,6 +21,9 @@ struct Config {
     #[cfg(feature = "mcp2221")]
     #[clap(long)]
     mcp: bool,
+
+    #[clap(long)]
+    verbose: bool,
 }
 
 trait I2cDevice {
@@ -31,6 +34,9 @@ trait I2cDevice {
 
 fn main() -> Result<()> {
     let config = Config::parse();
+    if config.verbose {
+        simple_logger::SimpleLogger::new().init()?;
+    }
     #[cfg(feature = "mcp2221")]
     if config.mcp {
         let mut i2c_config = mcp2221::I2cConfig::default();

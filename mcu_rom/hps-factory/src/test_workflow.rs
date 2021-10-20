@@ -15,6 +15,7 @@ use factory_tester_common::EXPECTED_CHIP_ID;
 use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use factory_tester_common::MCU_LOAD_ADDRESS;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
+use log::info;
 use mcu_common::HPS_ADDRESS;
 use stm32_bootloader_client::Stm32;
 
@@ -35,6 +36,7 @@ where
     // loaded. For now, we don't support testing devices that already have
     // firmware loaded.
     // TODO: Support testing such devices that already have stage0 loaded.
+    info!("Checking for existing HPS firmware");
     let mut response = [0u8; 2];
     if i2c.write_read(HPS_ADDRESS, &[0x80], &mut response).is_ok()
         && u16::from_be_bytes(response) == mcu_common::hps_magic_code()
@@ -45,6 +47,7 @@ where
     let stm32_config = stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
     let mut stm32 = Stm32::new(i2c, &mut delay, stm32_config);
 
+    info!("Checking STM32 chip ID");
     match stm32.get_chip_id() {
         Ok(EXPECTED_CHIP_ID) => {
             // Nothing to do.
@@ -58,16 +61,19 @@ where
     }
 
     // Flash the MCU test program.
+    info!("Sending MCU test program");
     stm32
         .write_bulk(MCU_LOAD_ADDRESS, MCU_CODE, |_| {})
         .map_err(|error| anyhow!("Failed to write MCU memory: {}", &error))?;
 
     // Start execution of MCU test program.
+    info!("Starting MCU test program");
     stm32
         .go(MCU_LOAD_ADDRESS)
         .map_err(|error| anyhow!("Failed to start MCU program: {}", &error))?;
 
     // Read the result from the MCU test program (with retry until timeout).
+    info!("Waiting for test result");
     let start = std::time::Instant::now();
     let mut result = [0u8; 1];
     loop {
