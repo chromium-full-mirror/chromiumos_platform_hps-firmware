@@ -26,12 +26,6 @@ struct Config {
     verbose: bool,
 }
 
-trait I2cDevice {
-    fn write(&mut self, address: u8, bytes: &[u8]) -> Result<()>;
-    fn read(&mut self, address: u8, out: &mut [u8]) -> Result<()>;
-    fn write_read(&mut self, address: u8, to_send: &[u8], out: &mut [u8]) -> Result<()>;
-}
-
 fn main() -> Result<()> {
     let config = Config::parse();
     if config.verbose {
