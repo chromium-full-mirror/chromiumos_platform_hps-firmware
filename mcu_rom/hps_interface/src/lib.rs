@@ -15,7 +15,7 @@ use mcu_common::HPS_ADDRESS;
 use std::time::Duration;
 use std::time::Instant;
 
-pub trait Hps: Send + 'static {
+pub trait Hps {
     fn read_register(&mut self, reg: u8) -> Result<u16>;
     fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>>;
     fn write_register(&mut self, reg: u8, value: u16) -> Result<()>;
@@ -86,7 +86,7 @@ where
 
 impl<I, E> HpsAdapter<I, E>
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub fn new(sink: I) -> Result<Self> {
@@ -102,7 +102,7 @@ where
 
 impl<I, E> Hps for HpsAdapter<I, E>
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + Send + 'static,
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     fn read_register(&mut self, reg: u8) -> Result<u16> {

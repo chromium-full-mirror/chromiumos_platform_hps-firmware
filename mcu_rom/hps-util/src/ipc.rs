@@ -26,7 +26,7 @@ static DBUS_APP_VERSION_METHOD_NAME: &str = "application_version";
 static DBUS_USER_PRESENT_METHOD_NAME: &str = "user_present";
 static DBUS_SYS_ERRORS_METHOD_NAME: &str = "errors";
 
-pub fn setup_ipc(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
+pub fn setup_ipc(hps: Box<dyn Hps + Send>) -> Result<(), dbus::Error> {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
@@ -34,7 +34,7 @@ pub fn setup_ipc(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
         .block_on(handle_dbus(hps))
 }
 
-async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
+async fn handle_dbus(hps: Box<dyn Hps + Send>) -> Result<(), dbus::Error> {
     let (lost, conn) = dbus_tokio::connection::new_system_sync()?;
 
     tokio::spawn(async {
@@ -49,7 +49,7 @@ async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
 
     let iface_token = cr.register(
         HPS_INTERFACE_NAME,
-        |builder: &mut IfaceBuilder<Box<dyn Hps>>| {
+        |builder: &mut IfaceBuilder<Box<dyn Hps + Send>>| {
             expose_register_as_string(
                 builder,
                 DBUS_HW_VERSION_METHOD_NAME,
@@ -92,7 +92,7 @@ async fn handle_dbus(hps: Box<dyn Hps>) -> Result<(), dbus::Error> {
 
 /// Exposes a register, converting the raw value to a string.
 fn expose_register_as_string(
-    builder: &mut IfaceBuilder<Box<dyn Hps>>,
+    builder: &mut IfaceBuilder<Box<dyn Hps + Send>>,
     name: &'static str,
     register: u8,
 ) {
@@ -103,7 +103,7 @@ fn expose_register_as_string(
 
 /// Exposes a register, converting the raw value to a integer.
 fn expose_register_as_int(
-    builder: &mut IfaceBuilder<Box<dyn Hps>>,
+    builder: &mut IfaceBuilder<Box<dyn Hps + Send>>,
     name: &'static str,
     register: u8,
 ) {

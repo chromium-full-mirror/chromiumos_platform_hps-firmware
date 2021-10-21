@@ -30,7 +30,7 @@ const MAX_OUTSTANDING_COMMANDS: usize = 28;
 pub(crate) fn write_spi_flash(
     command_channel: &mut Option<Box<dyn DataSink>>,
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
-    hps: Option<Arc<Mutex<dyn Hps>>>,
+    hps: Option<Arc<Mutex<dyn Hps + Send>>>,
     start_offset: usize,
     spi_flash_file: &Path,
 ) -> Result<()> {
@@ -146,7 +146,7 @@ struct HpsWriter {
 }
 
 impl HpsWriter {
-    fn new(hps: Arc<Mutex<dyn Hps>>) -> Self {
+    fn new(hps: Arc<Mutex<dyn Hps + Send>>) -> Self {
         // I2C via MCP2221 is really slow on account of USB protocol that it
         // uses. It ends up not transmitting data continuously. So we don't want
         // to put too much in the queue, otherwise we'll end up having to wait a

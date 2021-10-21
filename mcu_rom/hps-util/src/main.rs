@@ -197,7 +197,7 @@ fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {
     Ok(())
 }
 
-fn open_device(flags: &Flags) -> Result<Box<dyn Hps>> {
+fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
     if flags.fake {
         let mut fhps = hps_util::FakeHps::default();
         // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.

@@ -223,7 +223,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps>>> {
+fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps + Send>>> {
     let mut config = mcp2221::I2cConfig::default();
     config.speed_hz = 400_000;
     let mut dev = mcp2221::I2c::open_first(&config)
@@ -280,7 +280,7 @@ fn run_loop(
     mut cmd_response_channel: Option<Box<dyn DataSource>>,
     flags: &Flags,
     device: &mut dyn Device,
-    hps: Option<Arc<Mutex<dyn Hps>>>,
+    hps: Option<Arc<Mutex<dyn Hps + Send>>>,
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
