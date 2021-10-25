@@ -9,6 +9,7 @@ members = [
     "fake_i2c",
     "gateware_compress",
     "hm01b0",
+    "host_dev_common",
     "hps_interface",
     "hps-factory",
     "hps-util",

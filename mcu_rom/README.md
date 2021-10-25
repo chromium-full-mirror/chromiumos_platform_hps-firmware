@@ -52,6 +52,11 @@ to send and receive data over a fake bus.
 A simple no-std compression algorithm designed specifically for the patterns we
 see in Nexus gateware bitstreams.
 
+### Crate: host_dev_common
+
+Code shared between several host utilties. Mostly image-related code that is
+shared between hps-factory and hps-mon.
+
 ### Crate: hps_interface
 
 This crate defines an interface for talking to a HPS over I2C from the host
