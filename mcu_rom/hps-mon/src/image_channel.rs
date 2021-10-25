@@ -63,28 +63,7 @@ impl ImageChannel {
 impl ChannelHandler for ImageChannel {
     fn handle(&mut self, bytes: &[u8]) -> Result<()> {
         self.received.extend_from_slice(bytes);
-        if let Some(end) = index_of(&self.received, &END_IMAGE) {
-            let mut write_result: Result<()> = Ok(());
-            if let Some(start) = index_of(&self.received, &START_IMAGE) {
-                let start = start + START_IMAGE.len();
-                let bytes = &mut self.received[start..end];
-                // The HPS converts images to signed (i8). Convert them back to
-                // unsigned.
-                for b in bytes.iter_mut() {
-                    *b = (Wrapping(*b) + Wrapping(128)).0;
-                }
-                write_result = self.output_dir.write_image(bytes);
-            }
-            // If we didn't have a START_IMAGE, then we have an incomplete
-            // image, so we remove everything up to the end of the image
-            // regardless.
-            self.received.drain(..end + END_IMAGE.len());
-            // We check for errors writing images after we've drained the data,
-            // otherwise if there's a problem with the image data, we'd keep it
-            // in our buffer and try to process it again next time.
-            write_result?;
-        }
-        Ok(())
+        self.output_dir.process_images_from_buffer(&mut self.received)
     }
 }
 
@@ -171,6 +150,33 @@ impl OutputDir {
             image_type,
             log_fn,
         })
+    }
+
+    /// If `buffer` contains a complete image, write it to the output directory
+    /// and remove it from `buffer`.
+    pub fn process_images_from_buffer(&mut self, buffer: &mut Vec<u8>) -> Result<()> {
+        if let Some(end) = index_of(buffer, &END_IMAGE) {
+            let mut write_result: Result<()> = Ok(());
+            if let Some(start) = index_of(buffer, &START_IMAGE) {
+                let start = start + START_IMAGE.len();
+                let bytes = &mut buffer[start..end];
+                // The HPS converts images to signed (i8). Convert them back to
+                // unsigned.
+                for b in bytes.iter_mut() {
+                    *b = (Wrapping(*b) + Wrapping(128)).0;
+                }
+                write_result = self.write_image(bytes);
+            }
+            // If we didn't have a START_IMAGE, then we have an incomplete
+            // image, so we remove everything up to the end of the image
+            // regardless.
+            buffer.drain(..end + END_IMAGE.len());
+            // We check for errors writing images after we've drained the data,
+            // otherwise if there's a problem with the image data, we'd keep it
+            // in our buffer and try to process it again next time.
+            write_result?;
+        }
+        Ok(())
     }
 
     fn write_image(&mut self, raw_bytes: &[u8]) -> Result<()> {
