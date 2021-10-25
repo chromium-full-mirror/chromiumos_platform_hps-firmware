@@ -35,6 +35,10 @@ use spi_memory::series25::Flash;
 
 const CAMERA_ID: u16 = 0x01b0;
 
+extern "C" {
+    pub static VECTOR_TABLE: u32;
+}
+
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
@@ -394,6 +398,16 @@ fn init_peripherals(
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
     unsafe { debug_logger::initialize_logging() };
+    if cfg!(feature = "sys_bootloader") {
+        // Reset clock source to HSI. This allows us to be loaded directly from the
+        // system bootloader without a reset, since the system bootloader will have
+        // already configured the clock source to be the PLL.
+        p.RCC.cfgr.write(|w| w);
+        // Under reset, our vector table will already have been configured,
+        // however if we're loaded from the system bootloader without a reset,
+        // it won't be. We have to configure it ourselves.
+        unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+    }
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
     p.RCC.apbenr1.write(|w| w.spi2en().set_bit());

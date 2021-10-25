@@ -50,6 +50,9 @@ dev = [ "debug_logger/dev" ]
 # production.
 image-transfer = [ "application/image-transfer" ]
 
+# Code to allow being loaded directly from the STM32 system bootloader.
+sys_bootloader = []
+
 # Optimize all dependencies
 [profile.dev.package."*"]
 opt-level = "z"
