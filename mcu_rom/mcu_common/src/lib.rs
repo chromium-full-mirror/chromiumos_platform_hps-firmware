@@ -45,6 +45,13 @@ pub const HPS_ADDRESS: u8 = 0x30;
 /// The start address in the SPI flash at which the SOC ROM starts.
 pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 
+/// The address at which the application is written. The stage1 header will be
+/// at this address.
+pub const APPLICATION_START_ADDRESS: u32 = 0x08010000;
+
+// The address of the application vector table.
+pub const APPLICATION_VECTOR_ADDRESS: u32 = 0x08010100;
+
 /// ImageHeader is the structure found upon the prefix of a stage 1 image.
 /// N.B., that all fields must be either unsigned integers that are fixed-sized
 /// otherwise 64 bit signing hosts binaries will be built different sized field

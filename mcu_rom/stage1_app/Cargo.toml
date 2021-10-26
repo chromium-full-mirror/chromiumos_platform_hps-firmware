@@ -28,6 +28,9 @@ spi-memory = "0.2.0"
 stm32g0 = "0.13.0"
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral", default-features = false }
 
+[build-dependencies]
+mcu_common = { path = "../mcu_common" }
+
 [features]
 default = [
   "proto2"
