@@ -8,10 +8,8 @@
 mod host_interface;
 mod loader;
 mod mcu_flash;
-mod premain;
 
 use crate::loader::*;
-use crate::premain::*;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use defmt::debug;
@@ -223,9 +221,6 @@ fn init_peripherals(
 
     // The art of implementing a stm32 bootloader in rust.
     info!("{}\n", banner());
-
-    let boot_count = boot_count();
-    info!("boot count = {}", boot_count);
 
     // Put FPGA into reset.
     let _ = fpga_prog.set_low();
