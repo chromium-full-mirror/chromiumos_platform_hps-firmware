@@ -20,9 +20,9 @@ use defmt::info;
 use defmt::warn;
 use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
+use hal::gpio::Floating;
+use hal::gpio::Input;
 use hal::gpio::SignalEdge;
-use hal::gpio::{Floating, PushPull};
-use hal::gpio::{Input, Output};
 use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
@@ -36,7 +36,6 @@ use panic_halt as _;
 use rtic::app;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
-type Led = gpioa::PA1<Output<PushPull>>;
 type FwWp = gpioa::PA15<Input<Floating>>;
 
 extern "C" {
@@ -62,7 +61,6 @@ const APP: () = {
     struct Resources {
         host_interface: HostInterface<Stm32g0I2cPeripheral<I2C1>>,
         flash_writer: FlashWriter,
-        led: Led,
         fw_wp: FwWp,
         exti: hal::stm32::EXTI,
     }
@@ -98,7 +96,7 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [flash_writer, led, fw_wp, host_interface], capacity = 10)]
+    #[task(resources = [flash_writer, fw_wp, host_interface], capacity = 10)]
     fn handle_event(ctx: handle_event::Context, event: HostEvent) {
         let host_interface = ctx.resources.host_interface;
         match event {
@@ -198,9 +196,7 @@ fn init_peripherals(
         .RCC
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
 
-    // Configure PA1 as output pin.
-    let gpioa = p.GPIOA.split(&mut rcc); // ::gpio::GpioExt
-    let mut led = gpioa.pa1.into_push_pull_output();
+    let gpioa = p.GPIOA.split(&mut rcc);
     // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
     // wp is inverted, i.e., de-assert strapped low.
     let fw_wp = gpioa.pa15.into_floating_input();
@@ -251,7 +247,7 @@ fn init_peripherals(
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
-    match detect_and_validate_stage1(&mut host_interface, &mut led, wp_state) {
+    match detect_and_validate_stage1(&mut host_interface, wp_state) {
         Ok(oks) => {
             host_interface.stage0_ctx.set_stage1_present_flag();
             match oks {
@@ -279,7 +275,6 @@ fn init_peripherals(
     init::LateResources {
         host_interface,
         flash_writer,
-        led,
         fw_wp,
         exti,
     }
@@ -288,7 +283,6 @@ fn init_peripherals(
 /// Checks whether it's OK to load the application, returning an error if not.
 fn detect_and_validate_stage1(
     host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
-    led: &mut Led,
     wp_state: WriteProtectState,
 ) -> Result<Stage1OkState, Stage1Error> {
     if let Err(e) = detect_stage1() {
@@ -296,9 +290,7 @@ fn detect_and_validate_stage1(
         return Err(Stage1Error::Missing);
     }
 
-    let _ = led.set_high();
     let stage1_validation = validate_stage1();
-    let _ = led.set_low();
 
     match stage1_validation {
         Ok(version) => {
