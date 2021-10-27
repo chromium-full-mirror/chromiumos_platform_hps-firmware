@@ -2,6 +2,7 @@
 name = "factory_tester_mcu"
 version = "0.1.0"
 edition = "2018"
+license = "BSD-3-Clause"
 
 [dependencies]
 cortex-m = "0.7.1"

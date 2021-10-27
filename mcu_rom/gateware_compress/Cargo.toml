@@ -2,5 +2,6 @@
 name = "gateware_compress"
 version = "0.1.0"
 edition = "2018"
+license = "BSD-3-Clause"
 
 [dependencies]
