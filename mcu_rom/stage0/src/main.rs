@@ -227,9 +227,10 @@ fn init_peripherals(
     let boot_count = boot_count();
     info!("boot count = {}", boot_count);
 
-    // Stop FPGA running and taking SPI flash from us.
-    let _ = fpga_prog.set_low(); // SW1 (pressed)?
-    let _ = fpga_pw_gate.set_low(); // also gates power to SPI flash!!!
+    // Put FPGA into reset.
+    let _ = fpga_prog.set_low();
+    // Power off the FPGA and SPI flash. We don't need either in stage0.
+    let _ = fpga_pw_gate.set_high();
 
     let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
         stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
