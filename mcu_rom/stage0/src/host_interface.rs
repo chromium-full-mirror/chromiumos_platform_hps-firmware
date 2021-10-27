@@ -19,11 +19,6 @@ use mcu_common::MemBlock;
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 
-pub enum Stage1OkState {
-    ValidSignature,
-    InvalidSignatureWpDeassert,
-}
-
 pub struct StageZContext {
     signature_check_pass: bool, // True indicates a validate signature.
     stage1_present: bool,       // True indicates that stage 1 magic was found.

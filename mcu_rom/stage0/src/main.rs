@@ -25,7 +25,6 @@ use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
-use host_interface::Stage1OkState;
 use mcu_common::Error::McuFlashWriteError;
 use mcu_common::MemBlock;
 use mcu_flash::flash_error_string;
@@ -44,6 +43,10 @@ enum Stage1Error {
     Missing,
     InvalidSignature,
 }
+
+/// A struct that indicates that stage1 is considered valid - either it has
+/// passed a signature check or firmware write protect is deasserted.
+struct ValidStage1;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum WriteProtectState {
@@ -244,16 +247,9 @@ fn init_peripherals(
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
     match detect_and_validate_stage1(&mut host_interface, wp_state) {
-        Ok(oks) => {
+        Ok(_) => {
             host_interface.stage0_ctx.set_stage1_present_flag();
-            match oks {
-                Stage1OkState::ValidSignature => {
-                    host_interface.stage0_ctx.set_signature_passed_flag()
-                }
-                Stage1OkState::InvalidSignatureWpDeassert => {
-                    host_interface.stage0_ctx.set_signature_passed_flag()
-                }
-            }
+            host_interface.stage0_ctx.set_signature_passed_flag()
         }
         Err(e) => {
             error!("Failed to launch application");
@@ -280,7 +276,7 @@ fn init_peripherals(
 fn detect_and_validate_stage1(
     host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
     wp_state: WriteProtectState,
-) -> Result<Stage1OkState, Stage1Error> {
+) -> Result<ValidStage1, Stage1Error> {
     if let Err(e) = detect_stage1() {
         info!("{}", e);
         return Err(Stage1Error::Missing);
@@ -292,7 +288,7 @@ fn detect_and_validate_stage1(
         Ok(version) => {
             info!("signature good!");
             host_interface.stage0_ctx.set_firmware_version(version);
-            Ok(Stage1OkState::ValidSignature)
+            Ok(ValidStage1)
         }
         Err(_) => {
             error!("signature bad!");
@@ -304,7 +300,7 @@ fn detect_and_validate_stage1(
                 }
                 WriteProtectState::Deasserted => {
                     warn!("starting untrusted stage 1..");
-                    Ok(Stage1OkState::InvalidSignatureWpDeassert) // unconditionally load in dev mode.
+                    Ok(ValidStage1) // unconditionally load in dev mode.
                 }
             }
         }
