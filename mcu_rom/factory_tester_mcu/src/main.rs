@@ -392,6 +392,10 @@ impl Tester {
             self.stopwatch.elapsed(start).0 / 1000
         );
 
+        if !cfg!(feature = "check-image-data") {
+            return Ok(());
+        }
+
         let start = self.stopwatch.now();
         let mut image_data_result = image_receiver::validate_image_data(&mut self.fpga_spi);
         // TODO: Figure out why the camera is stopping streaming and fix it.

@@ -30,6 +30,10 @@ default = ["dev"]
 # Targets STM32 flash instead of RAM. Enables debugging features.
 dev = ["panic-rtt-target", "debug_logger/dev", "rtt-target"]
 
+# Checks that we get data from the camera. This doesn't work sufficiently
+# reliably at the moment to be on by default.
+check-image-data = []
+
 # Optimize all dependencies
 [profile.dev.package."*"]
 opt-level = "z"
