@@ -101,7 +101,7 @@ const APP: () = {
         let host_interface = ctx.resources.host_interface;
         match event {
             HostEvent::LoadApplication => {
-                if host_interface.stage0_ctx.can_stage1_jmp() {
+                if host_interface.stage0_ctx.can_jump_to_stage1() {
                     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
             }

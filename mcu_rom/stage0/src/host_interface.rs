@@ -52,7 +52,7 @@ impl StageZContext {
     pub fn set_firmware_version(&mut self, version: [u16; 2]) {
         self.firmware_version = version;
     }
-    pub fn can_stage1_jmp(&self) -> bool {
+    pub fn can_jump_to_stage1(&self) -> bool {
         self.stage1_present && self.signature_check_pass
     }
     fn get_verification_status(&self) -> u16 {
