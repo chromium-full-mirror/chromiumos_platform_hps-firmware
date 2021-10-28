@@ -20,7 +20,7 @@ use mcu_common::MemBlock;
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 
-pub struct StageZContext {
+pub(crate) struct StageZContext {
     /// Information about stage1 or None if stage1 is absent, not validated etc.
     valid_stage1: Option<ValidStage1>,
     write_protect_state: WriteProtectState,
@@ -33,7 +33,7 @@ impl StageZContext {
             write_protect_state: WriteProtectState::Asserted,
         }
     }
-    pub fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
+    pub(crate) fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
         self.write_protect_state = write_protect_state;
     }
     /// Called when we've determined that stage1 is valid and jumping to it is
@@ -42,10 +42,10 @@ impl StageZContext {
     pub(crate) fn set_stage1_valid(&mut self, valid_stage1: ValidStage1) {
         self.valid_stage1 = Some(valid_stage1);
     }
-    pub fn mark_stage1_invalid(&mut self) {
+    pub(crate) fn mark_stage1_invalid(&mut self) {
         self.valid_stage1 = None;
     }
-    pub fn can_jump_to_stage1(&self) -> bool {
+    pub(crate) fn can_jump_to_stage1(&self) -> bool {
         self.valid_stage1.is_some()
     }
     fn get_verification_status(&self) -> u16 {
@@ -61,7 +61,7 @@ impl StageZContext {
             WriteProtectState::Deasserted => status::WPOFF,
         }
     }
-    pub fn get_firmware_version(&self, register: u8) -> u16 {
+    pub(crate) fn get_firmware_version(&self, register: u8) -> u16 {
         match (register, &self.valid_stage1) {
             (registers::FIRMWARE_VERSION_HIGH, Some(info)) => info.firmware_version[0],
             (registers::FIRMWARE_VERSION_LOW, Some(info)) => info.firmware_version[1],
@@ -73,7 +73,7 @@ impl StageZContext {
 pub struct HostInterface<I: I2cPeripheral> {
     i2c: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
-    pub stage0_ctx: StageZContext,
+    pub(crate) stage0_ctx: StageZContext,
 }
 
 pub(crate) enum HostEvent {
@@ -97,7 +97,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
     }
 
     /// Supply (or return) a memory block for the purpose of receiving data.
-    pub fn supply_mem_block(&mut self, mem_block: MemBlock) {
+    pub(crate) fn supply_mem_block(&mut self, mem_block: MemBlock) {
         self.i2c.supply_mem_block(mem_block);
     }
 

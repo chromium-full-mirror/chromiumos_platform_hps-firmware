@@ -21,8 +21,8 @@ const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
 ];
 
 extern "C" {
-    pub static _hdr: TargetImageHeader;
-    pub static _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
+    static _hdr: TargetImageHeader;
+    static _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
 }
 
 fn get_stage1_signature() -> [u8; 64] {
@@ -74,7 +74,7 @@ pub(crate) fn detect_and_validate_stage1(
 }
 
 /// Loads stage1. This function never returns.
-pub fn load_stage1() -> ! {
+pub(crate) fn load_stage1() -> ! {
     // The following is safe provided stage1 sets git_hash_ptr and
     // git_hash_length to refer to valid UTF-8.
     let git_hash = unsafe {
@@ -96,7 +96,7 @@ pub fn load_stage1() -> ! {
     }
 }
 
-pub fn detect_stage1() -> Result<(), &'static str> {
+fn detect_stage1() -> Result<(), &'static str> {
     let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
         info!("Found stage1.");
@@ -129,7 +129,7 @@ fn stage1_digest() -> [u8; 32] {
     hasher.finalize()
 }
 
-pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
+fn validate_stage1() -> Result<(), ed25519_compact::Error> {
     let stage1_digest = stage1_digest();
     info!("{:?}", stage1_digest);
 
