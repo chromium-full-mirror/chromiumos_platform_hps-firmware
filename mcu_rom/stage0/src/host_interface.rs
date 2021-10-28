@@ -42,6 +42,9 @@ impl StageZContext {
     pub(crate) fn set_stage1_valid(&mut self, valid_stage1: ValidStage1) {
         self.valid_stage1 = Some(valid_stage1);
     }
+    pub fn mark_stage1_invalid(&mut self) {
+        self.valid_stage1 = None;
+    }
     pub fn can_jump_to_stage1(&self) -> bool {
         self.valid_stage1.is_some()
     }

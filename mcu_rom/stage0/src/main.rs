@@ -109,6 +109,7 @@ const APP: () = {
                 }
             }
             HostEvent::WriteFlash(event) => {
+                host_interface.stage0_ctx.mark_stage1_invalid();
                 if let Err(error) = ctx
                     .resources
                     .flash_writer
