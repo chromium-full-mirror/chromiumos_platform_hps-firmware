@@ -46,7 +46,9 @@ enum Stage1Error {
 
 /// A struct that indicates that stage1 is considered valid - either it has
 /// passed a signature check or firmware write protect is deasserted.
-struct ValidStage1;
+struct ValidStage1 {
+    firmware_version: [u16; 2], // Contains first 4B of validated signature.
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum WriteProtectState {
@@ -246,8 +248,13 @@ fn init_peripherals(
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
-    match detect_and_validate_stage1(&mut host_interface, wp_state) {
-        Ok(_) => host_interface.stage0_ctx.set_signature_passed_flag(),
+    match detect_and_validate_stage1(wp_state) {
+        Ok(valid_stage1) => {
+            host_interface.stage0_ctx.set_signature_passed_flag();
+            host_interface
+                .stage0_ctx
+                .set_firmware_version(valid_stage1.firmware_version);
+        }
         Err(e) => {
             error!("Failed to launch application");
             match e {

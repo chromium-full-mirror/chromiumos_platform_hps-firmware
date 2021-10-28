@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::ops::Range;
-
 use crate::debug;
 use crate::error;
-use crate::host_interface::HostInterface;
 use crate::info;
 use crate::warn;
 use crate::Stage1Error;
 use crate::ValidStage1;
 use crate::WriteProtectState;
-use hal::stm32::I2C1;
+use core::ops::Range;
 use mcu_common::Hash;
 use mcu_common::TargetImageHeader;
-use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
@@ -44,7 +40,6 @@ fn decode_version(hdr_sig: &[u8; 64]) -> [u16; 2] {
 
 /// Checks whether it's OK to load the application, returning an error if not.
 pub(crate) fn detect_and_validate_stage1(
-    host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
     wp_state: WriteProtectState,
 ) -> Result<ValidStage1, Stage1Error> {
     if let Err(e) = detect_stage1() {
@@ -55,10 +50,11 @@ pub(crate) fn detect_and_validate_stage1(
     let stage1_validation = validate_stage1();
 
     match stage1_validation {
-        Ok(version) => {
+        Ok(_) => {
             info!("signature good!");
-            host_interface.stage0_ctx.set_firmware_version(version);
-            Ok(ValidStage1)
+            Ok(ValidStage1 {
+                firmware_version: get_stage1_version(),
+            })
         }
         Err(_) => {
             error!("signature bad!");
@@ -70,7 +66,9 @@ pub(crate) fn detect_and_validate_stage1(
                 }
                 WriteProtectState::Deasserted => {
                     warn!("starting untrusted stage 1..");
-                    Ok(ValidStage1) // unconditionally load in dev mode.
+                    Ok(ValidStage1 {
+                        firmware_version: get_stage1_version(),
+                    })
                 }
             }
         }
@@ -156,7 +154,7 @@ fn stage1_digest() -> [u8; 32] {
     hasher.finalize()
 }
 
-pub fn validate_stage1() -> Result<[u16; 2], ed25519_compact::Error> {
+pub fn validate_stage1() -> Result<(), ed25519_compact::Error> {
     let stage1_digest = stage1_digest();
     info!("{:?}", stage1_digest);
 
@@ -165,7 +163,12 @@ pub fn validate_stage1() -> Result<[u16; 2], ed25519_compact::Error> {
     let vkey = ed25519_compact::PublicKey::new(PUBLIC_KEY);
 
     vkey.verify(&stage1_digest, &sign)?;
-    Ok(decode_version(&hdr_sig))
+    Ok(())
+}
+
+fn get_stage1_version() -> [u16; 2] {
+    let hdr_sig = get_stage1_signature();
+    decode_version(&hdr_sig)
 }
 
 pub(crate) fn get_stage_slot_se() -> Range<usize> {
