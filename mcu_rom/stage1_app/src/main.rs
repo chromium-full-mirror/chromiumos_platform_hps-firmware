@@ -398,16 +398,14 @@ fn init_peripherals(
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
     unsafe { debug_logger::initialize_logging() };
-    if cfg!(feature = "sys_bootloader") {
-        // Reset clock source to HSI. This allows us to be loaded directly from the
-        // system bootloader without a reset, since the system bootloader will have
-        // already configured the clock source to be the PLL.
-        p.RCC.cfgr.write(|w| w);
-        // Under reset, our vector table will already have been configured,
-        // however if we're loaded from the system bootloader without a reset,
-        // it won't be. We have to configure it ourselves.
-        unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
-    }
+    // Reset clock source to HSI. This is necessary because the bootloader
+    // (either stage0 or the STM32 system bootloader) will have left the clock
+    // source configured as the PLL.
+    p.RCC.cfgr.write(|w| w);
+    // Configure our vector table. This is necessary when being loaded by a
+    // bootloader. Neither stage0 nor the STM32 system bootloader will do this
+    // for us.
+    unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
     // Enable SPI peripheral.
     p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
     p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
