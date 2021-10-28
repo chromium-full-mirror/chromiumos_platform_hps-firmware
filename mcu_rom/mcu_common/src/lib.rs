@@ -66,12 +66,12 @@ pub const SIGNATURE_OFFSET: usize = 20;
 /// otherwise 64 bit signing hosts binaries will be built different sized field
 /// to the 32 bit target target binaries, resulting in miss-aligned stage 1 HDR's.
 #[repr(C, packed(4))]
-pub struct ImageHeader<T, R> {
+pub struct ImageHeader<T> {
     pub magic: u32,
     pub version: u16,
-    pub vector_addr: T,       // host := u32, target := &'static u32,
-    pub git_hash_ptr: R,      // host := u32, target := &'static u8,
-    pub git_hash_length: u32, // host := u32, target := usize - resolved by cast.
+    pub vector_addr: T, // host := u32, target := &'static u32,
+    pub _reserved1: u32,
+    pub _reserved2: u32,
     pub sig: Signature,
 }
 
@@ -79,14 +79,14 @@ pub struct ImageHeader<T, R> {
 // of being used by run-time executable paths in MCU firmware. Reference
 // fields are defined to be fixed-width u32 primitive types as the propositional
 // starting point for their intended use-case on bare metal.
-pub type TargetImageHeader = ImageHeader<&'static u32, &'static u8>;
+pub type TargetImageHeader = ImageHeader<&'static u32>;
 
 // HostImageHeader is a type-alias of ImageHeader defined for the purpose
 // of being used by either host-side compile-time or host-side run-time executable
 // paths within host tooling. Reference fields are defined to be machine local types
 // as the propositional starting point for their intended use-case with host tooling
 // and later to be reinterpreted by metal.
-pub type HostImageHeader = ImageHeader<u32, u32>;
+pub type HostImageHeader = ImageHeader<u32>;
 
 #[repr(C)]
 pub struct Signature {
@@ -145,8 +145,8 @@ mod test {
             magic: 0,
             version: 0,
             vector_addr: 0,
-            git_hash_length: 0,
-            git_hash_ptr: 0,
+            _reserved1: 0,
+            _reserved2: 0,
             sig: Signature {
                 raw_bytes: [0u8; 64],
             },

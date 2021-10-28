@@ -12,7 +12,6 @@ cortex-m-rtic = "0.5.5"
 crc = "2.0"
 debug_logger = { path = "../debug_logger" }
 embedded-hal = "0.2.4"
-git-version = "0.3.4"
 # TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
 # better understood.
 hal = { package = "stm32g0xx-hal", version = "=0.1.0", features = ["rt"]}
