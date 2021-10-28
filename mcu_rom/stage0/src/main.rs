@@ -268,41 +268,6 @@ fn init_peripherals(
     }
 }
 
-/// Checks whether it's OK to load the application, returning an error if not.
-fn detect_and_validate_stage1(
-    host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
-    wp_state: WriteProtectState,
-) -> Result<ValidStage1, Stage1Error> {
-    if let Err(e) = detect_stage1() {
-        info!("{}", e);
-        return Err(Stage1Error::Missing);
-    }
-
-    let stage1_validation = validate_stage1();
-
-    match stage1_validation {
-        Ok(version) => {
-            info!("signature good!");
-            host_interface.stage0_ctx.set_firmware_version(version);
-            Ok(ValidStage1)
-        }
-        Err(_) => {
-            error!("signature bad!");
-            match wp_state {
-                WriteProtectState::Asserted => {
-                    warn!("write-protect asserted!");
-                    warn!("stage 1 is untrusted, waitting for recovery.");
-                    Err(Stage1Error::InvalidSignature)
-                }
-                WriteProtectState::Deasserted => {
-                    warn!("starting untrusted stage 1..");
-                    Ok(ValidStage1) // unconditionally load in dev mode.
-                }
-            }
-        }
-    }
-}
-
 fn banner() -> &'static str {
     r#"
  C
