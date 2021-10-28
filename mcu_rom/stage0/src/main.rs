@@ -247,16 +247,12 @@ fn init_peripherals(
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
     match detect_and_validate_stage1(&mut host_interface, wp_state) {
-        Ok(_) => {
-            host_interface.stage0_ctx.set_stage1_present_flag();
-            host_interface.stage0_ctx.set_signature_passed_flag()
-        }
+        Ok(_) => host_interface.stage0_ctx.set_signature_passed_flag(),
         Err(e) => {
             error!("Failed to launch application");
             match e {
                 Stage1Error::Missing => error!("missing stage 1/app"),
                 Stage1Error::InvalidSignature => {
-                    host_interface.stage0_ctx.set_stage1_present_flag();
                     error!("invalid stage 1/app signature");
                 }
             };

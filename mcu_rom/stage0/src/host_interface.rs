@@ -21,7 +21,6 @@ const RO_VERSION: u16 = 1;
 
 pub struct StageZContext {
     signature_check_pass: bool, // True indicates a validate signature.
-    stage1_present: bool,       // True indicates that stage 1 magic was found.
     firmware_version: [u16; 2], // Contains first 4B of validated signature.
     write_protect_state: WriteProtectState,
 }
@@ -30,16 +29,12 @@ impl StageZContext {
     fn new() -> Self {
         StageZContext {
             signature_check_pass: false,
-            stage1_present: false,
             firmware_version: [0xFFFF, 0xFFFF],
             write_protect_state: WriteProtectState::Asserted,
         }
     }
     pub fn set_signature_passed_flag(&mut self) {
         self.signature_check_pass = true;
-    }
-    pub fn set_stage1_present_flag(&mut self) {
-        self.stage1_present = true;
     }
     pub fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
         self.write_protect_state = write_protect_state;
@@ -48,7 +43,7 @@ impl StageZContext {
         self.firmware_version = version;
     }
     pub fn can_jump_to_stage1(&self) -> bool {
-        self.stage1_present && self.signature_check_pass
+        self.signature_check_pass
     }
     fn get_verification_status(&self) -> u16 {
         if self.signature_check_pass {
