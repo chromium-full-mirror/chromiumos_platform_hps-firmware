@@ -41,10 +41,7 @@ pub(crate) fn detect_and_validate_stage1(
     slot: &[u8],
     wp_state: WriteProtectState,
 ) -> Result<ValidStage1, Stage1Error> {
-    if let Err(e) = detect_stage1() {
-        info!("{}", e);
-        return Err(Stage1Error::Missing);
-    }
+    detect_stage1()?;
 
     let stage1_validation = validate_stage1(slot);
 
@@ -97,13 +94,13 @@ pub(crate) fn load_stage1() -> ! {
     }
 }
 
-fn detect_stage1() -> Result<(), &'static str> {
+fn detect_stage1() -> Result<(), Stage1Error> {
     let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
         info!("Found stage1.");
         return Ok(());
     }
-    Err("Could not find stage1")
+    Err(Stage1Error::Missing)
 }
 
 fn stage1_digest(slot: &[u8]) -> [u8; 32] {
