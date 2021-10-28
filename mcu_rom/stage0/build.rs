@@ -17,12 +17,10 @@ fn memory_x_contents() -> String {
         r#"MEMORY
 {{
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K
-    HDR   (rx) : ORIGIN = 0x08010000, LENGTH = 128
     SLOT  (rx) : ORIGIN = 0x08010000, LENGTH = {}
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }}
 
-PROVIDE(_hdr = ORIGIN(HDR));
 PROVIDE(_slot = ORIGIN(SLOT));
 "#,
         STAGE0_FLASH_START,

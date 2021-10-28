@@ -46,7 +46,10 @@ enum Stage1Error {
 /// passed a signature check or firmware write protect is deasserted.
 struct ValidStage1 {
     firmware_version: [u16; 2], // Contains first 4B of validated signature.
+    vector_address: *const u32,
 }
+
+unsafe impl Send for ValidStage1 {}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum WriteProtectState {
@@ -151,7 +154,9 @@ const APP: () = {
                 // stage1.
                 ctx.resources.host_interface.lock(|h| {
                     if h.stage0_ctx.can_jump_to_stage1() {
-                        load_stage1()
+                        if let Some(valid_stage1) = h.stage0_ctx.valid_stage1() {
+                            load_stage1(valid_stage1);
+                        }
                     }
                 });
             }
