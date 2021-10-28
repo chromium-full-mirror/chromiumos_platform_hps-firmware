@@ -12,7 +12,6 @@ mod mcu_flash;
 use crate::loader::*;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-use defmt::debug;
 use defmt::error;
 use defmt::info;
 use defmt::warn;

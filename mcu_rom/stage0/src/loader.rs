@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::debug;
 use crate::error;
 use crate::info;
 use crate::warn;
@@ -73,23 +72,7 @@ pub(crate) fn detect_and_validate_stage1(
 
 /// Loads stage1. This function never returns.
 pub(crate) fn load_stage1() -> ! {
-    // The following is safe provided stage1 sets git_hash_ptr and
-    // git_hash_length to refer to valid UTF-8.
-    let git_hash = unsafe {
-        core::str::from_utf8_unchecked(core::slice::from_raw_parts(
-            _hdr.git_hash_ptr,
-            _hdr.git_hash_length as usize,
-        ))
-    };
     unsafe {
-        info!(" [[stage 1]] >> version={}", _hdr.version);
-        debug!(
-            " [[stage 1]] >> should I jmp to vector={:x}",
-            (_hdr.vector_addr as *const u32) as u32
-        );
-        info!(" [[stage 1]] >> git hash build={}", git_hash);
-        info!(" [[stage 1]] >> sig={:x}\n", get_stage1_signature());
-
         cortex_m::asm::bootload(_hdr.vector_addr);
     }
 }
@@ -97,7 +80,6 @@ pub(crate) fn load_stage1() -> ! {
 fn detect_stage1() -> Result<(), Stage1Error> {
     let magic = unsafe { _hdr.magic };
     if magic == 0xC03FEFE {
-        info!("Found stage1.");
         return Ok(());
     }
     Err(Stage1Error::Missing)
@@ -128,7 +110,6 @@ fn stage1_digest(slot: &[u8]) -> [u8; 32] {
 
 fn validate_stage1(slot: &[u8]) -> Result<(), ed25519_compact::Error> {
     let stage1_digest = stage1_digest(slot);
-    info!("{:?}", stage1_digest);
 
     let hdr_sig = get_stage1_signature();
     let sign = ed25519_compact::Signature::new(hdr_sig);
