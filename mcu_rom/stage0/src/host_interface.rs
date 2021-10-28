@@ -5,6 +5,7 @@
 use crate::error;
 use crate::info;
 use crate::warn;
+use crate::ValidStage1;
 use crate::WriteProtectState;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::Buffer;
@@ -20,33 +21,32 @@ const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
 
 pub struct StageZContext {
-    signature_check_pass: bool, // True indicates a validate signature.
-    firmware_version: [u16; 2], // Contains first 4B of validated signature.
+    /// Information about stage1 or None if stage1 is absent, not validated etc.
+    valid_stage1: Option<ValidStage1>,
     write_protect_state: WriteProtectState,
 }
 
 impl StageZContext {
     fn new() -> Self {
         StageZContext {
-            signature_check_pass: false,
-            firmware_version: [0xFFFF, 0xFFFF],
+            valid_stage1: None,
             write_protect_state: WriteProtectState::Asserted,
         }
-    }
-    pub fn set_signature_passed_flag(&mut self) {
-        self.signature_check_pass = true;
     }
     pub fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
         self.write_protect_state = write_protect_state;
     }
-    pub fn set_firmware_version(&mut self, version: [u16; 2]) {
-        self.firmware_version = version;
+    /// Called when we've determined that stage1 is valid and jumping to it is
+    /// permitted. i.e. either it had a valid signature or firmware write
+    /// protect was deasserted.
+    pub(crate) fn set_stage1_valid(&mut self, valid_stage1: ValidStage1) {
+        self.valid_stage1 = Some(valid_stage1);
     }
     pub fn can_jump_to_stage1(&self) -> bool {
-        self.signature_check_pass
+        self.valid_stage1.is_some()
     }
     fn get_verification_status(&self) -> u16 {
-        if self.signature_check_pass {
+        if self.can_jump_to_stage1() {
             status::AVERIFY
         } else {
             status::ANONVER
@@ -59,9 +59,9 @@ impl StageZContext {
         }
     }
     pub fn get_firmware_version(&self, register: u8) -> u16 {
-        match register {
-            registers::FIRMWARE_VERSION_HIGH => self.firmware_version[0],
-            registers::FIRMWARE_VERSION_LOW => self.firmware_version[1],
+        match (register, &self.valid_stage1) {
+            (registers::FIRMWARE_VERSION_HIGH, Some(info)) => info.firmware_version[0],
+            (registers::FIRMWARE_VERSION_LOW, Some(info)) => info.firmware_version[1],
             _ => 0xFFFF,
         }
     }

@@ -249,12 +249,7 @@ fn init_peripherals(
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
     match detect_and_validate_stage1(wp_state) {
-        Ok(valid_stage1) => {
-            host_interface.stage0_ctx.set_signature_passed_flag();
-            host_interface
-                .stage0_ctx
-                .set_firmware_version(valid_stage1.firmware_version);
-        }
+        Ok(valid_stage1) => host_interface.stage0_ctx.set_stage1_valid(valid_stage1),
         Err(e) => {
             error!("Failed to launch application");
             match e {
