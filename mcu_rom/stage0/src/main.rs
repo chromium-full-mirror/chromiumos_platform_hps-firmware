@@ -145,9 +145,7 @@ const APP: () = {
                 // stage1.
                 ctx.resources.host_interface.lock(|h| {
                     if h.stage0_ctx.can_jump_to_stage1() {
-                        if let Some(valid_stage1) = h.stage0_ctx.valid_stage1() {
-                            load_stage1(valid_stage1);
-                        }
+                        load_stage1()
                     }
                 });
             }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::WriteProtectState;
 /// Code for verifying the stage1 slot.
+use crate::WriteProtectState;
 use mcu_common::Hash;
-use mcu_common::TargetImageHeader;
+use mcu_common::ImageHeader;
 use mcu_common::SIGNATURE_LENGTH;
 
 const PAGE_SIZE: usize = 2 * 1024;
@@ -20,10 +20,7 @@ pub enum Stage1Error {
 /// passed a signature check or firmware write protect is deasserted.
 pub struct ValidStage1 {
     firmware_version: [u16; 2], // Contains first 4B of validated signature.
-    pub vector_address: *const u32,
 }
-
-unsafe impl Send for ValidStage1 {}
 
 impl ValidStage1 {
     pub fn firmware_version(&self) -> &[u16; 2] {
@@ -31,8 +28,8 @@ impl ValidStage1 {
     }
 }
 
-fn stage1_header(slot: &[u8]) -> &'static TargetImageHeader {
-    unsafe { &*(slot.as_ptr() as *const TargetImageHeader) }
+fn stage1_header(slot: &[u8]) -> &'static ImageHeader {
+    unsafe { &*(slot.as_ptr() as *const ImageHeader) }
 }
 
 fn get_stage1_signature(slot: &[u8]) -> [u8; SIGNATURE_LENGTH] {
@@ -59,13 +56,11 @@ pub fn detect_and_validate_stage1(
     match stage1_validation {
         Ok(_) => Ok(ValidStage1 {
             firmware_version: get_stage1_version(slot),
-            vector_address: stage1_header(slot).vector_addr,
         }),
         Err(_) => match wp_state {
             WriteProtectState::Asserted => Err(Stage1Error::InvalidSignature),
             WriteProtectState::Deasserted => Ok(ValidStage1 {
                 firmware_version: get_stage1_version(slot),
-                vector_address: stage1_header(slot).vector_addr,
             }),
         },
     }
@@ -73,7 +68,7 @@ pub fn detect_and_validate_stage1(
 
 fn detect_stage1(slot: &[u8]) -> Result<(), Stage1Error> {
     let magic = stage1_header(slot).magic;
-    if magic == crate::STAGE1_MAGIC {
+    if magic == mcu_common::STAGE1_MAGIC {
         return Ok(());
     }
     Err(Stage1Error::Missing)

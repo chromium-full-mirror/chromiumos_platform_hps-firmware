@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use libstage0::verification::ValidStage1;
+use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 
 extern "C" {
     static mut _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
 }
 
 /// Loads stage1. This function never returns.
-pub(crate) fn load_stage1(valid_stage1: &ValidStage1) -> ! {
+pub(crate) fn load_stage1() -> ! {
     unsafe {
-        cortex_m::asm::bootload(valid_stage1.vector_address);
+        cortex_m::asm::bootload(APPLICATION_VECTOR_TABLE_ADDRESS as *const u32);
     }
 }
 

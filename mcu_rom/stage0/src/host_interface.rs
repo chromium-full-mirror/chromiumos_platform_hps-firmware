@@ -47,9 +47,6 @@ impl StageZContext {
     pub(crate) fn can_jump_to_stage1(&self) -> bool {
         self.valid_stage1.is_some()
     }
-    pub(crate) fn valid_stage1(&self) -> Option<&ValidStage1> {
-        self.valid_stage1.as_ref()
-    }
     fn get_verification_status(&self) -> Status {
         if self.can_jump_to_stage1() {
             Status::AVERIFY
