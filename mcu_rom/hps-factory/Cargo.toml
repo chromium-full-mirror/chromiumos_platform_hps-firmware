@@ -7,7 +7,7 @@ license = "BSD-3-Clause"
 [dependencies]
 anyhow = "1.0.42"
 # https://github.com/clap-rs/clap/issues/1684
-clap = "3.0.0-alpha.1"
+clap = "=3.0.0-beta.2"
 embedded-hal = "0.2.6"
 factory_tester_common = { path = "../factory_tester_common" }
 host_dev_common = { path = "../host_dev_common" }
@@ -21,6 +21,9 @@ mcu_common = { path = "../mcu_common", features = [ "image-transfer" ] }
 progress = "0.2.0"
 simple_logger = { version = "1.13.0" }
 stm32_bootloader_client = { path = "../stm32_bootloader_client", features = ["std"] }
+
+[build-dependencies]
+clap_derive = "=3.0.0-beta.2"
 
 [features]
 default = [
