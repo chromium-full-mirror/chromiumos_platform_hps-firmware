@@ -20,7 +20,6 @@ use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::Floating;
 use hal::gpio::Input;
-use hal::gpio::SignalEdge;
 use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
@@ -65,7 +64,6 @@ const APP: () = {
         host_interface: HostInterface<Stm32g0I2cPeripheral<I2C1>>,
         flash_writer: FlashWriter,
         fw_wp: FwWp,
-        exti: hal::stm32::EXTI,
     }
 
     #[init]
@@ -159,18 +157,6 @@ const APP: () = {
         }
     }
 
-    #[task(binds = EXTI4_15, resources = [exti], spawn = [handle_event])]
-    fn button_click(ctx: button_click::Context) {
-        // TODO: Remove this. We don't want this in production.
-        ctx.resources.exti.unpend(hal::exti::Event::GPIO13);
-        // Don't listen for any further button-presses. If we boot into the
-        // application and the button gets pressed, the application won't know
-        // to clear the interrupt, so it will keep triggering indefinitely.
-        ctx.resources.exti.unlisten(hal::exti::Event::GPIO13);
-        info!("Button pressed, booting...");
-        let _ = ctx.spawn.handle_event(HostEvent::LoadApplication);
-    }
-
     // Interrupts that we're not using that can be used by RTIC for spawning
     // software tasks.
     extern "C" {
@@ -229,9 +215,6 @@ fn init_peripherals(
     // Configure PC15 as output pin.
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
 
-    let mut exti = p.EXTI;
-    gpioc.pc13.listen(SignalEdge::Rising, &mut exti);
-
     info!("Booting...");
 
     // The art of implementing a stm32 bootloader in rust.
@@ -279,7 +262,6 @@ fn init_peripherals(
         host_interface,
         flash_writer,
         fw_wp,
-        exti,
     }
 }
 
