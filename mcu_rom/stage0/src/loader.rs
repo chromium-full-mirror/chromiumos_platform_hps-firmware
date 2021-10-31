@@ -38,6 +38,7 @@ fn decode_version(hdr_sig: &[u8; 64]) -> [u16; 2] {
 
 /// Checks whether it's OK to load the application, returning an error if not.
 pub(crate) fn detect_and_validate_stage1(
+    slot: &[u8],
     wp_state: WriteProtectState,
 ) -> Result<ValidStage1, Stage1Error> {
     if let Err(e) = detect_stage1() {
@@ -45,7 +46,7 @@ pub(crate) fn detect_and_validate_stage1(
         return Err(Stage1Error::Missing);
     }
 
-    let stage1_validation = validate_stage1();
+    let stage1_validation = validate_stage1(slot);
 
     match stage1_validation {
         Ok(_) => {
@@ -105,8 +106,7 @@ fn detect_stage1() -> Result<(), &'static str> {
     Err("Could not find stage1")
 }
 
-fn stage1_digest() -> [u8; 32] {
-    let slot = get_stage1_slot();
+fn stage1_digest(slot: &[u8]) -> [u8; 32] {
     let mut hasher = Hash::new();
 
     // Although we hash the header as well we must treat it a little
@@ -129,8 +129,8 @@ fn stage1_digest() -> [u8; 32] {
     hasher.finalize()
 }
 
-fn validate_stage1() -> Result<(), ed25519_compact::Error> {
-    let stage1_digest = stage1_digest();
+fn validate_stage1(slot: &[u8]) -> Result<(), ed25519_compact::Error> {
+    let stage1_digest = stage1_digest(slot);
     info!("{:?}", stage1_digest);
 
     let hdr_sig = get_stage1_signature();

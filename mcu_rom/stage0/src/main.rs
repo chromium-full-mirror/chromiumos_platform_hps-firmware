@@ -258,7 +258,9 @@ fn init_peripherals(
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
-    match detect_and_validate_stage1(wp_state) {
+    let slot = loader::get_stage1_slot();
+
+    match detect_and_validate_stage1(slot, wp_state) {
         Ok(valid_stage1) => host_interface.stage0_ctx.set_stage1_valid(valid_stage1),
         Err(e) => {
             error!("Failed to launch application");
@@ -271,7 +273,7 @@ fn init_peripherals(
         }
     };
 
-    let flash_writer = FlashWriter::new(p.FLASH, loader::get_stage1_slot());
+    let flash_writer = FlashWriter::new(p.FLASH, slot);
     init::LateResources {
         host_interface,
         flash_writer,
