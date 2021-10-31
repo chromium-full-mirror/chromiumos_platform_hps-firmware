@@ -13,7 +13,13 @@ const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 pub struct FlashWriter {
     flash: Option<FLASH>,
-    slot: &'static [u8],
+    // Note, the code would still compile if we changed slot here and in
+    // `FlashWriter::new` to a shared reference. This is because the write
+    // function passes the address as a u32, which the HAL crate then eventually
+    // turns into a `*mut u32` which it then writes to. But we do mutate the
+    // contents of the slice, so we should hold a mutable reference while we do
+    // so.
+    slot: &'static mut [u8],
 }
 
 pub(crate) fn flash_error_string(error: flash::Error) -> &'static str {
@@ -27,7 +33,7 @@ pub(crate) fn flash_error_string(error: flash::Error) -> &'static str {
 }
 
 impl FlashWriter {
-    pub(crate) fn new(flash: FLASH, slot: &'static [u8]) -> FlashWriter {
+    pub(crate) fn new(flash: FLASH, slot: &'static mut [u8]) -> FlashWriter {
         FlashWriter {
             flash: Some(flash),
             slot,

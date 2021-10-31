@@ -258,7 +258,8 @@ fn init_peripherals(
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
-    let slot = loader::get_stage1_slot();
+    // Safety: This is the only call to this function.
+    let slot = unsafe { loader::get_stage1_slot() };
 
     match detect_and_validate_stage1(slot, wp_state) {
         Ok(valid_stage1) => host_interface.stage0_ctx.set_stage1_valid(valid_stage1),

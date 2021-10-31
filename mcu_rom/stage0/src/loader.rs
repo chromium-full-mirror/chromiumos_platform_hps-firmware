@@ -22,7 +22,7 @@ const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
 
 extern "C" {
     static _hdr: TargetImageHeader;
-    static _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
+    static mut _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
 }
 
 fn get_stage1_signature() -> [u8; 64] {
@@ -146,6 +146,11 @@ fn get_stage1_version() -> [u16; 2] {
     decode_version(&hdr_sig)
 }
 
-pub(crate) fn get_stage1_slot() -> &'static [u8] {
-    unsafe { &_slot }
+/// # Safety
+///
+/// Caller must ensure that multiple return values from this function do not
+/// exist concurrently. This can be ensured by only calling this function once
+/// at program start.
+pub(crate) unsafe fn get_stage1_slot() -> &'static mut [u8] {
+    &mut _slot
 }
