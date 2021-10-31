@@ -69,7 +69,7 @@ pub const SIGNATURE_OFFSET: usize = 20;
 /// N.B., that all fields must be either unsigned integers that are fixed-sized
 /// otherwise 64 bit signing hosts binaries will be built different sized field
 /// to the 32 bit target target binaries, resulting in miss-aligned stage 1 HDR's.
-#[repr(C, packed(4))]
+#[repr(C)]
 pub struct ImageHeader<T> {
     pub magic: u32,
     pub version: u16,
