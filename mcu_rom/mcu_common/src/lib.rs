@@ -58,6 +58,9 @@ pub const APPLICATION_START_ADDRESS: u32 = 0x08010000;
 // so shouldn't be changed once stage0 is locked.
 pub const APPLICATION_VECTOR_ADDRESS: u32 = 0x08010100;
 
+/// The offset of the start of the signature within stage1.
+pub const SIGNATURE_OFFSET: usize = 20;
+
 /// ImageHeader is the structure found upon the prefix of a stage 1 image.
 /// N.B., that all fields must be either unsigned integers that are fixed-sized
 /// otherwise 64 bit signing hosts binaries will be built different sized field
@@ -127,4 +130,29 @@ pub mod status {
     pub const WPOFF: u16 = 1 << 5;
     pub const APPLRUN: u16 = 1 << 8;
     pub const APPLREADY: u16 = 1 << 9;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_signature_offset() {
+        // Check that the signature is at the expected offset in the header. If
+        // we add or remove fields in the header, we don't want this to change,
+        // since hpsd knows this offset.
+        let header = HostImageHeader {
+            magic: 0,
+            version: 0,
+            vector_addr: 0,
+            git_hash_length: 0,
+            git_hash_ptr: 0,
+            sig: Signature {
+                raw_bytes: [0u8; 64],
+            },
+        };
+        let signature_offset =
+            &header.sig.raw_bytes as *const _ as usize - &header as *const _ as usize;
+        assert_eq!(signature_offset, SIGNATURE_OFFSET);
+    }
 }
