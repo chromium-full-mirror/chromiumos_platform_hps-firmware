@@ -136,8 +136,8 @@ const APP: () = {
         }
     }
 
-    #[idle]
-    fn idle(_ctx: idle::Context) -> ! {
+    #[idle(resources = [host_interface])]
+    fn idle(mut ctx: idle::Context) -> ! {
         loop {
             // The decision to load stage1 is made in response to an interrupt
             // (e.g. an I2C interrupt) and the decision to execeute stage1 load
@@ -145,7 +145,16 @@ const APP: () = {
             // Loading stage1 from any interrupt handler, would stop CPU from
             // handling any more interrupts at the handler's priority or lower.
             if BOOTLOAD_TRIGGER.load(Ordering::Relaxed) {
-                load_stage1();
+                // We disable interrupts (by locking the host_interface) and
+                // leave them disabled until stage1 reenables them. Critically,
+                // this prevents any requests to write to MCU flash being
+                // processed after we've checked that we're OK to jump to
+                // stage1.
+                ctx.resources.host_interface.lock(|h| {
+                    if h.stage0_ctx.can_jump_to_stage1() {
+                        load_stage1()
+                    }
+                });
             }
         }
     }
