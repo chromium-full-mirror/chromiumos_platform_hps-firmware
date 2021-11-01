@@ -103,7 +103,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
 
     pub(crate) fn handle_i2c_events(&mut self) -> Option<HostEvent> {
         match self.i2c.next_event() {
-            i2c_protocol::Event::ReadRegister(event) => {
+            Ok(i2c_protocol::Event::ReadRegister(event)) => {
                 let result = self
                     .common_interface
                     .read_register(event.register)
@@ -134,7 +134,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     });
                 event.respond_u16(result, &mut self.i2c);
             }
-            i2c_protocol::Event::WriteRegister(event) => match event.register {
+            Ok(i2c_protocol::Event::WriteRegister(event)) => match event.register {
                 registers::COMMAND => match event.value {
                     commands::RESET => return Some(HostEvent::Reset),
                     commands::LAUNCH => {
@@ -144,7 +144,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 },
                 _ => info!("Write to unsupported register {}", event.register),
             },
-            i2c_protocol::Event::WriteMemory(event) => match event.bank {
+            Ok(i2c_protocol::Event::WriteMemory(event)) => match event.bank {
                 memory_banks::MCU_RW => {
                     return Some(HostEvent::WriteFlash(WriteFlashRequest {
                         address: event.address,
@@ -155,9 +155,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     warn!("Attempt to write to unsupported memory bank {}", x);
                 }
             },
-            i2c_protocol::Event::Error(error) => {
-                error!("I2C error: {}", error.as_str());
-                self.common_interface.report_i2c_host_error(error);
+            Err(error) => {
+                self.common_interface.report_error(error);
             }
             _ => {}
         }

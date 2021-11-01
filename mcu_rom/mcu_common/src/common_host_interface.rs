@@ -8,7 +8,6 @@
 use crate::registers;
 use crate::status;
 use crate::Error;
-use i2c_peripheral::I2cError;
 
 #[derive(Default)]
 pub struct CommonHostInterface {
@@ -32,15 +31,6 @@ impl CommonHostInterface {
 
     pub fn report_error(&mut self, error: Error) {
         self.error_bits |= u16::from(error);
-    }
-
-    /// Report an error that occurred while communicating with the host via I2C.
-    pub fn report_i2c_host_error(&mut self, error: I2cError) {
-        self.report_error(match error {
-            I2cError::Overrun => Error::HostI2cOverrun,
-            I2cError::Underrun => Error::HostI2cUnderrun,
-            I2cError::BusError => Error::HostI2cBusError,
-        });
     }
 
     #[cfg(feature = "dev")]
@@ -82,12 +72,12 @@ mod tests {
             interface.read_register(registers::SYSTEM_STATUS),
             Some(status::OK)
         );
-        interface.report_i2c_host_error(I2cError::Overrun);
+        interface.report_error(Error::HostI2cOverrun);
         assert_eq!(
             interface.read_register(registers::ERRORS),
             Some(Error::HostI2cOverrun.unwrap())
         );
-        interface.report_i2c_host_error(I2cError::Underrun);
+        interface.report_error(Error::HostI2cUnderrun);
         assert_eq!(
             interface.read_register(registers::ERRORS),
             Some(Error::HostI2cOverrun.unwrap() | Error::HostI2cUnderrun.unwrap())

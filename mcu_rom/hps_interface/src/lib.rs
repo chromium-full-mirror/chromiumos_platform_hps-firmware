@@ -210,12 +210,12 @@ mod tests {
             assert_eq!(hps.read_register(42).unwrap(), 99);
         }));
         match i2c.next_event() {
-            Event::ReadRegister(event) => {
+            Ok(Event::ReadRegister(event)) => {
                 assert_eq!(event.register, 42);
                 event.respond_u16(99, &mut i2c);
             }
             event => panic!("Unexpected event {:?}", event),
         }
-        assert_eq!(i2c.next_event(), Event::None);
+        assert_eq!(i2c.next_event(), Ok(Event::None));
     }
 }

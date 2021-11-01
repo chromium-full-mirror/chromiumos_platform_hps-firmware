@@ -58,15 +58,15 @@ impl<I: I2cPeripheral> HostInterface<I> {
     pub fn handle_interrupt(&mut self, state: &mut ApplicationState) -> Option<Event> {
         loop {
             match self.protocol_handler.next_event() {
-                i2c_protocol::Event::ReadRegister(event) => {
+                Ok(i2c_protocol::Event::ReadRegister(event)) => {
                     self.read_register(event, state);
                 }
-                i2c_protocol::Event::WriteRegister(event) => {
+                Ok(i2c_protocol::Event::WriteRegister(event)) => {
                     if let Some(event) = self.write_register(event.register, event.value, state) {
                         return Some(event);
                     }
                 }
-                i2c_protocol::Event::WriteMemory(mut event) => {
+                Ok(i2c_protocol::Event::WriteMemory(mut event)) => {
                     // We support two memory banks. One for the bitstream and
                     // one for the SOC ROM. They overlap, so you can program
                     // both at once by just writing a concatenated bistream +
@@ -80,10 +80,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         return Some(Event::WriteSpiFlash(event));
                     }
                 }
-                i2c_protocol::Event::Error(error) => {
-                    self.common_interface.report_i2c_host_error(error);
+                Err(error) => {
+                    self.common_interface.report_error(error);
                 }
-                i2c_protocol::Event::None => {
+                Ok(i2c_protocol::Event::None) => {
                     // Break out of loop.
                     return None;
                 }

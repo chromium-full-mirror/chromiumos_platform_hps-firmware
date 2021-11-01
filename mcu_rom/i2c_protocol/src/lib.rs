@@ -11,6 +11,7 @@ pub use buffer::Buffer;
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::Error;
 use mcu_common::MemBlock;
 
 pub const RECV_BUFFER_SIZE: usize = 256;
@@ -21,7 +22,6 @@ pub enum Event {
     ReadRegister(ReadRegisterEvent),
     WriteRegister(WriteRegisterEvent),
     WriteMemory(WriteMemoryEvent),
-    Error(I2cError),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -142,12 +142,12 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
 
     /// Returns the next event that needs to be handled, consuming that event in
     /// the process.
-    pub fn next_event(&mut self) -> Event {
+    pub fn next_event(&mut self) -> Result<Event, Error> {
         loop {
             match self.i2c.next_event() {
                 Ok(I2cEvent::StartRead) => {
                     if let State::AccessingRegister(register) = self.state {
-                        return Event::ReadRegister(ReadRegisterEvent { register });
+                        return Ok(Event::ReadRegister(ReadRegisterEvent { register }));
                     }
                 }
                 Ok(I2cEvent::StartWrite) => {
@@ -155,11 +155,11 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                 }
                 Ok(I2cEvent::Stop) => match core::mem::take(&mut self.state) {
                     State::MemoryBankWrite(state) => {
-                        return Event::WriteMemory(WriteMemoryEvent {
+                        return Ok(Event::WriteMemory(WriteMemoryEvent {
                             bank: state.bank,
                             address: state.address,
                             data: state.buffer,
-                        });
+                        }));
                     }
                     State::SendBuffer(buffer, _) => {
                         self.mem_block = Some(buffer.release());
@@ -213,7 +213,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                             value: u16::from_be_bytes(value_bytes),
                         });
                         self.state = State::Done;
-                        return event;
+                        return Ok(event);
                     }
                     State::MemoryBankAccess(state) => {
                         // We know which memory bank we're accessing. The byte
@@ -245,8 +245,10 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     }
                     _ => {}
                 },
-                Err(nb::Error::WouldBlock) => return Event::None,
-                Err(nb::Error::Other(error)) => return Event::Error(error),
+                Err(nb::Error::WouldBlock) => return Ok(Event::None),
+                Err(nb::Error::Other(I2cError::Overrun)) => return Err(Error::HostI2cOverrun),
+                Err(nb::Error::Other(I2cError::Underrun)) => return Err(Error::HostI2cUnderrun),
+                Err(nb::Error::Other(I2cError::BusError)) => return Err(Error::HostI2cBusError),
                 _ => {}
             }
         }
@@ -300,12 +302,12 @@ mod tests {
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         assert_eq!(
             protocol_handler.next_event(),
-            Event::WriteRegister(WriteRegisterEvent {
+            Ok(Event::WriteRegister(WriteRegisterEvent {
                 register: 0x9,
                 value: 0x5ab,
-            })
+            }))
         );
-        assert_eq!(protocol_handler.next_event(), Event::None);
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
     }
 
     #[test]
@@ -317,13 +319,13 @@ mod tests {
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         match protocol_handler.next_event() {
-            Event::ReadRegister(event) => {
+            Ok(Event::ReadRegister(event)) => {
                 assert_eq!(event.register, 0x7f);
                 event.respond_u16(0x1234, &mut protocol_handler);
             }
             x => panic!("Unexpected event {:?}", x),
         }
-        assert_eq!(protocol_handler.next_event(), Event::None);
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
     }
 
     #[test]
@@ -338,7 +340,7 @@ mod tests {
         protocol_handler.supply_mem_block(MemBlock::with_capacity(64));
         assert!(protocol_handler.has_receive_buffer());
         match protocol_handler.next_event() {
-            Event::WriteMemory(event) => {
+            Ok(Event::WriteMemory(event)) => {
                 assert_eq!(event.bank, 1);
                 assert_eq!(event.address, 0x12345678);
                 assert_eq!(*event.data, [10, 11, 12]);
