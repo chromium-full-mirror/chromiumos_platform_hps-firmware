@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 use mcu_common::APPLICATION_START_ADDRESS;
-use mcu_common::APPLICATION_VECTOR_ADDRESS;
+use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
+use mcu_common::APPLICATION_VECTOR_TABLE_OFFSET;
 
 // All our boards have an stm32g071.
 #[cfg(all(feature = "standalone"))]
@@ -19,13 +20,10 @@ fn memory_x_contents() -> String {
 
 #[cfg(all(not(feature = "standalone")))]
 fn memory_x_contents() -> String {
-    // The header doesn't need 256 bytes, however the vector table is located at
-    // the start of FLASH and the vector table must be 256 byte aligned, so we
-    // give the extra space to the header.
     format!(
         r#"MEMORY
 {{
-    HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 256
+    HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K - LENGTH(HDR)
     OTP    (r) : ORIGIN = 0x1FFF7000, LENGTH = 1K
     CFG   (rw) : ORIGIN = 0x1FFF7800, LENGTH = 128
@@ -39,7 +37,9 @@ SECTIONS
     }} > HDR
 }}
 "#,
-        APPLICATION_START_ADDRESS, APPLICATION_VECTOR_ADDRESS
+        APPLICATION_START_ADDRESS,
+        APPLICATION_VECTOR_TABLE_OFFSET,
+        APPLICATION_VECTOR_TABLE_ADDRESS
     )
 }
 

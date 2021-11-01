@@ -54,9 +54,13 @@ pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 /// once stage0 is locked.
 pub const APPLICATION_START_ADDRESS: u32 = 0x08010000;
 
-// The address of the application vector table. This constant is used by stage0,
-// so shouldn't be changed once stage0 is locked.
-pub const APPLICATION_VECTOR_ADDRESS: u32 = 0x08010100;
+/// The offset of vector table within the application. This constant is used by
+/// stage0, so shouldn't be changed once stage0 is locked.
+pub const APPLICATION_VECTOR_TABLE_OFFSET: u32 = 0x100;
+
+// The address of the application vector table.
+pub const APPLICATION_VECTOR_TABLE_ADDRESS: u32 =
+    APPLICATION_START_ADDRESS + APPLICATION_VECTOR_TABLE_OFFSET;
 
 /// The offset of the start of the signature within stage1.
 pub const SIGNATURE_OFFSET: usize = 20;
@@ -154,5 +158,12 @@ mod test {
         let signature_offset =
             &header.sig.raw_bytes as *const _ as usize - &header as *const _ as usize;
         assert_eq!(signature_offset, SIGNATURE_OFFSET);
+    }
+
+    #[test]
+    fn test_vector_table_alignment() {
+        // The MCU requires that the vector table is aligned to a multiple of
+        // 0x100 bytes.
+        assert_eq!(APPLICATION_VECTOR_TABLE_ADDRESS % 0x100, 0);
     }
 }
