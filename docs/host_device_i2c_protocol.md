@@ -1,7 +1,12 @@
-All multi-byte values are big-endian.
-There are 3 boot stages, stage0, stage1, and 'Application' (Appl).
+## Protocol overview
 
-The first byte is the command byte:
+All communication is initiated by the host (I2C controller) and consists of
+either a single write (START_WRITE...STOP), or a write_read
+(START_WRITE...START_READ...STOP) operation.
+
+All multi-byte values are big-endian.
+
+The first byte written by the host is the command byte:
 
 | BIT | NAME      | DESCRIPTION                   |
 |:----|:----------|:------------------------------|
@@ -31,10 +36,11 @@ and then the data.
 
 # Register Access
 
-7 bit Parameter specifies the register number.
-The host either requests data from the register,
-or data to be written to the register follows the command.
-All writes and reads are 16 bits.
+7 bit Parameter specifies the register number. The host either requests data
+from the register (write_read operation), or data to be written to the register
+follows the command (write operation). All writes are 16 bits. All documented
+reads are 16 bits. Registers larger than 16 bits are supported but are currently
+only used for development and debugging purposes.
 
 | Register | Access | Stage  | Description            |
 |:---------|:-------|:-------|:-----------------------|
@@ -56,6 +62,9 @@ All writes and reads are 16 bits.
 | 15       | RO     | Appl   | SPI flash status bits  |
 | 16       | RO     | Appl   | Debug idx reg          |
 | 17       | RO     | Appl   | Debug val reg          |
+
+Registers numbered 100 and over are reserved for debugging and development use
+and are not documented here.
 
 ## Magic Number
 
@@ -88,24 +97,24 @@ All writes and reads are 16 bits.
 
 ## Common System Commands
 
-| BIT | NAME   | DESCRIPTION            |
-|:----|:-------|:-----------------------|
-| 15  |        |                        |
-| 14  |        |                        |
-| 13  |        |                        |
-| 12  |        |                        |
-| 11  |        |                        |
-| 10  |        |                        |
-| 9   |        |                        |
-| 8   |        |                        |
-| 7   |        |                        |
-| 6   |        |                        |
-| 5   |        |                        |
-| 4   |        |                        |
-| 3   |        |                        |
-| 2   | ENABLE | Enable the next stage. |
-| 1   | LAUNCH | Launch stage1          |
-| 0   | RESET  | Reset module to stage0 |
+| BIT | NAME      | DESCRIPTION                      |
+|:----|:----------|:---------------------------------|
+| 15  |           |                                  |
+| 14  |           |                                  |
+| 13  |           |                                  |
+| 12  |           |                                  |
+| 11  |           |                                  |
+| 10  |           |                                  |
+| 9   |           |                                  |
+| 8   |           |                                  |
+| 7   |           |                                  |
+| 6   |           |                                  |
+| 5   |           |                                  |
+| 4   |           |                                  |
+| 3   |           |                                  |
+| 2   | LAUNCHAPP | Launch application (from stage1) |
+| 1   | LAUNCH1   | Launch stage1 (from stage0)      |
+| 0   | RESET     | Reset module to stage0           |
 
 ## Application Version
 
@@ -126,8 +135,8 @@ The host should poll this register before issuing a Memory Write command.
 | 12  |           |                            |
 | 11  |           |                            |
 | 10  |           |                            |
-| 9   |           |                            |
-| 8   |           |                            |
+| 9   | BUFORUN   | Buffer overrun             |
+| 8   | BUFNAVAIL | Buffer not available       |
 | 7   | I2CBADREQ | A bad I2C request was made |
 | 6   | SPIFLASH  | SPI flash access failed    |
 | 5   | CAMERA    | Camera not functional      |
@@ -165,3 +174,25 @@ The host should poll this register before issuing a Memory Write command.
 | 15  | VALID | The feature result is valid to use. |
 
 Bits 7-0 are the feature result.
+
+## Boot sequence
+
+From the perspective of the host, there are 3 boot stages: stage0, stage1 and
+'Application' (Appl). Stage1 and the application are a single binary with two
+different stages.
+
+Provided no firmware updates are required, the HPS can be started by sending a
+LAUNCH1 command to stage0, then once stage1 starts, by sending a LAUNCHAPP
+command.
+
+## Firmware updates
+
+A boot sequence with firmware updates can be performed as follows:
+
+* Reset, power cycle, or otherwise ensure that stage0 is running.
+* Write new stage1/application.
+* Issue RESET command
+* Issue LAUNCH1 command
+* Write gateware and SOC ROM.
+* Issue LAUNCHAPP command
+* Operate as per normal (e.g. enable a feature)
