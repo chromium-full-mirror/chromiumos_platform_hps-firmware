@@ -231,16 +231,16 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                                 // Attempt to write to memory buffer when the
                                 // buffer is already in use. Send all bytes to
                                 // /dev/null.
-                                // TODO: Report error
                                 self.state = State::Done;
+                                return Err(Error::BufferNotAvailable);
                             }
                         }
                     }
                     State::MemoryBankWrite(state) => {
                         if state.buffer.push(byte).is_err() {
                             // Attempt to write beyond end of buffer.
-                            // TODO: Report error
                             self.state = State::Done;
+                            return Err(Error::BufferOverrun);
                         }
                     }
                     _ => {}
@@ -350,5 +350,32 @@ mod tests {
             }
             x => panic!("Unexpected event {:?}", x),
         }
+    }
+
+    #[test]
+    fn test_write_memory_bank_unavailable() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            device
+                .write_read(1, &[1, 0x12, 0x34, 0x56, 0x78, 10, 11, 12], &mut [])
+                .unwrap()
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert!(!protocol_handler.has_receive_buffer());
+        assert_eq!(
+            protocol_handler.next_event(),
+            Err(Error::BufferNotAvailable)
+        );
+    }
+
+    #[test]
+    fn test_write_memory_bank_overrun() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            device
+                .write_read(1, &[1, 0x12, 0x34, 0x56, 0x78, 10, 11, 12], &mut [])
+                .unwrap()
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        protocol_handler.supply_mem_block(MemBlock::with_capacity(2));
+        assert_eq!(protocol_handler.next_event(), Err(Error::BufferOverrun));
     }
 }

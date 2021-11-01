@@ -32,6 +32,13 @@ pub enum Error {
 
     /// Something was wrong with a request from the host.
     HostI2cBadRequest = 1 << 7,
+
+    /// An attempt was made to use a buffer, but the buffer was not available,
+    /// possibly because it was already in use.
+    BufferNotAvailable = 1 << 8,
+
+    /// An attempt was made to write beyond the end of a buffer.
+    BufferOverrun = 1 << 9,
 }
 
 impl Error {
