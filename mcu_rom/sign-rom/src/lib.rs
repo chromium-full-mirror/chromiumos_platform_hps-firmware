@@ -5,25 +5,20 @@
 use anyhow::bail;
 use anyhow::Result;
 use mcu_common::Hash;
-use mcu_common::HostImageHeader;
 use mcu_common::Signature;
+use mcu_common::FLASH_PAGE_SZ;
+use mcu_common::FLASH_WRITE_SZ;
 use mcu_common::SIGNATURE_LENGTH;
-use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
+use mcu_common::SIGNATURE_OFFSET;
 
-/// Returns a mutable reference to the signature as well as the payload (the
-/// data that the signature applies to).
-pub fn split_signature_and_payload(file_bytes: &mut [u8]) -> Result<(&mut Signature, &[u8])> {
-    if file_bytes.len() < std::mem::size_of::<HostImageHeader>() {
-        bail!("Input file is too short to contain ImageHeader");
+/// Writes `signature` into `file_bytes`.
+pub fn write_signature(file_bytes: &mut [u8], signature: &Signature) -> Result<()> {
+    const SIGNATURE_END: usize = SIGNATURE_OFFSET + SIGNATURE_LENGTH;
+    if file_bytes.len() < SIGNATURE_END {
+        bail!("Input file is too short to contain a signature");
     }
-    // Note, this is possibly technically invalid, since ImageHeder contains
-    // references that won't be valid in the current memory space. We don't use
-    // those references, but technically Rust would be permitted to dereference
-    // these references. We also don't check that file_bytes is properly aligned
-    // for an ImageHader, but again we don't use any fields that have alignment
-    // more than 1.
-    let header = unsafe { &mut *(&mut file_bytes[0] as *mut u8 as *mut HostImageHeader) };
-    Ok((&mut header.sig, &file_bytes[..]))
+    file_bytes[SIGNATURE_OFFSET..SIGNATURE_END].copy_from_slice(signature.raw_bytes());
+    Ok(())
 }
 
 /// Compute the digest of the payload image with the required length
@@ -70,6 +65,8 @@ pub fn sign_hash(hash: &[u8], private_key: &ed25519_compact::SecretKey) -> Signa
 
 #[cfg(test)]
 mod test {
+    use mcu_common::Signature;
+
     #[test]
     fn test_signing() {
         let private_key = ed25519_compact::SecretKey::new([42u8; 64]);
@@ -129,5 +126,24 @@ mod test {
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + OFFSET], 0x00);
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET + 1)], 0xFF);
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET * 2)], 0xFF);
+    }
+
+    #[test]
+    fn test_write_signature() {
+        let mut buffer = [0; 100];
+        let signature = Signature {
+            raw_bytes: [42u8; 64],
+        };
+        super::write_signature(&mut buffer, &signature).unwrap();
+        assert_eq!(buffer[mcu_common::SIGNATURE_OFFSET], 42);
+    }
+
+    #[test]
+    fn test_signature_mut_too_short() {
+        let mut buffer = [0; 70];
+        let signature = Signature {
+            raw_bytes: [42u8; 64],
+        };
+        assert!(super::write_signature(&mut buffer, &signature).is_err());
     }
 }
