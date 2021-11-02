@@ -51,6 +51,7 @@ enum SubCommand {
     ListDevices(ListDevices),
     FlashMcu(FlashMcu),
     Launch1(Launch1),
+    LaunchApp(LaunchApp),
     Reset(Reset),
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
@@ -77,6 +78,11 @@ struct FlashMcu {
 /// Launch stage1
 #[argh(subcommand, name = "launch1")]
 struct Launch1 {}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Launch application
+#[argh(subcommand, name = "launchapp")]
+struct LaunchApp {}
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// Read or write arbitrary registers
@@ -249,6 +255,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         SubCommand::Launch1(_) => hps.perform_command(commands::LAUNCH1),
+        SubCommand::LaunchApp(_) => hps.perform_command(commands::LAUNCH_APP),
         SubCommand::Reset(_) => hps.perform_command(commands::RESET),
         SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {

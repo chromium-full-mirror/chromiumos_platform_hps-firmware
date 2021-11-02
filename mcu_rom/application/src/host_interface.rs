@@ -151,6 +151,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         match register {
             registers::COMMAND => match value {
                 commands::RESET => return Some(Event::Reset),
+                commands::LAUNCH_APP => return Some(Event::StartFpga),
                 _ => {}
             },
             registers::ENABLED_FEATURES => {
@@ -206,6 +207,20 @@ mod tests {
                 .unwrap();
         }));
         assert_eq!(interface.handle_interrupt(&mut state), Some(Event::Reset));
+    }
+
+    #[test]
+    fn test_launch_app() {
+        let mut state = ApplicationState::default();
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = HpsAdapter::without_magic_check(device);
+            hps.write_register(registers::COMMAND, commands::LAUNCH_APP)
+                .unwrap();
+        }));
+        assert_eq!(
+            interface.handle_interrupt(&mut state),
+            Some(Event::StartFpga)
+        );
     }
 
     #[test]
