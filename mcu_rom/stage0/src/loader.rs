@@ -88,11 +88,9 @@ fn detect_stage1() -> Result<(), Stage1Error> {
 fn stage1_digest(slot: &[u8]) -> [u8; 32] {
     let mut hasher = Hash::new();
 
-    // Although we hash the header as well we must treat it a little
-    // differently because the signature is a variable position that
-    // is obviously inserted after signing.
-    // Replace the signature with zeros, since that's what was in the
-    // file when the digest was computed during the signing process.
+    // We hash the first page separately because we need to zero-out the part
+    // that contains the signature. That's what was in the file when the digest
+    // was computed during the signing process.
     let mut first_page = [0u8; PAGE_SIZE];
     first_page.copy_from_slice(&slot[..PAGE_SIZE]);
     let sig_offset = unsafe { &_hdr.sig as *const _ as usize - &_hdr as *const _ as usize };
