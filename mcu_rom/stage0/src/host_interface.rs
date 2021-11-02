@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::info;
-use crate::warn;
 use crate::ValidStage1;
 use crate::WriteProtectState;
 use i2c_peripheral::I2cPeripheral;
@@ -14,6 +12,7 @@ use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::status;
 use mcu_common::CommonHostInterface;
+use mcu_common::Error;
 use mcu_common::MemBlock;
 
 const HARDWARE_VERSION: u16 = 1;
@@ -139,9 +138,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     commands::LAUNCH1 => {
                         return Some(HostEvent::LoadApplication);
                     }
-                    _ => info!("Unknown command {}", event.value),
+                    _ => self.common_interface.report_error(Error::HostI2cBadRequest),
                 },
-                _ => info!("Write to unsupported register {}", event.register),
+                _ => self.common_interface.report_error(Error::HostI2cBadRequest),
             },
             Ok(i2c_protocol::Event::WriteMemory(event)) => match event.bank {
                 memory_banks::MCU_RW => {
@@ -150,9 +149,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         data: event.data,
                     }));
                 }
-                x => {
-                    warn!("Attempt to write to unsupported memory bank {}", x);
-                }
+                _ => self.common_interface.report_error(Error::HostI2cBadRequest),
             },
             Err(error) => {
                 self.common_interface.report_error(error);
