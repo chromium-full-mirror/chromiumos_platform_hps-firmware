@@ -6,4 +6,4 @@
 pub const RESET: u16 = 1;
 
 /// Launch the RW portion.
-pub const LAUNCH: u16 = 2;
+pub const LAUNCH1: u16 = 2;

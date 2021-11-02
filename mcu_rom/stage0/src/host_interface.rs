@@ -137,7 +137,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             Ok(i2c_protocol::Event::WriteRegister(event)) => match event.register {
                 registers::COMMAND => match event.value {
                     commands::RESET => return Some(HostEvent::Reset),
-                    commands::LAUNCH => {
+                    commands::LAUNCH1 => {
                         return Some(HostEvent::LoadApplication);
                     }
                     _ => info!("Unknown command {}", event.value),

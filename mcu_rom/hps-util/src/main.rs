@@ -50,7 +50,7 @@ struct Flags {
 enum SubCommand {
     ListDevices(ListDevices),
     FlashMcu(FlashMcu),
-    Launch(Launch),
+    Launch1(Launch1),
     Reset(Reset),
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
@@ -74,12 +74,12 @@ struct FlashMcu {
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
-/// Launch MCU application
-#[argh(subcommand, name = "launch")]
-struct Launch {}
+/// Launch stage1
+#[argh(subcommand, name = "launch1")]
+struct Launch1 {}
 
 #[derive(FromArgs, PartialEq, Debug)]
-/// Launch MCU application
+/// Read or write arbitrary registers
 #[argh(subcommand, name = "reg")]
 struct AccessRegisters {
     #[argh(positional)]
@@ -248,7 +248,7 @@ fn main() -> Result<()> {
             println!("Sucessfully wrote {} bytes of firmware", bytes.len());
             Ok(())
         }
-        SubCommand::Launch(_) => hps.perform_command(commands::LAUNCH),
+        SubCommand::Launch1(_) => hps.perform_command(commands::LAUNCH1),
         SubCommand::Reset(_) => hps.perform_command(commands::RESET),
         SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {
