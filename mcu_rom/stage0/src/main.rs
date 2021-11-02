@@ -23,7 +23,7 @@ use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
-use mcu_common::Error::McuFlashWriteError;
+use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
@@ -91,7 +91,9 @@ const APP: () = {
                     .set_i2c_enabled(false);
             }
             if ctx.spawn.handle_event(event).is_err() {
-                error!("Event queue full!");
+                ctx.resources
+                    .host_interface
+                    .i2c_report_err(Error::BufferOverrun);
             }
         }
     }
@@ -113,7 +115,7 @@ const APP: () = {
                     .write(event.address, &*event.data)
                 {
                     error!("Failed to write MCU flash: {}", flash_error_string(error));
-                    host_interface.lock(|h| h.i2c_report_err(McuFlashWriteError));
+                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
                 host_interface.lock(|h| h.supply_mem_block(event.data.release()));
                 if cfg!(feature = "no-i2c-clock-stretching") {
