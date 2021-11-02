@@ -12,10 +12,6 @@ mod mcu_flash;
 use crate::loader::*;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-use defmt::error;
-use defmt::info;
-use defmt::warn;
-use defmt_rtt as _; // global logger
 use hal::gpio::gpioa;
 use hal::gpio::Floating;
 use hal::gpio::Input;
@@ -25,7 +21,6 @@ use host_interface::HostEvent;
 use host_interface::HostInterface;
 use mcu_common::Error;
 use mcu_common::MemBlock;
-use mcu_flash::flash_error_string;
 use mcu_flash::FlashWriter;
 use panic_halt as _;
 use rtic::app;
@@ -112,12 +107,12 @@ const APP: () = {
             }
             HostEvent::WriteFlash(event) => {
                 host_interface.lock(|h| h.stage0_ctx.mark_stage1_invalid());
-                if let Err(error) = ctx
+                if ctx
                     .resources
                     .flash_writer
                     .write(event.address, &*event.data)
+                    .is_err()
                 {
-                    error!("Failed to write MCU flash: {}", flash_error_string(error));
                     host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
                 host_interface.lock(|h| h.supply_mem_block(event.data.release()));
@@ -206,7 +201,6 @@ fn init_peripherals(
     // wp is inverted, i.e., de-assert strapped low.
     let fw_wp = gpioa.pa15.into_floating_input();
     let wp_state = if fw_wp.is_low().unwrap() {
-        warn!("write-protect de-asserted!");
         WriteProtectState::Deasserted
     } else {
         WriteProtectState::Asserted
@@ -220,11 +214,6 @@ fn init_peripherals(
 
     // Configure PC15 as output pin.
     let mut fpga_prog = gpioc.pc15.into_push_pull_output();
-
-    info!("Booting...");
-
-    // The art of implementing a stm32 bootloader in rust.
-    info!("{}\n", banner());
 
     // Put FPGA into reset.
     let _ = fpga_prog.set_low();
@@ -250,17 +239,8 @@ fn init_peripherals(
     // Safety: This is the only call to this function.
     let slot = unsafe { loader::get_stage1_slot() };
 
-    match detect_and_validate_stage1(slot, wp_state) {
-        Ok(valid_stage1) => host_interface.stage0_ctx.set_stage1_valid(valid_stage1),
-        Err(e) => {
-            error!("Failed to launch application");
-            match e {
-                Stage1Error::Missing => error!("missing stage 1/app"),
-                Stage1Error::InvalidSignature => {
-                    error!("invalid stage 1/app signature");
-                }
-            };
-        }
+    if let Ok(valid_stage1) = detect_and_validate_stage1(slot, wp_state) {
+        host_interface.stage0_ctx.set_stage1_valid(valid_stage1)
     };
 
     let flash_writer = FlashWriter::new(p.FLASH, slot);
@@ -269,16 +249,4 @@ fn init_peripherals(
         flash_writer,
         fw_wp,
     }
-}
-
-fn banner() -> &'static str {
-    r#"
- C
- (\.   \      ,/)
-  \(   |\     )/
-  //\  | \   /\\
- (/ /\_#oo#_/\ \)
-  \/\  ####  /\/
-       `##'
-quasisec~."#
 }

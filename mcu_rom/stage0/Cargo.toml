@@ -11,8 +11,6 @@ license = "BSD-3-Clause"
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
-defmt = "0.2.1"
-defmt-rtt = "0.2.0"
 i2c_protocol = { path = "../i2c_protocol" }  # provided by ebuild
 mcu_common = { path = "../mcu_common" }  # provided by ebuild
 panic-halt = "0.2.0"
@@ -31,19 +29,9 @@ mcu_common = { path = "../mcu_common" }
 # will still run on startup and commands will need to be sent to the system
 # bootloader into order to jump to stage0.
 sys_bootloader = []
-# set logging levels here
 default = [
-  "defmt-default",
   "sys_bootloader",
 ]
-# do NOT modify these features
-defmt-default = []
-defmt-trace = []
-defmt-debug = []
-defmt-info = []
-defmt-warn = []
-defmt-error = []
-
 
 no-i2c-clock-stretching = []
 

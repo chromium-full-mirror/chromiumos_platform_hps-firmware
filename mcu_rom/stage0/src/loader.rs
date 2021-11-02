@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::error;
-use crate::info;
-use crate::warn;
 use crate::Stage1Error;
 use crate::ValidStage1;
 use crate::WriteProtectState;
@@ -49,30 +46,17 @@ pub(crate) fn detect_and_validate_stage1(
     let stage1_validation = validate_stage1(slot);
 
     match stage1_validation {
-        Ok(_) => {
-            info!("signature good!");
-            Ok(ValidStage1 {
+        Ok(_) => Ok(ValidStage1 {
+            firmware_version: get_stage1_version(slot),
+            vector_address: stage1_header(slot).vector_addr,
+        }),
+        Err(_) => match wp_state {
+            WriteProtectState::Asserted => Err(Stage1Error::InvalidSignature),
+            WriteProtectState::Deasserted => Ok(ValidStage1 {
                 firmware_version: get_stage1_version(slot),
                 vector_address: stage1_header(slot).vector_addr,
-            })
-        }
-        Err(_) => {
-            error!("signature bad!");
-            match wp_state {
-                WriteProtectState::Asserted => {
-                    warn!("write-protect asserted!");
-                    warn!("stage 1 is untrusted, waitting for recovery.");
-                    Err(Stage1Error::InvalidSignature)
-                }
-                WriteProtectState::Deasserted => {
-                    warn!("starting untrusted stage 1..");
-                    Ok(ValidStage1 {
-                        firmware_version: get_stage1_version(slot),
-                        vector_address: stage1_header(slot).vector_addr,
-                    })
-                }
-            }
-        }
+            }),
+        },
     }
 }
 

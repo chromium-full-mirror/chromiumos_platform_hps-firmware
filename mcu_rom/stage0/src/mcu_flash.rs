@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::info;
 use core::ops::Range;
 use hal::flash;
 use hal::flash::FlashExt;
@@ -22,16 +21,6 @@ enum FlashState {
     Locked(FLASH),
     Unlocked(UnlockedFlash),
     Lost,
-}
-
-pub(crate) fn flash_error_string(error: flash::Error) -> &'static str {
-    match error {
-        flash::Error::Busy => "busy",
-        flash::Error::Illegal => "illegal",
-        flash::Error::EccError => "ecc error",
-        flash::Error::PageOutOfRange => "page out of range",
-        flash::Error::Failure => "failure",
-    }
 }
 
 impl FlashWriter {
@@ -66,11 +55,6 @@ impl FlashWriter {
         }
         unlocked_flash.write(address as usize, data)?;
         self.flash.lock();
-        info!(
-            "Successfully wrote {} bytes to MCU flash at address {:x}.",
-            data.len(),
-            address
-        );
         Ok(())
     }
 }
