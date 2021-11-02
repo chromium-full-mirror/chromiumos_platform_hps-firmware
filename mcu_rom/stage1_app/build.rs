@@ -5,6 +5,7 @@
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_OFFSET;
+use mcu_common::STAGE1_SLOT_LENGTH;
 
 // All our boards have an stm32g071.
 #[cfg(all(feature = "standalone"))]
@@ -24,7 +25,7 @@ fn memory_x_contents() -> String {
         r#"MEMORY
 {{
     HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
-    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K - LENGTH(HDR)
+    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
     OTP    (r) : ORIGIN = 0x1FFF7000, LENGTH = 1K
     CFG   (rw) : ORIGIN = 0x1FFF7800, LENGTH = 128
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
@@ -39,7 +40,8 @@ SECTIONS
 "#,
         APPLICATION_START_ADDRESS,
         APPLICATION_VECTOR_TABLE_OFFSET,
-        APPLICATION_VECTOR_TABLE_ADDRESS
+        APPLICATION_VECTOR_TABLE_ADDRESS,
+        STAGE1_SLOT_LENGTH
     )
 }
 
