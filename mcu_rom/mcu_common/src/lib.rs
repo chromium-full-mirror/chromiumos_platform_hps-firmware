@@ -171,4 +171,22 @@ mod test {
         // 0x100 bytes.
         assert_eq!(APPLICATION_VECTOR_TABLE_ADDRESS % 0x100, 0);
     }
+
+    #[test]
+    fn test_stage1_within_flash() {
+        // Ensure that the "FLASH" section doesn't extend beyond the end of the
+        // actual flash.
+        const FLASH_END_ADDRESS: u32 = 0x08020000;
+        assert!(APPLICATION_START_ADDRESS + STAGE1_SLOT_LENGTH as u32 <= FLASH_END_ADDRESS);
+    }
+
+    #[test]
+    #[allow(clippy::assertions_on_constants)]
+    fn test_header_before_stage1() {
+        // Ensure that "HDR" doesn't extend into "FLASH".
+        assert!(
+            APPLICATION_START_ADDRESS + APPLICATION_VECTOR_TABLE_OFFSET
+                <= APPLICATION_VECTOR_TABLE_ADDRESS
+        );
+    }
 }
