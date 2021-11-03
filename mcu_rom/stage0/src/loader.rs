@@ -10,6 +10,7 @@ use crate::ValidStage1;
 use crate::WriteProtectState;
 use mcu_common::Hash;
 use mcu_common::TargetImageHeader;
+use mcu_common::SIGNATURE_LENGTH;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
@@ -24,11 +25,11 @@ extern "C" {
     static mut _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
 }
 
-fn get_stage1_signature() -> [u8; 64] {
+fn get_stage1_signature() -> [u8; SIGNATURE_LENGTH] {
     unsafe { _hdr.sig.unwrap() }
 }
 
-fn decode_version(hdr_sig: &[u8; 64]) -> [u16; 2] {
+fn decode_version(hdr_sig: &[u8; SIGNATURE_LENGTH]) -> [u16; 2] {
     [
         u16::from_be_bytes([hdr_sig[0], hdr_sig[1]]),
         u16::from_be_bytes([hdr_sig[2], hdr_sig[3]]),

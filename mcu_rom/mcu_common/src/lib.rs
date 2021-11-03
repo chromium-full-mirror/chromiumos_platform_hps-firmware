@@ -65,6 +65,9 @@ pub const APPLICATION_VECTOR_TABLE_ADDRESS: u32 =
 /// The offset of the start of the signature within stage1.
 pub const SIGNATURE_OFFSET: usize = 20;
 
+/// The length of the signature in bytes.
+pub const SIGNATURE_LENGTH: usize = 64;
+
 /// ImageHeader is the structure found upon the prefix of a stage 1 image.
 /// N.B., that all fields must be either unsigned integers that are fixed-sized
 /// otherwise 64 bit signing hosts binaries will be built different sized field
@@ -94,12 +97,14 @@ pub type HostImageHeader = ImageHeader<u32>;
 
 #[repr(C)]
 pub struct Signature {
-    pub raw_bytes: [u8; 64],
+    pub raw_bytes: [u8; SIGNATURE_LENGTH],
 }
 
 impl Signature {
     pub const fn empty() -> Signature {
-        Signature { raw_bytes: [0; 64] }
+        Signature {
+            raw_bytes: [0; SIGNATURE_LENGTH],
+        }
     }
 
     pub fn copy_from(&mut self, other: &Self) {
@@ -110,7 +115,7 @@ impl Signature {
         &self.raw_bytes
     }
 
-    pub fn unwrap(&self) -> [u8; 64] {
+    pub fn unwrap(&self) -> [u8; SIGNATURE_LENGTH] {
         self.raw_bytes
     }
 }
@@ -152,7 +157,7 @@ mod test {
             _reserved1: 0,
             _reserved2: 0,
             sig: Signature {
-                raw_bytes: [0u8; 64],
+                raw_bytes: [0u8; SIGNATURE_LENGTH],
             },
         };
         let signature_offset =

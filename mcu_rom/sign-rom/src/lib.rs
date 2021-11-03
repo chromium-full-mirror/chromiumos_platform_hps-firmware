@@ -7,6 +7,7 @@ use anyhow::Result;
 use mcu_common::Hash;
 use mcu_common::HostImageHeader;
 use mcu_common::Signature;
+use mcu_common::SIGNATURE_LENGTH;
 use mcu_common::{FLASH_PAGE_SZ, FLASH_WRITE_SZ};
 
 /// Returns a mutable reference to the signature as well as the payload (the
@@ -59,9 +60,11 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
 pub fn sign_hash(hash: &[u8], private_key: &ed25519_compact::SecretKey) -> Signature {
     let out = private_key.sign(hash, None); // TODO(quasisec): should not be None.
     let mut signature = Signature {
-        raw_bytes: [0u8; 64],
+        raw_bytes: [0u8; SIGNATURE_LENGTH],
     };
-    signature.raw_bytes.clone_from_slice(&out[..64]);
+    signature
+        .raw_bytes
+        .clone_from_slice(&out[..SIGNATURE_LENGTH]);
     signature
 }
 

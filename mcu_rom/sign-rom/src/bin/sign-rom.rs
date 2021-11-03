@@ -7,6 +7,7 @@ use clap::Clap;
 use anyhow::bail;
 use anyhow::Result;
 use mcu_common::Signature;
+use mcu_common::SIGNATURE_LENGTH;
 use std::path::PathBuf;
 
 /// Hashes and signs a HPS stage1 binary. This is currently intended for
@@ -62,7 +63,7 @@ fn main() -> Result<()> {
 
 fn get_signature(config: &Config, hash: &[u8]) -> Result<Signature> {
     if let Some(sig) = &config.signature {
-        let mut signature_bytes = [0u8; 64];
+        let mut signature_bytes = [0u8; SIGNATURE_LENGTH];
         for (i, part) in sig.split(',').enumerate() {
             signature_bytes[i] = part.parse::<u8>()?;
         }
