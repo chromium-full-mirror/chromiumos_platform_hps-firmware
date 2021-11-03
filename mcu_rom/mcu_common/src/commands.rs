@@ -17,4 +17,10 @@ pub enum Command {
 
     /// Launch the application.
     LaunchApp = 1 << 2,
+
+    /// Erase the first page of stage0 so that the system bootloader is
+    /// activated on the next reboot. This command will fail if stage0 has been
+    /// locked as read-only. After this command completes, the MCU will be
+    /// reset, although that reset will likely result in a hard fault.
+    EraseStage0Start = 1 << 15,
 }

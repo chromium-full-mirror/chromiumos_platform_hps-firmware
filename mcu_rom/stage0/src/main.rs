@@ -130,6 +130,13 @@ const APP: () = {
                 // queue and get processed in order.
                 cortex_m::peripheral::SCB::sys_reset()
             }
+            HostEvent::ErasePage0 => {
+                if ctx.resources.flash_writer.erase_page0().is_ok() {
+                    cortex_m::peripheral::SCB::sys_reset()
+                } else {
+                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
+                }
+            }
         }
     }
 

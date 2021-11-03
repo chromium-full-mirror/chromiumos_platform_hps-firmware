@@ -53,6 +53,7 @@ enum SubCommand {
     Launch1(Launch1),
     LaunchApp(LaunchApp),
     Reset(Reset),
+    EraseStage0(EraseStage0),
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
@@ -78,6 +79,11 @@ struct FlashMcu {
 /// Launch stage1
 #[argh(subcommand, name = "launch1")]
 struct Launch1 {}
+
+#[derive(FromArgs, PartialEq, Debug)]
+/// Erase stage0
+#[argh(subcommand, name = "erase_stage0")]
+struct EraseStage0 {}
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// Launch application
@@ -257,6 +263,7 @@ fn main() -> Result<()> {
         SubCommand::Launch1(_) => hps.perform_command(Command::Launch1),
         SubCommand::LaunchApp(_) => hps.perform_command(Command::LaunchApp),
         SubCommand::Reset(_) => hps.perform_command(Command::Reset),
+        SubCommand::EraseStage0(_) => hps.perform_command(Command::EraseStage0Start),
         SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)

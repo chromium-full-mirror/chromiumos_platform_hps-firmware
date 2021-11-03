@@ -97,24 +97,24 @@ and are not documented here.
 
 ## Common System Commands
 
-| BIT | NAME      | DESCRIPTION                      |
-|:----|:----------|:---------------------------------|
-| 15  |           |                                  |
-| 14  |           |                                  |
-| 13  |           |                                  |
-| 12  |           |                                  |
-| 11  |           |                                  |
-| 10  |           |                                  |
-| 9   |           |                                  |
-| 8   |           |                                  |
-| 7   |           |                                  |
-| 6   |           |                                  |
-| 5   |           |                                  |
-| 4   |           |                                  |
-| 3   |           |                                  |
-| 2   | LAUNCHAPP | Launch application (from stage1) |
-| 1   | LAUNCH1   | Launch stage1 (from stage0)      |
-| 0   | RESET     | Reset module to stage0           |
+| BIT | NAME         | DESCRIPTION                            |
+|:----|:-------------|:---------------------------------------|
+| 15  | ERASE_STAGE0 | Erase first page of MCU flash (stage0) |
+| 14  |              |                                        |
+| 13  |              |                                        |
+| 12  |              |                                        |
+| 11  |              |                                        |
+| 10  |              |                                        |
+| 9   |              |                                        |
+| 8   |              |                                        |
+| 7   |              |                                        |
+| 6   |              |                                        |
+| 5   |              |                                        |
+| 4   |              |                                        |
+| 3   |              |                                        |
+| 2   | LAUNCHAPP    | Launch application (from stage1)       |
+| 1   | LAUNCH1      | Launch stage1 (from stage0)            |
+| 0   | RESET        | Reset module to stage0                 |
 
 ## Application Version
 

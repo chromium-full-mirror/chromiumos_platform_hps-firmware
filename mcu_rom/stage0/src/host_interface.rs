@@ -82,6 +82,7 @@ pub(crate) enum HostEvent {
     LoadApplication,
     WriteFlash(WriteFlashRequest),
     Reset,
+    ErasePage0,
 }
 
 pub(crate) struct WriteFlashRequest {
@@ -143,6 +144,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     Ok(Command::Launch1) => {
                         return Some(HostEvent::LoadApplication);
                     }
+                    Ok(Command::EraseStage0Start) => return Some(HostEvent::ErasePage0),
                     _ => self.common_interface.report_error(Error::HostI2cBadRequest),
                 },
                 _ => self.common_interface.report_error(Error::HostI2cBadRequest),
