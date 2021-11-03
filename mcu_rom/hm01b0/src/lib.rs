@@ -74,6 +74,26 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         ]))
     }
 
+    pub fn get_ae_target_mean(&mut self) -> Result<u8> {
+        self.read_reg(0x2101)
+    }
+
+    pub fn get_ae_mean(&mut self) -> Result<u8> {
+        self.read_reg(0x2020)
+    }
+
+    pub fn get_ae_min_mean(&mut self) -> Result<u8> {
+        self.read_reg(0x2102)
+    }
+
+    pub fn get_ae_converge_in(&mut self) -> Result<u8> {
+        self.read_reg(0x2103)
+    }
+
+    pub fn get_ae_converge_out(&mut self) -> Result<u8> {
+        self.read_reg(0x2104)
+    }
+
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
     }
