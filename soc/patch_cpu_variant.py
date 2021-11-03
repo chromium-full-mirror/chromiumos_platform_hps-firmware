@@ -11,20 +11,20 @@ from litex.soc.cores.cpu.vexriscv import core
 def patch_cpu_variant():
     """Monkey patches custom variants into LiteX."""
     core.CPU_VARIANTS.update({
-        'slim+cfu':             'VexRiscv_SlimCfu',
-        'slim+cfu+debug':       'VexRiscv_SlimCfuDebug',
-        'perf+cfu':             'VexRiscv_PerfCfu',
-        'perf+cfu+debug':       'VexRiscv_PerfCfuDebug',
-        'slimperf+cfu':         'VexRiscv_SlimPerfCfu',
-        'slimperf+cfu+debug':   'VexRiscv_SlimPerfCfuDebug',
+        'slim+cfu': 'VexRiscv_SlimCfu',
+        'slim+cfu+debug': 'VexRiscv_SlimCfuDebug',
+        'perf+cfu': 'VexRiscv_PerfCfu',
+        'perf+cfu+debug': 'VexRiscv_PerfCfuDebug',
+        'slimperf+cfu': 'VexRiscv_SlimPerfCfu',
+        'slimperf+cfu+debug': 'VexRiscv_SlimPerfCfuDebug',
     })
     core.GCC_FLAGS.update({
-        'slim+cfu':             '-march=rv32im -mabi=ilp32',
-        'slim+cfu+debug':       '-march=rv32im -mabi=ilp32',
-        'perf+cfu':             '-march=rv32im -mabi=ilp32',
-        'perf+cfu+debug':       '-march=rv32im -mabi=ilp32',
-        'slimperf+cfu':         '-march=rv32im -mabi=ilp32',
-        'slimperf+cfu+debug':   '-march=rv32im -mabi=ilp32',
+        'slim+cfu': '-march=rv32im -mabi=ilp32',
+        'slim+cfu+debug': '-march=rv32im -mabi=ilp32',
+        'perf+cfu': '-march=rv32im -mabi=ilp32',
+        'perf+cfu+debug': '-march=rv32im -mabi=ilp32',
+        'slimperf+cfu': '-march=rv32im -mabi=ilp32',
+        'slimperf+cfu+debug': '-march=rv32im -mabi=ilp32',
     })
     print("general patch:\n", core.CPU_VARIANTS)
 

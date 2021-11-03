@@ -25,13 +25,14 @@ void wait_for_camera_standby(void);
 void print_camera_register(uint16_t);
 
 typedef struct {
-    uint16_t    ui16Reg;
-    uint16_t    ui8Val;
+  uint16_t ui16Reg;
+  uint16_t ui8Val;
 } init_script;
 
 // TODO(b/196113557): Camera configuration should be moved to MCU.
 // Initial HM01B0 configuration provided by vendor with vertical flip.
 static const init_script hps_init[] = {
+    // clang-format off
     {0x0103, 0x00,}, // Software reset.
     {0x0100, 0x00,}, // Power up.
     // Analog configuration.
@@ -98,6 +99,7 @@ static const init_script hps_init[] = {
     {0x0104, 0x00,},
     // Standby mode.
     {0x0100, 0x00,},
+    // clang-format on
 };
 
 #endif
