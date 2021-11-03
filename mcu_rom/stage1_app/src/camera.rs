@@ -10,27 +10,13 @@ use log::info;
 /// Camera HM01B0 I2C ID.
 const CAMERA_I2C_ID: u8 = 0x24;
 
-/// Camera HM01B0 registers.
-const MODEL_ID_H: [u8; 2] = [0x00, 0x00];
-const MODEL_ID_L: [u8; 2] = [0x00, 0x01];
-
 // Returns camera's model ID (01B0).
 pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
-    let mut camera_id: u16 = 0;
-    let mut data = [0; 1];
-    match camera_i2c.write_read(CAMERA_I2C_ID, &MODEL_ID_H, &mut data) {
-        Ok(_) => {
-            camera_id |= (data[0] as u16) << 8;
-        }
-        Err(_) => error!("Failed"),
+    let mut camera = hm01b0::Camera::new(camera_i2c);
+    match camera.get_camera_id() {
+        Ok(v) => info!("0x{:04x}", v),
+        Err(_) => info!("Failed to read camera ID."),
     }
-    match camera_i2c.write_read(CAMERA_I2C_ID, &MODEL_ID_L, &mut data) {
-        Ok(_) => {
-            camera_id |= data[0] as u16;
-        }
-        Err(_) => error!("Failed"),
-    }
-    info!("0x{:04x}", camera_id);
 }
 
 /// Provides a functionality to read one or more register addresses
