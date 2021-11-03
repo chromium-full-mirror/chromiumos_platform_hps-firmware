@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use mcu_common::APPLICATION_START_ADDRESS;
-use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
-use mcu_common::APPLICATION_VECTOR_TABLE_OFFSET;
-use mcu_common::STAGE1_SLOT_LENGTH;
-
 // All our boards have an stm32g071.
 #[cfg(all(feature = "standalone"))]
 fn memory_x_contents() -> String {
@@ -38,10 +33,10 @@ SECTIONS
     }} > HDR
 }}
 "#,
-        APPLICATION_START_ADDRESS,
-        APPLICATION_VECTOR_TABLE_OFFSET,
-        APPLICATION_VECTOR_TABLE_ADDRESS,
-        STAGE1_SLOT_LENGTH
+        mcu_common::APPLICATION_START_ADDRESS,
+        mcu_common::APPLICATION_VECTOR_TABLE_OFFSET,
+        mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS,
+        mcu_common::STAGE1_SLOT_LENGTH
     )
 }
 
