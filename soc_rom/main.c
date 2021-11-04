@@ -306,26 +306,6 @@ static bool user_toggle(int input, int key, const char* desc, bool* var) {
   return true;
 }
 
-static void print_expo_gain(void) {
-  mcu_printf("Analog gain: 0x%02x\n", (int)expo_gain_ctrl.ui8AGain);
-  mcu_printf("Integration: 0x%02x\n", ((int)expo_gain_ctrl.ui8IntegrationH)
-                                              << 8 |
-                                          (int)expo_gain_ctrl.ui8IntegrationL);
-  mcu_printf("Digital gain: 0x%02x\n", ((int)expo_gain_ctrl.ui8DGain_H) << 8 |
-                                           (int)expo_gain_ctrl.ui8DGain_L);
-}
-
-static void read_and_print_expo_gain(void) {
-  hm01b0_snr_expo_gain_ctrl_t gains;
-  hm01b0_status_e status;
-  status = hm01b0_save_exposure_gains(&hm01b0_cfg, &gains);
-  if (status != HM01B0_ERR_OK) {
-    mcu_printf("Failed to read exposure gains\n");
-    return;
-  }
-  print_expo_gain();
-}
-
 static void set_automatic_exposure_target(uint8_t value) {
   if (value == 0) {
     uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_CTRL,
@@ -365,7 +345,6 @@ static void set_analog_gain(uint16_t value) {
   } else {
     mcu_printf("Setting analog gain to 0x%02x\n", value);
     expo_gain_ctrl.ui8AGain = value;
-    print_expo_gain();
   }
 }
 
@@ -373,14 +352,12 @@ static void set_digital_gain(uint16_t value) {
   mcu_printf("Setting digital gain to 0x%02x\n", value);
   expo_gain_ctrl.ui8DGain_H = value >> 8;
   expo_gain_ctrl.ui8DGain_L = value & 0xff;
-  print_expo_gain();
 }
 
 static void set_integration(uint16_t value) {
   mcu_printf("Setting integration to 0x%02x\n", value);
   expo_gain_ctrl.ui8IntegrationH = value >> 8;
   expo_gain_ctrl.ui8IntegrationL = value & 0xff;
-  print_expo_gain();
 }
 
 static void set_camera_register(uint16_t address, uint8_t value) {
@@ -517,9 +494,6 @@ int main(void) {
           break;
         case DEBUG_CMD_READ_CAM_REG:
           print_camera_register(cmd_arg);
-          break;
-        case DEBUG_CMD_PRINT_CAM_GAINS:
-          read_and_print_expo_gain();
           break;
         case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
           set_automatic_exposure_target(cmd_arg);

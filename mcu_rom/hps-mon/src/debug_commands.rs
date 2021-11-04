@@ -114,11 +114,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(11),
     },
     AvailableDebugCommand {
-        keyword: "print_camera_gains",
-        help_text: "Read gain settings from camera and print them",
-        command_type: CommandType::FpgaCommand(12),
-    },
-    AvailableDebugCommand {
         keyword: "automatic_exposure_target",
         help_text: "Set automatic exposure target (0 to disable AE)",
         command_type: CommandType::FpgaCommandWithArg(13),
