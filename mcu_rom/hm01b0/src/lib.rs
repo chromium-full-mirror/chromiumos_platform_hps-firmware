@@ -94,6 +94,24 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         self.read_reg(0x2104)
     }
 
+    pub fn get_digital_gain(&mut self) -> Result<u16> {
+        Ok(u16::from_be_bytes([
+            self.read_reg(0x020E)?,
+            self.read_reg(0x020F)?,
+        ]))
+    }
+
+    pub fn get_analog_gain(&mut self) -> Result<u8> {
+        self.read_reg(0x0205)
+    }
+
+    pub fn get_integration(&mut self) -> Result<u16> {
+        Ok(u16::from_be_bytes([
+            self.read_reg(0x0202)?,
+            self.read_reg(0x0203)?,
+        ]))
+    }
+
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
     }

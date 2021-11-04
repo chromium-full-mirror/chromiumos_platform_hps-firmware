@@ -23,4 +23,5 @@ pub enum McuDebugCommand {
     FpgaPowerOff = 12,
     FpgaPowerOn = 13,
     ReadCameraAEConfig = 14,
+    ReadCameraIntegrationGains = 15,
 }

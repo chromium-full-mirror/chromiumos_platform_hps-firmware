@@ -43,6 +43,26 @@ pub fn read_camera_ae_config(camera_i2c: &mut board::CameraI2c) {
     }
 }
 
+pub fn read_camera_gains(camera_i2c: &mut board::CameraI2c) {
+    let mut camera = hm01b0::Camera::new(camera_i2c);
+    match camera.get_analog_gain() {
+        Ok(v) => info!("Analog Gain:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("Analog Gain:\tFailed"),
+    }
+    match camera.get_digital_gain() {
+        Ok(v) => info!("Digital Gain: {} (0x{:04x})", v, v),
+        Err(_) => info!("Digital Gain: Failed"),
+    }
+}
+
+pub fn read_camera_integration(camera_i2c: &mut board::CameraI2c) {
+    let mut camera = hm01b0::Camera::new(camera_i2c);
+    match camera.get_integration() {
+        Ok(v) => info!("Integration:\t{} (0x{:04x})", v, v),
+        Err(_) => info!("Integration:\tFailed"),
+    }
+}
+
 /// Provides a functionality to read one or more register addresses
 /// from a camera. The register address is 2B size. The response is 1B size.
 /// The request is a sequence of register addresses.
