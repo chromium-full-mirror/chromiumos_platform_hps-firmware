@@ -22,24 +22,24 @@ pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
 pub fn read_camera_ae_config(camera_i2c: &mut board::CameraI2c) {
     let mut camera = hm01b0::Camera::new(camera_i2c);
     match camera.get_ae_target_mean() {
-        Ok(v) => info!("AE Target: 0x{:04x}", v),
-        Err(_) => info!("AE Target: Failed"),
+        Ok(v) => info!("AE Target:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("AE Target:\tFailed"),
     }
     match camera.get_ae_mean() {
-        Ok(v) => info!("AE Mean: 0x{:04x}", v),
-        Err(_) => info!("AE Mean: Failed"),
+        Ok(v) => info!("AE Mean:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("AE Mean:\tFailed"),
     }
     match camera.get_ae_min_mean() {
-        Ok(v) => info!("AE Min Mean: 0x{:04x}", v),
-        Err(_) => info!("AE Min Mean: Failed"),
+        Ok(v) => info!("AE Min Mean:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("AE Min Mean:\tFailed"),
     }
     match camera.get_ae_converge_in() {
-        Ok(v) => info!("Conv In: 0x{:04x}", v),
-        Err(_) => info!("Conv In: Failed"),
+        Ok(v) => info!("Conv In:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("Conv In:\tFailed"),
     }
     match camera.get_ae_converge_out() {
-        Ok(v) => info!("Conv Out: 0x{:04x}", v),
-        Err(_) => info!("Conv Out: Failed"),
+        Ok(v) => info!("Conv Out:\t{} (0x{:02x})", v, v),
+        Err(_) => info!("Conv Out:\tFailed"),
     }
 }
 
