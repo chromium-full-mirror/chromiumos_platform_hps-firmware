@@ -124,11 +124,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(13),
     },
     AvailableDebugCommand {
-        keyword: "print_ae_cfg",
-        help_text: "Print automatic exposure configuration",
-        command_type: CommandType::FpgaCommand(14),
-    },
-    AvailableDebugCommand {
         keyword: "read_camera_id_fpga",
         help_text: "Read Camera ID FPGA <spi> MCU <i2c> Camera",
         command_type: CommandType::FpgaCommand(15),

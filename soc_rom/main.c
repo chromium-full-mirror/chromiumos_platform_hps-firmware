@@ -116,22 +116,6 @@ static void capture(bool rotate_image) {
   }
 }
 
-static void print_ae_cfg(void) {
-  hm01b0_status_e status;
-  status = hm01b0_get_ae(&hm01b0_cfg, &aecfg);
-  if (status == HM01B0_ERR_AE_NOT_CONVERGED) {
-    mcu_printf("AE not converged.\n");
-  } else {
-    CAM_CHECK(status, "get_ae");
-  }
-
-  mcu_printf("target mean = %d\n", aecfg.ui8AETargetMean);
-  mcu_printf("min mean    = %d\n", aecfg.ui8AEMinMean);
-  mcu_printf("conv in th  = %d\n", aecfg.ui8ConvergeInTh);
-  mcu_printf("conv out th = %d\n", aecfg.ui8ConvergeOutTh);
-  mcu_printf("mean        = %d\n", aecfg.ui8AEMean);
-}
-
 // Write the target auto exposure into the camera
 void write_ae_cfg(void) {
   static int last_target = -1;
@@ -149,7 +133,6 @@ static void calibrate(int nframes) {
       &hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, nframes);
   CAM_CHECK(status, "set_mode");
   wait_for_camera_standby();
-  print_ae_cfg();
 }
 
 // Recalibration is required when AE mean is far from the AE target
@@ -468,22 +451,19 @@ int main(void) {
 
   uint32_t loop_count = 0;
   bool do_run_classify = false;
-  bool do_show_auto_exposure = false;
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
   bool rotate_image = true;
   uint16_t custom_register_address = 0;
   while (1) {
     // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, c, a, + , -, e, t)\n", loop_count++);
+    printf("[%u] Press key (s, r, c, + , -, e, t)\n", loop_count++);
     if (uart_read_nonblock()) {
       int c = uart_read();
       bool recognized = false;
       recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
       recognized |= user_toggle(c, 't', "Transfer image to host",
                                 &do_transfer_image_to_host);
-      recognized |=
-          user_toggle(c, 'a', "Show auto exposure", &do_show_auto_exposure);
       recognized |= user_set_ae_target(c, '+', +10);
       recognized |= user_set_ae_target(c, '-', -10);
       recognized |= user_toggle(c, 'e', "Run Exposure calibration",
@@ -544,9 +524,6 @@ int main(void) {
         case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
           set_automatic_exposure_target(cmd_arg);
           break;
-        case DEBUG_CMD_PRINT_AE_CFG:
-          print_ae_cfg();
-          break;
         case DEBUG_CMD_READ_CAMERA_I2C:
           // TODO(jakubm): Delete static alloc in the future changes.
           camera_addresses[0] = 0x0000;
@@ -595,9 +572,6 @@ int main(void) {
     }
     if (do_transfer_image_to_host || configuration.enabled_features & 0x80) {
       transfer_image();
-    }
-    if (do_show_auto_exposure) {
-      print_ae_cfg();
     }
     // We run classification if it's enabled via the UART, or if feature 0 is
     // enabled from the MCU via I2C.
