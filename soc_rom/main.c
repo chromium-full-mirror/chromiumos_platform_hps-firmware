@@ -270,16 +270,6 @@ static void set_mcu_led(uint8_t ledstate) {
   }
 }
 
-// Set the auto exposure target variable, based on user onput
-static bool user_set_ae_target(int input, int key, int delta) {
-  if (input != key) {
-    return false;
-  }
-  ae_target += delta;
-  printf("Set AE target to %d\n", ae_target);
-  return true;
-}
-
 // Randomly generated sequences that identify the start and end of an image.
 // These sequences are recognized by hps-mon.
 const uint8_t kStartImage[] = {13, 174, 212, 250, 191, 30, 138, 125};
@@ -293,17 +283,6 @@ static void transfer_image(void) {
   mcu_stream_send_data(&stream, (const uint8_t*)tflite_get_input(), image_size);
   mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
   mcu_stream_flush(&stream);
-}
-
-// Allows the user to toggle a flag that indicates which actions to include in
-// the main loop.
-static bool user_toggle(int input, int key, const char* desc, bool* var) {
-  if (input != key) {
-    return false;
-  }
-  *var = !*var;
-  printf("%s now %s\n", desc, *var ? "ON" : "OFF");
-  return true;
 }
 
 static void set_automatic_exposure_target(uint8_t value) {
@@ -433,22 +412,7 @@ int main(void) {
   bool rotate_image = true;
   uint16_t custom_register_address = 0;
   while (1) {
-    // Accept input to configure which functions are run
-    printf("[%u] Press key (s, r, c, + , -, e, t)\n", loop_count++);
-    if (uart_read_nonblock()) {
-      int c = uart_read();
-      bool recognized = false;
-      recognized |= user_toggle(c, 'c', "Run classifier", &do_run_classify);
-      recognized |= user_toggle(c, 't', "Transfer image to host",
-                                &do_transfer_image_to_host);
-      recognized |= user_set_ae_target(c, '+', +10);
-      recognized |= user_set_ae_target(c, '-', -10);
-      recognized |= user_toggle(c, 'e', "Run Exposure calibration",
-                                &do_run_exposure_calibration);
-      if (!recognized) {
-        printf("Did not understand input \"%c\"\n", c);
-      }
-    }
+    loop_count++;
     poll_mcu();
     // Fetch and process debug commands until there aren't any more.
     bool should_get_command = true;
@@ -547,7 +511,7 @@ int main(void) {
     if (do_transfer_image_to_host || configuration.enabled_features & 0x80) {
       transfer_image();
     }
-    // We run classification if it's enabled via the UART, or if feature 0 is
+    // We run classification if it's enabled via HPS-mon or if feature 0 is
     // enabled from the MCU via I2C.
     if (do_run_classify || ((configuration.enabled_features & 1) != 0)) {
       run_classify(&inference_status);

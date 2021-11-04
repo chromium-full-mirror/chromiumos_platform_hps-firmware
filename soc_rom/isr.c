@@ -4,15 +4,8 @@
 
 #include <generated/csr.h>
 #include <irq.h>
-#include <uart.h>
 
 // The interrupt service routine.
 //
 // The ISR linked is called from the trap_entry entry point in crt0.
-void isr(void) {
-  unsigned int irqs;
-  irqs = irq_pending() & irq_getmask();
-  if (irqs & (1 << UART_INTERRUPT)) {
-    uart_isr();
-  }
-}
+void isr(void) {}
