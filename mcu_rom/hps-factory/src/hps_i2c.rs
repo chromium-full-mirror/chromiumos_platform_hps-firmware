@@ -17,7 +17,11 @@ use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use linux_embedded_hal::Delay;
+use mcu_common::commands::Command;
 use mcu_common::memory_banks;
+use mcu_common::Status;
+use mcu_common::APPLICATION_START_ADDRESS;
+use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::HPS_ADDRESS;
 use std::time::Duration;
 use std::time::Instant;
@@ -41,6 +45,15 @@ where
 {
     pub(crate) fn new(i2c: &'a mut I, config: Config) -> Self {
         Self { i2c, config }
+    }
+
+    /// Writes `program_bytes` into the stage1 slot using either the STM32
+    /// bootloader if active, or stage0 if that's active.
+    pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
+        if self.open_bootloader().is_ok() {
+            return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
+        }
+        self.write_memory_bank("stage1", memory_banks::MCU_RW, 0, program_bytes)
     }
 
     /// Writes a `program_bytes` to flash at `address` using the STM32
@@ -121,9 +134,40 @@ where
         )
     }
 
-    pub(crate) fn execute(&mut self, address: u32) -> Result<()> {
-        let mut stm32 = self.open_bootloader()?;
-        stm32.go(address)?;
+    /// Executes stage1, either using the STM32 bootloader if active, or stage0
+    /// if that's active.
+    pub(crate) fn execute_stage1(&mut self) -> Result<()> {
+        if let Ok(mut stm32) = self.open_bootloader() {
+            stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
+            return Ok(());
+        }
+        let mut hps = self.open_hps()?;
+        let status = hps.status()?;
+        if status.contains(Status::STAGE1) {
+            // Stage1 is already running.
+            return Ok(());
+        }
+        // If stage0 is running, but stage1 hasn't been verified, or if the
+        // application is running, then reset to get back to stage0.
+        if status.contains(Status::ANONVER) || status.contains(Status::APPLREADY) {
+            hps.perform_command(Command::Reset)?;
+            // It takes about 690ms to signature-check stage1.
+            std::thread::sleep(Duration::from_millis(700));
+            hps = self.open_hps()?;
+        }
+        let status = hps.status()?;
+        if status.contains(Status::ANONVER) {
+            if status.contains(Status::WPON) {
+                bail!("Stage1 is not signed and firmware write-protect is asserted");
+            } else {
+                bail!("Stage1 is invalid");
+            }
+        }
+        hps.perform_command(Command::Launch1)?;
+        let mut hps = self.open_hps()?;
+        if !hps.status()?.contains(Status::STAGE1) {
+            bail!("Stage1 failed to start");
+        }
         Ok(())
     }
 

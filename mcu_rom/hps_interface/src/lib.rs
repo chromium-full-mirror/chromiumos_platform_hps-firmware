@@ -6,12 +6,14 @@
 //! the kind of I2C used, so can be used both from tests and various kinds of
 //! actual I2C hardware.
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::Status;
 use mcu_common::HPS_ADDRESS;
 use std::time::Duration;
 use std::time::Instant;
@@ -36,6 +38,11 @@ pub trait Hps {
             );
         }
         Ok(())
+    }
+
+    fn status(&mut self) -> Result<Status> {
+        Status::from_bits(self.read_register(registers::SYSTEM_STATUS)?)
+            .ok_or_else(|| anyhow!("Invalid status bits"))
     }
 
     fn perform_command(&mut self, command: Command) -> Result<()> {

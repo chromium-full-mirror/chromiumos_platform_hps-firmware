@@ -5,6 +5,7 @@
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::APPLICATION_BYTES;
+use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
@@ -13,8 +14,6 @@ use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use hps_interface::Hps;
 use mcu_common::registers;
-use mcu_common::APPLICATION_START_ADDRESS;
-use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use std::path::Path;
 
 const IMAGE_DATA_PACKET_LENGTH: usize = 63;
@@ -26,14 +25,12 @@ where
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
     if config.skip_firmware_writes {
-        if i2c.open_hps().is_err() {
-            i2c.execute(APPLICATION_VECTOR_TABLE_ADDRESS)?;
-        }
+        i2c.execute_stage1().context("Execute application")?;
     } else {
-        i2c.write("application", APPLICATION_START_ADDRESS, APPLICATION_BYTES)?;
-        i2c.execute(APPLICATION_VECTOR_TABLE_ADDRESS)?;
-        i2c.write_gateware()?;
-        i2c.write_soc_rom()?;
+        i2c.write_stage1(APPLICATION_BYTES)?;
+        i2c.execute_stage1().context("Execute application")?;
+        i2c.write_gateware().context("Write gateware")?;
+        i2c.write_soc_rom().context("Write SOC ROM")?;
     }
 
     let mut hps = i2c.open_hps()?;
