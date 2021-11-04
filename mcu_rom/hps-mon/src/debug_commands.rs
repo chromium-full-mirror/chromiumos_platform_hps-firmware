@@ -164,6 +164,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraId),
     },
     AvailableDebugCommand {
+        keyword: "read_camera_ae_config",
+        help_text: "Reads Camera AE config over I2C",
+        command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraAEConfig),
+    },
+    AvailableDebugCommand {
         keyword: "reset_mcu",
         help_text: "Reset the MCU",
         command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),

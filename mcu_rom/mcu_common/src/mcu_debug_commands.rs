@@ -22,4 +22,5 @@ pub enum McuDebugCommand {
     SpiFlashWriteSpeed = 11,
     FpgaPowerOff = 12,
     FpgaPowerOn = 13,
+    ReadCameraAEConfig = 14,
 }

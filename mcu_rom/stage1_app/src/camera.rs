@@ -19,6 +19,30 @@ pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
     }
 }
 
+pub fn read_camera_ae_config(camera_i2c: &mut board::CameraI2c) {
+    let mut camera = hm01b0::Camera::new(camera_i2c);
+    match camera.get_ae_target_mean() {
+        Ok(v) => info!("AE Target: 0x{:04x}", v),
+        Err(_) => info!("AE Target: Failed"),
+    }
+    match camera.get_ae_mean() {
+        Ok(v) => info!("AE Mean: 0x{:04x}", v),
+        Err(_) => info!("AE Mean: Failed"),
+    }
+    match camera.get_ae_min_mean() {
+        Ok(v) => info!("AE Min Mean: 0x{:04x}", v),
+        Err(_) => info!("AE Min Mean: Failed"),
+    }
+    match camera.get_ae_converge_in() {
+        Ok(v) => info!("Conv In: 0x{:04x}", v),
+        Err(_) => info!("Conv In: Failed"),
+    }
+    match camera.get_ae_converge_out() {
+        Ok(v) => info!("Conv Out: 0x{:04x}", v),
+        Err(_) => info!("Conv Out: Failed"),
+    }
+}
+
 /// Provides a functionality to read one or more register addresses
 /// from a camera. The register address is 2B size. The response is 1B size.
 /// The request is a sequence of register addresses.

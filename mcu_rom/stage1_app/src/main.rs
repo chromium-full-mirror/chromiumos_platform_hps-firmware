@@ -324,6 +324,7 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             resources.fpga_device.reset_fpga();
         }
         McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
+        McuDebugCommand::ReadCameraAEConfig => camera::read_camera_ae_config(resources.camera_i2c),
         McuDebugCommand::Ping => info!("Pong!"),
         _ => {
             if !handled {
