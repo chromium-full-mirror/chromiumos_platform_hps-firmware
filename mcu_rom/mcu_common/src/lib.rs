@@ -50,6 +50,9 @@ pub const HPS_ADDRESS: u8 = 0x30;
 /// The start address in the SPI flash at which the SOC ROM starts.
 pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 
+/// The address of the start of flash.
+pub const FLASH_START: u32 = 0x08000000;
+
 /// The address at which the application is written. The stage1 header will be
 /// at this address. This constant is used by stage0, so shouldn't be changed
 /// once stage0 is locked.

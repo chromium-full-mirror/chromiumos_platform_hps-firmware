@@ -5,6 +5,7 @@
 mod hps_i2c;
 mod image_workflow;
 mod test_workflow;
+mod write_stage0_workflow;
 
 use anyhow::bail;
 use anyhow::Result;
@@ -14,6 +15,7 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use std::path::PathBuf;
 
+const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
 const GATEWARE_BITSTREAM: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
 const SOC_ROM_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
@@ -46,6 +48,10 @@ struct Config {
     /// assume that all firmware has already been written
     #[clap(long)]
     skip_firmware_writes: bool,
+
+    /// whether to write stage0
+    #[clap(long)]
+    write_stage0: bool,
 }
 
 fn main() -> Result<()> {
@@ -74,6 +80,8 @@ where
 {
     if let Some(output_dir) = &config.image_out_dir {
         image_workflow::capture_images(i2c, output_dir, config.clone())
+    } else if config.write_stage0 {
+        write_stage0_workflow::run(i2c, config)
     } else {
         test_workflow::run(i2c)
     }

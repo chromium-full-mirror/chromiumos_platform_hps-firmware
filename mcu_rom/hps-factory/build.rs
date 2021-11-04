@@ -10,6 +10,7 @@ fn main() {
     build_mcu_test_program();
     write_application_bin();
     build_soc_rom();
+    write_stage0_bin();
 }
 
 fn build_mcu_test_program() {
@@ -30,6 +31,28 @@ fn build_mcu_test_program() {
         // file. GNU's objcopy doesn't do this.
         .arg("--remove-section=.bss")
         .arg("--remove-section=.uninit")
+        .arg(bin_file)
+        .output()
+        .unwrap();
+    if !out.status.success() {
+        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
+        std::process::exit(1);
+    }
+}
+
+fn write_stage0_bin() {
+    let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
+    let bin_file = out_dir.join("stage0.bin");
+    let out = Command::new("cargo")
+        .current_dir("../stage0")
+        .env_clear()
+        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .arg("objcopy")
+        .arg("--release")
+        .arg("--no-default-features")
+        .arg("--")
+        .arg("-O")
+        .arg("binary")
         .arg(bin_file)
         .output()
         .unwrap();

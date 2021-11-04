@@ -41,7 +41,7 @@ enum Command {
 
 const SPECIAL_ERASE_ALL: [u8; 2] = [0xff, 0xff];
 
-const MAX_READ_WRITE_SIZE: usize = 128;
+pub const MAX_READ_WRITE_SIZE: usize = 128;
 
 type Result<T, E = Error> = core::result::Result<T, E>;
 
