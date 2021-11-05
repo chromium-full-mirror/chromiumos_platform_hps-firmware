@@ -226,6 +226,14 @@ fn init_peripherals(
     );
     i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
 
+    // Safety: This is the only call to this function.
+    let slot = unsafe { loader::get_stage1_slot() };
+
+    // Validating stage1 takes around 690ms. We do it before the I2C bus is
+    // initialized so that we NACK rather than clock stretching during
+    // validation.
+    let valid_stage1_result = detect_and_validate_stage1(slot, wp_state);
+
     let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
         p.I2C1,
         &mut rcc,
@@ -236,10 +244,7 @@ fn init_peripherals(
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
 
-    // Safety: This is the only call to this function.
-    let slot = unsafe { loader::get_stage1_slot() };
-
-    if let Ok(valid_stage1) = detect_and_validate_stage1(slot, wp_state) {
+    if let Ok(valid_stage1) = valid_stage1_result {
         host_interface.stage0_ctx.set_stage1_valid(valid_stage1)
     };
 
