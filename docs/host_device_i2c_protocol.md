@@ -85,7 +85,7 @@ and are not documented here.
 | 11  | SPINOTVER | FPGA SPI flash has failed verification.              |
 | 10  | SPIVERIFY | FPGA SPI flash is verified.                          |
 | 9   | APPLREADY | Application is running, and features may be enabled. |
-| 8   | APPLRUN   | Stage 0 has been launched, and is now running.       |
+| 8   | STAGE1    | Stage 1 has been launched, and is now running.       |
 | 7   |           |                                                      |
 | 6   |           |                                                      |
 | 5   | WPOFF     | Write protect pin off.                               |

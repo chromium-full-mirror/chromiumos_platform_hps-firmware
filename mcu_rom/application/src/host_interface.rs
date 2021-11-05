@@ -25,6 +25,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     trace: Trace,
     #[cfg(feature = "image-transfer")]
     outgoing_image_data: Option<i2c_protocol::Buffer>,
+    application_running: bool,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -44,6 +45,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             trace: Trace::new(),
             #[cfg(feature = "image-transfer")]
             outgoing_image_data: None,
+            application_running: false,
         }
     }
 
@@ -103,9 +105,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
             .unwrap_or(0);
         let result = match event.register {
             registers::SYSTEM_STATUS => {
-                // TODO: Revisit whether APPLREADY and AVERIFY still make sense
-                // to be set unconditionally once we're integrated with stage1.
-                common_value | (Status::APPLRUN | Status::APPLREADY | Status::AVERIFY).bits()
+                // TODO: Consider unsetting AVERIFY. It's a stage0 bit.
+                common_value | (self.stage_status() | Status::AVERIFY).bits()
             }
             registers::USER_PRESENT_STATUS => state.status.score as u16,
             registers::MEMORY_BANK_AVAILABLE => {
@@ -168,6 +169,18 @@ impl<I: I2cPeripheral> HostInterface<I> {
         None
     }
 
+    pub fn set_application_running(&mut self, running: bool) {
+        self.application_running = running;
+    }
+
+    fn stage_status(&self) -> Status {
+        if self.application_running {
+            Status::APPLREADY
+        } else {
+            Status::STAGE1
+        }
+    }
+
     #[cfg(feature = "image-transfer")]
     pub fn queue_image_data_for_i2c(&mut self, data: &[u8]) -> bool {
         if let Some(i2c_buffer) = self.protocol_handler.take_mem_block() {
@@ -193,7 +206,7 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                (Status::OK | Status::APPLRUN | Status::APPLREADY | Status::AVERIFY).bits()
+                (Status::OK | Status::STAGE1 | Status::AVERIFY).bits()
             );
         }));
         interface.handle_interrupt(&mut state);

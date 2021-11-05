@@ -139,7 +139,7 @@ bitflags! {
         const ANONVER = 1 << 3;
         const WPON = 1 << 4;
         const WPOFF = 1 << 5;
-        const APPLRUN = 1 << 8;
+        const STAGE1 = 1 << 8;
         const APPLREADY = 1 << 9;
     }
 }

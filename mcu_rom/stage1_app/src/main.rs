@@ -230,9 +230,12 @@ const APP: () = {
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(resources = [fpga_device])]
-    fn try_start_fpga(ctx: try_start_fpga::Context) {
+    #[task(resources = [fpga_device, host_interface])]
+    fn try_start_fpga(mut ctx: try_start_fpga::Context) {
         ctx.resources.fpga_device.start_fpga();
+        ctx.resources
+            .host_interface
+            .lock(|h| h.set_application_running(true));
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
