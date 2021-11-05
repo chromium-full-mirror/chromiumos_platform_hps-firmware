@@ -10,7 +10,6 @@
 #include <irq.h>
 #include <stdio.h>
 #include <string.h>
-#include <uart.h>
 
 #include "camera.h"
 #include "cat_picture.h"
@@ -370,7 +369,6 @@ void report_boot(void) {
 int main(void) {
   irq_setmask(0);
   irq_setie(1);
-  uart_init();
   spi_init();
 
   mcu_printf("HPS SoC application " HPS_VERSION);

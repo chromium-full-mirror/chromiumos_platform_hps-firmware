@@ -69,9 +69,6 @@ class HpsSimSoC(HpsSoC):
         # unimplemented in the simulation.
         self.csr.add('spiflash')
 
-    def add_serial(self):
-        self.add_uart('sim')
-
     def initialize_rom(self, data):
         self.spiflash.mem.init = [0] * int(self.rom_offset // 4) + data
 

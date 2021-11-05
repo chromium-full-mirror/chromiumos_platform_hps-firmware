@@ -31,7 +31,6 @@ from .spi_controller import SpiController
 KB = 1024
 MB = 1024 * KB
 
-UART_SPEED = 460800
 RAM_SIZE = 320 * KB
 
 SOC_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -98,15 +97,6 @@ class HpsSoC(LiteXSoC):
             sys_clk_freq=platform.sys_clk_freq)
         self.csr.add('leds')
 
-        # UART
-        self.add_serial()
-
-        # Wishbone UART and CPU debug - JTAG must be disabled to use serial2
-        if debug:
-            self.add_uartbone('serial2', baudrate=UART_SPEED)
-            self.bus.add_slave(
-                'vexriscv_debug', self.cpu.debug_bus, self.vexriscv_region)
-
         # Timer
         self.add_timer(name='timer0')
         self.timer0.add_uptime()
@@ -147,9 +137,6 @@ class HpsSoC(LiteXSoC):
             name='spiflash',
             slave=self.spiflash_mmap.bus,
             region=self.spiflash_region)
-
-    def add_serial(self):
-        self.add_uart('serial', baudrate=UART_SPEED)
 
     def setup_camera(self):
         bus = wishbone.Interface(
