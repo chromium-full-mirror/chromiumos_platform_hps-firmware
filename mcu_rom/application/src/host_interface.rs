@@ -9,9 +9,9 @@ use i2c_protocol::WriteMemoryEvent;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
-use mcu_common::status;
 use mcu_common::CommonHostInterface;
 use mcu_common::MemBlock;
+use mcu_common::Status;
 
 use crate::application_state::ApplicationState;
 use crate::trace::Subsystem;
@@ -104,7 +104,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::SYSTEM_STATUS => {
                 // TODO: Revisit whether APPLREADY and AVERIFY still make sense
                 // to be set unconditionally once we're integrated with stage1.
-                common_value | status::APPLRUN | status::APPLREADY | status::AVERIFY
+                common_value | (Status::APPLRUN | Status::APPLREADY | Status::AVERIFY).bits()
             }
             registers::USER_PRESENT_STATUS => state.status.score as u16,
             registers::MEMORY_BANK_AVAILABLE => {
@@ -192,7 +192,7 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                status::OK | status::APPLRUN | status::APPLREADY | status::AVERIFY
+                (Status::OK | Status::APPLRUN | Status::APPLREADY | Status::AVERIFY).bits()
             );
         }));
         interface.handle_interrupt(&mut state);

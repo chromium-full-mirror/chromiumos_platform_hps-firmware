@@ -8,6 +8,7 @@ pub mod commands;
 pub mod memory_banks;
 pub mod registers;
 
+use bitflags::bitflags;
 mod common_host_interface;
 mod errors;
 mod mcu_debug_commands;
@@ -130,15 +131,17 @@ pub const fn hps_magic_code() -> u16 {
         | (1 << 15)
 }
 
-pub mod status {
-    pub const OK: u16 = 1 << 0;
-    pub const FAULT: u16 = 1 << 1;
-    pub const AVERIFY: u16 = 1 << 2;
-    pub const ANONVER: u16 = 1 << 3;
-    pub const WPON: u16 = 1 << 4;
-    pub const WPOFF: u16 = 1 << 5;
-    pub const APPLRUN: u16 = 1 << 8;
-    pub const APPLREADY: u16 = 1 << 9;
+bitflags! {
+    pub struct Status: u16 {
+        const OK = 1 << 0;
+        const FAULT = 1 << 1;
+        const AVERIFY = 1 << 2;
+        const ANONVER = 1 << 3;
+        const WPON = 1 << 4;
+        const WPOFF = 1 << 5;
+        const APPLRUN = 1 << 8;
+        const APPLREADY = 1 << 9;
+    }
 }
 
 #[cfg(test)]

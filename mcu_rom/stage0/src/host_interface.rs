@@ -10,10 +10,10 @@ use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands;
 use mcu_common::memory_banks;
 use mcu_common::registers;
-use mcu_common::status;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
 use mcu_common::MemBlock;
+use mcu_common::Status;
 
 const HARDWARE_VERSION: u16 = 1;
 const RO_VERSION: u16 = 1;
@@ -49,17 +49,17 @@ impl StageZContext {
     pub(crate) fn valid_stage1(&self) -> Option<&ValidStage1> {
         self.valid_stage1.as_ref()
     }
-    fn get_verification_status(&self) -> u16 {
+    fn get_verification_status(&self) -> Status {
         if self.can_jump_to_stage1() {
-            status::AVERIFY
+            Status::AVERIFY
         } else {
-            status::ANONVER
+            Status::ANONVER
         }
     }
-    fn get_fw_wp_status(&self) -> u16 {
+    fn get_fw_wp_status(&self) -> Status {
         match self.write_protect_state {
-            WriteProtectState::Asserted => status::WPON,
-            WriteProtectState::Deasserted => status::WPOFF,
+            WriteProtectState::Asserted => Status::WPON,
+            WriteProtectState::Deasserted => Status::WPOFF,
         }
     }
     pub(crate) fn get_firmware_version(&self, register: u8) -> u16 {
@@ -111,8 +111,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .map(|common_value| match event.register {
                         registers::SYSTEM_STATUS => {
                             common_value
-                                | self.stage0_ctx.get_verification_status()
-                                | self.stage0_ctx.get_fw_wp_status()
+                                | (self.stage0_ctx.get_verification_status()
+                                    | self.stage0_ctx.get_fw_wp_status())
+                                .bits()
                         }
                         _ => common_value,
                     })

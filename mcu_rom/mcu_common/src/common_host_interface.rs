@@ -6,8 +6,8 @@
 //! development and testing purposes.
 
 use crate::registers;
-use crate::status;
 use crate::Error;
+use crate::Status;
 
 #[derive(Default)]
 pub struct CommonHostInterface {
@@ -23,8 +23,8 @@ impl CommonHostInterface {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
             registers::ERRORS => self.error_bits,
-            registers::SYSTEM_STATUS if self.error_bits != 0 => status::FAULT,
-            registers::SYSTEM_STATUS => status::OK,
+            registers::SYSTEM_STATUS if self.error_bits != 0 => Status::FAULT.bits(),
+            registers::SYSTEM_STATUS => Status::OK.bits(),
             _ => return self.read_dev_register(register),
         })
     }
@@ -70,7 +70,7 @@ mod tests {
         assert_eq!(interface.read_register(registers::ERRORS), Some(0));
         assert_eq!(
             interface.read_register(registers::SYSTEM_STATUS),
-            Some(status::OK)
+            Some(Status::OK.bits())
         );
         interface.report_error(Error::HostI2cOverrun);
         assert_eq!(
