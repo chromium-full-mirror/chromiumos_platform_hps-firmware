@@ -39,10 +39,10 @@ impl FlashWriter {
     pub(crate) fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.
-        let address = &self
+        let address = self
             .slot
             .get(address as usize)
-            .ok_or(flash::Error::PageOutOfRange)? as *const _ as usize;
+            .ok_or(flash::Error::PageOutOfRange)? as *const u8 as usize;
         let unlocked_flash = self.flash.unlocked()?;
         let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
         // Erase only when we are at the start of our page. This
