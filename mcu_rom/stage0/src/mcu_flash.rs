@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::ops::Range;
 use hal::flash;
 use hal::flash::FlashExt;
 use hal::flash::FlashPage;
@@ -14,7 +13,13 @@ const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
 
 pub struct FlashWriter {
     flash: FlashState,
-    slot: Range<usize>,
+    // Note, the code would still compile if we changed slot here and in
+    // `FlashWriter::new` to a shared reference. This is because the write
+    // function passes the address as a u32, which the HAL crate then eventually
+    // turns into a `*mut u32` which it then writes to. But we do mutate the
+    // contents of the slice, so we should hold a mutable reference while we do
+    // so.
+    slot: &'static mut [u8],
 }
 
 enum FlashState {
@@ -24,27 +29,20 @@ enum FlashState {
 }
 
 impl FlashWriter {
-    // We accept slot as a &'static mut, which means we take ownership of it and
-    // the caller can no longer access it. However, we then store it as a range
-    // rather than as a slice because if we stored it as a slice, we would be
-    // promising to the compiler that nothing else could access that memory
-    // other than via the slice, which is a promise we'd be breaking because
-    // the HAL writes to that memory on our behalf, but does so via pointers
-    // that it creates from integers.
     pub(crate) fn new(flash: FLASH, slot: &'static mut [u8]) -> FlashWriter {
         FlashWriter {
             flash: FlashState::Locked(flash),
-            slot: slot.as_ptr() as usize..slot.as_ptr_range().end as usize,
+            slot,
         }
     }
 
     pub(crate) fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.
-        let address = self.slot.start + address as usize;
-        if address >= self.slot.end {
-            return Err(flash::Error::PageOutOfRange);
-        }
+        let address = &self
+            .slot
+            .get(address as usize)
+            .ok_or(flash::Error::PageOutOfRange)? as *const _ as usize;
         let unlocked_flash = self.flash.unlocked()?;
         let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
         // Erase only when we are at the start of our page. This
