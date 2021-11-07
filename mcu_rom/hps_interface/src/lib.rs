@@ -9,6 +9,7 @@
 use anyhow::bail;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
+use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::HPS_ADDRESS;
@@ -37,8 +38,8 @@ pub trait Hps {
         Ok(())
     }
 
-    fn perform_command(&mut self, command: u16) -> Result<()> {
-        self.write_register(registers::COMMAND, command)
+    fn perform_command(&mut self, command: Command) -> Result<()> {
+        self.write_register(registers::COMMAND, command.into())
     }
 
     fn is_memory_bank_available(&mut self, memory_bank: u8) -> bool {

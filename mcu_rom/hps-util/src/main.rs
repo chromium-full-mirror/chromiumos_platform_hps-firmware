@@ -13,7 +13,7 @@ use ftd2xx_embedded_hal::Initialized;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_util::SendI2c;
-use mcu_common::commands;
+use mcu_common::commands::Command;
 use mcu_common::registers;
 use std::path::PathBuf;
 
@@ -254,9 +254,9 @@ fn main() -> Result<()> {
             println!("Sucessfully wrote {} bytes of firmware", bytes.len());
             Ok(())
         }
-        SubCommand::Launch1(_) => hps.perform_command(commands::LAUNCH1),
-        SubCommand::LaunchApp(_) => hps.perform_command(commands::LAUNCH_APP),
-        SubCommand::Reset(_) => hps.perform_command(commands::RESET),
+        SubCommand::Launch1(_) => hps.perform_command(Command::Launch1),
+        SubCommand::LaunchApp(_) => hps.perform_command(Command::LaunchApp),
+        SubCommand::Reset(_) => hps.perform_command(Command::Reset),
         SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)

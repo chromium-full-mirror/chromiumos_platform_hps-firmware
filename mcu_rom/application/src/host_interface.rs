@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use core::convert::TryFrom;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use i2c_protocol::ReadRegisterEvent;
 use i2c_protocol::WriteMemoryEvent;
-use mcu_common::commands;
+use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::CommonHostInterface;
@@ -149,9 +150,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
         state: &mut ApplicationState,
     ) -> Option<Event> {
         match register {
-            registers::COMMAND => match value {
-                commands::RESET => return Some(Event::Reset),
-                commands::LAUNCH_APP => return Some(Event::StartFpga),
+            registers::COMMAND => match Command::try_from(value) {
+                Ok(Command::Reset) => return Some(Event::Reset),
+                Ok(Command::LaunchApp) => return Some(Event::StartFpga),
                 _ => {}
             },
             registers::ENABLED_FEATURES => {
@@ -203,8 +204,7 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
-            hps.write_register(registers::COMMAND, commands::RESET)
-                .unwrap();
+            hps.perform_command(Command::Reset).unwrap();
         }));
         assert_eq!(interface.handle_interrupt(&mut state), Some(Event::Reset));
     }
@@ -214,8 +214,7 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
-            hps.write_register(registers::COMMAND, commands::LAUNCH_APP)
-                .unwrap();
+            hps.perform_command(Command::LaunchApp).unwrap();
         }));
         assert_eq!(
             interface.handle_interrupt(&mut state),

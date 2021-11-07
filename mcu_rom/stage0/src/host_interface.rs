@@ -4,10 +4,11 @@
 
 use crate::ValidStage1;
 use crate::WriteProtectState;
+use core::convert::TryFrom;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::Buffer;
 use i2c_protocol::I2cProtocolHandler;
-use mcu_common::commands;
+use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::CommonHostInterface;
@@ -137,9 +138,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 event.respond_u16(result, &mut self.i2c);
             }
             Ok(i2c_protocol::Event::WriteRegister(event)) => match event.register {
-                registers::COMMAND => match event.value {
-                    commands::RESET => return Some(HostEvent::Reset),
-                    commands::LAUNCH1 => {
+                registers::COMMAND => match Command::try_from(event.value) {
+                    Ok(Command::Reset) => return Some(HostEvent::Reset),
+                    Ok(Command::Launch1) => {
                         return Some(HostEvent::LoadApplication);
                     }
                     _ => self.common_interface.report_error(Error::HostI2cBadRequest),
