@@ -16,7 +16,7 @@ fn main() {
 // bytes of RAM, so our "FLASH" cannot overlap with this space. Our RAM can
 // overlap wit the space, since we don't write it until after we've started, at
 // which point the factory bootloader doesn't need whatever it wrote there.
-#[cfg(not(feature = "dev"))]
+#[cfg(not(any(feature = "dev", feature = "stage1")))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
@@ -26,11 +26,38 @@ fn memory_x_contents() -> &'static str {
 "#
 }
 
+#[cfg(feature = "stage1")]
+fn memory_x_contents() -> String {
+    #[cfg(feature = "dev")]
+    compile_error!("dev and stage1 features are currently incompatible");
+
+    format!(
+        r#"MEMORY
+{{
+    HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
+    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+}}
+
+SECTIONS
+{{
+    .image_hdr : {{
+        KEEP (*(.image_hdr))
+    }} > HDR
+}}
+"#,
+        mcu_common::APPLICATION_START_ADDRESS,
+        mcu_common::APPLICATION_VECTOR_TABLE_OFFSET,
+        mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS,
+        mcu_common::STAGE1_SLOT_LENGTH
+    )
+}
+
 // Our dev-mode configuration. In this case we're not being loaded by the
 // factory bootloader, we're just being flashed with openocd or similar, so we
 // use actual flash. The dev mode configuration has more flash and RAM available
 // to it, which allows us to put heaps of debug logging in.
-#[cfg(feature = "dev")]
+#[cfg(all(feature = "dev", not(feature = "stage1")))]
 fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {

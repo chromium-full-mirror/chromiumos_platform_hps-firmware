@@ -39,6 +39,8 @@ echo "===== Release build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --features dev
+echo "===== Stage1 build of factory_tester_mcu ====="
+cargo +stable build --no-default-features --features stage1
 
 echo "===== factory_tester ====="
 cd "${PROJECT_ROOT}/mcu_rom/factory_tester"

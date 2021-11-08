@@ -16,6 +16,7 @@ gateware_compress = { path = "../gateware_compress" }
 hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt", "stm32g071"]}
 hm01b0 = { path = "../hm01b0" }
 log = {version = "0.4.14", features = [ "release_max_level_off" ] }
+mcu_common = { path = "../mcu_common" }
 panic-halt = "0.2.0"
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"], optional = true }
 rtt-target = { version = "0.3.1", features = ["cortex-m"], optional = true }
@@ -24,6 +25,7 @@ stm32g0 = "0.13.0"
 
 [build-dependencies]
 gateware_compress = { path = "../gateware_compress" }
+mcu_common = { path = "../mcu_common" }
 
 [features]
 default = ["dev"]
@@ -33,6 +35,10 @@ dev = ["panic-rtt-target", "debug_logger/dev", "rtt-target"]
 # Checks that we get data from the camera. This doesn't work sufficiently
 # reliably at the moment to be on by default.
 check-image-data = []
+
+# Production configuration when loaded into flash by stage0, as opposed to our
+# default configuration where we're loaded into RAM by the system bootloader.
+stage1 = []
 
 # Optimize all dependencies
 [profile.dev.package."*"]

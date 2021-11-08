@@ -5,6 +5,9 @@
 #![no_main]
 #![no_std]
 
+#[cfg(feature = "stage1")]
+mod header;
+
 mod gateware_writer;
 mod image_receiver;
 
