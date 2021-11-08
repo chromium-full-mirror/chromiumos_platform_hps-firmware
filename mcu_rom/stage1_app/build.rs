@@ -30,8 +30,6 @@ fn memory_x_contents() -> String {
 {{
     HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
-    OTP    (r) : ORIGIN = 0x1FFF7000, LENGTH = 1K
-    CFG   (rw) : ORIGIN = 0x1FFF7800, LENGTH = 128
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }}
 
