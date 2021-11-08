@@ -7,7 +7,8 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
-    build_mcu_test_program();
+    build_mcu_test_program("factory_tester_mcu.bin", "");
+    build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1");
     write_application_bin();
     build_soc_rom();
     write_stage0_bin("stage0.bin", "");
@@ -15,9 +16,9 @@ fn main() {
     build_one_time_init();
 }
 
-fn build_mcu_test_program() {
+fn build_mcu_test_program(bin_name: &str, features: &str) {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
-    let bin_file = out_dir.join("factory_tester_mcu.bin");
+    let bin_file = out_dir.join(bin_name);
     let out = Command::new("cargo")
         .current_dir("../factory_tester_mcu")
         .env_clear()
@@ -25,6 +26,8 @@ fn build_mcu_test_program() {
         .arg("objcopy")
         .arg("--release")
         .arg("--no-default-features")
+        .arg("--features")
+        .arg(features)
         .arg("--")
         .arg("-O")
         .arg("binary")
