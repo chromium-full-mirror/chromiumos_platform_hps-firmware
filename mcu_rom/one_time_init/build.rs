@@ -7,26 +7,7 @@ fn main() {
 }
 
 fn memory_x_contents() -> String {
-    format!(
-        r#"MEMORY
-{{
-    HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
-    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
-}}
-
-SECTIONS
-{{
-    .image_hdr : {{
-        KEEP (*(.image_hdr))
-    }} > HDR
-}}
-"#,
-        mcu_common::APPLICATION_START_ADDRESS,
-        mcu_common::APPLICATION_VECTOR_TABLE_OFFSET,
-        mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS,
-        mcu_common::STAGE1_SLOT_LENGTH
-    )
+    mcu_common::build_utils::stage1_linker_script()
 }
 
 fn write_memory_x() {

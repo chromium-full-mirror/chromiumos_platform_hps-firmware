@@ -3,6 +3,7 @@ name = "one_time_init"
 version = "0.1.0"
 edition = "2018"
 license = "BSD-3-Clause"
+resolver = "2"
 
 [dependencies]
 cortex-m = "0.7.1"
@@ -13,7 +14,7 @@ panic-halt = "0.2.0"
 stm32g0 = "0.13.0"
 
 [build-dependencies]
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../mcu_common", features = [ "std" ] }
 
 # Optimize all dependencies
 [profile.dev.package."*"]

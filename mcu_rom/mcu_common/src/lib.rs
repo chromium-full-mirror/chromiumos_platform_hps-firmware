@@ -4,6 +4,9 @@
 
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
 
+#[cfg(feature = "std")]
+pub mod build_utils;
+
 pub mod commands;
 pub mod memory_banks;
 pub mod registers;

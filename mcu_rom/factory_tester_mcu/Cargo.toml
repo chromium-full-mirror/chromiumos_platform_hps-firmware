@@ -3,6 +3,7 @@ name = "factory_tester_mcu"
 version = "0.1.0"
 edition = "2018"
 license = "BSD-3-Clause"
+resolver = "2"
 
 [dependencies]
 cortex-m = "0.7.1"
@@ -25,7 +26,7 @@ stm32g0 = "0.13.0"
 
 [build-dependencies]
 gateware_compress = { path = "../gateware_compress" }
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../mcu_common", features = [ "std" ] }
 
 [features]
 default = ["dev"]
