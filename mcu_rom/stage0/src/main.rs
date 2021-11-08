@@ -273,3 +273,9 @@ fn init_peripherals(
         fw_wp,
     }
 }
+
+impl ValidStage1 {
+    pub fn firmware_version(&self) -> &[u16; 2] {
+        &self.firmware_version
+    }
+}

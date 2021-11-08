@@ -65,8 +65,8 @@ impl StageZContext {
     }
     pub(crate) fn get_firmware_version(&self, register: u8) -> u16 {
         match (register, &self.valid_stage1) {
-            (registers::FIRMWARE_VERSION_HIGH, Some(info)) => info.firmware_version[0],
-            (registers::FIRMWARE_VERSION_LOW, Some(info)) => info.firmware_version[1],
+            (registers::FIRMWARE_VERSION_HIGH, Some(info)) => info.firmware_version()[0],
+            (registers::FIRMWARE_VERSION_LOW, Some(info)) => info.firmware_version()[1],
             _ => 0xFFFF,
         }
     }
