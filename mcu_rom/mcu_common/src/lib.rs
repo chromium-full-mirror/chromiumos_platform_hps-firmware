@@ -114,6 +114,19 @@ impl Signature {
     }
 }
 
+impl ImageHeader {
+    pub const fn empty() -> Self {
+        Self {
+            magic: STAGE1_MAGIC,
+            version: 1,
+            _reserved0: 0,
+            _reserved1: 0,
+            _reserved2: 0,
+            sig: Signature::empty(),
+        }
+    }
+}
+
 /// Returns a magic number that a functioning HPS will always return from
 /// register 0. This is used to confirm that a particular device on the I2C bus
 /// is actually a HPS.
