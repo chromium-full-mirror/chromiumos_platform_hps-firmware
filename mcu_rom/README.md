@@ -94,6 +94,10 @@ This crate implements the I2C protocol used by the HPS. It effectively takes
 events from the underlying I2C implementation and converts them into higher
 level events such as read/write register.
 
+### Crate: libstage0
+
+Parts of stage0 that are able to run on the host and thus can be tested.
+
 ### Crate: mcu_common
 
 Contains code that can be shared between stage0, stage1/application and any

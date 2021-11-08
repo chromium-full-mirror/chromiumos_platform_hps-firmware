@@ -16,6 +16,7 @@ members = [
     "hps-mon",
     "i2c_peripheral",
     "i2c_protocol",
+    "libstage0",
     "mcp2221",
     "mcu_common",
     "sign-rom",

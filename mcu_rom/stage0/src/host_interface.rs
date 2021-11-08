@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::ValidStage1;
-use crate::WriteProtectState;
 use core::convert::TryFrom;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::Buffer;
 use i2c_protocol::I2cProtocolHandler;
+use libstage0::verification::ValidStage1;
+use libstage0::WriteProtectState;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;

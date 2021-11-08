@@ -1,0 +1,9 @@
+[package]
+name = "libstage0"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+ed25519-compact = { version = "0.1.9", default-features = false }
+mcu_common = { path = "../mcu_common" }

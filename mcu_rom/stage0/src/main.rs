@@ -21,6 +21,7 @@ use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
+use libstage0::WriteProtectState;
 use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_flash::FlashWriter;
@@ -35,30 +36,10 @@ extern "C" {
 }
 
 // TODO: Press this down into RO fuse memory in the MCU?
-const PUBLIC_KEY: [u8; loader::PUBLIC_KEY_LENGTH] = [
+const PUBLIC_KEY: [u8; libstage0::verification::PUBLIC_KEY_LENGTH] = [
     0x01, 0xB5, 0x9C, 0x83, 0xD3, 0x8D, 0x40, 0x9B, 0x71, 0x18, 0xA8, 0x38, 0x19, 0xEB, 0x4C, 0x77,
     0x22, 0x01, 0x9D, 0x3C, 0xB7, 0x27, 0x5A, 0x23, 0xC8, 0x45, 0x0C, 0x88, 0xB3, 0xB0, 0x02, 0x6A,
 ];
-
-enum Stage1Error {
-    Missing,
-    InvalidSignature,
-}
-
-/// A struct that indicates that stage1 is considered valid - either it has
-/// passed a signature check or firmware write protect is deasserted.
-struct ValidStage1 {
-    firmware_version: [u16; 2], // Contains first 4B of validated signature.
-    vector_address: *const u32,
-}
-
-unsafe impl Send for ValidStage1 {}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum WriteProtectState {
-    Asserted,
-    Deasserted,
-}
 
 /// Whether we're done running stage0 and we should now load stage1.
 static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
@@ -247,7 +228,8 @@ fn init_peripherals(
     // Validating stage1 takes around 690ms. We do it before the I2C bus is
     // initialized so that we NACK rather than clock stretching during
     // validation.
-    let valid_stage1_result = detect_and_validate_stage1(slot, &PUBLIC_KEY, wp_state);
+    let valid_stage1_result =
+        libstage0::verification::detect_and_validate_stage1(slot, &PUBLIC_KEY, wp_state);
 
     // The HAL crate implements SDAPin and SCLPin only for pins that are already
     // in open-drain mode. But we don't want to put the pins into open-drain
@@ -277,11 +259,5 @@ fn init_peripherals(
         host_interface,
         flash_writer,
         fw_wp,
-    }
-}
-
-impl ValidStage1 {
-    pub fn firmware_version(&self) -> &[u16; 2] {
-        &self.firmware_version
     }
 }
