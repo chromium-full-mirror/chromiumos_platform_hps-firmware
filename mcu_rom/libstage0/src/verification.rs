@@ -73,7 +73,7 @@ pub fn detect_and_validate_stage1(
 
 fn detect_stage1(slot: &[u8]) -> Result<(), Stage1Error> {
     let magic = stage1_header(slot).magic;
-    if magic == 0xC03FEFE {
+    if magic == crate::STAGE1_MAGIC {
         return Ok(());
     }
     Err(Stage1Error::Missing)

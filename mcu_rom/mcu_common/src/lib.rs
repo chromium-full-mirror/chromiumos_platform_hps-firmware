@@ -72,6 +72,9 @@ pub const SIGNATURE_OFFSET: usize = 20;
 /// The length of the signature in bytes.
 pub const SIGNATURE_LENGTH: usize = 64;
 
+/// Value at the start of the stage1 header.
+pub const STAGE1_MAGIC: u32 = 0xC03FEFE;
+
 /// ImageHeader is the structure found upon the prefix of a stage 1 image.
 /// N.B., that all fields must be either unsigned integers that are fixed-sized
 /// otherwise 64 bit signing hosts binaries will be built different sized field

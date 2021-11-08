@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use mcu_common::Signature;
+use mcu_common::STAGE1_MAGIC;
 use mcu_common::{ImageHeader, TargetImageHeader};
 
 extern "C" {
@@ -13,7 +14,7 @@ extern "C" {
 #[no_mangle]
 #[used]
 pub static __IMAGE_HDR: TargetImageHeader = ImageHeader {
-    magic: 0xC03FEFE,
+    magic: STAGE1_MAGIC,
     version: 1,
     vector_addr: unsafe { &VECTOR_TABLE },
     _reserved1: 0,
