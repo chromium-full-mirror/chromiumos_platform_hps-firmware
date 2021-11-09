@@ -15,6 +15,8 @@ use core::sync::atomic::Ordering;
 use hal::gpio::gpioa;
 use hal::gpio::Floating;
 use hal::gpio::Input;
+use hal::gpio::OpenDrain;
+use hal::gpio::Output;
 use hal::prelude::*;
 use hal::stm32::I2C1;
 use host_interface::HostEvent;
@@ -241,12 +243,21 @@ fn init_peripherals(
     // validation.
     let valid_stage1_result = detect_and_validate_stage1(slot, wp_state);
 
+    // The HAL crate implements SDAPin and SCLPin only for pins that are already
+    // in open-drain mode. But we don't want to put the pins into open-drain
+    // mode because that will result in them being temporarily pulled low. We
+    // lie to the HAL crate by pretending we've put the pins into open-drain
+    // mode, when we haven't. This hack can be removed once we've fixed the HAL
+    // crate.
+    // safety: Nothing depends on the mode of the pin for memory-safety and we
+    // drop the real pins to make sure nothing can mistakenly use them
+    core::mem::drop(gpiob.pb7);
+    core::mem::drop(gpiob.pb6);
+    let sda: hal::gpio::gpiob::PB7<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+    let scl: hal::gpio::gpiob::PB6<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+
     let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
-        p.I2C1,
-        &mut rcc,
-        gpiob.pb7.into_open_drain_output(),
-        gpiob.pb6.into_open_drain_output(),
-        i2c_config,
+        p.I2C1, &mut rcc, sda, scl, i2c_config,
     ));
 
     host_interface.stage0_ctx.set_write_protect_state(wp_state);
