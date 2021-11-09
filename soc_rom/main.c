@@ -317,27 +317,6 @@ static void set_automatic_exposure_target(uint8_t value) {
   }
 }
 
-static void set_analog_gain(uint16_t value) {
-  if (value != 0 && value != 0x10 && value != 0x20 && value != 0x30) {
-    mcu_printf("Invalid analog gain. Valid values are 0, 0x10, 0x20 or 0x30\n");
-  } else {
-    mcu_printf("Setting analog gain to 0x%02x\n", value);
-    expo_gain_ctrl.ui8AGain = value;
-  }
-}
-
-static void set_digital_gain(uint16_t value) {
-  mcu_printf("Setting digital gain to 0x%02x\n", value);
-  expo_gain_ctrl.ui8DGain_H = value >> 8;
-  expo_gain_ctrl.ui8DGain_L = value & 0xff;
-}
-
-static void set_integration(uint16_t value) {
-  mcu_printf("Setting integration to 0x%02x\n", value);
-  expo_gain_ctrl.ui8IntegrationH = value >> 8;
-  expo_gain_ctrl.ui8IntegrationL = value & 0xff;
-}
-
 static void set_camera_register(uint16_t address, uint8_t value) {
   if (address == 0) {
     mcu_printf(
@@ -438,15 +417,6 @@ int main(void) {
           break;
         case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
           do_run_exposure_calibration = true;
-          break;
-        case DEBUG_CMD_SET_ANALOG_GAIN:
-          set_analog_gain(cmd_arg);
-          break;
-        case DEBUG_CMD_SET_DIGITAL_GAIN:
-          set_digital_gain(cmd_arg);
-          break;
-        case DEBUG_CMD_SET_INTEGRATION:
-          set_integration(cmd_arg);
           break;
         case DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS:
           custom_register_address = cmd_arg;

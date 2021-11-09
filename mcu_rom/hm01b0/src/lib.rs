@@ -15,6 +15,7 @@ pub struct Camera<'a, I: i2c::Write + i2c::WriteRead> {
 
 pub enum Error {
     I2cError,
+    InvalidValues,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -110,6 +111,23 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
             self.read_reg(0x0202)?,
             self.read_reg(0x0203)?,
         ]))
+    }
+
+    pub fn set_digital_gain(&mut self, value: u16) -> Result<()> {
+        self.write_reg(0x020E, high_byte(value))?;
+        self.write_reg(0x020F, low_byte(value))
+    }
+
+    pub fn set_analog_gain(&mut self, value: u16) -> Result<()> {
+        match value {
+            0x00 | 0x10 | 0x20 | 0x30 => self.write_reg(0x0205, low_byte(value)),
+            _ => Err(Error::InvalidValues),
+        }
+    }
+
+    pub fn set_integration(&mut self, value: u16) -> Result<()> {
+        self.write_reg(0x0202, high_byte(value))?;
+        self.write_reg(0x0203, low_byte(value))
     }
 
     pub fn reset(&mut self) -> Result<()> {

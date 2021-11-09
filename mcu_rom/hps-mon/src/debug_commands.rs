@@ -84,21 +84,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(5),
     },
     AvailableDebugCommand {
-        keyword: "analog_gain",
-        help_text: "Set analog gain",
-        command_type: CommandType::FpgaCommandWithArg(6),
-    },
-    AvailableDebugCommand {
-        keyword: "digital_gain",
-        help_text: "Set digital gain",
-        command_type: CommandType::FpgaCommandWithArg(7),
-    },
-    AvailableDebugCommand {
-        keyword: "integration",
-        help_text: "Set integration",
-        command_type: CommandType::FpgaCommandWithArg(8),
-    },
-    AvailableDebugCommand {
         keyword: "camera_custom_address",
         help_text: "Set custom register address for subsequent camera_write_custom command",
         command_type: CommandType::FpgaCommandWithArg(9),
@@ -150,18 +135,33 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     },
     AvailableDebugCommand {
         keyword: "read_camera_id",
-        help_text: "Reads Camera ID over I2C",
+        help_text: "Reads camera ID over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraId),
     },
     AvailableDebugCommand {
         keyword: "read_camera_ae_config",
-        help_text: "Reads Camera AE config over I2C",
+        help_text: "Reads camera AE config over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraAEConfig),
     },
     AvailableDebugCommand {
         keyword: "read_camera_integration_gains",
-        help_text: "Reads Camera AE config over I2C",
+        help_text: "Reads camera AE config over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraIntegrationGains),
+    },
+    AvailableDebugCommand {
+        keyword: "set_camera_digital_gain",
+        help_text: "Sets camera digital gain over I2C",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraDigitalGain),
+    },
+    AvailableDebugCommand {
+        keyword: "set_camera_analog_gain",
+        help_text: "Sets camera analog gain over I2C",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraAnalogGain),
+    },
+    AvailableDebugCommand {
+        keyword: "set_camera_integration",
+        help_text: "Sets camera integration over I2C",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraIntegration),
     },
     AvailableDebugCommand {
         keyword: "reset_mcu",
