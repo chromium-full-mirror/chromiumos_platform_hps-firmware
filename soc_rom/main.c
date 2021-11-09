@@ -393,9 +393,6 @@ int main(void) {
     poll_mcu();
     // Fetch and process debug commands until there aren't any more.
     bool should_get_command = true;
-    // Buffer to store camera register addresses and values.
-    uint16_t camera_addresses[10];
-    uint8_t camera_values[10];
     while (should_get_command) {
       uint16_t cmd_arg = 0;
       switch (get_debug_command(&cmd_arg)) {
@@ -429,13 +426,6 @@ int main(void) {
           break;
         case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
           set_automatic_exposure_target(cmd_arg);
-          break;
-        case DEBUG_CMD_READ_CAMERA_I2C:
-          // TODO(jakubm): Delete static alloc in the future changes.
-          camera_addresses[0] = 0x0000;
-          camera_addresses[1] = 0x0001;
-          read_camera_i2c(camera_addresses, 2, camera_values);
-          mcu_printf("0x%02x%02x\n", camera_values[0], camera_values[1]);
           break;
         case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
           mcu_printf("Image rotation clockwise disabled\n");
