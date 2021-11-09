@@ -15,6 +15,7 @@ use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::Status;
 use mcu_common::HPS_ADDRESS;
+use std::convert::TryFrom;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -87,7 +88,10 @@ pub trait Hps {
     fn check_errors(&mut self) -> Result<()> {
         match self.read_register(registers::ERRORS)? {
             0 => Ok(()),
-            errors => bail!("HPS reports errors: 0x{:x}", errors),
+            value => match mcu_common::Error::try_from(value) {
+                Ok(errors) => bail!("HPS reports errors: {:?}", errors),
+                Err(_) => bail!("HPS reports errors: 0x{:x}", value),
+            },
         }
     }
 }
