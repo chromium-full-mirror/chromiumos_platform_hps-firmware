@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+mod boot_loop;
 mod hps_i2c;
 mod image_workflow;
 mod test_workflow;
@@ -17,6 +18,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
+const STAGE0_SYS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
 const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
 const GATEWARE_BITSTREAM: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
 const SOC_ROM_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
@@ -53,6 +55,10 @@ struct Config {
     /// whether to write stage0
     #[clap(long)]
     write_stage0: bool,
+
+    /// whether to run the boot-loop test
+    #[clap(long)]
+    boot_loop: bool,
 }
 
 fn main() -> Result<()> {
@@ -84,7 +90,9 @@ where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    if let Some(output_dir) = &config.image_out_dir {
+    if config.boot_loop {
+        boot_loop::run(i2c, config)
+    } else if let Some(output_dir) = &config.image_out_dir {
         image_workflow::capture_images(i2c, output_dir, config.clone())
     } else if config.write_stage0 {
         write_stage0_workflow::run(i2c, config)
