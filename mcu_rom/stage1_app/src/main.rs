@@ -266,7 +266,6 @@ fn transfer_image(
 }
 
 fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
-    let mut handled = true;
     match command.kind {
         McuDebugCommand::ReadSpiFlash => {
             spi_flash::debug_read(get_spi_flash(resources.fpga_device), command.arg as u32)
@@ -318,11 +317,6 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             resources.fpga_device.power_gate.set_low().unwrap();
             info!("FPGA and SPI flash powered on");
         }
-        _ => {
-            handled = false;
-        }
-    }
-    match command.kind {
         McuDebugCommand::ResetFpga => {
             resources.fpga_device.reset_fpga();
         }
@@ -355,11 +349,6 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             }
         }
         McuDebugCommand::Ping => info!("Pong!"),
-        _ => {
-            if !handled {
-                info!("Unsupported MCU debug command");
-            }
-        }
     }
 }
 
