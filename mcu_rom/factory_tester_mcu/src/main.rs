@@ -272,12 +272,22 @@ fn init_peripherals(
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
 
-    let camera_i2c = p.I2C2.i2c(
-        gpioa.pa12.into_open_drain_output(), // SDA
-        gpioa.pa11.into_open_drain_output(), // SCL
-        hal::i2c::Config::new(400.khz()),
-        &mut rcc,
-    );
+    // The HAL crate implements SDAPin and SCLPin only for pins that are
+    // already in open-drain mode. But we don't want to put the pins into
+    // open-drain mode because that will result in them being temporarily
+    // pulled low. We lie to the HAL crate by pretending we've put the pins
+    // into open-drain mode, when we haven't. This hack can be removed once
+    // we've fixed the HAL crate.
+    // safety: Nothing depends on the mode of the pin for memory-safety and
+    // we drop the real pins to make sure nothing can mistakenly use them
+    core::mem::drop(gpioa.pa12);
+    core::mem::drop(gpioa.pa11);
+    let sda: hal::gpio::gpioa::PA12<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+    let scl: hal::gpio::gpioa::PA11<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+
+    let camera_i2c = p
+        .I2C2
+        .i2c(sda, scl, hal::i2c::Config::new(400.khz()), &mut rcc);
     // If we don't delay between I2C operations, then if the camera is not
     // ready, we end up getting stuck forever. Something about having two
     // operations too close together means we don't ever get a second NACK.
@@ -287,8 +297,18 @@ fn init_peripherals(
         duration_us: 10,
     };
 
-    let sda = gpiob.pb7.into_open_drain_output();
-    let scl = gpiob.pb6.into_open_drain_output();
+    // The HAL crate implements SDAPin and SCLPin only for pins that are already
+    // in open-drain mode. But we don't want to put the pins into open-drain
+    // mode because that will result in them being temporarily pulled low. We
+    // lie to the HAL crate by pretending we've put the pins into open-drain
+    // mode, when we haven't. This hack can be removed once we've fixed the HAL
+    // crate.
+    // safety: Nothing depends on the mode of the pin for memory-safety and we
+    // drop the real pins to make sure nothing can mistakenly use them
+    core::mem::drop(gpiob.pb7);
+    core::mem::drop(gpiob.pb6);
+    let sda: hal::gpio::gpiob::PB7<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+    let scl: hal::gpio::gpiob::PB6<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
 
     hal::i2c::SDAPin::setup(&sda);
     hal::i2c::SCLPin::setup(&scl);
