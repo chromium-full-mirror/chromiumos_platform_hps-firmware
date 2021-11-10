@@ -320,6 +320,13 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         McuDebugCommand::ResetFpga => {
             resources.fpga_device.reset_fpga();
         }
+        McuDebugCommand::ReadCameraRegister => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.read_reg(command.arg) {
+                Ok(v) => info!("Register 0x{:04x} = 0x{:02x}", command.arg, v),
+                Err(_) => info!("Failed to read 0x{:04x}", command.arg),
+            }
+        }
         McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
         McuDebugCommand::ReadCameraAEConfig => camera::read_camera_ae_config(resources.camera_i2c),
         McuDebugCommand::ReadCameraIntegrationGains => {

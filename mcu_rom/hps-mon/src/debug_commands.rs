@@ -94,11 +94,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(10),
     },
     AvailableDebugCommand {
-        keyword: "camera_read_register",
-        help_text: "Read specified camera register",
-        command_type: CommandType::FpgaCommandWithArg(11),
-    },
-    AvailableDebugCommand {
         keyword: "automatic_exposure_target",
         help_text: "Set automatic exposure target (0 to disable AE)",
         command_type: CommandType::FpgaCommandWithArg(13),
@@ -127,6 +122,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "reset_fpga",
         help_text: "Reset the FPGA",
         command_type: CommandType::McuCommand(McuDebugCommand::ResetFpga),
+    },
+    AvailableDebugCommand {
+        keyword: "read_camera_register",
+        help_text: "Reads camera register over I2C",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::ReadCameraRegister),
     },
     AvailableDebugCommand {
         keyword: "read_camera_id",

@@ -421,9 +421,6 @@ int main(void) {
         case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
           set_camera_register(custom_register_address, cmd_arg);
           break;
-        case DEBUG_CMD_READ_CAM_REG:
-          print_camera_register(cmd_arg);
-          break;
         case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
           set_automatic_exposure_target(cmd_arg);
           break;

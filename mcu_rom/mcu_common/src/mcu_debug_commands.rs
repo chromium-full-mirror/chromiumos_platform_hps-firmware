@@ -27,4 +27,5 @@ pub enum McuDebugCommand {
     SetCameraDigitalGain = 16,
     SetCameraAnalogGain = 17,
     SetCameraIntegration = 18,
+    ReadCameraRegister = 19,
 }
