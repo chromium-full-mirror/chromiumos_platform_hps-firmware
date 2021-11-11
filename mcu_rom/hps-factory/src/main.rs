@@ -15,7 +15,6 @@ use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use std::path::PathBuf;
-use std::time::Duration;
 
 const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 const STAGE0_SYS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
@@ -74,7 +73,7 @@ fn main() -> Result<()> {
         // hps_i2c.rs. If both are 1 second, then we'll send a request which the
         // device won't see because it isn't ready, we'll then wait 1 second and
         // then give up.
-        i2c_config.timeout = Duration::from_millis(100);
+        i2c_config.timeout = std::time::Duration::from_millis(100);
         let mut i2c = mcp2221::I2c::open_first(&i2c_config)?;
         return run_workflow(&mut i2c, config);
     }
