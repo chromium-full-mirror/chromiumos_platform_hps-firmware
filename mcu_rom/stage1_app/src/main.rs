@@ -216,6 +216,11 @@ const APP: () = {
 
     #[task(resources = [fpga_device, host_interface, mcu_debug_handler])]
     fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
+        // On writing the first byte, erase the whole flash.
+        // This allows a hash of the whole flash to match one calculated offline.
+        if request.address == 0 {
+            spi_flash::erase(get_spi_flash(ctx.resources.fpga_device))
+        }
         if let Err(error) = spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device),
             request.address,

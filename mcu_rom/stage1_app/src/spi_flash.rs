@@ -36,8 +36,11 @@ pub(crate) fn write(
         error!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
         return Err(Error::HostI2cBadRequest);
     }
-    // We erase the entire SPI flash prior to writing the first bit of data.
-    // Host must send data in blocks that evenly divides this size.
+    // TODO(dml) the whole flash is erased as part of the update sequence, so
+    // this is now unnecessary. This is still used for development though so
+    // cannot yet be removed. We erase the entire SPI flash prior to writing
+    // the first bit of data. Host must send data in blocks that evenly
+    // divides this size.
     if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
         error!("SPI write crosses block boundary");
         return Err(Error::HostI2cBadRequest);
