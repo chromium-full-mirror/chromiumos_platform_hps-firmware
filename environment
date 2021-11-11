@@ -66,6 +66,7 @@ export PYTHONPATH
 export HPS_RUST_DIRS=(
     mcu_rom
     mcu_rom/factory_tester_mcu
+    mcu_rom/one_time_init
     mcu_rom/stage0
     mcu_rom/stage1_app
     mcu_rom/stm32g0_i2c_peripheral

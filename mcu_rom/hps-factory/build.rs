@@ -12,6 +12,7 @@ fn main() {
     build_soc_rom();
     write_stage0_bin("stage0.bin", "");
     write_stage0_bin("stage0.sys.bin", "sys_bootloader");
+    build_one_time_init();
 }
 
 fn build_mcu_test_program() {
@@ -77,6 +78,26 @@ fn write_application_bin() {
         .arg("--no-default-features")
         .arg("--features")
         .arg("proto2,image-transfer")
+        .arg("--")
+        .arg("-O")
+        .arg("binary")
+        .arg(bin_file)
+        .output()
+        .unwrap();
+    if !out.status.success() {
+        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
+        std::process::exit(1);
+    }
+}
+
+fn build_one_time_init() {
+    let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
+    let bin_file = out_dir.join("one_time_init.bin");
+    let out = Command::new("cargo")
+        .current_dir("../one_time_init")
+        .env_clear()
+        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .arg("objcopy")
         .arg("--")
         .arg("-O")
         .arg("binary")

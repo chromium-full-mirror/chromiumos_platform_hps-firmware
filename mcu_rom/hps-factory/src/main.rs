@@ -5,6 +5,7 @@
 mod boot_loop;
 mod hps_i2c;
 mod image_workflow;
+mod one_time_init_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
@@ -58,6 +59,10 @@ struct Config {
     /// whether to run the boot-loop test
     #[clap(long)]
     boot_loop: bool,
+
+    /// whether to run the one-time-init workflow
+    #[clap(long)]
+    one_time_init: bool,
 }
 
 fn main() -> Result<()> {
@@ -91,6 +96,8 @@ where
 {
     if config.boot_loop {
         boot_loop::run(i2c, config)
+    } else if config.one_time_init {
+        one_time_init_workflow::run(i2c, config)
     } else if let Some(output_dir) = &config.image_out_dir {
         image_workflow::capture_images(i2c, output_dir, config.clone())
     } else if config.write_stage0 {

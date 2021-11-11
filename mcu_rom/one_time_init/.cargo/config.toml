@@ -1,0 +1,8 @@
+[target.thumbv6m-none-eabi]
+linker = "ld.lld"
+rustflags = [
+  "-C", "link-arg=-Tlink.x",
+]
+
+[build]
+target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+

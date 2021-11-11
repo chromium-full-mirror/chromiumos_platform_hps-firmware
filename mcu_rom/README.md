@@ -108,6 +108,11 @@ host-side code.
 Provides facilities to help writing tests in crates that use definitions in
 `mcu_common`.
 
+### Crate: one_time_init
+
+A stage1 binary used by hps-factory to perform one-time initialization of the
+HPS.
+
 ### Crate: sign-rom
 
 A host-side binary that hashes MCU stage1 binaries and embeds a signature into
