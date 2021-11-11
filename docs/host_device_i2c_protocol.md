@@ -82,8 +82,8 @@ and are not documented here.
 | 14  |           |                                                      |
 | 13  |           |                                                      |
 | 12  |           |                                                      |
-| 11  | SPINOTVER | FPGA SPI flash has failed verification.              |
-| 10  | SPIVERIFY | FPGA SPI flash is verified.                          |
+| 11  |           |                                                      |
+| 10  |           |                                                      |
 | 9   | APPLREADY | Application is running, and features may be enabled. |
 | 8   | STAGE1    | Stage 1 has been launched, and is now running.       |
 | 7   |           |                                                      |
@@ -134,7 +134,7 @@ The host should poll this register before issuing a Memory Write command.
 | 13  |           |                            |
 | 12  |           |                            |
 | 11  |           |                            |
-| 10  |           |                            |
+| 10  | SPINOTVER | SPI flash was not verified |
 | 9   | BUFORUN   | Buffer overrun             |
 | 8   | BUFNAVAIL | Buffer not available       |
 | 7   | I2CBADREQ | A bad I2C request was made |

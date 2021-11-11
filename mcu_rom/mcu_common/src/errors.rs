@@ -39,6 +39,9 @@ pub enum Error {
 
     /// An attempt was made to write beyond the end of a buffer.
     BufferOverrun = 1 << 9,
+
+    /// The SPI flash does not match the embedded hash, an update is required.
+    SpiFlashNotVerified = 1 << 10,
 }
 
 impl Error {

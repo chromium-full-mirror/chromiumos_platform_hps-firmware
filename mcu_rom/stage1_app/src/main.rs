@@ -33,6 +33,9 @@ use rtt_target::rtt_init;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
 
+// sha256 of the contents of spi flash
+const SPI_FLASH_HASH: &[u8; 32] = include_bytes!(env!("SPI_HASH"));
+
 const CAMERA_ID: u16 = 0x01b0;
 
 extern "C" {
@@ -235,12 +238,27 @@ const APP: () = {
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(resources = [fpga_device, host_interface])]
+    #[task(resources = [fpga_device, host_interface, state])]
     fn try_start_fpga(mut ctx: try_start_fpga::Context) {
-        ctx.resources.fpga_device.start_fpga();
-        ctx.resources
-            .host_interface
-            .lock(|h| h.set_application_running(true));
+        match spi_flash::hash(get_spi_flash(ctx.resources.fpga_device)) {
+            Some(hash) => {
+                if &hash == SPI_FLASH_HASH {
+                    ctx.resources.fpga_device.start_fpga();
+                    ctx.resources
+                        .host_interface
+                        .lock(|h| h.set_application_running(true));
+                } else {
+                    ctx.resources.host_interface.lock(|host_interface| {
+                        host_interface.report_error(mcu_common::Error::SpiFlashNotVerified)
+                    });
+                }
+            }
+            None => {
+                ctx.resources.host_interface.lock(|host_interface| {
+                    host_interface.report_error(mcu_common::Error::SpiFlash)
+                });
+            }
+        }
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning
@@ -295,9 +313,9 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         McuDebugCommand::EraseSpiFlash => {
             spi_flash::erase(get_spi_flash(resources.fpga_device));
         }
-        McuDebugCommand::HashSpiFlash => spi_flash::hash(
+        McuDebugCommand::HashSpiFlash => spi_flash::time_hash(
             get_spi_flash(resources.fpga_device),
-            command.arg,
+            command.arg as u32,
             resources.stopwatch,
         ),
         McuDebugCommand::SpiFlashCrc => {

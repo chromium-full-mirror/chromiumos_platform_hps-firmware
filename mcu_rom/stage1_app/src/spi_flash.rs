@@ -10,6 +10,7 @@ use hmac_sha256::Hash;
 use log::error;
 use log::info;
 use mcu_common::Error;
+use mcu_common::SPI_FLASH_SIZE;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
@@ -125,9 +126,41 @@ pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSp
     }
 }
 
+fn hash_internal(
+    spi_flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+    num_pages: u32,
+) -> Option<[u8; 32]> {
+    let mut hasher = Hash::new();
+    let mut buf = [0x00; PAGE_SIZE as usize];
+    for page in 0..num_pages {
+        if spi_flash
+            .read((page as u32) * (PAGE_SIZE as u32), &mut buf)
+            .is_err()
+        {
+            error!("Failed to read back SPI flash");
+            return None;
+        }
+        hasher.update(&buf);
+    }
+    Some(hasher.finalize())
+}
+
 pub(crate) fn hash(
     spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
-    num_pages: u16,
+) -> Option<[u8; 32]> {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return None;
+        }
+    };
+    hash_internal(spi_flash, SPI_FLASH_SIZE / PAGE_SIZE)
+}
+
+pub(crate) fn time_hash(
+    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    num_pages: u32,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
     let spi_flash = match spi_flash {
@@ -138,13 +171,7 @@ pub(crate) fn hash(
         }
     };
     let elapsed_us = stopwatch.trace(|| {
-        let mut hasher = Hash::new();
-        let mut buf = [0x00; PAGE_SIZE as usize];
-        for page in 0..num_pages {
-            let _ = spi_flash.read((page as u32) * (PAGE_SIZE as u32), &mut buf);
-            hasher.update(&buf);
-        }
-        let hash = hasher.finalize();
+        let hash = hash_internal(spi_flash, num_pages);
         info!("Hash of first {} pages was: {:?}", num_pages, hash);
     });
     info!("Hashing took {}us", elapsed_us.0);
