@@ -136,7 +136,7 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "read_camera_ae_config",
         help_text: "Reads camera AE config over I2C",
-        command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraAEConfig),
+        command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraAeConfig),
     },
     AvailableDebugCommand {
         keyword: "read_camera_integration_gains",
@@ -157,6 +157,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "set_camera_integration",
         help_text: "Sets camera integration over I2C",
         command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraIntegration),
+    },
+    AvailableDebugCommand {
+        keyword: "set_camera_ae_target",
+        help_text: "Sets camera AE target over I2C",
+        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraAeTarget),
     },
     AvailableDebugCommand {
         keyword: "reset_mcu",

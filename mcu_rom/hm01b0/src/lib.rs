@@ -130,6 +130,17 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         self.write_reg(0x0203, low_byte(value))
     }
 
+    pub fn set_ae_target(&mut self, value: u16) -> Result<()> {
+        match value {
+            0 => self.write_reg(0x2100, 0),
+            1..=255 => {
+                self.write_reg(0x2100, 1)?;
+                self.write_reg(0x2101, low_byte(value))
+            }
+            _ => Err(Error::InvalidValues),
+        }
+    }
+
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
     }

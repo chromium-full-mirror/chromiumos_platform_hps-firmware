@@ -41,8 +41,6 @@ static int recalibration_threshold = 0;
 
 #define CALIBRATION_FRAMES 15
 
-#define HM01B0_REG_AE_CTRL (0x2100)
-
 #define CAM_IMAGE_WIDTH 320
 #define CAM_IMAGE_HEIGHT 240
 
@@ -284,39 +282,6 @@ static void transfer_image(void) {
   mcu_stream_flush(&stream);
 }
 
-static void set_automatic_exposure_target(uint8_t value) {
-  if (value == 0) {
-    uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_CTRL,
-                                        (uint8_t*)&value, sizeof(value));
-    if (ui32Err == HM01B0_ERR_OK) {
-      automatic_exposure_enabled = false;
-      mcu_printf("Disabled automatic exposure\n");
-    } else {
-      mcu_printf("Failed to disable automatic exposure\n");
-    }
-  } else {
-    if (!automatic_exposure_enabled) {
-      uint8_t enable = 1;
-      uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_CTRL,
-                                          (uint8_t*)&enable, sizeof(enable));
-      if (ui32Err == HM01B0_ERR_OK) {
-        automatic_exposure_enabled = true;
-        mcu_printf("Enabled automatic exposure\n");
-      } else {
-        mcu_printf("Failed to enable automatic exposure\n");
-      }
-    }
-
-    uint32_t ui32Err = hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_TARGET_MEAN,
-                                        (uint8_t*)&value, sizeof(value));
-    if (ui32Err == HM01B0_ERR_OK) {
-      mcu_printf("Set automatic exposure target to 0x%02x\n", value);
-    } else {
-      mcu_printf("Failed to disable automatic exposure\n");
-    }
-  }
-}
-
 static void set_camera_register(uint16_t address, uint8_t value) {
   if (address == 0) {
     mcu_printf(
@@ -420,9 +385,6 @@ int main(void) {
           break;
         case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
           set_camera_register(custom_register_address, cmd_arg);
-          break;
-        case DEBUG_CMD_SET_AUTOMATIC_EXPOSURE_TARGET:
-          set_automatic_exposure_target(cmd_arg);
           break;
         case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
           mcu_printf("Image rotation clockwise disabled\n");

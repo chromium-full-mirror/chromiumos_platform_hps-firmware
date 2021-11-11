@@ -328,7 +328,7 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             }
         }
         McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
-        McuDebugCommand::ReadCameraAEConfig => camera::read_camera_ae_config(resources.camera_i2c),
+        McuDebugCommand::ReadCameraAeConfig => camera::read_camera_ae_config(resources.camera_i2c),
         McuDebugCommand::ReadCameraIntegrationGains => {
             camera::read_camera_gains(resources.camera_i2c);
             camera::read_camera_integration(resources.camera_i2c);
@@ -353,6 +353,13 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             match c.set_integration(command.arg) {
                 Ok(_) => camera::read_camera_integration(resources.camera_i2c),
                 Err(_) => info!("Failed to write integration"),
+            }
+        }
+        McuDebugCommand::SetCameraAeTarget => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.set_ae_target(command.arg) {
+                Ok(_) => camera::read_camera_ae_config(resources.camera_i2c),
+                Err(_) => info!("Failed to write AE target"),
             }
         }
         McuDebugCommand::Ping => info!("Pong!"),

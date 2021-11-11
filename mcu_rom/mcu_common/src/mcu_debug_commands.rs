@@ -22,10 +22,11 @@ pub enum McuDebugCommand {
     SpiFlashWriteSpeed = 11,
     FpgaPowerOff = 12,
     FpgaPowerOn = 13,
-    ReadCameraAEConfig = 14,
+    ReadCameraAeConfig = 14,
     ReadCameraIntegrationGains = 15,
     SetCameraDigitalGain = 16,
     SetCameraAnalogGain = 17,
     SetCameraIntegration = 18,
     ReadCameraRegister = 19,
+    SetCameraAeTarget = 20,
 }
