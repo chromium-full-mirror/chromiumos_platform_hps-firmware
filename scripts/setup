@@ -185,7 +185,7 @@ if [ ! -f "${MCP_UDEV_RULES}" ]; then
         (
             cat <<'EOF'
 # MCP2221A rules
-SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", GROUP="plugdev", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
 EOF
         ) | sudo tee "${MCP_UDEV_RULES}"
     fi
