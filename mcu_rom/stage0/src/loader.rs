@@ -10,12 +10,7 @@ use mcu_common::TargetImageHeader;
 use mcu_common::SIGNATURE_LENGTH;
 
 const PAGE_SIZE: usize = hal::flash::PAGE_SIZE as usize;
-
-// TODO: Press this down into RO fuse memory in the MCU?
-const PUBLIC_KEY: [u8; ed25519_compact::PublicKey::BYTES] = [
-    0x01, 0xB5, 0x9C, 0x83, 0xD3, 0x8D, 0x40, 0x9B, 0x71, 0x18, 0xA8, 0x38, 0x19, 0xEB, 0x4C, 0x77,
-    0x22, 0x01, 0x9D, 0x3C, 0xB7, 0x27, 0x5A, 0x23, 0xC8, 0x45, 0x0C, 0x88, 0xB3, 0xB0, 0x02, 0x6A,
-];
+pub(crate) const PUBLIC_KEY_LENGTH: usize = ed25519_compact::PublicKey::BYTES;
 
 extern "C" {
     static mut _slot: [u8; mcu_common::STAGE1_SLOT_LENGTH];
@@ -39,11 +34,12 @@ fn decode_version(hdr_sig: &[u8; SIGNATURE_LENGTH]) -> [u16; 2] {
 /// Checks whether it's OK to load the application, returning an error if not.
 pub(crate) fn detect_and_validate_stage1(
     slot: &[u8],
+    public_key: &[u8; PUBLIC_KEY_LENGTH],
     wp_state: WriteProtectState,
 ) -> Result<ValidStage1, Stage1Error> {
     detect_stage1(slot)?;
 
-    let stage1_validation = validate_stage1(slot);
+    let stage1_validation = validate_stage1(slot, public_key);
 
     match stage1_validation {
         Ok(_) => Ok(ValidStage1 {
@@ -97,12 +93,15 @@ fn stage1_digest(slot: &[u8]) -> [u8; 32] {
     hasher.finalize()
 }
 
-fn validate_stage1(slot: &[u8]) -> Result<(), ed25519_compact::Error> {
+fn validate_stage1(
+    slot: &[u8],
+    public_key: &[u8; PUBLIC_KEY_LENGTH],
+) -> Result<(), ed25519_compact::Error> {
     let stage1_digest = stage1_digest(slot);
 
     let hdr_sig = get_stage1_signature(slot);
     let sign = ed25519_compact::Signature::new(hdr_sig);
-    let vkey = ed25519_compact::PublicKey::new(PUBLIC_KEY);
+    let vkey = ed25519_compact::PublicKey::new(*public_key);
 
     vkey.verify(&stage1_digest, &sign)?;
     Ok(())
