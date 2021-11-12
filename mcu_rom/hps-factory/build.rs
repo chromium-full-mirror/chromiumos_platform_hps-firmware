@@ -10,7 +10,9 @@ fn main() {
     build_mcu_test_program("factory_tester_mcu.bin", "");
     build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1");
     write_application_bin();
-    build_soc_rom();
+    if cfg!(feature = "image-transfer") {
+        build_soc_rom();
+    }
     write_stage0_bin("stage0.bin", "");
     write_stage0_bin("stage0.sys.bin", "sys_bootloader");
     build_one_time_init();

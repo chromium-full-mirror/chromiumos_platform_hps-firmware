@@ -4,6 +4,7 @@
 
 mod boot_loop;
 mod hps_i2c;
+#[cfg(feature = "image-transfer")]
 mod image_workflow;
 mod one_time_init_workflow;
 mod test_workflow;
@@ -20,9 +21,6 @@ use std::path::PathBuf;
 const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 const STAGE0_SYS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
 const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
-const GATEWARE_BITSTREAM: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
-const SOC_ROM_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
-const SOC_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
 
 /// Runs HPS post-install factory workflow
 #[derive(Clap, Debug, Clone)]
@@ -45,6 +43,7 @@ struct Config {
     verify_writes: bool,
 
     /// directory into which to write captured images
+    #[cfg(feature = "image-transfer")]
     #[clap(long)]
     image_out_dir: Option<PathBuf>,
 
@@ -95,14 +94,17 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     if config.boot_loop {
-        boot_loop::run(i2c, config)
-    } else if config.one_time_init {
-        one_time_init_workflow::run(i2c, config)
-    } else if let Some(output_dir) = &config.image_out_dir {
-        image_workflow::capture_images(i2c, output_dir, config.clone())
-    } else if config.write_stage0 {
-        write_stage0_workflow::run(i2c, config)
-    } else {
-        test_workflow::run(i2c)
+        return boot_loop::run(i2c, config);
     }
+    if config.one_time_init {
+        return one_time_init_workflow::run(i2c, config);
+    }
+    #[cfg(feature = "image-transfer")]
+    if let Some(output_dir) = &config.image_out_dir {
+        return image_workflow::capture_images(i2c, output_dir, config.clone());
+    }
+    if config.write_stage0 {
+        return write_stage0_workflow::run(i2c, config);
+    }
+    test_workflow::run(i2c)
 }

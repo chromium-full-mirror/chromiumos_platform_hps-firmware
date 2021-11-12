@@ -15,7 +15,8 @@ RUSTFLAGS='-C link-arg=-s' \
     --release \
     --target x86_64-unknown-linux-musl \
     -p hps-factory \
-    --no-default-features
+    --no-default-features \
+    --features image-transfer
 
 echo "Succesfully built statically linked hps-factory:"
 ls -lh "${PROJECT_ROOT}/mcu_rom/target/x86_64-unknown-linux-musl/release/hps-factory"

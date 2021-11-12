@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 use crate::Config;
-use crate::GATEWARE_BITSTREAM;
-use crate::SOC_ROM_BYTES;
-use crate::SOC_ROM_START_ADDRESS;
 use anyhow::bail;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
@@ -26,6 +23,15 @@ use mcu_common::HPS_ADDRESS;
 use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
+
+#[cfg(feature = "image-transfer")]
+mod fpga_firmware {
+    pub(super) const GATEWARE_BITSTREAM: &[u8] =
+        include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
+    pub(super) const SOC_ROM_BYTES: &[u8] =
+        include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
+    pub(super) const SOC_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
+}
 
 /// How long we'll wait for the system bootloader or HPS stage0/stage1 to become
 /// responsive to I2C requests.
@@ -116,21 +122,23 @@ where
         Ok(())
     }
 
+    #[cfg(feature = "image-transfer")]
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
         self.write_memory_bank(
             "gateware bitstream",
             memory_banks::SPI_FLASH,
             0,
-            GATEWARE_BITSTREAM,
+            fpga_firmware::GATEWARE_BITSTREAM,
         )
     }
 
+    #[cfg(feature = "image-transfer")]
     pub(crate) fn write_soc_rom(&mut self) -> Result<()> {
         self.write_memory_bank(
             "SOC ROM",
             memory_banks::SPI_FLASH,
-            SOC_ROM_START_ADDRESS,
-            SOC_ROM_BYTES,
+            fpga_firmware::SOC_ROM_START_ADDRESS,
+            fpga_firmware::SOC_ROM_BYTES,
         )
     }
 
