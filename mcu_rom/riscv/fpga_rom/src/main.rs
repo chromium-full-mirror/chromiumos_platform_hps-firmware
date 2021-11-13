@@ -12,16 +12,6 @@ use riscv_rt::entry;
 #[entry]
 fn main() -> ! {
     let p = litex_pac::Peripherals::take().unwrap();
-    // For now we just blink the LED in a distinctive pattern, starting out fast
-    // and slowing down, then repeating.
-    loop {
-        for i in 10..25 {
-            for _ in 0..(1 << i) {
-                p.LEDS.out.write(|w| w.out().set_bit());
-            }
-            for _ in 0..(1 << i) {
-                p.LEDS.out.write(|w| w.out().clear_bit());
-            }
-        }
-    }
+    let mut app = fpga_app::App::new(fpga_hal::DebugLed::new(p.LEDS));
+    app.run();
 }

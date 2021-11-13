@@ -9,3 +9,5 @@ litex_pac = { path = "../litex_pac", features = ["rt"] }
 panic-halt = "0.2.0"
 riscv = "0.7.0"
 riscv-rt = "0.8.0"
+fpga_app = { path = "../../fpga_app" }
+fpga_hal = { path = "../fpga_hal" }
