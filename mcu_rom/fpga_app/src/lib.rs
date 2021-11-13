@@ -7,6 +7,7 @@
 mod debug_led;
 mod mcu_interface;
 
+use core::fmt::Write;
 pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
 use mcu_interface::McuInterface;
@@ -44,6 +45,7 @@ where
     pub fn run(&mut self) -> ! {
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
+        let _ = writeln!(&mut self.mcu, "Hello from the Rust FPGA");
         // For now we just blink the LED in a distinctive pattern, starting out fast
         // and slowing down, then repeating.
         loop {
