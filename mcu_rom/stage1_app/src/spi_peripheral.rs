@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 use crate::board;
+use application::fpga::BUFFER_SIZE;
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
 use hal::prelude::*;
 use log::error;
 use mcu_common::MemBlock;
-
-const BUFFER_SIZE: usize = 64;
 
 /// Main buffer. Used for receiving, then sending, but never at the same time.
 static mut BUFFER: [u8; BUFFER_SIZE] = [0u8; BUFFER_SIZE];

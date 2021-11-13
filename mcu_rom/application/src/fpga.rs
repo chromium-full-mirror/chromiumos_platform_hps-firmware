@@ -10,6 +10,9 @@ use crate::application_state::Status;
 use crate::ApplicationState;
 use mcu_common::MemBlock;
 
+/// Size of buffer used for SPI communcation between the FPGA and the MCU.
+pub const BUFFER_SIZE: usize = 64;
+
 pub struct Request {
     /// An action that should be performed before we send the response. Will be
     /// absent if the request was able to be processed entirely by accessing
