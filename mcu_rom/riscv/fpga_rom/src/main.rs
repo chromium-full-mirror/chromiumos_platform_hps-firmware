@@ -14,6 +14,7 @@ fn main() -> ! {
     let p = litex_pac::Peripherals::take().unwrap();
     let mut app = fpga_app::App::new(
         fpga_hal::McuSpi::new(p.MCU_SPI),
+        fpga_hal::DmaImageDataReceiver::new(p.CAM_CONTROL),
         fpga_hal::DebugLed::new(p.LEDS),
     );
     app.run();

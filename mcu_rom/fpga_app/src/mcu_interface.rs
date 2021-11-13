@@ -15,6 +15,8 @@ use embedded_hal::blocking::spi;
 // up.
 const MCU_POLL_COUNT: u32 = 1000;
 
+const CAM_MODE_SELECT: u16 = 0x0100;
+
 pub struct McuInterface<S> {
     spi: S,
     buffer: [u8; BUFFER_SIZE],
@@ -59,6 +61,39 @@ where
         Ok(unsafe {
             core::ptr::read_unaligned(&self.buffer[2] as *const u8 as *const Configuration)
         })
+    }
+
+    pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
+        self.clear_buffer();
+        self.buffer[0] = commands::WRITE_CAMERA_I2C;
+        self.buffer[1] = 1;
+        self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
+        self.buffer[4] = value;
+        self.exchange()
+    }
+
+    pub fn read_camera_reg(&mut self, register: u16) -> u8 {
+        loop {
+            self.clear_buffer();
+            self.buffer[0] = commands::READ_CAMERA_I2C;
+            self.buffer[1] = 1;
+            self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
+            if self.exchange().is_ok() {
+                return self.buffer[2];
+            }
+        }
+    }
+
+    pub fn wait_for_camera_standby(&mut self) {
+        while self.read_camera_reg(CAM_MODE_SELECT) != 0 {}
+    }
+
+    pub fn trigger_frame(&mut self) -> Result<()> {
+        // TODO: Consider just making TRIGGER_FRAME into a command.
+        const FRAME_COUNT: u16 = 0x3020;
+        const STREAMING_N_FRAMES: u8 = 0x03;
+        self.write_camera_reg(FRAME_COUNT, 1)?;
+        self.write_camera_reg(CAM_MODE_SELECT, STREAMING_N_FRAMES)
     }
 
     /// Returns the next pending debug command (if any) together with an
@@ -183,6 +218,25 @@ mod tests {
 
         let config = mcu.read_config().unwrap();
         assert_eq!(config.enabled_features, 0x1234);
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_write_camera_reg() {
+        let command = vec![commands::WRITE_CAMERA_I2C, 1, 0x12, 0x34, 0x56];
+        let response = vec![status::OK, commands::WRITE_CAMERA_I2C];
+        let mut mcu = command_response_interface(command, response);
+        mcu.write_camera_reg(0x1234, 0x56).unwrap();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_read_camera_reg() {
+        let command = vec![commands::READ_CAMERA_I2C, 1, 0x12, 0x34];
+        let response = vec![status::OK, commands::READ_CAMERA_I2C, 0x42];
+        let mut mcu = command_response_interface(command, response);
+        let value = mcu.read_camera_reg(0x1234);
+        assert_eq!(value, 0x42);
         mcu.spi.done();
     }
 

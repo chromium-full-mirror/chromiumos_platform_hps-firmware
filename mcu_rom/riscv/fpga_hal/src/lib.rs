@@ -4,8 +4,10 @@
 
 #![no_std]
 
+mod camera;
 mod debug_led;
 mod spi;
 
+pub use camera::DmaImageDataReceiver;
 pub use debug_led::DebugLed;
 pub use spi::McuSpi;

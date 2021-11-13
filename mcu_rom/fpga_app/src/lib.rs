@@ -4,6 +4,7 @@
 
 #![cfg_attr(not(test), no_std)]
 
+pub mod camera;
 mod debug_commands;
 mod debug_led;
 mod features;
@@ -30,27 +31,31 @@ macro_rules! mcu_println {
 pub enum Error {
     SpiError,
     McuTimeout,
+    InvalidArg,
     UnknownFeature,
 }
 
-type Result<T> = core::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Error>;
 
-pub struct App<S, L>
+pub struct App<S, I, L>
 where
     L: DebugLed,
 {
     mcu: McuInterface<S>,
+    image_data_receiver: I,
     led: L,
 }
 
-impl<S, L> App<S, L>
+impl<S, I, L> App<S, I, L>
 where
     S: spi::Transfer<u8>,
+    I: camera::ImageDataReceiver,
     L: DebugLed,
 {
-    pub fn new(spi: S, led: L) -> Self {
+    pub fn new(spi: S, image_data_receiver: I, led: L) -> Self {
         Self {
             mcu: McuInterface::new(spi),
+            image_data_receiver,
             led,
         }
     }
@@ -83,6 +88,24 @@ where
             self.led.turn_off();
         }
 
+        let mut buffer = [0u8; camera::NUM_PIXELS];
+        self.capture_image(&mut buffer)?;
+
+        Ok(())
+    }
+
+    fn capture_image(&mut self, buffer: &mut [u8]) -> Result<()> {
+        let image_dimensions = camera::ImageDimensions {
+            column_start: 2,
+            column_count: camera::IMAGE_WIDTH,
+            row_start: (324 - camera::IMAGE_HEIGHT) / 2,
+            row_count: camera::IMAGE_HEIGHT,
+        };
+        mcu_println!(self, "Capturing image");
+        let mcu = &mut self.mcu;
+        mcu.wait_for_camera_standby();
+        self.image_data_receiver
+            .receive_image_data(buffer, &image_dimensions, || mcu.trigger_frame())?;
         Ok(())
     }
 
