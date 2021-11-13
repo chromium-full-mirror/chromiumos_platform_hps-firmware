@@ -6,3 +6,7 @@ license = "BSD-3-Clause"
 
 [dependencies]
 application = { path = "../application" }
+embedded-hal = "0.2.4"
+
+[dev-dependencies]
+embedded-hal-mock = "0.8.0"

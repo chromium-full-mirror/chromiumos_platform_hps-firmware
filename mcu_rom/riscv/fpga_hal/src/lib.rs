@@ -5,5 +5,7 @@
 #![no_std]
 
 mod debug_led;
+mod spi;
 
 pub use debug_led::DebugLed;
+pub use spi::McuSpi;

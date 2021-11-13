@@ -5,25 +5,42 @@
 #![cfg_attr(not(test), no_std)]
 
 mod debug_led;
+mod mcu_interface;
 
 pub use debug_led::DebugLed;
+use embedded_hal::blocking::spi;
+use mcu_interface::McuInterface;
 
-pub struct App<L>
+#[derive(Debug)]
+pub enum Error {
+    SpiError,
+    McuTimeout,
+}
+
+type Result<T> = core::result::Result<T, Error>;
+
+pub struct App<S, L>
 where
     L: DebugLed,
 {
+    mcu: McuInterface<S>,
     led: L,
 }
 
-impl<L> App<L>
+impl<S, L> App<S, L>
 where
+    S: spi::Transfer<u8>,
     L: DebugLed,
 {
-    pub fn new(led: L) -> Self {
-        Self { led }
+    pub fn new(spi: S, led: L) -> Self {
+        Self {
+            mcu: McuInterface::new(spi),
+            led,
+        }
     }
 
     pub fn run(&mut self) -> ! {
+        self.mcu.resync();
         // For now we just blink the LED in a distinctive pattern, starting out fast
         // and slowing down, then repeating.
         loop {

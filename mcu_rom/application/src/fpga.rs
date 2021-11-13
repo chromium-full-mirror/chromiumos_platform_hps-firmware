@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-mod commands;
-mod status;
+pub mod commands;
+pub mod status;
 
 use crate::application_state::Configuration;
 use crate::application_state::Status;

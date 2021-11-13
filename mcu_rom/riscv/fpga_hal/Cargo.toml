@@ -7,3 +7,4 @@ license = "BSD-3-Clause"
 [dependencies]
 litex_pac = { path = "../litex_pac" }
 fpga_app = { path = "../../fpga_app" }
+embedded-hal = "0.2.4"
