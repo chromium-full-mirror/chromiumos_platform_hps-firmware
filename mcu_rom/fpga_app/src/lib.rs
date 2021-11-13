@@ -11,6 +11,8 @@ pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
 use mcu_interface::McuInterface;
 
+const SOC_ROM_VERSION: u8 = 1;
+
 #[derive(Debug)]
 pub enum Error {
     SpiError,
@@ -41,6 +43,7 @@ where
 
     pub fn run(&mut self) -> ! {
         self.mcu.resync();
+        let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         // For now we just blink the LED in a distinctive pattern, starting out fast
         // and slowing down, then repeating.
         loop {

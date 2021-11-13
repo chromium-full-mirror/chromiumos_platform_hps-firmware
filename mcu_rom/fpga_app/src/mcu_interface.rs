@@ -4,6 +4,7 @@
 
 use crate::Error;
 use crate::Result;
+use application::fpga::commands;
 use application::fpga::BUFFER_SIZE;
 use embedded_hal::blocking::spi;
 
@@ -35,6 +36,13 @@ where
                 return;
             }
         }
+    }
+
+    pub fn report_boot(&mut self, version: u8) -> Result<()> {
+        self.clear_buffer();
+        self.buffer[0] = commands::REPORT_FPGA_BOOT;
+        self.buffer[1] = version;
+        self.exchange()
     }
 
     fn exchange(&mut self) -> Result<()> {
@@ -86,6 +94,27 @@ mod tests {
         let spi = spi::Mock::new(&expectations);
         let mut mcu = McuInterface::new(spi);
         mcu.resync();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_report_boot() {
+        let mut command = vec![commands::REPORT_FPGA_BOOT, 42];
+        command.resize(BUFFER_SIZE, 0);
+
+        let mut response = vec![status::OK, commands::REPORT_FPGA_BOOT];
+        response.resize(BUFFER_SIZE, 0);
+
+        let expectations = [
+            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
+        ];
+
+        let spi = spi::Mock::new(&expectations);
+        let mut mcu = McuInterface::new(spi);
+        mcu.report_boot(42).unwrap();
         mcu.spi.done();
     }
 }
