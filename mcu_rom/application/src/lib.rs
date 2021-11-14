@@ -10,5 +10,6 @@ mod host_interface;
 pub mod trace;
 
 pub use application_state::ApplicationState;
+pub use application_state::Configuration;
 pub use host_interface::Event;
 pub use host_interface::HostInterface;

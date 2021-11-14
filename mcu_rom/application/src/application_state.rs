@@ -21,8 +21,8 @@ pub struct ApplicationState {
 /// registers.
 #[repr(C)]
 #[derive(Default)]
-pub(crate) struct Configuration {
-    pub(crate) enabled_features: u16,
+pub struct Configuration {
+    pub enabled_features: u16,
 }
 
 /// Current status of the HPS. This is writable by the FPGA and is read by the

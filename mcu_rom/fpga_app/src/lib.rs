@@ -5,11 +5,13 @@
 #![cfg_attr(not(test), no_std)]
 
 mod debug_led;
+mod features;
 mod mcu_interface;
 
 use core::fmt::Write;
 pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
+use features::Features;
 use mcu_interface::McuInterface;
 
 const SOC_ROM_VERSION: u8 = 1;
@@ -46,15 +48,14 @@ where
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         let _ = writeln!(&mut self.mcu, "Hello from the Rust FPGA");
-        // For now we just blink the LED in a distinctive pattern, starting out fast
-        // and slowing down, then repeating.
         loop {
-            for i in 10..25 {
-                for _ in 0..(1 << i) {
-                    self.led.turn_on();
-                }
-                for _ in 0..(1 << i) {
-                    self.led.turn_off();
+            if let Ok(config) = self.mcu.read_config() {
+                if let Some(features) = Features::from_bits(config.enabled_features) {
+                    if features.contains(Features::DEBUG_LED) {
+                        self.led.turn_on();
+                    } else {
+                        self.led.turn_off();
+                    }
                 }
             }
         }

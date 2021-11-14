@@ -6,6 +6,7 @@ use crate::Error;
 use crate::Result;
 use application::fpga::commands;
 use application::fpga::BUFFER_SIZE;
+use application::Configuration;
 use embedded_hal::blocking::spi;
 
 // Number of times the controller will poll the MCU for a response before giving
@@ -43,6 +44,19 @@ where
         self.buffer[0] = commands::REPORT_FPGA_BOOT;
         self.buffer[1] = version;
         self.exchange()
+    }
+
+    pub fn read_config(&mut self) -> Result<Configuration> {
+        self.clear_buffer();
+        self.buffer[0] = commands::READ_CONFIG_REGISTERS;
+        self.exchange()?;
+        // safety: The transfer succeeded, so the MCU will have put a valid
+        // Configuration into the returned buffer. We use the same definition of
+        // Configuration, which is repr(C) and releases of the two binaries are
+        // kept in sync.
+        Ok(unsafe {
+            core::ptr::read_unaligned(&self.buffer[2] as *const u8 as *const Configuration)
+        })
     }
 
     fn exchange(&mut self) -> Result<()> {
@@ -153,6 +167,29 @@ mod tests {
         let spi = spi::Mock::new(&expectations);
         let mut mcu = McuInterface::new(spi);
         write!(&mut mcu, "Hello, world").unwrap();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_read_config() {
+        let mut command = vec![commands::READ_CONFIG_REGISTERS];
+        command.resize(BUFFER_SIZE, 0);
+
+        let mut response = vec![status::OK, commands::READ_CONFIG_REGISTERS];
+        response.extend_from_slice(&0x1234_u16.to_le_bytes());
+        response.resize(BUFFER_SIZE, 0);
+
+        let expectations = [
+            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
+        ];
+
+        let spi = spi::Mock::new(&expectations);
+        let mut mcu = McuInterface::new(spi);
+        let config = mcu.read_config().unwrap();
+        assert_eq!(config.enabled_features, 0x1234);
         mcu.spi.done();
     }
 }
