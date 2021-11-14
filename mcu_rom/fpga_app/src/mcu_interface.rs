@@ -105,44 +105,41 @@ mod tests {
     use application::fpga::status;
     use embedded_hal_mock::spi;
 
-    #[test]
-    fn test_resync() {
-        let mut command = vec![commands::POLL];
+    fn command_response_interface(
+        mut command: Vec<u8>,
+        mut response: Vec<u8>,
+    ) -> McuInterface<spi::Mock> {
+        assert!(command.len() <= BUFFER_SIZE);
+        assert!(response.len() <= BUFFER_SIZE);
         command.resize(BUFFER_SIZE, 0);
-
-        let mut response = vec![status::READY, commands::POLL];
         response.resize(BUFFER_SIZE, 0);
-
         let expectations = [
             spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
+            // Send a couple of not-ready-yet responses.
             spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
             spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            // Send our actual response.
             spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
         ];
 
         let spi = spi::Mock::new(&expectations);
-        let mut mcu = McuInterface::new(spi);
+        McuInterface::new(spi)
+    }
+
+    #[test]
+    fn test_resync() {
+        let mut mcu =
+            command_response_interface(vec![commands::POLL], vec![status::READY, commands::POLL]);
         mcu.resync();
         mcu.spi.done();
     }
 
     #[test]
     fn test_report_boot() {
-        let mut command = vec![commands::REPORT_FPGA_BOOT, 42];
-        command.resize(BUFFER_SIZE, 0);
-
-        let mut response = vec![status::OK, commands::REPORT_FPGA_BOOT];
-        response.resize(BUFFER_SIZE, 0);
-
-        let expectations = [
-            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
-        ];
-
-        let spi = spi::Mock::new(&expectations);
-        let mut mcu = McuInterface::new(spi);
+        let mut mcu = command_response_interface(
+            vec![commands::REPORT_FPGA_BOOT, 42],
+            vec![status::OK, commands::REPORT_FPGA_BOOT],
+        );
         mcu.report_boot(42).unwrap();
         mcu.spi.done();
     }
@@ -152,42 +149,24 @@ mod tests {
         use core::fmt::Write;
         let mut command = vec![commands::DEBUG_LOG];
         command.extend_from_slice(b"Hello, world");
-        command.resize(BUFFER_SIZE, 0);
 
-        let mut response = vec![status::OK, commands::DEBUG_LOG];
-        response.resize(BUFFER_SIZE, 0);
+        let response = vec![status::OK, commands::DEBUG_LOG];
 
-        let expectations = [
-            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
-        ];
+        let mut mcu = command_response_interface(command, response);
 
-        let spi = spi::Mock::new(&expectations);
-        let mut mcu = McuInterface::new(spi);
         write!(&mut mcu, "Hello, world").unwrap();
         mcu.spi.done();
     }
 
     #[test]
     fn test_read_config() {
-        let mut command = vec![commands::READ_CONFIG_REGISTERS];
-        command.resize(BUFFER_SIZE, 0);
+        let command = vec![commands::READ_CONFIG_REGISTERS];
 
         let mut response = vec![status::OK, commands::READ_CONFIG_REGISTERS];
         response.extend_from_slice(&0x1234_u16.to_le_bytes());
-        response.resize(BUFFER_SIZE, 0);
 
-        let expectations = [
-            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
-        ];
+        let mut mcu = command_response_interface(command, response);
 
-        let spi = spi::Mock::new(&expectations);
-        let mut mcu = McuInterface::new(spi);
         let config = mcu.read_config().unwrap();
         assert_eq!(config.enabled_features, 0x1234);
         mcu.spi.done();
