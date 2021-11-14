@@ -41,8 +41,11 @@ pub(crate) fn write_spi_flash(
     {
         let mut file_bytes = std::fs::read(spi_flash_file)?;
 
-        // Pad with 0 up to end of current block boundary.
-        file_bytes.resize((file_bytes.len() + BLOCK_SIZE - 1) & !(BLOCK_SIZE - 1), 0);
+        // Pad with 0xff (blank flash) up to end of current block boundary.
+        file_bytes.resize(
+            (file_bytes.len() + BLOCK_SIZE - 1) & !(BLOCK_SIZE - 1),
+            0xff,
+        );
 
         let blocks_to_write = get_blocks_to_write(
             &file_bytes,
@@ -69,8 +72,14 @@ pub(crate) fn write_spi_flash(
                     &block_info.bytes[page_offset * PAGE_SIZE..(page_offset + 1) * PAGE_SIZE];
 
                 let mut written_via_i2c = false;
+                let page_within_block = page_num % PAGES_PER_BLOCK;
+                if page_within_block > 0 && chunk == [0xff; PAGE_SIZE] {
+                    // Page is blank and not the first page of the block. Since
+                    // all pages were erased when the first page of the block
+                    // was written, we don't need to write it with blank data.
+                    continue;
+                }
                 if let Some(hps) = hps_writer.as_mut() {
-                    let page_within_block = page_num % PAGES_PER_BLOCK;
                     // Blocks get erased when we write the first page of the
                     // block. We need to avoid the situation where we send a
                     // page of data over I2C that is mid-way through a block
