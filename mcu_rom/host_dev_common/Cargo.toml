@@ -8,3 +8,4 @@ license = "BSD-3-Clause"
 anyhow = "1.0.40"
 bayer = "0.1.5"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
+fpga_app = { path = "../fpga_app" }

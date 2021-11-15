@@ -5,6 +5,10 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
+use fpga_app::camera::END_IMAGE_MARKER;
+use fpga_app::camera::IMAGE_HEIGHT;
+use fpga_app::camera::IMAGE_WIDTH;
+use fpga_app::camera::START_IMAGE_MARKER;
 use image::GrayImage;
 use image::ImageBuffer;
 use image::RgbImage;
@@ -12,15 +16,6 @@ use std::io::Cursor;
 use std::num::Wrapping;
 use std::path::Path;
 use std::path::PathBuf;
-
-const IMAGE_WIDTH: u32 = 320;
-const IMAGE_HEIGHT: u32 = 240;
-
-// These constants are randomly generated to reduce the chances of them
-// appearing by chance in actual image data. They are duplicated in the C code
-// that sends the images.
-const START_IMAGE: [u8; 8] = [13, 174, 212, 250, 191, 30, 138, 125];
-const END_IMAGE: [u8; 8] = [227, 114, 212, 105, 101, 111, 21, 193];
 
 #[derive(Clone, Copy)]
 pub enum ImageType {
@@ -123,10 +118,10 @@ impl OutputDir {
     /// If `buffer` contains a complete image, write it to the output directory
     /// and remove it from `buffer`.
     pub fn process_images_from_buffer(&mut self, buffer: &mut Vec<u8>) -> Result<()> {
-        if let Some(end) = index_of(buffer, &END_IMAGE) {
+        if let Some(end) = index_of(buffer, &END_IMAGE_MARKER) {
             let mut write_result: Result<()> = Ok(());
-            if let Some(start) = index_of(buffer, &START_IMAGE) {
-                let start = start + START_IMAGE.len();
+            if let Some(start) = index_of(buffer, &START_IMAGE_MARKER) {
+                let start = start + START_IMAGE_MARKER.len();
                 let bytes = &mut buffer[start..end];
                 // The HPS converts images to signed (i8). Convert them back to
                 // unsigned.
@@ -138,7 +133,7 @@ impl OutputDir {
             // If we didn't have a START_IMAGE, then we have an incomplete
             // image, so we remove everything up to the end of the image
             // regardless.
-            buffer.drain(..end + END_IMAGE.len());
+            buffer.drain(..end + END_IMAGE_MARKER.len());
             // We check for errors writing images after we've drained the data,
             // otherwise if there's a problem with the image data, we'd keep it
             // in our buffer and try to process it again next time.
