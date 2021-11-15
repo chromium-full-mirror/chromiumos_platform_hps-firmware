@@ -159,6 +159,7 @@ fi
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
 rustup "+${RUST_VERSION}" target add x86_64-unknown-linux-musl
+rustup "+${RUST_VERSION}" target add riscv32i-unknown-none-elf
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
 rustup toolchain install "${RUST_NIGHTLY_VERSION}"
@@ -175,6 +176,10 @@ done
 
 if [ ! -f "${HOME}/.cargo/bin/cargo-objcopy" ]; then
     cargo install cargo-binutils
+fi
+
+if ! which svd2rust; then
+    cargo install svd2rust
 fi
 
 MCP_UDEV_RULES=/etc/udev/rules.d/71-mcp.rules
