@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 mod boot_loop;
+mod erase_stage0_workflow;
 mod hps_i2c;
 #[cfg(feature = "image-transfer")]
 mod image_workflow;
@@ -62,6 +63,10 @@ struct Config {
     /// whether to run the one-time-init workflow
     #[clap(long)]
     one_time_init: bool,
+
+    /// whether to erase stage0
+    #[clap(long)]
+    erase_stage0: bool,
 }
 
 fn main() -> Result<()> {
@@ -98,6 +103,9 @@ where
     }
     if config.one_time_init {
         return one_time_init_workflow::run(i2c, config);
+    }
+    if config.erase_stage0 {
+        return erase_stage0_workflow::run(i2c, config);
     }
     #[cfg(feature = "image-transfer")]
     if let Some(output_dir) = &config.image_out_dir {

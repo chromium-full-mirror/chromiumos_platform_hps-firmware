@@ -19,6 +19,14 @@ use std::convert::TryFrom;
 use std::time::Duration;
 use std::time::Instant;
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Stage {
+    Unknown,
+    Stage0,
+    Stage1,
+    Application,
+}
+
 pub trait Hps {
     fn read_register(&mut self, reg: u8) -> Result<u16>;
     fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>>;
@@ -44,6 +52,19 @@ pub trait Hps {
     fn status(&mut self) -> Result<Status> {
         Status::from_bits(self.read_register(registers::SYSTEM_STATUS)?)
             .ok_or_else(|| anyhow!("Invalid status bits"))
+    }
+
+    fn stage(&mut self) -> Result<Stage> {
+        let status = self.status()?;
+        if status.contains(Status::STAGE1) {
+            Ok(Stage::Stage1)
+        } else if status.contains(Status::APPLREADY) {
+            Ok(Stage::Application)
+        } else if status.contains(Status::ANONVER) || status.contains(Status::AVERIFY) {
+            Ok(Stage::Stage0)
+        } else {
+            Ok(Stage::Unknown)
+        }
     }
 
     fn perform_command(&mut self, command: Command) -> Result<()> {
