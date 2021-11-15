@@ -262,6 +262,9 @@ def main():
     soc.cpu.use_external_variant(
         f'{vexriscv}/verilog/VexRiscv_{variantName}.v')
 
+    args.csr_svd = f'{args.output_dir}/hps.svd'
+    args.memory_x = f'{args.output_dir}/memory.x'
+
     builder = create_builder(soc, args)
     builder_kwargs = {}
     if args.toolchain == 'radiant':
@@ -270,6 +273,16 @@ def main():
         builder_kwargs.update(oxide_argdict(args))
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
+
+    # Generate the peripheral access crate (PAC) containing Rust code to use the
+    # features of our SOC.
+    pac_out_dir = f'{builder.output_dir}/litex_pac'
+    os.makedirs(pac_out_dir, exist_ok=True)
+    os.system(f'svd2rust '
+              f'--target riscv '
+              f'-i {builder.output_dir}/hps.svd '
+              f'-o {pac_out_dir}')
+    os.system(f'rustfmt {pac_out_dir}/*')
 
     if not args.build:
         print('Use --build to build the bitstream, if needed')

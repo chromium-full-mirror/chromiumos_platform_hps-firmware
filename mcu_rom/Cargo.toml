@@ -30,6 +30,7 @@ exclude = [
     "factory_tester",
     "factory_tester_mcu",
     "one_time_init",
+    "riscv",
     "stage0",
     "stage1_app",
     "stm32g0_i2c_peripheral"

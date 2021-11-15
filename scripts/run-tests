@@ -49,6 +49,10 @@ cargo +stable build
 cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
 cargo +stable build
 
+echo "===== RISCV ====="
+cd "${PROJECT_ROOT}/mcu_rom/riscv"
+cargo +stable build
+
 # Run Python tests
 cd "${PROJECT_ROOT}"
 echo -e "\n\n${RED}=======================================${NORMAL}"
