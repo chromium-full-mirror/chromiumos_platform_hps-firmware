@@ -103,9 +103,7 @@ static void capture(bool rotate_image) {
     cam_dma_enable(2, CAM_IMAGE_WIDTH, (324 - CAM_IMAGE_HEIGHT) / 2,
                    CAM_IMAGE_HEIGHT);
   }
-  status =
-      hm01b0_set_mode(&hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, 1);
-  CAM_CHECK(status, "set_mode");
+  set_camera_streaming_mode(1);
   cam_dma_wait();
   if (rotate_image) {
     // Rotates 240x320 image to an expected 320x240 format.
@@ -117,7 +115,8 @@ static void capture(bool rotate_image) {
 void write_ae_cfg(void) {
   static int last_target = -1;
   if (last_target != ae_target) {
-    hm01b0_write_reg(&hm01b0_cfg, HM01B0_REG_AE_TARGET_MEAN, &ae_target, 1);
+    uint16_t address = HM01B0_AE_TARGET_MEAN;
+    write_camera_i2c(&address, 1, &ae_target);
     last_target = ae_target;
   }
 }
@@ -126,9 +125,7 @@ void write_ae_cfg(void) {
 static void calibrate(int nframes) {
   wait_for_camera_standby();
   mcu_printf("Calibrating with %d frames\n", nframes);
-  hm01b0_status_e status = hm01b0_set_mode(
-      &hm01b0_cfg, HM01B0_REG_MODE_SELECT_STREAMING_NFRAMES, nframes);
-  CAM_CHECK(status, "set_mode");
+  set_camera_streaming_mode(nframes);
   wait_for_camera_standby();
 }
 
@@ -137,12 +134,14 @@ static int calibration_required(void) {
   if (recalibration_threshold < 5) {
     recalibration_threshold++;
   }
-  hm01b0_get_ae(&hm01b0_cfg, &aecfg);
+  uint16_t address = HM01B0_AE_MEAN;
+  uint8_t ae_mean = 0;
+  read_camera_i2c(&address, 1, &ae_mean);
   // If the autoexposure mean value is 20 steps away from the target there was
   // a major light change in the environment and the recalibration is required.
   // Threshold makes sure that we don't trigger recalibration on every single
   // cycle. Both values are set based on the experiments.
-  if (abs(ae_target - aecfg.ui8AEMean) > 20 && recalibration_threshold == 5) {
+  if (abs(ae_target - ae_mean) > 20 && recalibration_threshold == 5) {
     recalibration_threshold = 0;
     return 1;
   }

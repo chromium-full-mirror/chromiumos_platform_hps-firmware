@@ -10,6 +10,9 @@
 #include <string.h>
 
 #define HM01B0_MODE_SELECT 0x0100
+#define HM01B0_FRAME_COUNT 0x3020
+#define HM01B0_AE_TARGET_MEAN 0x2101
+#define HM01B0_AE_MEAN 0x2020
 
 int read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
@@ -55,6 +58,12 @@ void wait_for_camera_standby(void) {
   do {
     read_camera_i2c(&address, 1, &value);
   } while (value != 0);
+}
+
+void set_camera_streaming_mode(uint8_t nframes) {
+  uint16_t addresses[] = {HM01B0_FRAME_COUNT, HM01B0_MODE_SELECT};
+  uint8_t values[] = {nframes, 0x03};
+  write_camera_i2c(addresses, 2, values);
 }
 
 void print_camera_register(uint16_t address) {
