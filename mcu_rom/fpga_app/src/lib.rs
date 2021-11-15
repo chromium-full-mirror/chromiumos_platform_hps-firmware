@@ -22,6 +22,7 @@ const SOC_ROM_VERSION: u8 = 1;
 pub enum Error {
     SpiError,
     McuTimeout,
+    UnknownFeature,
 }
 
 type Result<T> = core::result::Result<T, Error>;
@@ -50,16 +51,24 @@ where
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         let _ = writeln!(&mut self.mcu, "Hello from the Rust FPGA");
+        self.led.turn_on();
         loop {
-            if let Ok(config) = self.mcu.read_config() {
-                if let Some(features) = Features::from_bits(config.enabled_features) {
-                    if features.contains(Features::DEBUG_LED) {
-                        self.led.turn_on();
-                    } else {
-                        self.led.turn_off();
-                    }
-                }
+            if let Err(error) = self.loop_body() {
+                let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
             }
         }
+    }
+
+    fn loop_body(&mut self) -> Result<()> {
+        let config = self.mcu.read_config()?;
+        let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
+
+        if features.contains(Features::DEBUG_LED) {
+            self.led.turn_on();
+        } else {
+            self.led.turn_off();
+        }
+
+        Ok(())
     }
 }
