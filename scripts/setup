@@ -134,7 +134,7 @@ if ! command -v riscv64-unknown-elf-gcc >/dev/null ; then
     read -r answer
     if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
         (
-            PKG_URL=https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14.tar.gz
+            PKG_URL=https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz
             mkdir -p ~/Downloads
             mkdir -p "${PROJECT_ROOT}/third_party/installed"
             curl "${PKG_URL}" -o ~/Downloads/riscv64.tar.gz
