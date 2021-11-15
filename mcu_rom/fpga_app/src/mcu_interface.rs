@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::DebugCommand;
 use crate::Error;
 use crate::Result;
 use application::fpga::commands;
 use application::fpga::BUFFER_SIZE;
 use application::Configuration;
+use core::convert::TryFrom;
 use embedded_hal::blocking::spi;
 
 // Number of times the controller will poll the MCU for a response before giving
@@ -57,6 +59,18 @@ where
         Ok(unsafe {
             core::ptr::read_unaligned(&self.buffer[2] as *const u8 as *const Configuration)
         })
+    }
+
+    /// Returns the next pending debug command (if any) together with an
+    /// argument for that command.
+    pub fn next_debug_command(&mut self) -> Option<(DebugCommand, u16)> {
+        self.clear_buffer();
+        self.buffer[0] = commands::GET_DEBUG_COMMAND;
+        self.exchange().ok()?;
+        Some((
+            DebugCommand::try_from(self.buffer[2]).ok()?,
+            u16::from_le_bytes([self.buffer[3], self.buffer[4]]),
+        ))
     }
 
     fn exchange(&mut self) -> Result<()> {
@@ -169,6 +183,22 @@ mod tests {
 
         let config = mcu.read_config().unwrap();
         assert_eq!(config.enabled_features, 0x1234);
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_next_debug_command() {
+        let command = vec![commands::GET_DEBUG_COMMAND];
+        let response = vec![
+            status::OK,
+            commands::GET_DEBUG_COMMAND,
+            DebugCommand::ClassificationOn.into(),
+            0x34,
+            0x12,
+        ];
+        let mut mcu = command_response_interface(command, response);
+        let value = mcu.next_debug_command();
+        assert_eq!(value, Some((DebugCommand::ClassificationOn, 0x1234)));
         mcu.spi.done();
     }
 }

@@ -63,6 +63,8 @@ where
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
 
+        self.process_debug_commands();
+
         if features.contains(Features::DEBUG_LED) {
             self.led.turn_on();
         } else {
@@ -70,5 +72,15 @@ where
         }
 
         Ok(())
+    }
+
+    fn process_debug_commands(&mut self) {
+        while let Some((command, arg)) = self.mcu.next_debug_command() {
+            let _ = writeln!(
+                &mut self.mcu,
+                "DebugCommand::{:?}({}) not implemented",
+                command, arg
+            );
+        }
     }
 }
