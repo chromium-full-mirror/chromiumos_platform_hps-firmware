@@ -24,8 +24,8 @@ struct AvailableDebugCommand {
 }
 
 enum CommandType {
-    FpgaCommand(u8),
-    FpgaCommandWithArg(u8),
+    FpgaCommand(fpga_app::DebugCommand),
+    FpgaCommandWithArg(fpga_app::DebugCommand),
     McuCommand(McuDebugCommand),
     McuCommandWithArg(McuDebugCommand),
     LocalOperation(LocalOperation),
@@ -61,37 +61,37 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "classification_off",
         help_text: "Disable image classification",
-        command_type: CommandType::FpgaCommand(1),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ClassificationOff),
     },
     AvailableDebugCommand {
         keyword: "classification_on",
         help_text: "Enable image classification",
-        command_type: CommandType::FpgaCommand(2),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ClassificationOn),
     },
     AvailableDebugCommand {
         keyword: "transfer_off",
         help_text: "Disable image transfer",
-        command_type: CommandType::FpgaCommand(3),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferOff),
     },
     AvailableDebugCommand {
         keyword: "transfer_on",
         help_text: "Enable image transfer",
-        command_type: CommandType::FpgaCommand(4),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferOn),
     },
     AvailableDebugCommand {
         keyword: "exposure_calibration",
         help_text: "Run exposure calibration",
-        command_type: CommandType::FpgaCommand(5),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ExposureCalibration),
     },
     AvailableDebugCommand {
         keyword: "rotate_image_clockwise_off",
         help_text: "Disable image rotation clockwise (for vertical camera mount)",
-        command_type: CommandType::FpgaCommand(16),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOff),
     },
     AvailableDebugCommand {
         keyword: "rotate_image_clockwise_on",
         help_text: "Enable image rotation clockwise (for horizontal camera mount)",
-        command_type: CommandType::FpgaCommand(17),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOn),
     },
     AvailableDebugCommand {
         keyword: "help",
@@ -337,7 +337,10 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
             if command.keyword == keyword {
                 match command.command_type {
                     CommandType::FpgaCommand(code) => {
-                        return Ok(Some(Command::FpgaCommand(DebugCommand { code, arg: 0 })));
+                        return Ok(Some(Command::FpgaCommand(DebugCommand {
+                            code: code.into(),
+                            arg: 0,
+                        })));
                     }
                     CommandType::McuCommand(mcu_command) => {
                         return Ok(Some(Command::McuCommand(DebugCommand {
@@ -353,7 +356,7 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
                     }
                     CommandType::FpgaCommandWithArg(code) => {
                         return Ok(Some(Command::FpgaCommand(DebugCommand {
-                            code,
+                            code: code.into(),
                             arg: get_arg(command, parts.next())?,
                         })));
                     }

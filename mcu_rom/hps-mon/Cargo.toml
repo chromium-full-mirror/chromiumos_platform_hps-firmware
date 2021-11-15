@@ -10,6 +10,7 @@ argh = "0.1.4"
 crc = "2.0"
 colored = "2.0.0"
 factory_tester_common = { path = "../factory_tester_common" }
+fpga_app = { path = "../fpga_app" }
 host_dev_common = { path = "../host_dev_common" }
 hps_interface = { path = "../hps_interface" }
 mcp2221 = { path = "../mcp2221" }

@@ -4,11 +4,13 @@
 
 #![cfg_attr(not(test), no_std)]
 
+mod debug_commands;
 mod debug_led;
 mod features;
 mod mcu_interface;
 
 use core::fmt::Write;
+pub use debug_commands::DebugCommand;
 pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
 use features::Features;
