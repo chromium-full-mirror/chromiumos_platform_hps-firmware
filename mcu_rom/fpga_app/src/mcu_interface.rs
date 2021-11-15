@@ -108,6 +108,27 @@ where
         ))
     }
 
+    #[cfg(feature = "image-transfer")]
+    pub fn send_image_data(&mut self, image_data: &[u8]) -> Result<()> {
+        let mut to_send = crate::camera::START_IMAGE_MARKER
+            .iter()
+            .chain(image_data)
+            .chain(crate::camera::END_IMAGE_MARKER.iter())
+            .peekable();
+        while to_send.peek().is_some() {
+            self.clear_buffer();
+            self.buffer[0] = commands::DEBUG_IMAGE;
+            for i in 1..BUFFER_SIZE {
+                match to_send.next() {
+                    Some(byte) => self.buffer[i] = *byte,
+                    None => break,
+                }
+            }
+            self.exchange()?;
+        }
+        Ok(())
+    }
+
     fn exchange(&mut self) -> Result<()> {
         self.spi
             .transfer(&mut self.buffer)

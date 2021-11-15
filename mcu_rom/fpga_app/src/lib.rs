@@ -44,6 +44,7 @@ where
     mcu: McuInterface<S>,
     image_data_receiver: I,
     led: L,
+    image_transfer_enabled: bool,
 }
 
 impl<S, I, L> App<S, I, L>
@@ -57,6 +58,7 @@ where
             mcu: McuInterface::new(spi),
             image_data_receiver,
             led,
+            image_transfer_enabled: false,
         }
     }
 
@@ -91,6 +93,15 @@ where
         let mut buffer = [0u8; camera::NUM_PIXELS];
         self.capture_image(&mut buffer)?;
 
+        // Image transfer can be enabled either via a feature (transfer over
+        // I2C) or via a hps-mon debug command (transfer over RTT).
+        #[cfg(feature = "image-transfer")]
+        {
+            if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_enabled {
+                self.mcu.send_image_data(&buffer)?;
+            }
+        }
+
         Ok(())
     }
 
@@ -111,7 +122,19 @@ where
 
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
-            mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
+            match command {
+                DebugCommand::TransferOn => {
+                    self.image_transfer_enabled = true;
+                    mcu_println!(self, "Image transfer enabled");
+                }
+                DebugCommand::TransferOff => {
+                    self.image_transfer_enabled = false;
+                    mcu_println!(self, "Image transfer disabled");
+                }
+                _ => {
+                    mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
+                }
+            }
         }
     }
 }

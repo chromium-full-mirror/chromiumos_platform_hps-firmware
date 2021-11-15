@@ -9,5 +9,9 @@ bitflags! {
         /// Allows the debug LED to be turned on and off by enabling / disabling
         /// this feature.
         const DEBUG_LED = 0x40;
+
+        /// Whether to transfer images to the MCU for sending back to the host.
+        /// This feature is for development and testing purposes only.
+        const IMAGE_TRANSFER = 0x80;
     }
 }

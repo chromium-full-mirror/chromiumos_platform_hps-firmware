@@ -53,6 +53,10 @@ echo "===== RISCV ====="
 cd "${PROJECT_ROOT}/mcu_rom/riscv"
 cargo +stable build
 
+echo "===== RISCV with image transfer ====="
+cd "${PROJECT_ROOT}/mcu_rom/riscv"
+cargo +stable build --features image-transfer
+
 # Run Python tests
 cd "${PROJECT_ROOT}"
 echo -e "\n\n${RED}=======================================${NORMAL}"
