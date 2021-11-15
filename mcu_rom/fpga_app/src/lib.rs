@@ -18,6 +18,14 @@ use mcu_interface::McuInterface;
 
 const SOC_ROM_VERSION: u8 = 1;
 
+/// Print to hps-mon via the MCU. The first argument can be anything that
+/// implements `mcu_mut()`.
+macro_rules! mcu_println {
+    ($mcu:expr, $($tts:tt)*) => {
+        let _ = writeln!($mcu.mcu_mut(), $($tts)*);
+    };
+}
+
 #[derive(Debug)]
 pub enum Error {
     SpiError,
@@ -50,13 +58,17 @@ where
     pub fn run(&mut self) -> ! {
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
-        let _ = writeln!(&mut self.mcu, "Hello from the Rust FPGA");
+        mcu_println!(self, "Hello from the Rust FPGA");
         self.led.turn_on();
         loop {
             if let Err(error) = self.loop_body() {
                 let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
             }
         }
+    }
+
+    pub fn mcu_mut(&mut self) -> &mut McuInterface<S> {
+        &mut self.mcu
     }
 
     fn loop_body(&mut self) -> Result<()> {
@@ -76,11 +88,7 @@ where
 
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
-            let _ = writeln!(
-                &mut self.mcu,
-                "DebugCommand::{:?}({}) not implemented",
-                command, arg
-            );
+            mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
         }
     }
 }
