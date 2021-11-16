@@ -9,22 +9,22 @@ license = "BSD-3-Clause"
 resolver = "2"
 
 [dependencies]
-application = { path = "../application" }
+application = { path = "../../application" }
 cortex-m = "0.7.1"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 crc = "2.0"
-debug_logger = { path = "../debug_logger" }
+debug_logger = { path = "../../debug_logger" }
 embedded-hal = "0.2.4"
 # TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
 # better understood.
 hal = { package = "stm32g0xx-hal", version = "=0.1.0", features = ["rt"]}
-hm01b0 = { path = "../hm01b0" }
+hm01b0 = { path = "../../hm01b0" }
 hmac-sha256 = "0.1.6"
-i2c_peripheral = { path = "../i2c_peripheral" }
-i2c_protocol = { path = "../i2c_protocol" }
+i2c_peripheral = { path = "../../i2c_peripheral" }
+i2c_protocol = { path = "../../i2c_protocol" }
 log = {version = "0.4.14", features = [ "release_max_level_off" ] }
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../../mcu_common" }
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"] }
 rtt-target = { version = "0.3.1", features = ["cortex-m"] }
 spi-memory = "0.2.0"
@@ -32,7 +32,7 @@ stm32g0 = "0.13.0"
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral", default-features = false }
 
 [build-dependencies]
-mcu_common = { path = "../mcu_common", features = [ "std" ] }
+mcu_common = { path = "../../mcu_common", features = [ "std" ] }
 
 [features]
 default = [
@@ -56,23 +56,3 @@ image-transfer = [ "application/image-transfer" ]
 # This is intended for internal testing only. Must never be enabled in
 # production.
 no-hash-check = []
-
-# Optimize all dependencies
-[profile.dev.package."*"]
-opt-level = "z"
-codegen-units = 1
-
-[profile.release.package."*"]
-opt-level = "z"
-codegen-units = 1
-
-[profile.dev]
-lto = true
-opt-level = "z"
-panic = "abort"
-
-[profile.release]
-debug = true
-lto = true
-opt-level = "z"
-panic = "abort"

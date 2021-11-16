@@ -12,10 +12,10 @@ PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 source "${PROJECT_ROOT}/environment"
 
 set -e
-STAGE0="${PROJECT_ROOT}/rust/stage0/target/thumbv6m-none-eabi/release/stage0.bin"
-APPLICATION="${PROJECT_ROOT}/rust/stage1_app/target/thumbv6m-none-eabi/release/stage1_app.bin"
+STAGE0="${PROJECT_ROOT}/rust/mcu/stage0/target/thumbv6m-none-eabi/release/stage0.bin"
+APPLICATION="${PROJECT_ROOT}/rust/mcu/stage1_app/target/thumbv6m-none-eabi/release/stage1_app.bin"
 (
-    cd "${PROJECT_ROOT}/rust/stage0"
+    cd "${PROJECT_ROOT}/rust/mcu/stage0"
     cargo "+${RUST_VERSION}" build --release
     arm-none-eabi-objcopy \
         -O binary \
@@ -23,7 +23,7 @@ APPLICATION="${PROJECT_ROOT}/rust/stage1_app/target/thumbv6m-none-eabi/release/s
         "${STAGE0}"
 )
 (
-    cd "${PROJECT_ROOT}/rust/stage1_app"
+    cd "${PROJECT_ROOT}/rust/mcu/stage1_app"
     cargo "+${RUST_VERSION}" build --release
     arm-none-eabi-objcopy \
         -O binary \

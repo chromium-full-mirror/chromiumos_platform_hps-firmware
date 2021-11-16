@@ -24,29 +24,23 @@ cargo +"${RUST_NIGHTLY_VERSION}" miri test
 
 # Harware-specific crates. Just build these.
 
-cd "${PROJECT_ROOT}/rust/stage0"
+cd "${PROJECT_ROOT}/rust/mcu"
 cargo +stable build
 
-cd "${PROJECT_ROOT}/rust/stage1_app"
-cargo +stable build
 for board in nucleo proto2; do
     echo "===== Building application for board $board ====="
-    cargo +stable build --no-default-features --features $board
+    cargo +stable build -p stage1_app --no-default-features --features $board
 done
 
-cd "${PROJECT_ROOT}/rust/factory_tester_mcu"
 echo "===== Release build of factory_tester_mcu ====="
-cargo +stable build --no-default-features --release
+cargo +stable build -p factory_tester_mcu --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
-cargo +stable build --no-default-features --features dev
+cargo +stable build -p factory_tester_mcu --no-default-features --features dev
 echo "===== Stage1 build of factory_tester_mcu ====="
-cargo +stable build --no-default-features --features stage1
+cargo +stable build -p factory_tester_mcu --no-default-features --features stage1
 
 echo "===== factory_tester ====="
 cd "${PROJECT_ROOT}/rust/factory_tester"
-cargo +stable build
-
-cd "${PROJECT_ROOT}/rust/stm32g0_i2c_peripheral"
 cargo +stable build
 
 echo "===== RISCV ====="

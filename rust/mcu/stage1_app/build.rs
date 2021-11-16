@@ -37,12 +37,12 @@ fn build_spi_hash() {
 
     let bitstream_path = PathBuf::from(
         std::env::var("HPS_SPI_BIT")
-            .unwrap_or("../../build/hps_platform/gateware/hps_platform.bit".to_string()),
+            .unwrap_or("../../../build/hps_platform/gateware/hps_platform.bit".to_string()),
     );
     let mut bitstream_file = File::open(bitstream_path).expect(MESSAGE);
     let soc_rom_path = PathBuf::from(
         std::env::var("HPS_SPI_BIN")
-            .unwrap_or("../../build/hps_platform/software/bios/bios.bin".to_string()),
+            .unwrap_or("../../../build/hps_platform/software/bios/bios.bin".to_string()),
     );
     let mut soc_rom_file = File::open(soc_rom_path).expect(MESSAGE);
 

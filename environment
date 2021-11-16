@@ -65,10 +65,7 @@ export PYTHONPATH
 # List of directories with Rust source
 export HPS_RUST_DIRS=(
     rust
-    rust/factory_tester_mcu
-    rust/one_time_init
+    rust/factory_tester
+    rust/mcu
     rust/riscv
-    rust/stage0
-    rust/stage1_app
-    rust/stm32g0_i2c_peripheral
 )

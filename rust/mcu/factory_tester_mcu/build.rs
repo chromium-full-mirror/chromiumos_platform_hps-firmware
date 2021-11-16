@@ -127,7 +127,7 @@ fn run(command: &mut Command) {
     command.env(
         "PATH",
         format!(
-            "../../third_party/installed/bin:{}",
+            "../../../third_party/installed/bin:{}",
             std::env::var("PATH").expect("PATH must be set")
         ),
     );

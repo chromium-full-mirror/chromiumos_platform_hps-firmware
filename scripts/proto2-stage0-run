@@ -8,7 +8,7 @@ set -e
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-cd "${PROJECT_ROOT}/rust/stage0"
-cargo build --no-default-features
+cd "${PROJECT_ROOT}/rust/mcu"
+cargo build -p stage0 --no-default-features
 BINARY="target/thumbv6m-none-eabi/debug/stage0"
 openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" --search tcl -c "program $BINARY verify reset"

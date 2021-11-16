@@ -22,7 +22,7 @@ fn build_mcu_test_program(bin_name: &str, features: &str) {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join(bin_name);
     let out = Command::new("cargo")
-        .current_dir("../factory_tester_mcu")
+        .current_dir("../mcu/factory_tester_mcu")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .arg("objcopy")
@@ -51,7 +51,7 @@ fn write_stage0_bin(bin_name: &str, features: &str) {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join(bin_name);
     let out = Command::new("cargo")
-        .current_dir("../stage0")
+        .current_dir("../mcu/stage0")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .arg("objcopy")
@@ -75,7 +75,7 @@ fn write_application_bin() {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join("application.bin");
     let out = Command::new("cargo")
-        .current_dir("../stage1_app")
+        .current_dir("../mcu/stage1_app")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .arg("objcopy")
@@ -99,7 +99,7 @@ fn build_one_time_init() {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join("one_time_init.bin");
     let out = Command::new("cargo")
-        .current_dir("../one_time_init")
+        .current_dir("../mcu/one_time_init")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
         .arg("objcopy")

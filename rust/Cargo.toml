@@ -23,16 +23,9 @@ members = [
     "sign-rom",
     "stm32_bootloader_client",
 ]
-# Crates that can only run on the MCU go here. The MCU binaries can't go into a
-# workspace since they each have their own memory.x. If we get more than one
-# library, then we might want to consider moving the stm32 libraries into a
-# workspace.
+# Crates/workspaces that can't be compiled for Linux are listed here.
 exclude = [
     "factory_tester",
-    "factory_tester_mcu",
-    "one_time_init",
     "riscv",
-    "stage0",
-    "stage1_app",
-    "stm32g0_i2c_peripheral"
+    "mcu",
 ]
