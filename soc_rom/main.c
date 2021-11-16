@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <SparkFun_HM01B0_Camera_ArduinoLibrary/src/hm01b0.h>
 #include <console.h>
 #include <generated/csr.h>
 #include <hps_i2c.h>
