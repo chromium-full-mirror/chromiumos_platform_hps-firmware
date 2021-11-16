@@ -13,6 +13,7 @@ use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_interface::Stage;
 use linux_embedded_hal::Delay;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
@@ -56,6 +57,13 @@ where
     /// Writes `program_bytes` into the stage1 slot using either the STM32
     /// bootloader if active, or stage0 if that's active.
     pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
+        // If we're running HPS firmware, but it's not stage0, then we need to
+        // reset in order to get to either the system bootloader or stage0.
+        if let Ok(mut hps) = self.open_hps() {
+            if hps.stage()? != Stage::Stage0 {
+                hps.perform_command(Command::Reset)?;
+            }
+        }
         if self.open_bootloader().is_ok() {
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
