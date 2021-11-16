@@ -14,22 +14,12 @@
 #include "camera.h"
 #include "cat_picture.h"
 #include "generated/csr.h"
-#include "hm01b0_platform.h"
 #include "hps_version.h"
 #include "mcu.h"
 #include "litex_shim/shim.h"
 #include "transpose.h"
 
-#define CAM_CHECK(status, msg)     \
-  {                                \
-    if (status != HM01B0_ERR_OK) { \
-      mcu_printf(msg " failed\n"); \
-    }                              \
-  }
-
-static hm01b0_ae_cfg_t aecfg;
 static uint8_t ae_target = 100;
-static hm01b0_snr_expo_gain_ctrl_t expo_gain_ctrl;
 static bool automatic_exposure_enabled = true;
 static int recalibration_threshold = 0;
 
@@ -89,14 +79,6 @@ static void cam_dma_enable(uint16_t column_start,
 }
 
 static void capture(bool rotate_image) {
-  hm01b0_status_e status;
-  if (!automatic_exposure_enabled) {
-    status = hm01b0_restore_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
-    CAM_CHECK(status, "restore_exposure");
-  }
-  status = hm01b0_cmd_update(&hm01b0_cfg);
-  CAM_CHECK(status, "status");
-
   // Command camera to take a frame
   wait_for_camera_standby();
   if (rotate_image) {
@@ -218,16 +200,6 @@ static void model_selftest(void) {
            selftest_status.score);
 }
 
-// Initializes the camera
-static void camera_init() {
-  hm01b0_status_e status;
-  puts("Camera: Normal mode init");
-  hm01b0_init_system(&hm01b0_cfg, (hm_script_t*)hps_init,
-                     sizeof(hps_init) / sizeof(hm_script_t));
-  status = hm01b0_save_exposure_gains(&hm01b0_cfg, &expo_gain_ctrl);
-  CAM_CHECK(status, "save_exposure");
-}
-
 // Reads configuration registers from the MCU
 static void read_mcu_config(struct configuration* config) {
   puts("Reading MCU configuration");
@@ -284,22 +256,6 @@ static void transfer_image(void) {
   mcu_stream_send_data(&stream, (const uint8_t*)tflite_get_input(), image_size);
   mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
   mcu_stream_flush(&stream);
-}
-
-static void set_camera_register(uint16_t address, uint8_t value) {
-  if (address == 0) {
-    mcu_printf(
-        "Attempt to set custom register value without first setting address");
-    return;
-  }
-  uint32_t ui32Err =
-      hm01b0_write_reg(&hm01b0_cfg, address, (uint8_t*)&value, sizeof(value));
-  if (ui32Err != HM01B0_ERR_OK) {
-    mcu_printf("Failed to set camera register 0x%02x to 0x%02x\n", address,
-               value);
-  } else {
-    mcu_printf("Set camera register 0x%02x to 0x%02x\n", address, value);
-  }
 }
 
 // Calculates an approximation of ln(x)/ln(2) * 2^24.
@@ -369,20 +325,6 @@ int main(void) {
 
   report_boot();
 
-  hm01b0_status_e status;
-
-  // init camera
-  status = hm01b0_mclk_enable(&hm01b0_cfg);
-  CAM_CHECK(status, "mclk");
-  status = hm01b0_init_if(&hm01b0_cfg);
-  CAM_CHECK(status, "init");
-
-  // Auto exposure struct
-  memset((void*)&aecfg, 0x00, sizeof(hm01b0_ae_cfg_t));
-
-  // Load up init script
-  camera_init();
-
   // Initialize TFLite
   tflite_init(tflite_error_callback);
 
@@ -400,7 +342,6 @@ int main(void) {
   bool do_run_exposure_calibration = false;
   bool do_transfer_image_to_host = false;
   bool rotate_image = true;
-  uint16_t custom_register_address = 0;
   while (1) {
     loop_count++;
     poll_mcu();
@@ -427,12 +368,6 @@ int main(void) {
           break;
         case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
           do_run_exposure_calibration = true;
-          break;
-        case DEBUG_CMD_SET_CUSTOM_CAM_REG_ADDRESS:
-          custom_register_address = cmd_arg;
-          break;
-        case DEBUG_CMD_SET_CUSTOM_CAM_REG_VALUE:
-          set_camera_register(custom_register_address, cmd_arg);
           break;
         case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
           mcu_printf("Image rotation clockwise disabled\n");

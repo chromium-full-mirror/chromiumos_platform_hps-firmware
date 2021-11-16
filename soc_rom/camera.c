@@ -9,11 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define HM01B0_MODE_SELECT 0x0100
-#define HM01B0_FRAME_COUNT 0x3020
-#define HM01B0_AE_TARGET_MEAN 0x2101
-#define HM01B0_AE_MEAN 0x2020
-
 int read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_READ_CAMERA_I2C;

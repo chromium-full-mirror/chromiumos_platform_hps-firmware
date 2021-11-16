@@ -84,21 +84,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(5),
     },
     AvailableDebugCommand {
-        keyword: "camera_custom_address",
-        help_text: "Set custom register address for subsequent camera_write_custom command",
-        command_type: CommandType::FpgaCommandWithArg(9),
-    },
-    AvailableDebugCommand {
-        keyword: "camera_custom_write",
-        help_text: "Write camera register specified by last camera_custom_address",
-        command_type: CommandType::FpgaCommandWithArg(10),
-    },
-    AvailableDebugCommand {
-        keyword: "automatic_exposure_target",
-        help_text: "Set automatic exposure target (0 to disable AE)",
-        command_type: CommandType::FpgaCommandWithArg(13),
-    },
-    AvailableDebugCommand {
         keyword: "rotate_image_clockwise_off",
         help_text: "Disable image rotation clockwise (for vertical camera mount)",
         command_type: CommandType::FpgaCommand(16),

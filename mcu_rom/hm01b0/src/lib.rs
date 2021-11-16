@@ -4,6 +4,8 @@
 
 #![no_std]
 
+mod init_script;
+
 use embedded_hal::blocking::i2c;
 
 const CAMERA_I2C_ID: u8 = 0x24;
@@ -270,6 +272,13 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         self.write_reg(0x0383, 0x00)?; // Full X readout.
         self.write_reg(0x0387, 0x01)?; // Full Y readout.
         self.write_reg(0x0390, 0x00) // Horizontal binning.
+    }
+
+    pub fn run_init_script(&mut self) -> Result<()> {
+        for (register, value) in init_script::INIT_SCRIPT {
+            self.write_reg(*register, *value)?;
+        }
+        Ok(())
     }
 }
 

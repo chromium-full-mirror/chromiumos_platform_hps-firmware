@@ -603,7 +603,8 @@ fn init_peripherals(
         };
     }
 
-    match hm01b0::Camera::new(&mut camera_i2c).get_camera_id() {
+    let mut camera = hm01b0::Camera::new(&mut camera_i2c);
+    match camera.get_camera_id() {
         Err(_) => {
             host_interface.report_error(mcu_common::Error::Camera);
             info!("Failed to read camera ID");
@@ -614,6 +615,10 @@ fn init_peripherals(
             info!("Camera reported unexpected ID: {}", id);
         }
     }
+    match camera.run_init_script() {
+        Ok(_) => info!("Default HM01B0 configuration applied"),
+        Err(_) => info!("Failed to apply HM01B0 init config"),
+    };
 
     info!(
         "MCU application started. CPU is running at {}MHz",

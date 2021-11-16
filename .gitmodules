@@ -31,9 +31,6 @@
 [submodule "third_party/gn"]
 	path = third_party/gn
 	url = https://gn.googlesource.com/gn
-[submodule "third_party/SparkFun_HM01B0_Camera_ArduinoLibrary"]
-	path = third_party/SparkFun_HM01B0_Camera_ArduinoLibrary
-	url = https://github.com/sparkfun/SparkFun_HM01B0_Camera_ArduinoLibrary.git
 [submodule "third_party/python/litespi"]
 	path = third_party/python/litespi
 	url = https://github.com/litex-hub/litespi.git
