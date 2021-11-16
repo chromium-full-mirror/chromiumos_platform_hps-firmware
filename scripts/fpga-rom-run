@@ -13,10 +13,11 @@ PROJECT_ROOT=$(git rev-parse --show-toplevel)
 ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
 
 cd "${PROJECT_ROOT}/mcu_rom/riscv"
+BUILD_FLAGS=(-p fpga_rom --release --features image-transfer)
 # Build first, since if there are errors, `cargo objcopy` won't report them in a
 # useful way.
-cargo build -p fpga_rom --release
-cargo objcopy -p fpga_rom --release -- -O binary "${ROM}"
+cargo build "${BUILD_FLAGS[@]}"
+cargo objcopy "${BUILD_FLAGS[@]}" -- -O binary "${ROM}"
 "${PROJECT_ROOT}/scripts/hps-mon" \
     --openocd-port 4444 \
     --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
