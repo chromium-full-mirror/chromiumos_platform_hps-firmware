@@ -81,7 +81,10 @@ pub trait Hps {
     }
 
     fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
-        const TIMEOUT: Duration = Duration::from_millis(5000);
+        // Writing the first page of the SPI flash will trigger a mass erase.
+        // The data sheet for GD25LQ128D lists the maximum chip erase time as
+        // 120 seconds. We allow 50% extra just to be sure.
+        const TIMEOUT: Duration = Duration::from_secs(180);
         let start = Instant::now();
         loop {
             if self.is_memory_bank_available(memory_bank) {
