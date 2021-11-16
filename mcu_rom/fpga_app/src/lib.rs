@@ -44,6 +44,7 @@ where
     mcu: McuInterface<S>,
     image_data_receiver: I,
     led: L,
+    #[cfg(feature = "image-transfer")]
     image_transfer_enabled: bool,
 }
 
@@ -58,6 +59,7 @@ where
             mcu: McuInterface::new(spi),
             image_data_receiver,
             led,
+            #[cfg(feature = "image-transfer")]
             image_transfer_enabled: false,
         }
     }
@@ -123,10 +125,12 @@ where
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
             match command {
+                #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOn => {
                     self.image_transfer_enabled = true;
                     mcu_println!(self, "Image transfer enabled");
                 }
+                #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOff => {
                     self.image_transfer_enabled = false;
                     mcu_println!(self, "Image transfer disabled");
