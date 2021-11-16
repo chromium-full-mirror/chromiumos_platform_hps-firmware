@@ -8,7 +8,7 @@
 
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
-cd "${PROJECT_ROOT}/mcu_rom"
+cd "${PROJECT_ROOT}/rust"
 
 RUSTFLAGS='-C link-arg=-s' \
     cargo build \
@@ -19,4 +19,4 @@ RUSTFLAGS='-C link-arg=-s' \
     --features image-transfer
 
 echo "Succesfully built statically linked hps-factory:"
-ls -lh "${PROJECT_ROOT}/mcu_rom/target/x86_64-unknown-linux-musl/release/hps-factory"
+ls -lh "${PROJECT_ROOT}/rust/target/x86_64-unknown-linux-musl/release/hps-factory"

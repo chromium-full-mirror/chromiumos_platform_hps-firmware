@@ -17,24 +17,24 @@ source "${PROJECT_ROOT}/environment"
 
 # Crates that can be tested without hardware.
 
-cd "${PROJECT_ROOT}/mcu_rom"
+cd "${PROJECT_ROOT}/rust"
 cargo +stable test
 
 cargo +"${RUST_NIGHTLY_VERSION}" miri test
 
 # Harware-specific crates. Just build these.
 
-cd "${PROJECT_ROOT}/mcu_rom/stage0"
+cd "${PROJECT_ROOT}/rust/stage0"
 cargo +stable build
 
-cd "${PROJECT_ROOT}/mcu_rom/stage1_app"
+cd "${PROJECT_ROOT}/rust/stage1_app"
 cargo +stable build
 for board in nucleo proto2; do
     echo "===== Building application for board $board ====="
     cargo +stable build --no-default-features --features $board
 done
 
-cd "${PROJECT_ROOT}/mcu_rom/factory_tester_mcu"
+cd "${PROJECT_ROOT}/rust/factory_tester_mcu"
 echo "===== Release build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
@@ -43,18 +43,18 @@ echo "===== Stage1 build of factory_tester_mcu ====="
 cargo +stable build --no-default-features --features stage1
 
 echo "===== factory_tester ====="
-cd "${PROJECT_ROOT}/mcu_rom/factory_tester"
+cd "${PROJECT_ROOT}/rust/factory_tester"
 cargo +stable build
 
-cd "${PROJECT_ROOT}/mcu_rom/stm32g0_i2c_peripheral"
+cd "${PROJECT_ROOT}/rust/stm32g0_i2c_peripheral"
 cargo +stable build
 
 echo "===== RISCV ====="
-cd "${PROJECT_ROOT}/mcu_rom/riscv"
+cd "${PROJECT_ROOT}/rust/riscv"
 cargo +stable build
 
 echo "===== RISCV with image transfer ====="
-cd "${PROJECT_ROOT}/mcu_rom/riscv"
+cd "${PROJECT_ROOT}/rust/riscv"
 cargo +stable build --features image-transfer
 
 # Run Python tests

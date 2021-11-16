@@ -90,7 +90,7 @@ toolchain("arm-none-eabi-gcc") {
   }
 
   tool("link") {
-    linker_script = rebase_path("../mcu_rom/stm32.ld", "", ".")
+    linker_script = rebase_path("../rust/stm32.ld", "", ".")
     exename = "{{target_output_name}}{{output_extension}}"
     outfile = "{{output_dir}}/$exename"
     rspfile = "$outfile.rsp"

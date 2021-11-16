@@ -8,5 +8,5 @@ set -e
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-cd "${PROJECT_ROOT}/mcu_rom"
+cd "${PROJECT_ROOT}/rust"
 cargo run -p hps-mon -- "$@"

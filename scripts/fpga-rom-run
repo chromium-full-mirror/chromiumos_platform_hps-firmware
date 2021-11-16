@@ -12,7 +12,7 @@ set -e
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
 
-cd "${PROJECT_ROOT}/mcu_rom/riscv"
+cd "${PROJECT_ROOT}/rust/riscv"
 BUILD_FLAGS=(-p fpga_rom --release --features image-transfer)
 # Build first, since if there are errors, `cargo objcopy` won't report them in a
 # useful way.

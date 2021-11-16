@@ -4,8 +4,8 @@
 
 To build all of the MCU code:
 ```bash
-(cd $HPS_ROOT/mcu_rom/stage0 && cargo build --release)
-(cd $HPS_ROOT/mcu_rom/stage1_app && cargo build --release)
+(cd $HPS_ROOT/rust/stage0 && cargo build --release)
+(cd $HPS_ROOT/rust/stage1_app && cargo build --release)
 ```
 
 Now connect the STM32G071 Nucleo-64 board to your host system and flash the
@@ -13,20 +13,20 @@ MCU with the above staged firmware in the following way (choose the one you want
 
 ```bash
 cd $HPS_ROOT
-./scripts/flash-mcu mcu_rom/stage0/target/thumbv6m-none-eabi/release/stage0
+./scripts/flash-mcu rust/stage0/target/thumbv6m-none-eabi/release/stage0
 ./scripts/flash-mcu \
-    mcu_rom/stage1_app/target/thumbv6m-none-eabi/release/stage1_app
+    rust/stage1_app/target/thumbv6m-none-eabi/release/stage1_app
 ```
 
 Finally, to see log messages run:
 
 ```bash
-(cd $HPS_ROOT/mcu_rom/stage0 && cargo run)
+(cd $HPS_ROOT/rust/stage0 && cargo run)
 
 To run the MCU application and see output:
 
 ```bash
-(cd $HPS_ROOT/mcu_rom/stage1_app && cargo run)
+(cd $HPS_ROOT/rust/stage1_app && cargo run)
 ```
 
 The host utilities are in the main ChromeOS platform2 repo.
