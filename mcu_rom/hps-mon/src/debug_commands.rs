@@ -25,6 +25,8 @@ struct AvailableDebugCommand {
 
 enum CommandType {
     FpgaCommand(fpga_app::DebugCommand),
+    // TODO: Remove this if we don't end up using it soon.
+    #[allow(dead_code)]
     FpgaCommandWithArg(fpga_app::DebugCommand),
     McuCommand(McuDebugCommand),
     McuCommandWithArg(McuDebugCommand),
