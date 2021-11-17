@@ -68,6 +68,10 @@ pub(crate) fn write_spi_flash(
             start_offset / BLOCK_SIZE,
             cmd_response_channel,
         )?;
+        if blocks_to_write.is_empty() {
+            println!("All blocks already up-to-date. Nothing to write.");
+            return Ok(());
+        }
         let total_blocks = file_bytes.len() / BLOCK_SIZE;
         println!(
             "Need to write {} of {} blocks",
@@ -267,7 +271,7 @@ fn get_blocks_to_write<'a>(
             let crc = u32::from_le_bytes(wait_cmd_response(cmd_response_channel)?);
             blocks_checked += 1;
             if let Some(info) = outstanding_blocks.pop_front() {
-                if blocks_checked % 10 == 0 {
+                if blocks_checked % 10 == 0 || blocks_checked == total_blocks {
                     println!("CRC checked {} of {} blocks", blocks_checked, total_blocks,);
                 }
                 if crc != info.desired_crc {
