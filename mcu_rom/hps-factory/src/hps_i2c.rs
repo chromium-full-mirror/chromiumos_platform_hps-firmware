@@ -67,6 +67,13 @@ where
         if self.open_bootloader().is_ok() {
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
+        let stage = self.open_hps()?.stage()?;
+        if stage != Stage::Stage0 {
+            bail!(
+                "Need either stage0 or the system bootloader, but got: {:?}",
+                stage
+            );
+        }
         self.write_memory_bank("stage1", memory_banks::MCU_RW, 0, program_bytes)
     }
 
