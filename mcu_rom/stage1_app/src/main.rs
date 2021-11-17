@@ -222,10 +222,10 @@ const APP: () = {
         // On writing the first byte, erase the whole flash.
         // This allows a hash of the whole flash to match one calculated offline.
         if request.address == 0 {
-            spi_flash::erase(get_spi_flash(ctx.resources.fpga_device))
+            spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok())
         }
         if let Err(error) = spi_flash::write(
-            get_spi_flash(ctx.resources.fpga_device),
+            get_spi_flash(ctx.resources.fpga_device).ok(),
             request.address,
             &*request.data,
         ) {
@@ -240,7 +240,7 @@ const APP: () = {
 
     #[task(resources = [fpga_device, host_interface, state])]
     fn try_start_fpga(mut ctx: try_start_fpga::Context) {
-        match spi_flash::hash(get_spi_flash(ctx.resources.fpga_device)) {
+        match spi_flash::hash(get_spi_flash(ctx.resources.fpga_device).ok()) {
             Some(hash) => {
                 if &hash == SPI_FLASH_HASH {
                     ctx.resources.fpga_device.start_fpga();
@@ -290,16 +290,17 @@ fn transfer_image(
 
 fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
     match command.kind {
-        McuDebugCommand::ReadSpiFlash => {
-            spi_flash::debug_read(get_spi_flash(resources.fpga_device), command.arg as u32)
-        }
+        McuDebugCommand::ReadSpiFlash => spi_flash::debug_read(
+            get_spi_flash(resources.fpga_device).ok(),
+            command.arg as u32,
+        ),
         McuDebugCommand::WriteSpiFlash => {
             if let Some(write_request) = command.write_request {
                 // For now, we ignore returned errors here, since the write
                 // function will have printed the error message in more detail
                 // already.
                 let _ = spi_flash::write(
-                    get_spi_flash(resources.fpga_device),
+                    get_spi_flash(resources.fpga_device).ok(),
                     write_request.address,
                     &*write_request.data,
                 );
@@ -311,10 +312,10 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         }
         McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
         McuDebugCommand::EraseSpiFlash => {
-            spi_flash::erase(get_spi_flash(resources.fpga_device));
+            spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
         }
         McuDebugCommand::HashSpiFlash => spi_flash::time_hash(
-            get_spi_flash(resources.fpga_device),
+            get_spi_flash(resources.fpga_device).ok(),
             command.arg as u32,
             resources.stopwatch,
         ),
@@ -322,15 +323,21 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             resources
                 .mcu_cmd_response_channel
                 .write(&spi_flash::crc_sector(
-                    get_spi_flash(resources.fpga_device),
+                    get_spi_flash(resources.fpga_device).ok(),
                     command.arg,
                 ));
         }
         McuDebugCommand::SpiFlashReadSpeed => {
-            spi_flash::test_read_speed(get_spi_flash(resources.fpga_device), resources.stopwatch);
+            spi_flash::test_read_speed(
+                get_spi_flash(resources.fpga_device).ok(),
+                resources.stopwatch,
+            );
         }
         McuDebugCommand::SpiFlashWriteSpeed => {
-            spi_flash::test_write_speed(get_spi_flash(resources.fpga_device), resources.stopwatch);
+            spi_flash::test_write_speed(
+                get_spi_flash(resources.fpga_device).ok(),
+                resources.stopwatch,
+            );
         }
         McuDebugCommand::FpgaPowerOff => {
             resources.fpga_device.power_gate.set_high().unwrap();

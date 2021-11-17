@@ -5,6 +5,7 @@
 
 use hal::prelude::{OutputPin, StatefulOutputPin};
 use log::info;
+use mcu_common::Error;
 use spi_memory::series25::Flash;
 
 use crate::board;
@@ -50,10 +51,12 @@ impl FpgaDevice {
 
 pub(crate) fn get_spi_flash(
     fpga_device: &mut FpgaDevice,
-) -> Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>> {
+) -> Result<&mut Flash<board::FlashSpi, board::FlashSpiCs>, Error> {
     if fpga_device.hold.is_set_high().unwrap() {
-        None
+        // Requesting to do something with the SPI flash when the FPGA has
+        // already been started is a bad request.
+        Err(Error::HostI2cBadRequest)
     } else {
-        fpga_device.spi_flash.as_mut()
+        fpga_device.spi_flash.as_mut().ok_or(Error::SpiFlash)
     }
 }
