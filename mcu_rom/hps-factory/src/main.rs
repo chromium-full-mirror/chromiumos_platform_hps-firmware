@@ -84,6 +84,7 @@ fn main() -> Result<()> {
         // then give up.
         i2c_config.timeout = std::time::Duration::from_millis(100);
         let mut i2c = mcp2221::I2c::open_first(&i2c_config)?;
+        i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
     if let Some(dev_path) = &config.dev {
