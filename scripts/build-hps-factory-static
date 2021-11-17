@@ -10,6 +10,10 @@ set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 cd "${PROJECT_ROOT}/rust"
 
+# Force rerun of build.rs, otherwise changes in the various crates that it
+# embeds might not be picked up.
+touch hps-factory/build.rs
+
 RUSTFLAGS='-C link-arg=-s' \
     cargo build \
     --release \
