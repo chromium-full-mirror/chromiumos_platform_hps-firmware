@@ -129,7 +129,7 @@ pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSp
 fn hash_internal(
     spi_flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
     num_pages: u32,
-) -> Option<[u8; 32]> {
+) -> Result<[u8; 32], Error> {
     let mut hasher = Hash::new();
     let mut buf = [0x00; PAGE_SIZE as usize];
     for page in 0..num_pages {
@@ -138,23 +138,16 @@ fn hash_internal(
             .is_err()
         {
             error!("Failed to read back SPI flash");
-            return None;
+            return Err(Error::SpiFlash);
         }
         hasher.update(&buf);
     }
-    Some(hasher.finalize())
+    Ok(hasher.finalize())
 }
 
 pub(crate) fn hash(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
-) -> Option<[u8; 32]> {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return None;
-        }
-    };
+    spi_flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+) -> Result<[u8; 32], Error> {
     hash_internal(spi_flash, SPI_FLASH_SIZE / PAGE_SIZE)
 }
 

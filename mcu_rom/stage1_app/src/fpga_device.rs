@@ -10,6 +10,9 @@ use spi_memory::series25::Flash;
 
 use crate::board;
 
+// sha256 of the contents of spi flash.
+const SPI_FLASH_HASH: &[u8; 32] = include_bytes!(env!("SPI_HASH"));
+
 pub struct FpgaDevice {
     pub hold: board::FpgaProgramn,
     pub power_gate: board::FpgaPowerGate,
@@ -42,10 +45,13 @@ impl FpgaDevice {
         self.hold.set_high().unwrap();
     }
 
-    pub(crate) fn start_fpga(&mut self) {
-        // TODO: If the SPI flash hasn't been validated yet, this should report
-        // an error and refuse to take the FPGA out of reset.
-        self.hold.set_high().unwrap();
+    pub(crate) fn start_fpga(&mut self) -> Result<(), Error> {
+        if &crate::spi_flash::hash(get_spi_flash(self)?)? == SPI_FLASH_HASH {
+            self.hold.set_high().unwrap();
+            Ok(())
+        } else {
+            Err(Error::SpiFlashNotVerified)
+        }
     }
 }
 

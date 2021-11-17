@@ -24,6 +24,7 @@ use hal::delay::Delay;
 use hal::prelude::*;
 use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
+use log::error;
 use log::info;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
@@ -32,9 +33,6 @@ use rtic::app;
 use rtt_target::rtt_init;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
-
-// sha256 of the contents of spi flash
-const SPI_FLASH_HASH: &[u8; 32] = include_bytes!(env!("SPI_HASH"));
 
 const CAMERA_ID: u16 = 0x01b0;
 
@@ -240,23 +238,17 @@ const APP: () = {
 
     #[task(resources = [fpga_device, host_interface, state])]
     fn try_start_fpga(mut ctx: try_start_fpga::Context) {
-        match spi_flash::hash(get_spi_flash(ctx.resources.fpga_device).ok()) {
-            Some(hash) => {
-                if &hash == SPI_FLASH_HASH {
-                    ctx.resources.fpga_device.start_fpga();
-                    ctx.resources
-                        .host_interface
-                        .lock(|h| h.set_application_running(true));
-                } else {
-                    ctx.resources.host_interface.lock(|host_interface| {
-                        host_interface.report_error(mcu_common::Error::SpiFlashNotVerified)
-                    });
-                }
+        match ctx.resources.fpga_device.start_fpga() {
+            Ok(_) => {
+                ctx.resources
+                    .host_interface
+                    .lock(|h| h.set_application_running(true));
             }
-            None => {
-                ctx.resources.host_interface.lock(|host_interface| {
-                    host_interface.report_error(mcu_common::Error::SpiFlash)
-                });
+            Err(error) => {
+                error!("Unable to start FPGA: {:?}", error);
+                ctx.resources
+                    .host_interface
+                    .lock(|host_interface| host_interface.report_error(error));
             }
         }
     }
