@@ -27,11 +27,6 @@ cargo +"${RUST_NIGHTLY_VERSION}" miri test
 cd "${PROJECT_ROOT}/rust/mcu"
 cargo +stable build
 
-for board in nucleo proto2; do
-    echo "===== Building application for board $board ====="
-    cargo +stable build -p stage1_app --no-default-features --features $board
-done
-
 echo "===== Release build of factory_tester_mcu ====="
 cargo +stable build -p factory_tester_mcu --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
