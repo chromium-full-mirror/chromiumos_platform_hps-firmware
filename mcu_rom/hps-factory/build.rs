@@ -82,7 +82,7 @@ fn write_application_bin() {
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
-        .arg("proto2,image-transfer")
+        .arg("proto2,image-transfer,no-hash-check")
         .arg("--")
         .arg("-O")
         .arg("binary")

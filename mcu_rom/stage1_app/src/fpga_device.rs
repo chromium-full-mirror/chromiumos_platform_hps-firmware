@@ -46,7 +46,9 @@ impl FpgaDevice {
     }
 
     pub(crate) fn start_fpga(&mut self) -> Result<(), Error> {
-        if &crate::spi_flash::hash(get_spi_flash(self)?)? == SPI_FLASH_HASH {
+        if cfg!(feature = "no-hash-check")
+            || &crate::spi_flash::hash(get_spi_flash(self)?)? == SPI_FLASH_HASH
+        {
             self.hold.set_high().unwrap();
             Ok(())
         } else {
