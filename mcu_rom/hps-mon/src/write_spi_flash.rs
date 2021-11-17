@@ -12,6 +12,7 @@ use crc::Crc;
 use hps_interface::Hps;
 use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
+use mcu_common::SPI_FLASH_SIZE;
 use std::collections::VecDeque;
 use std::path::Path;
 use std::sync::mpsc;
@@ -40,6 +41,20 @@ pub(crate) fn write_spi_flash(
         (command_channel.as_mut(), cmd_response_channel.as_mut())
     {
         let mut file_bytes = std::fs::read(spi_flash_file)?;
+
+        if file_bytes.len() > SPI_FLASH_SIZE as usize {
+            bail!(
+                "File is {:0.1}MB, which is too big to fit in the SPI flash ({}MB)",
+                file_bytes.len() as f64 / 1024.0 / 1024.0,
+                SPI_FLASH_SIZE / 1024 / 1024
+            );
+        }
+        if file_bytes.len() + start_offset > SPI_FLASH_SIZE as usize {
+            bail!(
+                "File is small enough to fit in SPI flash, but not when placed at offset 0x{:x}",
+                start_offset
+            );
+        }
 
         // Pad with 0xff (blank flash) up to end of current block boundary.
         file_bytes.resize(
