@@ -7,8 +7,6 @@ use crate::Config;
 use anyhow::bail;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
-use hps_interface::Hps;
-use mcu_common::commands::Command;
 
 const ONE_TIME_INIT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init.bin"));
 
@@ -19,10 +17,7 @@ where
 {
     let mut i2c = HpsI2c::new(i2c, config);
     i2c.write_stage1(ONE_TIME_INIT_BYTES)?;
-    let mut hps = i2c.open_hps()?;
-    hps.perform_command(Command::Reset)?;
-    let mut hps = i2c.open_hps()?;
-    hps.perform_command(Command::Launch1)?;
+    i2c.execute_stage1()?;
 
     if i2c.open_bootloader().is_ok() || i2c.open_hps().is_ok() {
         println!("One-time-init complete");
