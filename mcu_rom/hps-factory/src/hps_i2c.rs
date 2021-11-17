@@ -119,13 +119,16 @@ where
     ) -> Result<()> {
         let mut hps = self.open_hps()?;
         hps.check_errors()?;
+        if !hps.is_memory_bank_available(bank) {
+            bail!("Cannot write to memory bank {}", bank);
+        }
         show_progress(
             &format!("Writing {} ({}KiB)", section_name, bytes.len() / 1024),
             |bar| {
                 let mut address = start_address;
                 for chunk in bytes.chunks(256) {
-                    hps.wait_memory_bank_available(bank)?;
                     hps.write_memory(bank, address, chunk)?;
+                    hps.wait_memory_bank_available(bank)?;
                     address += chunk.len() as u32;
                     let percent = (address - start_address) as f64 * 100f64 / (bytes.len() as f64);
                     bar.reach_percent(percent as i32);
