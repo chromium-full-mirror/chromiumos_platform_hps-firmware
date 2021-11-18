@@ -95,6 +95,10 @@ struct CaptureImagesConfig {
     /// whether to write a latest.png symlink
     #[clap(long)]
     latest_symlink: bool,
+
+    /// wait until the output directory exists
+    #[clap(long)]
+    wait_dir_exists: bool,
 }
 
 #[derive(Debug, Clap, Clone)]

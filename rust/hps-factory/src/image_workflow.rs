@@ -54,6 +54,7 @@ where
     )?;
     output_dir.set_raw_output(capture_images_config.raw);
     output_dir.set_latest_symlink(capture_images_config.latest_symlink);
+    output_dir.set_wait_dir_exists(capture_images_config.wait_dir_exists);
 
     loop {
         if hps.read_register(registers::IMAGE_DATA_AVAILABLE)? == 1 {

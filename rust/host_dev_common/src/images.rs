@@ -30,6 +30,9 @@ pub struct OutputDir {
     log_fn: Box<dyn FnMut(String) -> Result<()>>,
     raw_output: bool,
     latest_symlink: bool,
+    wait_dir_exists: bool,
+    output_directory_created: bool,
+    error_reported: bool,
 }
 
 impl OutputDir {
@@ -113,8 +116,6 @@ impl OutputDir {
         image_type: ImageType,
         log_fn: Box<dyn FnMut(String) -> Result<()>>,
     ) -> Result<Self> {
-        std::fs::create_dir_all(&path)
-            .map_err(|e| anyhow!("Error creating directory {:?}: {}", path, e))?;
         Ok(Self {
             path,
             image_number: 0,
@@ -122,6 +123,9 @@ impl OutputDir {
             log_fn,
             raw_output: true,
             latest_symlink: true,
+            wait_dir_exists: false,
+            output_directory_created: false,
+            error_reported: false,
         })
     }
 
@@ -131,6 +135,10 @@ impl OutputDir {
 
     pub fn set_latest_symlink(&mut self, latest_symlink: bool) {
         self.latest_symlink = latest_symlink;
+    }
+
+    pub fn set_wait_dir_exists(&mut self, wait_dir_exists: bool) {
+        self.wait_dir_exists = wait_dir_exists;
     }
 
     /// If `buffer` contains a complete image, write it to the output directory
@@ -146,7 +154,26 @@ impl OutputDir {
                 for b in bytes.iter_mut() {
                     *b = (Wrapping(*b) + Wrapping(128)).0;
                 }
+                if !self.wait_dir_exists && !self.output_directory_created {
+                    std::fs::create_dir_all(&self.path)
+                        .map_err(|e| anyhow!("Error creating directory {:?}: {}", self.path, e))?;
+                    self.output_directory_created = true;
+                }
                 write_result = self.write_image(bytes);
+                if self.wait_dir_exists {
+                    // When in this mode, the output directory could be removed
+                    // at any time, so just print the first such error, then
+                    // continue.
+                    if let Err(error) = write_result {
+                        if !self.error_reported {
+                            eprintln!("Error writing image: {:?}", error);
+                            self.error_reported = true;
+                        }
+                    } else {
+                        self.error_reported = false;
+                    }
+                    write_result = Ok(());
+                }
             }
             // If we didn't have a START_IMAGE, then we have an incomplete
             // image, so we remove everything up to the end of the image
