@@ -28,6 +28,7 @@ pub struct OutputDir {
     image_number: u32,
     image_type: ImageType,
     log_fn: Box<dyn FnMut(String) -> Result<()>>,
+    raw_output: bool,
 }
 
 fn link_file(original: &Path, link: &Path) -> Result<()> {
@@ -112,7 +113,12 @@ impl OutputDir {
             image_number: 0,
             image_type,
             log_fn,
+            raw_output: true,
         })
+    }
+
+    pub fn set_raw_output(&mut self, raw_output: bool) {
+        self.raw_output = raw_output;
     }
 
     /// If `buffer` contains a complete image, write it to the output directory
@@ -150,10 +156,14 @@ impl OutputDir {
                 raw_bytes.len()
             );
         }
-        let raw_filename = self.next_output_filename();
-        std::fs::write(&raw_filename, raw_bytes)?;
-        self.write_png(&raw_filename.with_extension("png"), raw_bytes)?;
-        (self.log_fn)(format!("Wrote {:?}", raw_filename))?;
+        let png_filename = self.next_output_filename();
+        if self.raw_output {
+            let raw_filename = png_filename.with_extension("raw");
+            std::fs::write(&raw_filename, raw_bytes)?;
+            (self.log_fn)(format!("Wrote {:?}", raw_filename))?;
+        }
+        self.write_png(&png_filename, raw_bytes)?;
+        (self.log_fn)(format!("Wrote {:?}", png_filename))?;
         Ok(())
     }
 
@@ -167,7 +177,7 @@ impl OutputDir {
 
     fn next_output_filename(&mut self) -> PathBuf {
         loop {
-            let filename = self.path.join(format!("{:04}.raw", self.image_number));
+            let filename = self.path.join(format!("{:04}.png", self.image_number));
             if !filename.exists() {
                 return filename;
             }

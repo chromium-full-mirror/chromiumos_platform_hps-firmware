@@ -53,6 +53,7 @@ where
             Ok(())
         }),
     )?;
+    output_dir.set_raw_output(capture_images_config.raw);
 
     loop {
         if hps.read_register(registers::IMAGE_DATA_AVAILABLE)? == 1 {

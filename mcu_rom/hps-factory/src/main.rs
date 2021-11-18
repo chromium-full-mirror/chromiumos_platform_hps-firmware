@@ -87,6 +87,10 @@ struct CaptureImagesConfig {
     /// assume that all firmware has already been written
     #[clap(long)]
     skip_firmware_writes: bool,
+
+    /// whether to write raw files in addition to PNGs
+    #[clap(long)]
+    raw: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
