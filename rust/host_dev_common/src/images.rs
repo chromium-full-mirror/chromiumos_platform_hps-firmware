@@ -14,6 +14,7 @@ use image::ImageBuffer;
 use image::RgbImage;
 use std::io::Cursor;
 use std::num::Wrapping;
+use std::os::unix::prelude::OsStrExt;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -25,7 +26,7 @@ pub enum ImageType {
 
 pub struct OutputDir {
     path: PathBuf,
-    image_number: u32,
+    image_number: Option<u32>,
     image_type: ImageType,
     log_fn: Box<dyn FnMut(String) -> Result<()>>,
     raw_output: bool,
@@ -118,7 +119,7 @@ impl OutputDir {
     ) -> Result<Self> {
         Ok(Self {
             path,
-            image_number: 0,
+            image_number: None,
             image_type,
             log_fn,
             raw_output: true,
@@ -195,7 +196,7 @@ impl OutputDir {
                 raw_bytes.len()
             );
         }
-        let png_filename = self.next_output_filename();
+        let png_filename = self.next_output_filename()?;
         if self.raw_output {
             let raw_filename = png_filename.with_extension("raw");
             std::fs::write(&raw_filename, raw_bytes)?;
@@ -216,15 +217,33 @@ impl OutputDir {
         Ok(())
     }
 
-    fn next_output_filename(&mut self) -> PathBuf {
-        loop {
-            let filename = self.path.join(format!("{:08}.png", self.image_number));
-            if !filename.exists() {
-                return filename;
+    fn next_output_filename(&mut self) -> Result<PathBuf> {
+        if self.image_number.is_none() {
+            self.image_number = Some(starting_sequence_number(&self.path)?);
+        }
+        let image_number = self.image_number.as_mut().unwrap();
+        let filename = self.path.join(format!("{:08}.png", *image_number));
+        *image_number += 1;
+        Ok(filename)
+    }
+}
+
+/// If `dir_path` is a directory containing files with names like 00123.xyz,
+/// then returns the next number that is larger than all the existing numbered
+/// files. Gaps will be ignored. So if the directory contained 01.xyz, 05.xyz
+/// and 06.xyz, then the return value would be 7, not 2.
+fn starting_sequence_number(dir_path: &Path) -> Result<u32> {
+    let mut next = 0;
+    for entry in dir_path.read_dir()?.flatten() {
+        if let Some(stem) = Path::new(&entry.file_name()).file_stem() {
+            if let Ok(stem_utf8) = core::str::from_utf8(stem.as_bytes()) {
+                if let Ok(number) = stem_utf8.parse::<u32>() {
+                    next = next.max(number + 1);
+                }
             }
-            self.image_number += 1;
         }
     }
+    Ok(next)
 }
 
 fn index_of(haystack: &[u8], needle: &[u8]) -> Option<usize> {
@@ -244,4 +263,21 @@ pub fn image_type_from_str(value: &str) -> Result<ImageType, String> {
     } else {
         return Err("Color type needs to be one of 'color' or 'grayscale'".to_owned());
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+
+    // Note, this test is currently disabled when running under MIRI since it
+    // does filesystem access. We don't have any unsafe code in the function
+    // being tested, so this isn't a big loss.
+    #[test]
+    fn test_starting_sequence_number_nomiri() -> Result<()> {
+        let dir = tempfile::TempDir::new()?;
+        std::fs::write(dir.path().join("0003.png"), "")?;
+        std::fs::write(dir.path().join("0006.png"), "")?;
+        assert_eq!(super::starting_sequence_number(dir.path())?, 7);
+        Ok(())
+    }
 }

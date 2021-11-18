@@ -20,7 +20,7 @@ source "${PROJECT_ROOT}/environment"
 cd "${PROJECT_ROOT}/rust"
 cargo +stable test
 
-cargo +"${RUST_NIGHTLY_VERSION}" miri test
+cargo +"${RUST_NIGHTLY_VERSION}" miri test -- --skip nomiri
 
 # Harware-specific crates. Just build these.
 
