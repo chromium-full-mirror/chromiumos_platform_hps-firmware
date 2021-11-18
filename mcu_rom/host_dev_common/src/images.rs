@@ -29,10 +29,14 @@ pub struct OutputDir {
     image_type: ImageType,
     log_fn: Box<dyn FnMut(String) -> Result<()>>,
     raw_output: bool,
+    latest_symlink: bool,
 }
 
 impl OutputDir {
-    fn link_file(&self, original: &Path, link: &Path) -> Result<()> {
+    fn maybe_link_file(&self, original: &Path, link: &Path) -> Result<()> {
+        if !self.latest_symlink {
+            return Ok(());
+        }
         // Try to delete the link if it already exists, but ignore errors.
         let _ = std::fs::remove_file(link);
         std::os::unix::fs::symlink(original, link).map_err(|e| {
@@ -51,7 +55,7 @@ impl OutputDir {
             image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
         });
         image.save(&filename)?;
-        self.link_file(
+        self.maybe_link_file(
             Path::new(filename.file_name().unwrap()),
             &filename.with_file_name("latest.png"),
         )?;
@@ -83,7 +87,7 @@ impl OutputDir {
         });
         let color_filename = filename.with_extension("color.png");
         image.save(&color_filename)?;
-        self.link_file(
+        self.maybe_link_file(
             &color_filename,
             &filename.with_file_name("latest.color.png"),
         )?;
@@ -96,7 +100,7 @@ impl OutputDir {
         });
         let greyscale_filename = filename.with_extension("grey.png");
         image.save(&greyscale_filename)?;
-        self.link_file(
+        self.maybe_link_file(
             &greyscale_filename,
             &filename.with_file_name("latest.grey.png"),
         )?;
@@ -117,11 +121,16 @@ impl OutputDir {
             image_type,
             log_fn,
             raw_output: true,
+            latest_symlink: true,
         })
     }
 
     pub fn set_raw_output(&mut self, raw_output: bool) {
         self.raw_output = raw_output;
+    }
+
+    pub fn set_latest_symlink(&mut self, latest_symlink: bool) {
+        self.latest_symlink = latest_symlink;
     }
 
     /// If `buffer` contains a complete image, write it to the output directory

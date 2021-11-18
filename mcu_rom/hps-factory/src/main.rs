@@ -91,6 +91,10 @@ struct CaptureImagesConfig {
     /// whether to write raw files in addition to PNGs
     #[clap(long)]
     raw: bool,
+
+    /// whether to write a latest.png symlink
+    #[clap(long)]
+    latest_symlink: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
