@@ -31,79 +31,79 @@ pub struct OutputDir {
     raw_output: bool,
 }
 
-fn link_file(original: &Path, link: &Path) -> Result<()> {
-    // Try to delete the link if it already exists, but ignore errors.
-    let _ = std::fs::remove_file(link);
-    std::os::unix::fs::symlink(original, link).map_err(|e| {
-        anyhow!(
-            "Error creating symlink from {:?} to {:?}: {:?}",
-            original,
-            link,
-            e
-        )
-    })
-}
-
-/// Takes grayscale image data and writes it as a grayscale PNG.
-fn write_png_from_greyscale_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
-    let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
-        image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
-    });
-    image.save(&filename)?;
-    link_file(
-        Path::new(filename.file_name().unwrap()),
-        &filename.with_file_name("latest.png"),
-    )?;
-    Ok(())
-}
-
-/// Takes color image data and writes it as both a color PNG and a grayscale PNG.
-fn write_pngs_from_color_camera(filename: &Path, raw_bytes: &[u8]) -> Result<()> {
-    let mut buf = vec![0; (3 * raw_bytes.len()) as usize];
-    let mut dst = bayer::RasterMut::new(
-        IMAGE_WIDTH as usize,
-        IMAGE_HEIGHT as usize,
-        bayer::RasterDepth::Depth8,
-        &mut buf,
-    );
-    bayer::run_demosaic(
-        &mut Cursor::new(raw_bytes),
-        bayer::BayerDepth::Depth8,
-        bayer::CFA::GBRG,
-        bayer::Demosaic::Cubic,
-        &mut dst,
-    )?;
-
-    let image: RgbImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
-        let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize];
-        let g = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 1) as usize];
-        let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize];
-        image::Rgb([r, g, b])
-    });
-    let color_filename = filename.with_extension("color.png");
-    image.save(&color_filename)?;
-    link_file(
-        &color_filename,
-        &filename.with_file_name("latest.color.png"),
-    )?;
-
-    let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
-        let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize] as u16;
-        let g = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 1) as usize] as u16;
-        let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize] as u16;
-        image::Luma([((r + g + b) / 3) as u8])
-    });
-    let greyscale_filename = filename.with_extension("grey.png");
-    image.save(&greyscale_filename)?;
-    link_file(
-        &greyscale_filename,
-        &filename.with_file_name("latest.grey.png"),
-    )?;
-
-    Ok(())
-}
-
 impl OutputDir {
+    fn link_file(&self, original: &Path, link: &Path) -> Result<()> {
+        // Try to delete the link if it already exists, but ignore errors.
+        let _ = std::fs::remove_file(link);
+        std::os::unix::fs::symlink(original, link).map_err(|e| {
+            anyhow!(
+                "Error creating symlink from {:?} to {:?}: {:?}",
+                original,
+                link,
+                e
+            )
+        })
+    }
+
+    /// Takes grayscale image data and writes it as a grayscale PNG.
+    fn write_png_from_greyscale_camera(&self, filename: &Path, raw_bytes: &[u8]) -> Result<()> {
+        let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
+            image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
+        });
+        image.save(&filename)?;
+        self.link_file(
+            Path::new(filename.file_name().unwrap()),
+            &filename.with_file_name("latest.png"),
+        )?;
+        Ok(())
+    }
+
+    /// Takes color image data and writes it as both a color PNG and a grayscale PNG.
+    fn write_pngs_from_color_camera(&self, filename: &Path, raw_bytes: &[u8]) -> Result<()> {
+        let mut buf = vec![0; (3 * raw_bytes.len()) as usize];
+        let mut dst = bayer::RasterMut::new(
+            IMAGE_WIDTH as usize,
+            IMAGE_HEIGHT as usize,
+            bayer::RasterDepth::Depth8,
+            &mut buf,
+        );
+        bayer::run_demosaic(
+            &mut Cursor::new(raw_bytes),
+            bayer::BayerDepth::Depth8,
+            bayer::CFA::GBRG,
+            bayer::Demosaic::Cubic,
+            &mut dst,
+        )?;
+
+        let image: RgbImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
+            let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize];
+            let g = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 1) as usize];
+            let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize];
+            image::Rgb([r, g, b])
+        });
+        let color_filename = filename.with_extension("color.png");
+        image.save(&color_filename)?;
+        self.link_file(
+            &color_filename,
+            &filename.with_file_name("latest.color.png"),
+        )?;
+
+        let image: GrayImage = ImageBuffer::from_fn(IMAGE_WIDTH, IMAGE_HEIGHT, |x, y| {
+            let r = buf[(y * IMAGE_WIDTH * 3 + x * 3) as usize] as u16;
+            let g = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 1) as usize] as u16;
+            let b = buf[(y * IMAGE_WIDTH * 3 + x * 3 + 2) as usize] as u16;
+            image::Luma([((r + g + b) / 3) as u8])
+        });
+        let greyscale_filename = filename.with_extension("grey.png");
+        image.save(&greyscale_filename)?;
+        self.link_file(
+            &greyscale_filename,
+            &filename.with_file_name("latest.grey.png"),
+        )?;
+
+        Ok(())
+    }
+
     pub fn new(
         path: PathBuf,
         image_type: ImageType,
@@ -172,8 +172,10 @@ impl OutputDir {
 
     fn write_png(&self, png_filename: &Path, raw_bytes: &[u8]) -> Result<(), anyhow::Error> {
         match self.image_type {
-            ImageType::Grayscale => write_png_from_greyscale_camera(png_filename, raw_bytes)?,
-            ImageType::Color => write_pngs_from_color_camera(png_filename, raw_bytes)?,
+            ImageType::Grayscale => {
+                self.write_png_from_greyscale_camera(png_filename, raw_bytes)?
+            }
+            ImageType::Color => self.write_pngs_from_color_camera(png_filename, raw_bytes)?,
         }
         Ok(())
     }
