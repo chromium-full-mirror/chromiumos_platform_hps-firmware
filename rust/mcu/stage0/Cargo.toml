@@ -29,8 +29,4 @@ mcu_common = { path = "../../mcu_common" }
 # will still run on startup and commands will need to be sent to the system
 # bootloader into order to jump to stage0.
 sys_bootloader = []
-default = [
-  "sys_bootloader",
-]
-
 no-i2c-clock-stretching = []
