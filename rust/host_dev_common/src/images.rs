@@ -191,7 +191,7 @@ impl OutputDir {
 
     fn next_output_filename(&mut self) -> PathBuf {
         loop {
-            let filename = self.path.join(format!("{:04}.png", self.image_number));
+            let filename = self.path.join(format!("{:08}.png", self.image_number));
             if !filename.exists() {
                 return filename;
             }
