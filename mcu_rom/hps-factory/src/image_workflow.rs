@@ -28,14 +28,13 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
-    if capture_images_config.skip_firmware_writes {
-        i2c.execute_stage1().context("Execute application")?;
-    } else {
+    if !capture_images_config.skip_firmware_writes {
         i2c.write_stage1(APPLICATION_BYTES)?;
         i2c.execute_stage1().context("Execute application")?;
         i2c.write_gateware().context("Write gateware")?;
         i2c.write_soc_rom().context("Write SOC ROM")?;
     }
+    i2c.execute_application().context("Execute application")?;
 
     let mut hps = i2c.open_hps()?;
     println!("HPS application started");

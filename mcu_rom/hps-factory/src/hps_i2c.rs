@@ -197,6 +197,22 @@ where
         Ok(())
     }
 
+    /// Executes the MCU application if it's not already running.
+    pub(crate) fn execute_application(&mut self) -> Result<()> {
+        if let Ok(mut hps) = self.open_hps() {
+            if hps.stage()? == Stage::Application {
+                return Ok(());
+            }
+        }
+        self.execute_stage1()?;
+        let mut hps = self.open_hps()?;
+        hps.perform_command(Command::LaunchApp)?;
+        while hps.stage()? != Stage::Application {
+            hps.check_errors()?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn open_bootloader(&mut self) -> Result<Stm32<I, Delay>> {
         self.wait_i2c_ready(FACTORY_BOOTLOADER_I2C_ADDRESS, "STM32 system bootloader")?;
         let mut stm32_config =
