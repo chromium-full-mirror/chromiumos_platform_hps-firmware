@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use crate::hps_i2c::HpsI2c;
+use crate::CaptureImagesConfig;
 use crate::Config;
 use crate::APPLICATION_BYTES;
 use anyhow::Context;
@@ -14,17 +15,20 @@ use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use hps_interface::Hps;
 use mcu_common::registers;
-use std::path::Path;
 
 const IMAGE_DATA_PACKET_LENGTH: usize = 63;
 
-pub(crate) fn capture_images<I, E>(i2c: &mut I, output_dir: &Path, config: Config) -> Result<()>
+pub(crate) fn capture_images<I, E>(
+    i2c: &mut I,
+    capture_images_config: &CaptureImagesConfig,
+    config: &Config,
+) -> Result<()>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
-    if config.skip_firmware_writes {
+    if capture_images_config.skip_firmware_writes {
         i2c.execute_stage1().context("Execute application")?;
     } else {
         i2c.write_stage1(APPLICATION_BYTES)?;
@@ -42,7 +46,7 @@ where
     let mut buffer = Vec::new();
     let start = std::time::Instant::now();
     let mut output_dir = OutputDir::new(
-        output_dir.to_owned(),
+        capture_images_config.out_dir.clone(),
         ImageType::Grayscale,
         Box::new(move |log_line| {
             println!("{:0.1}: {}", start.elapsed().as_secs_f32(), log_line);

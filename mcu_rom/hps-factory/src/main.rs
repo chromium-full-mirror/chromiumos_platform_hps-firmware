@@ -14,6 +14,7 @@ mod write_stage0_workflow;
 use anyhow::bail;
 use anyhow::Result;
 use clap::Clap;
+use clap::Subcommand;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
@@ -43,30 +44,56 @@ struct Config {
     #[clap(long)]
     verify_writes: bool,
 
-    /// directory into which to write captured images
+    #[clap(subcommand)]
+    command: Command,
+}
+
+#[derive(Debug, Subcommand, Clone)]
+enum Command {
+    /// runs the factory workflow
+    #[clap(name = "factory")]
+    Factory,
+
+    /// write stage0 at the start of MCU flash
+    #[clap(name = "write_stage0")]
+    WriteStage0,
+
+    /// asks stage0 to erase the start of flash so that the system bootloader
+    /// becomes active again after a power-cycle.
+    #[clap(name = "erase_stage0")]
+    EraseStage0,
+
+    /// performs one-time initialization of the HPS module
+    #[clap(name = "one_time_init")]
+    OneTimeInit,
+
+    /// runs the boot sequence in a loop
+    #[clap(name = "boot_loop")]
+    BootLoop(BootLoopConfig),
+
+    /// capture images from the device and write them to the filesystem.
     #[cfg(feature = "image-transfer")]
+    #[clap(name = "capture_images")]
+    CaptureImages(CaptureImagesConfig),
+}
+
+#[cfg(feature = "image-transfer")]
+#[derive(Debug, Clap, Clone)]
+struct CaptureImagesConfig {
+    /// directory into which to write captured images
     #[clap(long)]
-    image_out_dir: Option<PathBuf>,
+    out_dir: PathBuf,
 
     /// assume that all firmware has already been written
     #[clap(long)]
     skip_firmware_writes: bool,
+}
 
-    /// whether to write stage0
+#[derive(Debug, Clap, Clone)]
+struct BootLoopConfig {
+    /// assume that all firmware has already been written
     #[clap(long)]
-    write_stage0: bool,
-
-    /// whether to run the boot-loop test
-    #[clap(long)]
-    boot_loop: bool,
-
-    /// whether to run the one-time-init workflow
-    #[clap(long)]
-    one_time_init: bool,
-
-    /// whether to erase stage0
-    #[clap(long)]
-    erase_stage0: bool,
+    skip_firmware_writes: bool,
 }
 
 fn main() -> Result<()> {
@@ -99,21 +126,15 @@ where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    if config.boot_loop {
-        return boot_loop::run(i2c, config);
+    match &config.command {
+        Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, &boot_loop_config),
+        Command::OneTimeInit => one_time_init_workflow::run(i2c, config),
+        Command::EraseStage0 => erase_stage0_workflow::run(i2c, config),
+        #[cfg(feature = "image-transfer")]
+        Command::CaptureImages(capture_images_config) => {
+            image_workflow::capture_images(i2c, &capture_images_config, &config)
+        }
+        Command::WriteStage0 => write_stage0_workflow::run(i2c, config),
+        Command::Factory => test_workflow::run(i2c),
     }
-    if config.one_time_init {
-        return one_time_init_workflow::run(i2c, config);
-    }
-    if config.erase_stage0 {
-        return erase_stage0_workflow::run(i2c, config);
-    }
-    #[cfg(feature = "image-transfer")]
-    if let Some(output_dir) = &config.image_out_dir {
-        return image_workflow::capture_images(i2c, output_dir, config.clone());
-    }
-    if config.write_stage0 {
-        return write_stage0_workflow::run(i2c, config);
-    }
-    test_workflow::run(i2c)
 }

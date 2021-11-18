@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use crate::hps_i2c::HpsI2c;
+use crate::BootLoopConfig;
 use crate::Config;
 use crate::APPLICATION_BYTES;
 use crate::STAGE0_SYS_BYTES;
@@ -13,13 +14,17 @@ use mcu_common::commands::Command;
 
 const STAGE0_ADDRESS: u32 = 0x08000400;
 
-pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<()>
+pub(crate) fn run<I, E>(
+    i2c: &mut I,
+    config: &Config,
+    boot_loop_config: &BootLoopConfig,
+) -> Result<()>
 where
     I: i2c::Read<Error = E> + i2c::Write<Error = E> + i2c::WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
-    if !config.skip_firmware_writes {
+    if !boot_loop_config.skip_firmware_writes {
         i2c.open_bootloader()?.erase_flash()?;
         i2c.write("stage0", STAGE0_ADDRESS, STAGE0_SYS_BYTES)?;
         i2c.write_stage1(APPLICATION_BYTES)?;
