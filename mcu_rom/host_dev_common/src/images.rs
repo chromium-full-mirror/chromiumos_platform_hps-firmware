@@ -50,7 +50,10 @@ fn write_png_from_greyscale_camera(filename: &Path, raw_bytes: &[u8]) -> Result<
         image::Luma([raw_bytes[(y * IMAGE_WIDTH + x) as usize]])
     });
     image.save(&filename)?;
-    link_file(filename, &filename.with_file_name("latest.png"))?;
+    link_file(
+        Path::new(filename.file_name().unwrap()),
+        &filename.with_file_name("latest.png"),
+    )?;
     Ok(())
 }
 
