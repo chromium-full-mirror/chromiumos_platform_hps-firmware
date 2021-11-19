@@ -56,7 +56,7 @@ enum Command {
 
     /// write stage0 at the start of MCU flash
     #[clap(name = "write-stage0")]
-    WriteStage0,
+    WriteStage0(WriteStage0Config),
 
     /// asks stage0 to erase the start of flash so that the system bootloader
     /// becomes active again after a power-cycle.
@@ -106,6 +106,13 @@ struct CaptureImagesConfig {
 }
 
 #[derive(Debug, Clap, Clone)]
+struct WriteStage0Config {
+    /// don't report stage0 already present as an error
+    #[clap(long)]
+    existing_stage0_ok: bool,
+}
+
+#[derive(Debug, Clap, Clone)]
 struct BootLoopConfig {
     /// assume that all firmware has already been written
     #[clap(long)]
@@ -150,7 +157,9 @@ where
         Command::CaptureImages(capture_images_config) => {
             image_workflow::capture_images(i2c, capture_images_config, &config)
         }
-        Command::WriteStage0 => write_stage0_workflow::run(i2c, config),
+        Command::WriteStage0(write_stage0_config) => {
+            write_stage0_workflow::run(i2c, &config, write_stage0_config)
+        }
         Command::Factory => test_workflow::run(i2c),
     }
 }

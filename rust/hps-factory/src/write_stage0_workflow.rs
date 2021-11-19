@@ -4,6 +4,7 @@
 
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
+use crate::WriteStage0Config;
 use crate::STAGE0_BYTES;
 use anyhow::bail;
 use anyhow::Context;
@@ -11,17 +12,42 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
+use hps_interface::Hps;
+use hps_interface::Stage;
+use mcu_common::commands::Command;
 use mcu_common::FLASH_START;
 use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
 
 const ROW_SIZE: usize = 256;
 
-pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<()>
+pub(crate) fn run<I, E>(
+    i2c: &mut I,
+    config: &Config,
+    write_stage0_config: &WriteStage0Config,
+) -> Result<()>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    let mut i2c = HpsI2c::new(i2c, config);
+    let mut i2c = HpsI2c::new(i2c, config.clone());
+    if let Ok(mut hps) = i2c.open_hps() {
+        hps.perform_command(Command::Reset)?;
+        if let Ok(mut hps) = i2c.open_hps() {
+            match hps.stage()? {
+                Stage::Stage0 => {
+                    if write_stage0_config.existing_stage0_ok {
+                        println!("Stage0 already present on device");
+                        return Ok(());
+                    } else {
+                        bail!("Stage0 already present and needs to be erased before update");
+                    }
+                }
+                other => bail!("HPS firmware is present, but found {:?} not stage0", other),
+            }
+        }
+        // We've probably back to the system bootloader, fall through with
+        // regular flashing procedure.
+    }
     let mut stm32 = i2c.open_bootloader()?;
 
     println!("Erasing MCU flash");
