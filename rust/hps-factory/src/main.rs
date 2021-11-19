@@ -55,25 +55,25 @@ enum Command {
     Factory,
 
     /// write stage0 at the start of MCU flash
-    #[clap(name = "write_stage0")]
+    #[clap(name = "write-stage0")]
     WriteStage0,
 
     /// asks stage0 to erase the start of flash so that the system bootloader
     /// becomes active again after a power-cycle.
-    #[clap(name = "erase_stage0")]
+    #[clap(name = "erase-stage0")]
     EraseStage0,
 
     /// performs one-time initialization of the HPS module
-    #[clap(name = "one_time_init")]
+    #[clap(name = "one-time-init")]
     OneTimeInit,
 
     /// runs the boot sequence in a loop
-    #[clap(name = "boot_loop")]
+    #[clap(name = "boot-loop")]
     BootLoop(BootLoopConfig),
 
     /// capture images from the device and write them to the filesystem.
     #[cfg(feature = "image-transfer")]
-    #[clap(name = "capture_images")]
+    #[clap(name = "capture-images")]
     CaptureImages(CaptureImagesConfig),
 }
 
