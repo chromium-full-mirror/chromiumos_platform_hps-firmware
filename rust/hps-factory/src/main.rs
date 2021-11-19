@@ -54,6 +54,10 @@ enum Command {
     #[clap(name = "factory")]
     Factory,
 
+    /// runs the test workflow
+    #[clap(name = "test")]
+    Test,
+
     /// write stage0 at the start of MCU flash
     #[clap(name = "write-stage0")]
     WriteStage0(WriteStage0Config),
@@ -160,6 +164,12 @@ where
         Command::WriteStage0(write_stage0_config) => {
             write_stage0_workflow::run(i2c, &config, write_stage0_config)
         }
-        Command::Factory => test_workflow::run(i2c),
+        Command::Test => test_workflow::run(i2c),
+        Command::Factory => {
+            // For now all that's in the factory workflow is the test.
+            // Eventually we'll do other things like writing stage0, locking
+            // stage0 as readonly etc.
+            test_workflow::run(i2c)
+        }
     }
 }
