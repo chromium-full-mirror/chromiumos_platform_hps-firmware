@@ -99,6 +99,10 @@ struct CaptureImagesConfig {
     /// wait until the output directory exists
     #[clap(long)]
     wait_dir_exists: bool,
+
+    /// how long to wait with no images being received before failing
+    #[clap(long)]
+    timeout_seconds: Option<u64>,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -139,12 +143,12 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     match &config.command {
-        Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, &boot_loop_config),
+        Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, boot_loop_config),
         Command::OneTimeInit => one_time_init_workflow::run(i2c, config),
         Command::EraseStage0 => erase_stage0_workflow::run(i2c, config),
         #[cfg(feature = "image-transfer")]
         Command::CaptureImages(capture_images_config) => {
-            image_workflow::capture_images(i2c, &capture_images_config, &config)
+            image_workflow::capture_images(i2c, capture_images_config, &config)
         }
         Command::WriteStage0 => write_stage0_workflow::run(i2c, config),
         Command::Factory => test_workflow::run(i2c),

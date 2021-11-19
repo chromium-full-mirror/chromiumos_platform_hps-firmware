@@ -17,6 +17,8 @@ use std::num::Wrapping;
 use std::os::unix::prelude::OsStrExt;
 use std::path::Path;
 use std::path::PathBuf;
+use std::time::Duration;
+use std::time::Instant;
 
 #[derive(Clone, Copy)]
 pub enum ImageType {
@@ -34,6 +36,7 @@ pub struct OutputDir {
     wait_dir_exists: bool,
     output_directory_created: bool,
     error_reported: bool,
+    last_receive_timestamp: Instant,
 }
 
 impl OutputDir {
@@ -127,6 +130,7 @@ impl OutputDir {
             wait_dir_exists: false,
             output_directory_created: false,
             error_reported: false,
+            last_receive_timestamp: Instant::now(),
         })
     }
 
@@ -140,6 +144,12 @@ impl OutputDir {
 
     pub fn set_wait_dir_exists(&mut self, wait_dir_exists: bool) {
         self.wait_dir_exists = wait_dir_exists;
+    }
+
+    /// Returns how long it has been since we received an image (or started if
+    /// we've never received an image).
+    pub fn duration_without_images(&self) -> Duration {
+        self.last_receive_timestamp.elapsed()
     }
 
     /// If `buffer` contains a complete image, write it to the output directory
@@ -160,6 +170,7 @@ impl OutputDir {
                         .map_err(|e| anyhow!("Error creating directory {:?}: {}", self.path, e))?;
                     self.output_directory_created = true;
                 }
+                self.last_receive_timestamp = Instant::now();
                 write_result = self.write_image(bytes);
                 if self.wait_dir_exists {
                     // When in this mode, the output directory could be removed

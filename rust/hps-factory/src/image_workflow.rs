@@ -6,6 +6,7 @@ use crate::hps_i2c::HpsI2c;
 use crate::CaptureImagesConfig;
 use crate::Config;
 use crate::APPLICATION_BYTES;
+use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
@@ -62,6 +63,11 @@ where
                 hps.read_register_bytes(registers::IMAGE_DATA, IMAGE_DATA_PACKET_LENGTH)?;
             buffer.extend_from_slice(&packet);
             output_dir.process_images_from_buffer(&mut buffer)?;
+        } else if let Some(timeout) = capture_images_config.timeout_seconds {
+            let time = output_dir.duration_without_images().as_secs();
+            if time >= timeout {
+                bail!("No images received for {} seconds", time);
+            }
         }
     }
 }
