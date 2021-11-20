@@ -27,6 +27,8 @@ use mcu_common::registers;
 use mcu_common::Status;
 use stm32_bootloader_client::Stm32;
 
+use crate::TestConfig;
+
 const MCU_CODE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
 const MCU_CODE_STAGE1: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu_stage1.bin"));
@@ -36,7 +38,7 @@ const MCU_CODE_STAGE1: &[u8] =
 /// to be there, so we've got to erase it.
 const TIMEOUT: Duration = Duration::from_secs(20);
 
-pub(crate) fn run<E, I>(i2c: &mut I) -> Result<()>
+pub(crate) fn run<E, I>(i2c: &mut I, config: &TestConfig) -> Result<()>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
@@ -128,7 +130,9 @@ where
         }
     }
 
-    if !ALLOWED_SPI_FLASH_IDS.contains(&status.outputs.spi_flash_id) {
+    if !config.skip_spi_flash_id_check
+        && !ALLOWED_SPI_FLASH_IDS.contains(&status.outputs.spi_flash_id)
+    {
         bail!(
             "Unsupported SPI flash ID 0x{:x}, [0x{:x}, 0x{:x}]",
             status.outputs.spi_flash_id.manufacturer_id,

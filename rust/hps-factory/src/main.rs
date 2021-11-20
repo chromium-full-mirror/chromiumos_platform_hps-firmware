@@ -56,7 +56,7 @@ enum Command {
 
     /// runs the test workflow
     #[clap(name = "test")]
-    Test,
+    Test(TestConfig),
 
     /// write stage0 at the start of MCU flash
     #[clap(name = "write-stage0")]
@@ -107,6 +107,13 @@ struct CaptureImagesConfig {
     /// how long to wait with no images being received before failing
     #[clap(long)]
     timeout_seconds: Option<u64>,
+}
+
+#[derive(Debug, Clap, Clone)]
+struct TestConfig {
+    /// skip checking SPI flash part number
+    #[clap(long)]
+    skip_spi_flash_id_check: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -164,12 +171,17 @@ where
         Command::WriteStage0(write_stage0_config) => {
             write_stage0_workflow::run(i2c, &config, write_stage0_config)
         }
-        Command::Test => test_workflow::run(i2c),
+        Command::Test(test_config) => test_workflow::run(i2c, test_config),
         Command::Factory => {
             // For now all that's in the factory workflow is the test.
             // Eventually we'll do other things like writing stage0, locking
             // stage0 as readonly etc.
-            test_workflow::run(i2c)
+            test_workflow::run(
+                i2c,
+                &TestConfig {
+                    skip_spi_flash_id_check: false,
+                },
+            )
         }
     }
 }
