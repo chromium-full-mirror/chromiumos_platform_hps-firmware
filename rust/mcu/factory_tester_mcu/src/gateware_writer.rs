@@ -32,11 +32,6 @@ pub(crate) fn write_gateware(
     flash: &mut Flash<FlashSpi, FlashSpiCs>,
     stopwatch: &mut Stopwatch,
 ) -> Result<(), Error> {
-    let id = flash.read_jedec_id().map_err(convert_spi_flash_error)?;
-    if id.mfr_code() != 0xC8 || id.device_id() != [0x60, 0x18] {
-        return Err(Error::UnexpectedSpiFlashId);
-    }
-
     let start_time = stopwatch.now();
 
     // In the common case when the SPI flash is empty, this check will fail
@@ -122,7 +117,7 @@ fn verify_spi_flash(flash: &mut Flash<FlashSpi, FlashSpiCs>) -> Result<SpiFlashS
     }
 }
 
-fn convert_spi_flash_error(error: spi_memory::Error<FlashSpi, FlashSpiCs>) -> Error {
+pub(crate) fn convert_spi_flash_error(error: spi_memory::Error<FlashSpi, FlashSpiCs>) -> Error {
     error!("SPI flash error: {:?}", error);
     Error::SpiFlashCommunication
 }

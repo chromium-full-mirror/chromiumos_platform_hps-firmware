@@ -12,10 +12,13 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
+use factory_tester_common::TestStatus;
+use factory_tester_common::ALLOWED_SPI_FLASH_IDS;
 use factory_tester_common::EXPECTED_CHIP_ID;
 use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use factory_tester_common::MCU_LOAD_ADDRESS;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
+use factory_tester_common::TEST_STATUS_SIZE;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use log::info;
@@ -105,9 +108,9 @@ where
     // Read the result from the MCU test program (with retry until timeout).
     info!("Waiting for test result");
     let start = std::time::Instant::now();
-    let mut result = [0u8; 1];
+    let mut buffer = [0u8; TEST_STATUS_SIZE];
     loop {
-        match i2c.read(MCU_TESTER_I2C_ADDRESS, &mut result) {
+        match i2c.read(MCU_TESTER_I2C_ADDRESS, &mut buffer) {
             Ok(_) => break,
             Err(error) => {
                 if start.elapsed() > TIMEOUT {
@@ -117,13 +120,23 @@ where
         }
     }
 
-    let test_result = result[0];
-    if test_result != factory_tester_common::TEST_STATUS_OK {
-        match factory_tester_common::Error::try_from(test_result) {
+    let status = TestStatus::from_bytes(&buffer);
+    if status.error_code != factory_tester_common::TEST_STATUS_OK {
+        match factory_tester_common::Error::try_from(status.error_code) {
             Ok(error) => bail!("MCU reported error: {:?}", error),
-            Err(_) => bail!("MCU reported unknown status: {}", test_result),
+            Err(_) => bail!("MCU reported unknown status: {}", status.error_code),
         }
     }
+
+    if !ALLOWED_SPI_FLASH_IDS.contains(&status.outputs.spi_flash_id) {
+        bail!(
+            "Unsupported SPI flash ID 0x{:x}, [0x{:x}, 0x{:x}]",
+            status.outputs.spi_flash_id.manufacturer_id,
+            status.outputs.spi_flash_id.device_id[0],
+            status.outputs.spi_flash_id.device_id[1]
+        );
+    }
+
     println!("PASS");
     Ok(())
 }

@@ -14,7 +14,10 @@ mod image_receiver;
 use cortex_m::asm;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
+use factory_tester_common::TestOutputs;
+use factory_tester_common::TestStatus;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
+use factory_tester_common::TEST_STATUS_OK;
 use hal::gpio::gpioa::PA1;
 use hal::gpio::gpioa::PA11;
 use hal::gpio::gpioa::PA12;
@@ -115,19 +118,20 @@ const APP: () = {
     #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts, mlb_int])]
     fn run_test(ctx: run_test::Context) {
         let mlb_int = ctx.resources.mlb_int;
+        let mut status = TestStatus::default();
         match ctx.resources.tester.run_test(ctx.resources.event_counts) {
-            Ok(_) => {
-                if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, mlb_int, 0);
-                }
+            Ok(outputs) => {
+                status.error_code = TEST_STATUS_OK;
+                status.outputs = outputs;
                 info!("============== Test successful");
             }
             Err(error) => {
-                if cfg!(not(feature = "dev")) {
-                    report_result(ctx.resources.host_i2c, mlb_int, error as u8);
-                }
+                status.error_code = error as u8;
                 error!("============= Test failed: {:?}", error);
             }
+        }
+        if cfg!(not(feature = "dev")) {
+            report_result(ctx.resources.host_i2c, mlb_int, &status);
         }
         if cfg!(feature = "dev") {
             // In dev mode, we wait 100ms before we reset. This is to give the
@@ -374,7 +378,11 @@ fn init_peripherals(
 }
 
 impl Tester {
-    fn run_test(&mut self, mut event_counts: resources::event_counts) -> Result<(), Error> {
+    fn run_test(
+        &mut self,
+        mut event_counts: resources::event_counts,
+    ) -> Result<TestOutputs, Error> {
+        let mut outputs = TestOutputs::default();
         if let (Some(flash_spi), Some(flash_spi_cs)) =
             (self.flash_spi.take(), self.flash_spi_cs.take())
         {
@@ -382,6 +390,11 @@ impl Tester {
                 error!("Failed to initialize SPI flash: {:?}", error);
                 Error::SpiFlashCommunication
             })?;
+            let id = flash
+                .read_jedec_id()
+                .map_err(gateware_writer::convert_spi_flash_error)?;
+            outputs.spi_flash_id.manufacturer_id = id.mfr_code();
+            outputs.spi_flash_id.device_id = [id.device_id()[0], id.device_id()[1]];
             gateware_writer::write_gateware(&mut flash, &mut self.stopwatch)?;
         } else {
             error!("run_test called multiple times?");
@@ -416,7 +429,7 @@ impl Tester {
         );
 
         if !cfg!(feature = "check-image-data") {
-            return Ok(());
+            return Ok(outputs);
         }
 
         let start = self.stopwatch.now();
@@ -444,7 +457,8 @@ impl Tester {
             return Err(Error::NoCameraData);
         }
 
-        image_data_result
+        image_data_result?;
+        Ok(outputs)
     }
 
     fn configure_camera(&mut self) -> Result<(), hm01b0::Error> {
@@ -506,7 +520,7 @@ fn convert_camera_error(e: hm01b0::Error) -> Error {
     }
 }
 
-fn report_result(i2c: &mut I2C1, mlb_int: &mut PB8<Output<OpenDrain>>, result: u8) {
+fn report_result(i2c: &mut I2C1, mlb_int: &mut PB8<Output<OpenDrain>>, status: &TestStatus) {
     i2c.cr1.modify(|_, w| w.pe().clear_bit());
     i2c.timingr.write(|w| unsafe { w.bits(I2C_TIMING_BITS) });
     i2c.cr1.modify(|_, w| w.pe().set_bit());
@@ -525,9 +539,13 @@ fn report_result(i2c: &mut I2C1, mlb_int: &mut PB8<Output<OpenDrain>>, result: u
     // Ack the request.
     i2c.icr.write(|w| w.addrcf().set_bit());
 
-    // Send the test result byte.
-    i2c.txdr.write(|w| unsafe { w.bits(result as u32) });
+    for byte in status.to_bytes() {
+        // Wait until the byte has sent.
+        while i2c.isr.read().txis().bit_is_clear() {}
 
+        // Send the test status bytes.
+        i2c.txdr.write(|w| unsafe { w.bits(byte as u32) });
+    }
     // Wait until bus is not busy. We don't want to return, then reset the
     // device while the transfer isn't complete.
     while i2c.isr.read().busy().bit_is_set() {}

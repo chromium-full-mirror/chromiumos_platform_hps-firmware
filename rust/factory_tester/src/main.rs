@@ -9,10 +9,13 @@ use core::convert::TryFrom;
 use core::ops::Range;
 use delayed_i2c::DelayedI2c;
 use factory_tester_common::Error;
+use factory_tester_common::TestStatus;
+use factory_tester_common::ALLOWED_SPI_FLASH_IDS;
 use factory_tester_common::EXPECTED_CHIP_ID;
 use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use factory_tester_common::MCU_LOAD_ADDRESS;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
+use factory_tester_common::TEST_STATUS_SIZE;
 use hal::delay::DelayCM;
 use hal::device::I2C3;
 use hal::gpio::Alternate;
@@ -312,8 +315,6 @@ impl Tester {
         // TODO: Add a timeout.
         while self.mlb_int.is_low().unwrap_or_default() {}
 
-        let mut result = [0u8; 1];
-
         // For some reason when we issue the the GO command, the I2C bus gets
         // stuck. Possibly the system bootloader doesn't ack the last transfer
         // prior to when it transfers control out. The I2C ISR register
@@ -327,19 +328,34 @@ impl Tester {
             i2c.cr1.modify(|_, w| w.pe().set_bit());
         }
 
+        let status = self.read_status()?;
+
+        if status.error_code != factory_tester_common::TEST_STATUS_OK {
+            return Err(Error::try_from(status.error_code).unwrap_or(Error::Internal));
+        }
+
+        if !ALLOWED_SPI_FLASH_IDS.contains(&status.outputs.spi_flash_id) {
+            error!(
+                "Unsupported SPI flash ID 0x{:x}, [0x{:x}, 0x{:x}]",
+                status.outputs.spi_flash_id.manufacturer_id,
+                status.outputs.spi_flash_id.device_id[0],
+                status.outputs.spi_flash_id.device_id[1]
+            );
+            return Err(Error::UnexpectedSpiFlashId);
+        }
+
+        Ok(())
+    }
+
+    fn read_status(&mut self) -> Result<TestStatus> {
+        let mut buffer = [0u8; TEST_STATUS_SIZE];
         self.i2c
-            .read(MCU_TESTER_I2C_ADDRESS, &mut result)
+            .read(MCU_TESTER_I2C_ADDRESS, &mut buffer)
             .map_err(|e| {
                 error!("Failed to read test result from MCU: {:?}", e);
                 Error::Internal
             })?;
-        let test_result = result[0];
-
-        if test_result == factory_tester_common::TEST_STATUS_OK {
-            return Ok(());
-        }
-
-        Err(Error::try_from(test_result).unwrap_or(Error::Internal))
+        Ok(TestStatus::from_bytes(&buffer))
     }
 
     /// Writes the test result to the MCU flash for later retrieval (once the
