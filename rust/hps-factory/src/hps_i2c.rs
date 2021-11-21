@@ -193,6 +193,7 @@ where
     }
 
     /// Executes the MCU application if it's not already running.
+    #[cfg(feature = "image-transfer")]
     pub(crate) fn execute_application(&mut self) -> Result<()> {
         if let Ok(mut hps) = self.open_hps() {
             if hps.stage()? == Stage::Application {
