@@ -6,6 +6,8 @@ use bitflags::bitflags;
 
 bitflags! {
     pub struct Features: u16 {
+        const CLASSIFY_PRESENCE = 0x01;
+
         /// Allows the debug LED to be turned on and off by enabling / disabling
         /// this feature.
         const DEBUG_LED = 0x40;

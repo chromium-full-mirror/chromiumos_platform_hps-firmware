@@ -5,11 +5,14 @@
 #![cfg_attr(not(test), no_std)]
 
 pub mod camera;
+mod classifier;
 mod debug_commands;
 mod debug_led;
 mod features;
 mod mcu_interface;
 
+pub use classifier::Classifier;
+pub use classifier::FakeClassifier;
 use core::fmt::Write;
 pub use debug_commands::DebugCommand;
 pub use debug_led::DebugLed;
@@ -37,30 +40,32 @@ pub enum Error {
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-pub struct App<S, I, L>
-where
-    L: DebugLed,
-{
+pub struct App<S, I, L, C> {
     mcu: McuInterface<S>,
     image_data_receiver: I,
+    classifier: C,
     led: L,
     #[cfg(feature = "image-transfer")]
     image_transfer_enabled: bool,
+    classification_enabled: bool,
 }
 
-impl<S, I, L> App<S, I, L>
+impl<S, I, L, C> App<S, I, L, C>
 where
     S: spi::Transfer<u8>,
     I: camera::ImageDataReceiver,
     L: DebugLed,
+    C: Classifier,
 {
-    pub fn new(spi: S, image_data_receiver: I, led: L) -> Self {
+    pub fn new(spi: S, image_data_receiver: I, classifier: C, led: L) -> Self {
         Self {
             mcu: McuInterface::new(spi),
             image_data_receiver,
+            classifier,
             led,
             #[cfg(feature = "image-transfer")]
             image_transfer_enabled: false,
+            classification_enabled: false,
         }
     }
 
@@ -92,22 +97,26 @@ where
             self.led.turn_off();
         }
 
-        let mut buffer = [0u8; camera::NUM_PIXELS];
-        self.capture_image(&mut buffer)?;
+        self.capture_image()?;
+
+        if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
+            let score = self.classifier.classify_presence();
+            mcu_println!(self, "Score: {}", score);
+        }
 
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).
         #[cfg(feature = "image-transfer")]
         {
             if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_enabled {
-                self.mcu.send_image_data(&buffer)?;
+                self.mcu.send_image_data(self.classifier.input_data_mut())?;
             }
         }
 
         Ok(())
     }
 
-    fn capture_image(&mut self, buffer: &mut [u8]) -> Result<()> {
+    fn capture_image(&mut self) -> Result<()> {
         let image_dimensions = camera::ImageDimensions {
             column_start: 2,
             column_count: camera::IMAGE_WIDTH,
@@ -117,14 +126,25 @@ where
         mcu_println!(self, "Capturing image");
         let mcu = &mut self.mcu;
         mcu.wait_for_camera_standby();
-        self.image_data_receiver
-            .receive_image_data(buffer, &image_dimensions, || mcu.trigger_frame())?;
+        self.image_data_receiver.receive_image_data(
+            self.classifier.input_data_mut(),
+            &image_dimensions,
+            || mcu.trigger_frame(),
+        )?;
         Ok(())
     }
 
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
             match command {
+                DebugCommand::ClassificationOn => {
+                    self.classification_enabled = true;
+                    mcu_println!(self, "Classification enabled");
+                }
+                DebugCommand::ClassificationOff => {
+                    self.classification_enabled = false;
+                    mcu_println!(self, "Classification disabled");
+                }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOn => {
                     self.image_transfer_enabled = true;
