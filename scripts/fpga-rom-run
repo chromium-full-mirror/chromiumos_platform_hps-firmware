@@ -12,8 +12,17 @@ set -e
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
 
+FEATURES=image-transfer
+if [ "$TFLM" != "0" ]; then
+    FEATURES+=,tflm_inference
+fi
+
 cd "${PROJECT_ROOT}/rust/riscv"
-BUILD_FLAGS=(-p fpga_rom --release --features image-transfer)
+BUILD_FLAGS=(
+    -p fpga_rom
+    --release
+    --no-default-features
+    --features "${FEATURES}")
 # Build first, since if there are errors, `cargo objcopy` won't report them in a
 # useful way.
 cargo build "${BUILD_FLAGS[@]}"

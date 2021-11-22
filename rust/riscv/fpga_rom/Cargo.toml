@@ -11,6 +11,10 @@ riscv = "0.7.0"
 riscv-rt = "0.8.0"
 fpga_app = { path = "../../fpga_app" }
 fpga_hal = { path = "../fpga_hal" }
+tflm_inference = { path = "../tflm_inference", optional = true }
 
 [features]
 image-transfer = [ "fpga_app/image-transfer" ]
+default = [
+    "tflm_inference",
+]

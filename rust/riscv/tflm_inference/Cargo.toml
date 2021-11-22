@@ -1,0 +1,8 @@
+[package]
+name = "tflm_inference"
+version = "0.1.0"
+edition = "2018"
+license = "BSD-3-Clause"
+
+[dependencies]
+fpga_app = { path = "../../fpga_app" }

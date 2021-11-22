@@ -4,6 +4,7 @@ members = [
     "fpga_hal",
     "fpga_rom",
     "litex_pac",
+    "tflm_inference",
 ]
 
 # Optimize all dependencies

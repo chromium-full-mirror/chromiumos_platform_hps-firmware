@@ -12,11 +12,27 @@ use riscv_rt::entry;
 #[entry]
 fn main() -> ! {
     let p = litex_pac::Peripherals::take().unwrap();
+    // safety: This is the only call to create_classifier and we don't run this
+    // code more than once.
+    let classifier = unsafe { create_classifier() };
     let mut app = fpga_app::App::new(
         fpga_hal::McuSpi::new(p.MCU_SPI),
         fpga_hal::DmaImageDataReceiver::new(p.CAM_CONTROL),
-        fpga_app::FakeClassifier::default(),
+        classifier,
         fpga_hal::DebugLed::new(p.LEDS),
     );
     app.run();
+}
+
+/// # Safety
+///
+/// Must only be called once.
+#[cfg(feature = "tflm_inference")]
+unsafe fn create_classifier() -> tflm_inference::TflmClassifier {
+    tflm_inference::TflmClassifier::sole_instance()
+}
+
+#[cfg(not(feature = "tflm_inference"))]
+unsafe fn create_classifier() -> fpga_app::FakeClassifier {
+    fpga_app::FakeClassifier::default()
 }
