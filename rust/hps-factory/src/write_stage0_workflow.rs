@@ -14,6 +14,7 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
 use hps_interface::Stage;
+use indicatif::ProgressBar;
 use mcu_common::commands::Command;
 use mcu_common::FLASH_START;
 use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
@@ -65,9 +66,8 @@ where
     // result in the system bootloader not starting next time we boot. This
     // could result in a bricked device that would require physical access to
     // the debug pins to unbrick.
-    let mut bar = progress::Bar::new();
-    bar.set_job_title("Writing stage0");
-    let mut complete = 0;
+    println!("Writing stage0");
+    let bar = ProgressBar::new(stage0_bytes.len() as u64);
     let mut read_back = [0u8; MAX_READ_WRITE_SIZE];
     for (chunk_number, chunk) in stage0_bytes.chunks(MAX_READ_WRITE_SIZE).enumerate().rev() {
         let address = FLASH_START + (MAX_READ_WRITE_SIZE * chunk_number) as u32;
@@ -82,11 +82,9 @@ where
         if &read_back[..chunk.len()] != chunk {
             bail!("Verification failed")
         }
-        complete += chunk.len();
-        bar.reach_percent((complete * 100 / stage0_bytes.len()) as i32);
+        bar.inc(chunk.len() as u64);
     }
-    bar.reach_percent(100);
-    println!();
+    bar.finish();
     println!("Stage0 written and verified");
 
     Ok(())

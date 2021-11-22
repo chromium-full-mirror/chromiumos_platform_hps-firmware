@@ -18,7 +18,7 @@ log = "0.4.14"
 # linking if this is disabled.
 mcp2221 = { path = "../mcp2221", optional = true }
 mcu_common = { path = "../mcu_common" }
-progress = "0.2.0"
+indicatif = "0.16.2"
 simple_logger = { version = "1.13.0" }
 stm32_bootloader_client = { path = "../stm32_bootloader_client", features = ["std"] }
 

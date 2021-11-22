@@ -14,6 +14,7 @@ use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_interface::Stage;
+use indicatif::ProgressBar;
 use linux_embedded_hal::Delay;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
@@ -93,14 +94,12 @@ where
             }
 
             // Write flash
-            show_progress(
-                &format!("Writing {} ({}KiB)", name, program_bytes.len() / 1024),
-                |bar| {
-                    Ok(stm32.write_bulk(address, program_bytes, |progress| {
-                        bar.reach_percent(progress.percent_complete as i32);
-                    })?)
-                },
-            )?;
+            println!("Writing {} ({}KiB)", name, program_bytes.len() / 1024);
+            let bar = ProgressBar::new(100);
+            stm32.write_bulk(address, program_bytes, |progress| {
+                bar.set_position(progress.percent_complete as u64);
+            })?;
+            bar.finish();
 
             if verify_writes {
                 Self::verify(&mut stm32, name, address, program_bytes)?;
@@ -122,20 +121,16 @@ where
         if !hps.is_memory_bank_available(bank) {
             bail!("Cannot write to memory bank {}", bank);
         }
-        show_progress(
-            &format!("Writing {} ({}KiB)", section_name, bytes.len() / 1024),
-            |bar| {
-                let mut address = start_address;
-                for chunk in bytes.chunks(256) {
-                    hps.write_memory(bank, address, chunk)?;
-                    hps.wait_memory_bank_available(bank)?;
-                    address += chunk.len() as u32;
-                    let percent = (address - start_address) as f64 * 100f64 / (bytes.len() as f64);
-                    bar.reach_percent(percent as i32);
-                }
-                Ok(())
-            },
-        )?;
+        println!("Writing {} ({}KiB)", section_name, bytes.len() / 1024);
+        let bar = ProgressBar::new(bytes.len() as u64);
+        let mut address = start_address;
+        for chunk in bytes.chunks(256) {
+            hps.write_memory(bank, address, chunk)?;
+            hps.wait_memory_bank_available(bank)?;
+            address += chunk.len() as u32;
+            bar.inc(chunk.len() as u64);
+        }
+        bar.finish();
         hps.check_errors()?;
         Ok(())
     }
@@ -262,27 +257,12 @@ where
         address: u32,
         program_bytes: &[u8],
     ) -> Result<()> {
-        show_progress(
-            &format!("Verifying {} ({}KiB)", name, program_bytes.len() / 1024),
-            |bar| {
-                Ok(stm32.verify(address, program_bytes, |progress| {
-                    bar.reach_percent(progress.percent_complete as i32);
-                })?)
-            },
-        )
+        println!("Verifying {} ({}KiB)", name, program_bytes.len() / 1024);
+        let bar = ProgressBar::new(100);
+        stm32.verify(address, program_bytes, |progress| {
+            bar.set_position(progress.percent_complete as u64);
+        })?;
+        bar.finish();
+        Ok(())
     }
-}
-
-fn show_progress(
-    title: &str,
-    mut callback: impl FnMut(&mut progress::Bar) -> Result<()>,
-) -> Result<()> {
-    let mut bar = progress::Bar::new();
-    bar.set_job_title(title);
-    let result = callback(&mut bar);
-    if result.is_ok() {
-        bar.reach_percent(100);
-    }
-    println!();
-    result
 }
