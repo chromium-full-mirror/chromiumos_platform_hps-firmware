@@ -169,9 +169,9 @@ The host should poll this register before issuing a Memory Write command.
 
 ## Feature N
 
-| BIT | NAME  | DESCRIPTION                         |
-|:----|:------|:------------------------------------|
-| 15  | VALID | The feature result is valid to use. |
+| BIT | NAME   | DESCRIPTION                         |
+|:----|:-------|:------------------------------------|
+| 15  | USABLE | The feature result is valid to use. |
 
 Bits 7-0 are the feature result.
 

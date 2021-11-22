@@ -46,6 +46,7 @@ struct status {
   int8_t score;
   uint16_t enabled_features;
   uint16_t loop_count;
+  uint8_t usable;
 };
 
 // Wait for DMA to finish
@@ -403,12 +404,13 @@ int main(void) {
     }
     mcu_printf("Capturing image\n");
     capture(rotate_image);
+    // The image entropy value for unusable images is much greater
+    // than for usable. Values above the threshold signal unusability.
     uint32_t entropy = image_entropy();
+    inference_status.usable = 1; 
     if (entropy >= ENTROPY_THRESHOLD) {
-      // TODO(b/204518775): Notify hpsd about unusable picture.
       mcu_printf("Image unusable (entropy: %d)\n", entropy);
-    } else {
-      mcu_printf("Image usable (entropy: %d)\n", entropy);
+      inference_status.usable = 0;
     }
     if (calibration_required()) {
       calibrate(CALIBRATION_FRAMES);

@@ -35,6 +35,7 @@ pub(crate) struct Status {
     /// inference loop.
     pub(crate) enabled_features: u16,
     pub(crate) loop_count: u16,
+    pub(crate) usable: u8,
 }
 
 #[cfg(feature = "image-transfer")]
