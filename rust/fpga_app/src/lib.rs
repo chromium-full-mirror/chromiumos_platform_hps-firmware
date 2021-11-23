@@ -9,6 +9,7 @@ mod classifier;
 mod debug_commands;
 mod debug_led;
 mod features;
+mod image_rotation;
 mod mcu_interface;
 
 pub use classifier::Classifier;
@@ -48,6 +49,7 @@ pub struct App<S, I, L, C> {
     #[cfg(feature = "image-transfer")]
     image_transfer_enabled: bool,
     classification_enabled: bool,
+    rotate_image: bool,
 }
 
 impl<S, I, L, C> App<S, I, L, C>
@@ -66,6 +68,7 @@ where
             #[cfg(feature = "image-transfer")]
             image_transfer_enabled: false,
             classification_enabled: false,
+            rotate_image: true,
         }
     }
 
@@ -129,20 +132,25 @@ where
     }
 
     fn capture_image(&mut self) -> Result<()> {
-        let image_dimensions = camera::ImageDimensions {
+        let mut dimensions = camera::ImageDimensions {
             column_start: 2,
             column_count: camera::IMAGE_WIDTH,
             row_start: (324 - camera::IMAGE_HEIGHT) / 2,
             row_count: camera::IMAGE_HEIGHT,
         };
+        if self.rotate_image {
+            core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
+            core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
+        }
         mcu_println!(self, "Capturing image");
         let mcu = &mut self.mcu;
         mcu.wait_for_camera_standby();
-        self.image_data_receiver.receive_image_data(
-            self.classifier.input_data_mut(),
-            &image_dimensions,
-            || mcu.trigger_frame(),
-        )?;
+        let buffer = self.classifier.input_data_mut();
+        self.image_data_receiver
+            .receive_image_data(buffer, &dimensions, || mcu.trigger_frame())?;
+        if self.rotate_image {
+            image_rotation::rotate_240_320_clockwise(buffer);
+        }
         Ok(())
     }
 
@@ -156,6 +164,14 @@ where
                 DebugCommand::ClassificationOff => {
                     self.classification_enabled = false;
                     mcu_println!(self, "Classification disabled");
+                }
+                DebugCommand::RotateImageClockwiseOn => {
+                    self.rotate_image = true;
+                    mcu_println!(self, "Rotation enabled");
+                }
+                DebugCommand::RotateImageClockwiseOff => {
+                    self.rotate_image = false;
+                    mcu_println!(self, "Rotation disabled");
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOn => {
