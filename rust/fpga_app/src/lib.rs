@@ -74,6 +74,9 @@ where
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         mcu_println!(self, "Hello from the Rust FPGA");
         self.led.turn_on();
+        if self.calibrate_camera().is_err() {
+            mcu_println!(self, "Failed to calibrate camera");
+        }
         loop {
             if let Err(error) = self.loop_body() {
                 let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
@@ -113,6 +116,15 @@ where
             }
         }
 
+        Ok(())
+    }
+
+    fn calibrate_camera(&mut self) -> Result<()> {
+        mcu_println!(self, "Calibrating camera");
+        self.mcu.wait_for_camera_standby();
+        self.mcu.trigger_n_frames(15)?;
+        self.mcu.wait_for_camera_standby();
+        mcu_println!(self, "Calibration complete");
         Ok(())
     }
 

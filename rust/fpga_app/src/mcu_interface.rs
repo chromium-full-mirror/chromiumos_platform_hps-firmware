@@ -89,10 +89,14 @@ where
     }
 
     pub fn trigger_frame(&mut self) -> Result<()> {
+        self.trigger_n_frames(1)
+    }
+
+    pub fn trigger_n_frames(&mut self, frame_count: u8) -> Result<()> {
         // TODO: Consider just making TRIGGER_FRAME into a command.
         const FRAME_COUNT: u16 = 0x3020;
         const STREAMING_N_FRAMES: u8 = 0x03;
-        self.write_camera_reg(FRAME_COUNT, 1)?;
+        self.write_camera_reg(FRAME_COUNT, frame_count)?;
         self.write_camera_reg(CAM_MODE_SELECT, STREAMING_N_FRAMES)
     }
 
