@@ -12,7 +12,7 @@ cd "${PROJECT_ROOT}/rust/mcu"
 cargo build \
     -p stage1_app \
     --no-default-features \
-    --features proto2,standalone,dev,image-transfer \
+    --features proto2,standalone,dev,image-transfer,no-hash-check \
     "$@"
 BINARY="target/thumbv6m-none-eabi/debug/stage1_app"
 openocd -f "${PROJECT_ROOT}/toolchain/mcu_dev/proto2.openocd.cfg" -c "gdb_port 3333" -c "telnet_port 4444" -c "tcl_port 6666" --search tcl -c "program $BINARY verify reset"
