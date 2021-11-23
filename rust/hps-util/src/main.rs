@@ -6,18 +6,25 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
+#[cfg(feature = "ftdi")]
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
+#[cfg(feature = "ftdi")]
 use ftd2xx_embedded_hal::libftd2xx::FtStatus;
+#[cfg(feature = "ftdi")]
 use ftd2xx_embedded_hal::Ft2232hHal;
+#[cfg(feature = "ftdi")]
 use ftd2xx_embedded_hal::Initialized;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+#[cfg(feature = "ftdi")]
 use hps_util::SendI2c;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use std::path::PathBuf;
 
-use hps_util::{print_device_list, query_status};
+#[cfg(feature = "ftdi")]
+use hps_util::print_device_list;
+use hps_util::query_status;
 
 mod ipc;
 use ipc::setup_ipc;
@@ -28,6 +35,12 @@ struct Flags {
     #[argh(subcommand)]
     sub_command: SubCommand,
 
+    #[cfg(feature = "ftdi")]
+    #[argh(switch)]
+    /// open HPS via an FT2232H adapter
+    ftdi: bool,
+
+    #[cfg(feature = "ftdi")]
     #[argh(option)]
     /// ftdi device serial number
     ftdi_serial: Option<String>,
@@ -48,6 +61,7 @@ struct Flags {
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand)]
 enum SubCommand {
+    #[cfg(feature = "ftdi")]
     ListDevices(ListDevices),
     FlashMcu(FlashMcu),
     Launch1(Launch1),
@@ -61,6 +75,7 @@ enum SubCommand {
     Daemon(Daemon),
 }
 
+#[cfg(feature = "ftdi")]
 #[derive(FromArgs, PartialEq, Debug)]
 /// List FTDI devices
 #[argh(subcommand, name = "list_devices")]
@@ -140,6 +155,7 @@ struct StressTest {
 #[argh(subcommand, name = "daemon")]
 struct Daemon {}
 
+#[cfg(feature = "ftdi")]
 fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
     let ft_hal;
     if let Some(serial_number) = &flags.ftdi_serial {
@@ -233,19 +249,24 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
 
         return Ok(Box::new(HpsAdapter::new(dev)?));
     }
-    let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
-    let i2c = ftdi.i2c()?;
-    // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
-    // by default, so we wrap it in a type that implements Send.
-    //
-    // TODO: Determine if it's really safe to send between threads and add the
-    // appropriate Send implementation in the upstream library.
-    let hps = HpsAdapter::new(unsafe { SendI2c::new(i2c) })?;
-    Ok(Box::new(hps))
+    #[cfg(feature = "ftdi")]
+    if flags.ftdi {
+        let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
+        let i2c = ftdi.i2c()?;
+        // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
+        // by default, so we wrap it in a type that implements Send.
+        //
+        // TODO: Determine if it's really safe to send between threads and add the
+        // appropriate Send implementation in the upstream library.
+        let hps = HpsAdapter::new(unsafe { SendI2c::new(i2c) })?;
+        return Ok(Box::new(hps));
+    }
+    bail!("No method of connecting to HPS specified, try --mcp");
 }
 
 fn main() -> Result<()> {
     let flags: Flags = argh::from_env();
+    #[cfg(feature = "ftdi")]
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
         let v = print_device_list()?;
         println!("{:#?}", v);
@@ -268,6 +289,7 @@ fn main() -> Result<()> {
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)
         }
+        #[cfg(feature = "ftdi")]
         SubCommand::ListDevices(_) => unreachable!(),
         SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
         SubCommand::Status(_) => {
