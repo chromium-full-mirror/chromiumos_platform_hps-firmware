@@ -52,6 +52,7 @@ pub struct App<S, I, L, C> {
     image_transfer_enabled: bool,
     classification_enabled: bool,
     rotate_image: bool,
+    calibration_bad_frames: u8,
 }
 
 impl<S, I, L, C> App<S, I, L, C>
@@ -71,6 +72,7 @@ where
             image_transfer_enabled: false,
             classification_enabled: false,
             rotate_image: true,
+            calibration_bad_frames: 0,
         }
     }
 
@@ -79,7 +81,9 @@ where
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         mcu_println!(self, "Hello from the Rust FPGA");
         self.led.turn_on();
-        self.calibrate_camera();
+        if self.calibrate_camera(15).is_err() {
+            mcu_println!(self, "Failed to calibrate camera");
+        }
         loop {
             if let Err(error) = self.loop_body() {
                 let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
@@ -105,6 +109,7 @@ where
             self.led.turn_off();
         }
 
+        self.check_calibration()?;
         self.capture_image()?;
 
         // Image transfer can be enabled either via a feature (transfer over
@@ -127,15 +132,28 @@ where
         Ok(())
     }
 
-    fn calibrate_camera(&mut self) {
+    fn calibrate_camera(&mut self, num_frames: u8) -> Result<()> {
         mcu_println!(self, "Calibrating camera");
+        self.mcu.camera().set_ae_target(camera::AE_TARGET.into())?;
         self.mcu.wait_for_camera_standby();
-        if self.mcu.trigger_n_frames(15).is_err() {
-            mcu_println!(self, "Failed to calibrate camera");
-            return;
-        }
+        self.mcu.trigger_n_frames(num_frames)?;
         self.mcu.wait_for_camera_standby();
         mcu_println!(self, "Calibration complete");
+        Ok(())
+    }
+
+    fn check_calibration(&mut self) -> Result<()> {
+        let mean = self.mcu.camera().get_ae_mean()?;
+        if (mean as i16 - camera::AE_TARGET as i16).abs() > camera::AE_RECALIBRATION_THRESHOLD {
+            self.calibration_bad_frames += 1;
+            if self.calibration_bad_frames >= 5 {
+                self.calibrate_camera(5)?;
+                self.calibration_bad_frames = 0;
+            }
+        } else {
+            self.calibration_bad_frames = 0;
+        }
+        Ok(())
     }
 
     fn capture_image(&mut self) -> Result<()> {
@@ -193,7 +211,11 @@ where
                     self.image_transfer_enabled = false;
                     mcu_println!(self, "Image transfer disabled");
                 }
-                DebugCommand::ExposureCalibration => self.calibrate_camera(),
+                DebugCommand::ExposureCalibration => {
+                    if self.calibrate_camera(5).is_err() {
+                        mcu_println!(self, "Failed to calibrate camera");
+                    }
+                }
                 DebugCommand::SelfTest => {
                     if self.self_test().is_err() {
                         mcu_println!(self, "Self-test failed");

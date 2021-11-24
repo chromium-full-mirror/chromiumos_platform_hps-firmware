@@ -14,6 +14,12 @@ pub const NUM_PIXELS: usize = IMAGE_WIDTH as usize * IMAGE_HEIGHT as usize;
 pub const START_IMAGE_MARKER: [u8; 8] = [13, 174, 212, 250, 191, 30, 138, 125];
 pub const END_IMAGE_MARKER: [u8; 8] = [227, 114, 212, 105, 101, 111, 21, 193];
 
+pub const AE_TARGET: u8 = 100;
+
+/// If the AE_MEAN is more than this threshold away from the AE_TARGET for
+/// several frames, then we'll recalibrate.
+pub const AE_RECALIBRATION_THRESHOLD: i16 = 20;
+
 pub trait ImageDataReceiver {
     /// Configures camera DMA to receive into `buffer` then calls
     /// `trigger_callback` then waits for DMA to complete. If `trigger_callback`
