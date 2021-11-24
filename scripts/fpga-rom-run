@@ -12,7 +12,7 @@ set -e
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
 
-FEATURES=image-transfer
+FEATURES=image-transfer,debug-commands
 if [ "$TFLM" != "0" ]; then
     FEATURES+=,tflm_inference
 fi

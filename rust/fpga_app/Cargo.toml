@@ -20,3 +20,4 @@ anyhow = "1.0.42"
 
 [features]
 image-transfer = [ "application/image-transfer" ]
+debug-commands = []

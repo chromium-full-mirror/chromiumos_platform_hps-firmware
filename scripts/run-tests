@@ -38,13 +38,13 @@ echo "===== factory_tester ====="
 cd "${PROJECT_ROOT}/rust/factory_tester"
 cargo +stable build
 
-echo "===== RISCV ====="
+echo "===== RISCV default ====="
 cd "${PROJECT_ROOT}/rust/riscv"
 cargo +stable build
 
-echo "===== RISCV with image transfer ====="
+echo "===== RISCV with all features ====="
 cd "${PROJECT_ROOT}/rust/riscv"
-cargo +stable build --features image-transfer
+cargo +stable build --all-features
 
 # Run Python tests
 cd "${PROJECT_ROOT}"

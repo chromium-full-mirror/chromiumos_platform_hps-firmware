@@ -94,7 +94,9 @@ where
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
 
-        self.process_debug_commands();
+        if cfg!(feature = "debug-commands") {
+            self.process_debug_commands();
+        }
 
         if features.contains(Features::DEBUG_LED) {
             self.led.turn_on();
