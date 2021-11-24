@@ -37,6 +37,7 @@ pub enum Error {
     McuTimeout,
     InvalidArg,
     UnknownFeature,
+    SelfTestFailed,
 }
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -190,10 +191,44 @@ where
                     mcu_println!(self, "Image transfer disabled");
                 }
                 DebugCommand::ExposureCalibration => self.calibrate_camera(),
+                DebugCommand::SelfTest => {
+                    if self.self_test().is_err() {
+                        mcu_println!(self, "Self-test failed");
+                    }
+                }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
                 }
             }
         }
+    }
+
+    fn self_test(&mut self) -> Result<()> {
+        const NOT_PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/not-person.raw"));
+        const PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/person.raw"));
+
+        mcu_println!(self, "Testing TFLM on canned data");
+
+        self.check_score("person", PERSON, 126)?;
+        self.check_score("not-person", NOT_PERSON, -127)?;
+
+        mcu_println!(self, "Self-test passed");
+        Ok(())
+    }
+
+    fn check_score(&mut self, name: &str, input_data: &[u8], expected: i8) -> Result<()> {
+        self.classifier.input_data_mut().copy_from_slice(input_data);
+        let score = self.classifier.classify_presence();
+        if score != expected {
+            mcu_println!(
+                self,
+                "Unexpected presence score for {}: Expected {}, got {}",
+                name,
+                expected,
+                score
+            );
+            return Err(Error::SelfTestFailed);
+        }
+        Ok(())
     }
 }

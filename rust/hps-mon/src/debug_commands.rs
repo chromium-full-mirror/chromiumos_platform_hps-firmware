@@ -86,6 +86,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ExposureCalibration),
     },
     AvailableDebugCommand {
+        keyword: "fpga_self_test",
+        help_text: "Run FPGA self test",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SelfTest),
+    },
+    AvailableDebugCommand {
         keyword: "rotate_image_clockwise_off",
         help_text: "Disable image rotation clockwise (for vertical camera mount)",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOff),

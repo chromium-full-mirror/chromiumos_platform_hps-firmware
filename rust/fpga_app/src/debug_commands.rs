@@ -18,4 +18,5 @@ pub enum DebugCommand {
     ExposureCalibration = 5,
     RotateImageClockwiseOff = 16,
     RotateImageClockwiseOn = 17,
+    SelfTest = 18,
 }

@@ -14,5 +14,9 @@ num_enum = { version = "0.5.1", default-features = false }
 embedded-hal-mock = "0.8.0"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 
+[build-dependencies]
+image = { version = "0.23.14", default-features = false, features = ["png"] }
+anyhow = "1.0.42"
+
 [features]
 image-transfer = [ "application/image-transfer" ]
