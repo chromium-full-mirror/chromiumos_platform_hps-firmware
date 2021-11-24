@@ -77,9 +77,7 @@ where
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         mcu_println!(self, "Hello from the Rust FPGA");
         self.led.turn_on();
-        if self.calibrate_camera().is_err() {
-            mcu_println!(self, "Failed to calibrate camera");
-        }
+        self.calibrate_camera();
         loop {
             if let Err(error) = self.loop_body() {
                 let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
@@ -122,13 +120,15 @@ where
         Ok(())
     }
 
-    fn calibrate_camera(&mut self) -> Result<()> {
+    fn calibrate_camera(&mut self) {
         mcu_println!(self, "Calibrating camera");
         self.mcu.wait_for_camera_standby();
-        self.mcu.trigger_n_frames(15)?;
+        if self.mcu.trigger_n_frames(15).is_err() {
+            mcu_println!(self, "Failed to calibrate camera");
+            return;
+        }
         self.mcu.wait_for_camera_standby();
         mcu_println!(self, "Calibration complete");
-        Ok(())
     }
 
     fn capture_image(&mut self) -> Result<()> {
@@ -156,6 +156,9 @@ where
 
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
+            // If all features are enabled then we exhaustively match, however
+            // if some features are disabled then we need a catch-all.
+            #[allow(unreachable_patterns)]
             match command {
                 DebugCommand::ClassificationOn => {
                     self.classification_enabled = true;
@@ -183,6 +186,7 @@ where
                     self.image_transfer_enabled = false;
                     mcu_println!(self, "Image transfer disabled");
                 }
+                DebugCommand::ExposureCalibration => self.calibrate_camera(),
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
                 }
