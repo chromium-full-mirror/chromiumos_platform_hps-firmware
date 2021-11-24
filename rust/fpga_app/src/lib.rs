@@ -206,6 +206,10 @@ where
     }
 
     fn self_test(&mut self) -> Result<()> {
+        if !cfg!(feature = "self-test") {
+            mcu_println!(self, "Self-test feature not enabled");
+            return Err(Error::UnknownFeature);
+        }
         const NOT_PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/not-person.raw"));
         const PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/person.raw"));
 

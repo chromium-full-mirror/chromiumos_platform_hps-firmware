@@ -16,6 +16,7 @@ tflm_inference = { path = "../tflm_inference", optional = true }
 [features]
 image-transfer = [ "fpga_app/image-transfer" ]
 debug-commands = [ "fpga_app/debug-commands" ]
+tflm = [ "tflm_inference", "fpga_app/self-test" ]
 default = [
-    "tflm_inference",
+    "tflm",
 ]
