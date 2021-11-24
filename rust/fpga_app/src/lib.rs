@@ -103,11 +103,6 @@ where
 
         self.capture_image()?;
 
-        if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
-            let score = self.classifier.classify_presence();
-            mcu_println!(self, "Score: {}", score);
-        }
-
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).
         #[cfg(feature = "image-transfer")]
@@ -115,6 +110,14 @@ where
             if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_enabled {
                 self.mcu.send_image_data(self.classifier.input_data_mut())?;
             }
+        }
+
+        // Classification needs to be done after any other uses of the image
+        // (e.g. image transfer), since it overwrites the image buffer with
+        // other data.
+        if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
+            let score = self.classifier.classify_presence();
+            mcu_println!(self, "Score: {}", score);
         }
 
         Ok(())
