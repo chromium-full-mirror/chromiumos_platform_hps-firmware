@@ -118,10 +118,9 @@ fn build_one_time_init() {
 fn build_soc_rom() {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bitstream = Path::new("../../build/hps_platform/gateware/hps_platform.bit");
-    let soc_rom = Path::new("../../build/hps_platform/software/bios/bios.bin");
     // Due to how slow it is to build the gateware, we only build if the output
     // files don't exist. i.e. rebuilding is left to the user.
-    if !bitstream.exists() || !soc_rom.exists() {
+    if !bitstream.exists() {
         let out = Command::new("../../scripts/soc-load")
             .env_clear()
             .env("PATH", std::env::var("PATH").unwrap_or_default())
@@ -134,7 +133,26 @@ fn build_soc_rom() {
         }
     }
     copy_or_die(bitstream, out_dir.join("hps_platform.bit"));
-    copy_or_die(soc_rom, out_dir.join("soc_rom.bin"));
+
+    let fpga_rom = out_dir.join("soc_rom.bin");
+    let out = Command::new("cargo")
+        .current_dir("../riscv/fpga_rom")
+        .env_clear()
+        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .arg("objcopy")
+        .arg("--no-default-features")
+        .arg("--features")
+        .arg("image-transfer")
+        .arg("--")
+        .arg("-O")
+        .arg("binary")
+        .arg(fpga_rom)
+        .output()
+        .unwrap();
+    if !out.status.success() {
+        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
+        std::process::exit(1);
+    }
 }
 
 fn copy_or_die(from: impl AsRef<Path>, to: impl AsRef<Path>) {
