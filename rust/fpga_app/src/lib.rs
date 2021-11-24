@@ -38,6 +38,7 @@ pub enum Error {
     InvalidArg,
     UnknownFeature,
     SelfTestFailed,
+    Camera,
 }
 
 pub type Result<T> = core::result::Result<T, Error>;

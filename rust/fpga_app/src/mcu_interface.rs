@@ -93,11 +93,13 @@ where
     }
 
     pub fn trigger_n_frames(&mut self, frame_count: u8) -> Result<()> {
-        // TODO: Consider just making TRIGGER_FRAME into a command.
-        const FRAME_COUNT: u16 = 0x3020;
-        const STREAMING_N_FRAMES: u8 = 0x03;
-        self.write_camera_reg(FRAME_COUNT, frame_count)?;
-        self.write_camera_reg(CAM_MODE_SELECT, STREAMING_N_FRAMES)
+        self.camera()
+            .set_mode(hm01b0::Mode::StreamingNFrames(frame_count))?;
+        Ok(())
+    }
+
+    pub fn camera(&mut self) -> hm01b0::Camera<McuInterface<S>> {
+        hm01b0::Camera::new(self)
     }
 
     /// Returns the next pending debug command (if any) together with an
@@ -169,6 +171,47 @@ where
             self.exchange().map_err(|_| core::fmt::Error)?;
         }
         Ok(())
+    }
+}
+
+// The following two implementations for I2C are to allow `McuInterface::camera`
+// to work. They're not intended for use elsewhere.
+
+impl<S> embedded_hal::blocking::i2c::Write for McuInterface<S>
+where
+    S: spi::Transfer<u8>,
+{
+    type Error = crate::Error;
+
+    fn write(&mut self, _address: u8, bytes: &[u8]) -> Result<()> {
+        if bytes.len() != 3 {
+            return Err(Error::InvalidArg);
+        }
+        let register = u16::from_be_bytes([bytes[0], bytes[1]]);
+        let value = bytes[2];
+        self.write_camera_reg(register, value)
+    }
+}
+
+impl<S> embedded_hal::blocking::i2c::WriteRead for McuInterface<S>
+where
+    S: spi::Transfer<u8>,
+{
+    type Error = crate::Error;
+
+    fn write_read(&mut self, _address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<()> {
+        if bytes.len() != 2 || buffer.len() != 1 {
+            return Err(Error::InvalidArg);
+        }
+        let register = u16::from_be_bytes([bytes[0], bytes[1]]);
+        buffer[0] = self.read_camera_reg(register);
+        Ok(())
+    }
+}
+
+impl From<hm01b0::Error> for Error {
+    fn from(_: hm01b0::Error) -> Self {
+        Self::Camera
     }
 }
 
