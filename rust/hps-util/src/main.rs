@@ -26,8 +26,8 @@ use std::path::PathBuf;
 use hps_util::print_device_list;
 use hps_util::query_status;
 
+#[cfg(feature = "daemon")]
 mod ipc;
-use ipc::setup_ipc;
 
 #[derive(FromArgs)]
 /// Communicates with the HPS.
@@ -72,6 +72,7 @@ enum SubCommand {
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
     Status(Status),
+    #[cfg(feature = "daemon")]
     Daemon(Daemon),
 }
 
@@ -150,6 +151,7 @@ struct StressTest {
     iterations: u32,
 }
 
+#[cfg(feature = "daemon")]
 #[derive(FromArgs, PartialEq, Debug)]
 /// Run HPS util in daemon mode.
 #[argh(subcommand, name = "daemon")]
@@ -297,8 +299,9 @@ fn main() -> Result<()> {
             println!("{}", err_str);
             Ok(())
         }
+        #[cfg(feature = "daemon")]
         SubCommand::Daemon(_) => {
-            setup_ipc(hps)?;
+            ipc::setup_ipc(hps)?;
             Ok(())
         }
     }
