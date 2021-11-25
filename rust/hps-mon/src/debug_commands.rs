@@ -43,9 +43,9 @@ pub(crate) enum LocalOperation {
 }
 
 pub(crate) enum Command {
-    FpgaCommand(DebugCommand),
-    McuCommand(DebugCommand),
-    LocalOperation(LocalOperation),
+    Fpga(DebugCommand),
+    Mcu(DebugCommand),
+    Local(LocalOperation),
 }
 
 struct CommandEditor {
@@ -234,7 +234,7 @@ pub(crate) fn create_command_source(
     let (tx, rx) = mpsc::channel();
     if let Ok(commands) = parse_commands(initial_commands) {
         for command in commands {
-            let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
+            let is_exit = matches!(command, Command::Local(LocalOperation::Exit));
             if tx.send(command).is_err() || is_exit {
                 return Ok(rx);
             }
@@ -247,7 +247,7 @@ pub(crate) fn create_command_source(
             let mut commands = vec![];
             console.pause_output_while(|| commands = editor.get_commands());
             for command in commands {
-                let is_exit = matches!(command, Command::LocalOperation(LocalOperation::Exit));
+                let is_exit = matches!(command, Command::Local(LocalOperation::Exit));
                 if tx.send(command).is_err() {
                     // Other end of channel has closed.
                     return;
@@ -278,7 +278,7 @@ impl DebugCommand {
 impl CommandEditor {
     fn get_commands(&mut self) -> Vec<Command> {
         if self.should_exit {
-            return vec![Command::LocalOperation(LocalOperation::Exit)];
+            return vec![Command::Local(LocalOperation::Exit)];
         }
         while let Some(line) = self.readline(">> ") {
             if line.is_empty() {
@@ -344,31 +344,31 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
             if command.keyword == keyword {
                 match command.command_type {
                     CommandType::FpgaCommand(code) => {
-                        return Ok(Some(Command::FpgaCommand(DebugCommand {
+                        return Ok(Some(Command::Fpga(DebugCommand {
                             code: code.into(),
                             arg: 0,
                         })));
                     }
                     CommandType::McuCommand(mcu_command) => {
-                        return Ok(Some(Command::McuCommand(DebugCommand {
+                        return Ok(Some(Command::Mcu(DebugCommand {
                             code: mcu_command.into(),
                             arg: 0,
                         })));
                     }
                     CommandType::McuCommandWithArg(mcu_command) => {
-                        return Ok(Some(Command::McuCommand(DebugCommand {
+                        return Ok(Some(Command::Mcu(DebugCommand {
                             code: mcu_command.into(),
                             arg: get_arg(command, parts.next())?,
                         })));
                     }
                     CommandType::FpgaCommandWithArg(code) => {
-                        return Ok(Some(Command::FpgaCommand(DebugCommand {
+                        return Ok(Some(Command::Fpga(DebugCommand {
                             code: code.into(),
                             arg: get_arg(command, parts.next())?,
                         })));
                     }
                     CommandType::LocalOperation(op) => {
-                        return Ok(Some(Command::LocalOperation(op)));
+                        return Ok(Some(Command::Local(op)));
                     }
                 }
             }

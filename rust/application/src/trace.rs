@@ -36,7 +36,7 @@ impl Trace {
     pub fn trace(&mut self, ss: Subsystem, device: u8, val: u16) {
         self.state[self.counter % RING_BUFFER_SIZE].idx = encode_idx(self.counter, ss, device);
         self.state[self.counter % RING_BUFFER_SIZE].val = val;
-        self.counter = self.counter + 1;
+        self.counter += 1;
     }
 }
 

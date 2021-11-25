@@ -261,7 +261,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     }
 
     fn write_buffer(&mut self, buffer: Buffer) {
-        if buffer.len() > 0 {
+        if !buffer.is_empty() {
             self.i2c.write_byte(buffer[0]);
             self.state = State::SendBuffer(buffer, 1);
         } else {

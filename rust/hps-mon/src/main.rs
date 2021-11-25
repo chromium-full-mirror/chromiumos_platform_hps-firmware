@@ -13,7 +13,6 @@ mod write_spi_flash;
 mod direct;
 
 use anyhow::anyhow;
-use anyhow::bail;
 use anyhow::Result;
 use argh::FromArgs;
 use colored::*;
@@ -174,7 +173,7 @@ fn main() -> Result<()> {
         }
         #[cfg(not(feature = "direct"))]
         {
-            bail!("probe-rs feature is not enabled and you didn't specify --openocd-port");
+            anyhow::bail!("probe-rs feature is not enabled and you didn't specify --openocd-port");
         }
     }
 
@@ -298,22 +297,18 @@ fn run_loop(
         }
         if let Ok(command_kind) = command_source.try_recv() {
             match command_kind {
-                Command::FpgaCommand(c) => {
-                    send_command_to_device(&c, &mut &mut fpga_command_channel)?
-                }
-                Command::McuCommand(c) => {
-                    send_command_to_device(&c, &mut &mut mcu_command_channel)?
-                }
-                Command::LocalOperation(LocalOperation::PrintHelp) => {
+                Command::Fpga(c) => send_command_to_device(&c, &mut fpga_command_channel)?,
+                Command::Mcu(c) => send_command_to_device(&c, &mut mcu_command_channel)?,
+                Command::Local(LocalOperation::PrintHelp) => {
                     debug_commands::print_help_text();
                 }
-                Command::LocalOperation(LocalOperation::Exit) => {
+                Command::Local(LocalOperation::Exit) => {
                     return Ok(());
                 }
-                Command::LocalOperation(LocalOperation::ResetMcu) => {
+                Command::Local(LocalOperation::ResetMcu) => {
                     device.reset()?;
                 }
-                Command::LocalOperation(LocalOperation::WriteGateware) => {
+                Command::Local(LocalOperation::WriteGateware) => {
                     if let Some(file) = &flags.gateware {
                         if let Err(error) = write_spi_flash::write_spi_flash(
                             &mut mcu_command_channel,
@@ -328,7 +323,7 @@ fn run_loop(
                         eprintln!("--gateware must be specified on startup");
                     }
                 }
-                Command::LocalOperation(LocalOperation::WriteSocRom) => {
+                Command::Local(LocalOperation::WriteSocRom) => {
                     if let Some(file) = &flags.soc_rom {
                         if let Err(error) = write_spi_flash::write_spi_flash(
                             &mut mcu_command_channel,

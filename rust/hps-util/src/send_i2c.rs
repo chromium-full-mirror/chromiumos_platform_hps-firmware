@@ -9,6 +9,8 @@ pub struct SendI2c<T: i2c::WriteRead + i2c::Write> {
 }
 
 impl<T: i2c::WriteRead + i2c::Write> SendI2c<T> {
+    /// # Safety
+    ///
     /// For calling this function to be safe, the type T needs to be safe to
     /// send between threads.
     pub unsafe fn new(inner: T) -> Self {

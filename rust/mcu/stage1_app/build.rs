@@ -29,20 +29,20 @@ fn memory_x_contents() -> String {
 }
 
 fn build_spi_hash() {
-    const MESSAGE: &'static str = "bios or bitstream file not found, use `./scripts/soc-load --build` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/hps_platform.bit HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/bios.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
+    const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/soc-load --build` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/hps_platform.bit HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/bios.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
     let out_dir =
         PathBuf::from(std::env::var("OUT_DIR").expect("Environment variable OUT_DIR undefined"));
     let spi_hash_path = out_dir.join("spi_hash.inc");
     let spi_hash_file = File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
 
-    let bitstream_path = PathBuf::from(
-        std::env::var("HPS_SPI_BIT")
-            .unwrap_or("../../../build/hps_platform/gateware/hps_platform.bit".to_string()),
-    );
+    let bitstream_path =
+        PathBuf::from(std::env::var("HPS_SPI_BIT").unwrap_or_else(|_| {
+            "../../../build/hps_platform/gateware/hps_platform.bit".to_string()
+        }));
     let mut bitstream_file = File::open(bitstream_path).expect(MESSAGE);
     let soc_rom_path = PathBuf::from(
         std::env::var("HPS_SPI_BIN")
-            .unwrap_or("../../../build/hps_platform/software/bios/bios.bin".to_string()),
+            .unwrap_or_else(|_| "../../../build/hps_platform/software/bios/bios.bin".to_string()),
     );
     let mut soc_rom_file = File::open(soc_rom_path).expect(MESSAGE);
 

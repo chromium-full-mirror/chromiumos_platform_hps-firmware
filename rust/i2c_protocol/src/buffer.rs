@@ -57,6 +57,10 @@ impl Buffer {
         self.size
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
+
     /// Releases ownership of the underlying memory block to the caller.
     pub fn release(self) -> MemBlock {
         self.mem_block
