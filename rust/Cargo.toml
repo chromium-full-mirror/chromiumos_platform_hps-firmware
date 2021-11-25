@@ -29,3 +29,13 @@ exclude = [
     "riscv",
     "mcu",
 ]
+
+# For release builds of host utilities, size is more of an issue than
+# performance.
+[profile.release.package."*"]
+opt-level = "s"
+codegen-units = 1
+
+[profile.release]
+lto = true
+opt-level = "s"
