@@ -5,7 +5,8 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
-use argh::FromArgs;
+use clap::Clap;
+use clap::Subcommand;
 #[cfg(feature = "ftdi")]
 use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
 #[cfg(feature = "ftdi")]
@@ -29,47 +30,53 @@ use hps_util::query_status;
 #[cfg(feature = "daemon")]
 mod ipc;
 
-#[derive(FromArgs)]
+#[derive(Clap)]
 /// Communicates with the HPS.
 struct Flags {
-    #[argh(subcommand)]
+    #[clap(subcommand)]
     sub_command: SubCommand,
 
     #[cfg(feature = "ftdi")]
-    #[argh(switch)]
+    #[clap(long)]
     /// open HPS via an FT2232H adapter
     ftdi: bool,
 
     #[cfg(feature = "ftdi")]
-    #[argh(option)]
+    #[clap(long)]
     /// ftdi device serial number
     ftdi_serial: Option<String>,
 
-    #[argh(switch)]
+    #[clap(long)]
     /// open HPS via an MCP2221 I2C adapter
     mcp: bool,
 
-    #[argh(switch)]
+    #[clap(long)]
     /// whether to use a fake HPS device instead of trying to open a real one
     fake: bool,
 
-    #[argh(option)]
+    #[clap(long)]
     /// A "fake" value for the register USER_PRESENT.
     fake_reg: Option<String>,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
-#[argh(subcommand)]
+#[derive(Subcommand, PartialEq, Debug)]
 enum SubCommand {
     #[cfg(feature = "ftdi")]
+    #[clap(name = "list_devices")]
     ListDevices(ListDevices),
+    #[clap(name = "flash_mcu")]
     FlashMcu(FlashMcu),
     Launch1(Launch1),
+    #[clap(name = "launchapp")]
     LaunchApp(LaunchApp),
     Reset(Reset),
+    #[clap(name = "erase_stage0")]
     EraseStage0(EraseStage0),
+    #[clap(name = "reg")]
     AccessRegisters(AccessRegisters),
+    #[clap(name = "write_memory_bank")]
     WriteMemoryBank(WriteMemoryBank),
+    #[clap(name = "stress_test")]
     StressTest(StressTest),
     Status(Status),
     #[cfg(feature = "daemon")]
@@ -77,84 +84,71 @@ enum SubCommand {
 }
 
 #[cfg(feature = "ftdi")]
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// List FTDI devices
-#[argh(subcommand, name = "list_devices")]
 struct ListDevices {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Flash MCU application
-#[argh(subcommand, name = "flash_mcu")]
 struct FlashMcu {
-    #[argh(option)]
+    #[clap(long)]
     /// file from which to read MCU firmware
     file: PathBuf,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Launch stage1
-#[argh(subcommand, name = "launch1")]
 struct Launch1 {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Erase stage0
-#[argh(subcommand, name = "erase_stage0")]
 struct EraseStage0 {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Launch application
-#[argh(subcommand, name = "launchapp")]
 struct LaunchApp {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Read or write arbitrary registers
-#[argh(subcommand, name = "reg")]
 struct AccessRegisters {
-    #[argh(positional)]
     /// registers to read (reg) or write (reg=value)
     values: Vec<String>,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Reset MCU
-#[argh(subcommand, name = "reset")]
 struct Reset {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Query HPS status
-#[argh(subcommand, name = "status")]
 struct Status {}
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Write some values to an arbitrary memory bank
-#[argh(subcommand, name = "write_memory_bank")]
 struct WriteMemoryBank {
-    #[argh(option)]
+    #[clap(long)]
     /// memory bank to write
     bank: u8,
 
-    #[argh(option)]
+    #[clap(long)]
     /// address within the bank to start writing at
     address: u32,
 
-    #[argh(positional)]
     /// values to write to the memory bank
     values: Vec<u8>,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Stress test communication with the HPS
-#[argh(subcommand, name = "stress_test")]
 struct StressTest {
-    #[argh(option)]
+    #[clap(long)]
     /// number of iterations
     iterations: u32,
 }
 
 #[cfg(feature = "daemon")]
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(Clap, PartialEq, Debug)]
 /// Run HPS util in daemon mode.
-#[argh(subcommand, name = "daemon")]
 struct Daemon {}
 
 #[cfg(feature = "ftdi")]
@@ -267,7 +261,7 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
 }
 
 fn main() -> Result<()> {
-    let flags: Flags = argh::from_env();
+    let flags: Flags = Flags::parse();
     #[cfg(feature = "ftdi")]
     if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
         let v = print_device_list()?;

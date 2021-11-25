@@ -6,7 +6,7 @@ license = "BSD-3-Clause"
 
 [dependencies]
 anyhow = "1.0.40"
-argh = "0.1.4"
+clap = "=3.0.0-beta.2"
 crc = "2.0"
 colored = "2.0.0"
 factory_tester_common = { path = "../factory_tester_common" }

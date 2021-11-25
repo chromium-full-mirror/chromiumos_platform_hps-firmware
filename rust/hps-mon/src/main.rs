@@ -14,7 +14,7 @@ mod direct;
 
 use anyhow::anyhow;
 use anyhow::Result;
-use argh::FromArgs;
+use clap::Clap;
 use colored::*;
 use console::Console;
 use console::ConsoleController;
@@ -103,66 +103,66 @@ struct RttChannels {
     to_device: Vec<Box<dyn DataSink>>,
 }
 
-#[derive(FromArgs)]
+#[derive(Clap)]
 /// Monitors the HPS for debug output via SWD.
 struct Flags {
     #[cfg(feature = "direct")]
-    #[argh(option)]
+    #[clap(long)]
     /// CPU model
     cpu: Option<String>,
 
-    #[argh(switch)]
+    #[clap(long)]
     /// reset MCU on start
     reset: bool,
 
-    #[argh(option)]
+    #[clap(long)]
     /// directory into which images should be written
     image_out: Option<PathBuf>,
 
-    #[argh(option)]
+    #[clap(long)]
     /// filename from which gateware should be read when write_gateware command
     /// is run
     gateware: Option<PathBuf>,
 
-    #[argh(option)]
+    #[clap(long)]
     /// filename from which SOC ROM should be read when write_soc_rom command is
     /// run
     soc_rom: Option<PathBuf>,
 
-    #[argh(
-        option,
-        default = "ImageType::Grayscale",
-        from_str_fn(image_type_from_str)
+    #[clap(
+        long,
+        default_value = "grayscale",
+        parse(try_from_str = image_type_from_str)
     )]
     /// image type that we expect from the camera
     image_type: ImageType,
 
     #[cfg(feature = "direct")]
-    #[argh(option, default = "0")]
+    #[clap(long, default_value = "0")]
     /// which probe number to use, starting from 0.
     probe_num: usize,
 
-    #[argh(option)]
+    #[clap(long)]
     /// if specified, connects to openocd on this port instead of using an
     /// st-link
     openocd_port: Option<u16>,
 
-    #[argh(option, default = "9000")]
+    #[clap(long, default_value = "9000")]
     /// base port to use for RTT channels. This port and the subsequent
     /// 4 ports must not already be in use.
     base_port: u16,
 
-    #[argh(option, default = "String::new()")]
+    #[clap(long)]
     /// commands to run on startup
-    cmd: String,
+    cmd: Option<String>,
 
-    #[argh(switch)]
+    #[clap(long)]
     /// don't use i2c via MCP2221 for sending SPI flash data to HPS
     no_mcp_i2c: bool,
 }
 
 fn main() -> Result<()> {
-    let flags: Flags = argh::from_env();
+    let flags: Flags = Flags::parse();
     let mut device;
     if let Some(openocd_port) = flags.openocd_port {
         device = openocd::OpenOcdDevice::new(openocd_port, flags.base_port)?;
@@ -283,7 +283,8 @@ fn run_loop(
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
-    let command_source = debug_commands::create_command_source(console, &flags.cmd)?;
+    let command_source =
+        debug_commands::create_command_source(console, flags.cmd.as_deref().unwrap_or(""))?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {
