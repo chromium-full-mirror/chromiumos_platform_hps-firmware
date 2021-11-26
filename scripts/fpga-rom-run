@@ -23,10 +23,19 @@ BUILD_FLAGS=(
     --release
     --no-default-features
     --features "${FEATURES}")
-# Build first, since if there are errors, `cargo objcopy` won't report them in a
-# useful way.
+
 cargo build "${BUILD_FLAGS[@]}"
-cargo objcopy "${BUILD_FLAGS[@]}" -- -O binary "${ROM}"
+
+# We use our own version of objcopy rather than `cargo objcopy` because the
+# objcopy that comes with rust 1.55.0 seems to result in a non-functional 2.7MB
+# binary rather than a functional 0.7MB binary. Most likely the binary is
+# starting from address 0 rather than address 2M like it's supposed to. This
+# appears to have been fixed with rust 1.56, but we're not using that yet.
+"${PROJECT_ROOT}/third_party/installed/bin/riscv64-unknown-elf-objcopy" \
+    "target/riscv32i-unknown-none-elf/release/fpga_rom" \
+    -O binary \
+    "${ROM}"
+
 "${PROJECT_ROOT}/scripts/hps-mon" \
     --openocd-port 4444 \
     --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
