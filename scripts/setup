@@ -156,13 +156,15 @@ if ! which rustup >/dev/null; then
     fi
 fi
 
+rustup toolchain install "${RUST_VERSION}"
+rustup toolchain install "${RUST_NIGHTLY_VERSION}"
+
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
 rustup "+${RUST_VERSION}" target add x86_64-unknown-linux-musl
 rustup "+${RUST_VERSION}" target add riscv32i-unknown-none-elf
 (cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
 
-rustup toolchain install "${RUST_NIGHTLY_VERSION}"
 rustup component add miri --toolchain "${RUST_NIGHTLY_VERSION}"
 cargo +"${RUST_NIGHTLY_VERSION}" miri setup
 

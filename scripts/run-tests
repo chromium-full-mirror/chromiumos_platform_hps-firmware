@@ -18,33 +18,33 @@ source "${PROJECT_ROOT}/environment"
 # Crates that can be tested without hardware.
 
 cd "${PROJECT_ROOT}/rust"
-cargo +stable test
+cargo +$RUST_VERSION test
 
 cargo +"${RUST_NIGHTLY_VERSION}" miri test -- --skip nomiri
 
 # Harware-specific crates. Just build these.
 
 cd "${PROJECT_ROOT}/rust/mcu"
-cargo +stable build
+cargo +$RUST_VERSION build
 
 echo "===== Release build of factory_tester_mcu ====="
-cargo +stable build -p factory_tester_mcu --no-default-features --release
+cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --release
 echo "===== Dev build of factory_tester_mcu ====="
-cargo +stable build -p factory_tester_mcu --no-default-features --features dev
+cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --features dev
 echo "===== Stage1 build of factory_tester_mcu ====="
-cargo +stable build -p factory_tester_mcu --no-default-features --features stage1
+cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --features stage1
 
 echo "===== factory_tester ====="
 cd "${PROJECT_ROOT}/rust/factory_tester"
-cargo +stable build
+cargo +$RUST_VERSION build
 
 echo "===== RISCV default ====="
 cd "${PROJECT_ROOT}/rust/riscv"
-cargo +stable build
+cargo +$RUST_VERSION build
 
 echo "===== RISCV with all features ====="
 cd "${PROJECT_ROOT}/rust/riscv"
-cargo +stable build --all-features
+cargo +$RUST_VERSION build --all-features
 
 # Run Python tests
 cd "${PROJECT_ROOT}"
