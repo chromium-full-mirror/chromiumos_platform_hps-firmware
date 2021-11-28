@@ -139,11 +139,24 @@ fn build_soc_rom() {
         .current_dir("../riscv/fpga_rom")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
+        .arg("build")
+        .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
         .arg("image-transfer")
-        .arg("--")
+        .output()
+        .unwrap();
+    if !out.status.success() {
+        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
+        std::process::exit(1);
+    }
+    // We use our own copy of objcopy rather than `cargo objcopy` because with
+    // rust 1.55, the resulting .bin file starts at address 0 instead of 2MB, so
+    // ends up 2MB bigger than it's supposed to be and is non-functional. This
+    // problem doesn't appear with rust 1.56, but we don't have that yet.
+    let out = Command::new("../../third_party/installed/bin/riscv64-unknown-elf-objcopy")
+        .current_dir("../riscv")
+        .arg("target/riscv32i-unknown-none-elf/release/fpga_rom")
         .arg("-O")
         .arg("binary")
         .arg(fpga_rom)
