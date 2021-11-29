@@ -8,11 +8,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define HM01B0_MODE_SELECT 0x0100
 #define HM01B0_FRAME_COUNT 0x3020
 #define HM01B0_AE_TARGET_MEAN 0x2101
 #define HM01B0_AE_MEAN 0x2020
+
+#define CAM_IMAGE_WIDTH 320
+#define CAM_IMAGE_HEIGHT 240
 
 // Read camera registers using I2C bus.
 // The address is 2B size. The value is 1B size. Returns 0 if successful.
@@ -27,5 +31,8 @@ void wait_for_camera_standby(void);
 
 // Set streaming mode for the camera for given number of frames.
 void set_camera_streaming_mode(uint8_t);
+
+// Capture an image
+void capture(bool rotate_image, int8_t*destination);
 
 #endif

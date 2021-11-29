@@ -16,7 +16,6 @@
 #include "hps_version.h"
 #include "mcu.h"
 #include "litex_shim/shim.h"
-#include "transpose.h"
 
 static uint8_t ae_target = 100;
 static bool automatic_exposure_enabled = true;
@@ -29,9 +28,6 @@ static int recalibration_threshold = 0;
 #define SOC_ROM_VERSION 1
 
 #define CALIBRATION_FRAMES 15
-
-#define CAM_IMAGE_WIDTH 320
-#define CAM_IMAGE_HEIGHT 240
 
 // Images with entropy below the threshold are usable.
 // The entropy threshold was defined empirically.
@@ -48,55 +44,6 @@ struct status {
   uint16_t loop_count;
   uint16_t second_person_status;
 };
-
-// Wait for DMA to finish
-static void cam_dma_wait(void) {
-  while (cam_control_running_read()) {
-    /* wait */;
-  }
-}
-
-// Start camera DMA
-static void cam_dma_enable(uint16_t column_start,
-                           uint16_t column_count,
-                           uint16_t row_start,
-                           uint16_t row_count) {
-  // Force a reset, then wait to get to an idle state
-  cam_control_reset_write(1);
-  while (!cam_control_idle_read()) {
-    /* wait */;
-  }
-
-  // Configure with 320x240 window
-  cam_control_column_start_write(column_start);
-  cam_control_column_count_write(column_count);
-  cam_control_row_start_write(row_start);
-  cam_control_row_count_write(row_count);
-  cam_control_signed_dma_write(1);
-  cam_control_base_address_write((uint32_t)tflite_get_input());
-
-  cam_control_start_run_write(1);
-}
-
-static void capture(bool rotate_image) {
-  // Command camera to take a frame
-  wait_for_camera_standby();
-  if (rotate_image) {
-    // Clips 240x320 image from X = [42, 282], Y = [2, 322].
-    cam_dma_enable((324 - CAM_IMAGE_HEIGHT) / 2, CAM_IMAGE_HEIGHT, 2,
-                   CAM_IMAGE_WIDTH);
-  } else {
-    // Clips 320x240 image from X = [2, 322], Y = [42, 282].
-    cam_dma_enable(2, CAM_IMAGE_WIDTH, (324 - CAM_IMAGE_HEIGHT) / 2,
-                   CAM_IMAGE_HEIGHT);
-  }
-  set_camera_streaming_mode(1);
-  cam_dma_wait();
-  if (rotate_image) {
-    // Rotates 240x320 image to an expected 320x240 format.
-    rotate_240_320_clockwise((uint8_t*)tflite_get_input());
-  }
-}
 
 // Write the target auto exposure into the camera
 void write_ae_cfg(void) {
@@ -403,7 +350,7 @@ int main(void) {
       calibration_frames = 0;
     }
     mcu_printf("Capturing image\n");
-    capture(rotate_image);
+    capture(rotate_image, tflite_get_input());
     // The image entropy value for unusable images is much greater
     // than for usable. Values above the threshold signal unusability.
     uint32_t entropy = image_entropy();
