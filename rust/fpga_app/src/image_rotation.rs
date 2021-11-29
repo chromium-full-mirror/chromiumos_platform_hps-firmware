@@ -26,24 +26,12 @@ fn transpose_320_240(arr: &mut [u8], arr_x: usize, arr_y: usize) {
     }
 }
 
-// Reverses the elements in each matrix row, regardless of MxN size.
-fn reverse_rows(arr: &mut [u8], cols: usize, rows: usize) {
-    let mut tmp;
-    for r in 0..rows {
-        let mut end = cols - 1;
-        for start in 0..cols / 2 {
-            tmp = arr[r * cols + start];
-            arr[r * cols + start] = arr[r * cols + end];
-            arr[r * cols + end] = tmp;
-            end -= 1;
-        }
-    }
-}
-
+/// Rotates a 240x320 image to produce a 320x230 image. The resulting image will
+/// be mirror-imaged, so it's recommended that input image be flipped vertically
+/// in hardware prior to passing to this function so that the output ends up the
+/// right way around.
 pub fn rotate_240_320_clockwise(arr: &mut [u8]) {
     transpose_320_240(arr, SHORT_EDGE, LONG_EDGE);
-    // Transposed matrix has new dimensions (MxN is now NxM).
-    reverse_rows(arr, LONG_EDGE, SHORT_EDGE);
 }
 
 #[cfg(test)]
@@ -62,6 +50,20 @@ mod tests {
         Ok(pixels)
     }
 
+    // Reverses the elements in each matrix row, regardless of MxN size.
+    fn reverse_rows(arr: &mut [u8], cols: usize, rows: usize) {
+        let mut tmp;
+        for r in 0..rows {
+            let mut end = cols - 1;
+            for start in 0..cols / 2 {
+                tmp = arr[r * cols + start];
+                arr[r * cols + start] = arr[r * cols + end];
+                arr[r * cols + end] = tmp;
+                end -= 1;
+            }
+        }
+    }
+
     // This test is disabled from running with MIRI due to it being too slow.
     // The code under test doesn't use any unsafe though, so this isn't a big
     // loss.
@@ -69,6 +71,7 @@ mod tests {
     fn test_rotate_nomiri() {
         let mut buffer = png_pixels(NOT_PERSON_ROTATED).unwrap();
         rotate_240_320_clockwise(&mut buffer);
+        reverse_rows(&mut buffer, LONG_EDGE, SHORT_EDGE);
         assert_eq!(buffer, png_pixels(NOT_PERSON).unwrap());
     }
 }
