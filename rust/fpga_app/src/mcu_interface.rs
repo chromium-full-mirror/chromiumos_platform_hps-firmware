@@ -43,6 +43,11 @@ where
         }
     }
 
+    /// This allows an McuInterface to be used as an argument to mcu_println.
+    pub fn mcu_mut(&mut self) -> &mut Self {
+        self
+    }
+
     pub fn report_boot(&mut self, version: u8) -> Result<()> {
         self.clear_buffer();
         self.buffer[0] = commands::REPORT_FPGA_BOOT;

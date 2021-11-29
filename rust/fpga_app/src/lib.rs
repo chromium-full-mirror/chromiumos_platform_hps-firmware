@@ -131,8 +131,14 @@ where
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
         if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
+            let start = self.timer.now();
             let score = self.classifier.classify_presence();
-            mcu_println!(self, "Score: {}", score);
+            mcu_println!(
+                self.mcu,
+                "Score: {} took: {}ms",
+                score,
+                self.timer.elapsed_ms(start)
+            );
         }
 
         Ok(())
@@ -173,7 +179,7 @@ where
             core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
             core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
         }
-        mcu_println!(self, "Capturing image");
+        let start = self.timer.now();
         let mcu = &mut self.mcu;
         mcu.wait_for_camera_standby();
         let buffer = self.classifier.input_data_mut();
@@ -182,6 +188,7 @@ where
         if self.rotate_image {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
+        mcu_println!(mcu, "Image captured in {}ms", self.timer.elapsed_ms(start));
         Ok(())
     }
 
