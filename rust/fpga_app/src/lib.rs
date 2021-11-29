@@ -11,6 +11,7 @@ mod debug_led;
 mod features;
 mod image_rotation;
 mod mcu_interface;
+mod timer;
 
 pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
@@ -20,6 +21,8 @@ pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
 use features::Features;
 use mcu_interface::McuInterface;
+pub use timer::Instant;
+pub use timer::Timer;
 
 const SOC_ROM_VERSION: u8 = 1;
 
@@ -43,7 +46,7 @@ pub enum Error {
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-pub struct App<S, I, L, C> {
+pub struct App<S, I, L, C, T> {
     mcu: McuInterface<S>,
     image_data_receiver: I,
     classifier: C,
@@ -53,16 +56,18 @@ pub struct App<S, I, L, C> {
     classification_enabled: bool,
     rotate_image: bool,
     calibration_bad_frames: u8,
+    timer: T,
 }
 
-impl<S, I, L, C> App<S, I, L, C>
+impl<S, I, L, C, T> App<S, I, L, C, T>
 where
     S: spi::Transfer<u8>,
     I: camera::ImageDataReceiver,
     L: DebugLed,
     C: Classifier,
+    T: Timer,
 {
-    pub fn new(spi: S, image_data_receiver: I, classifier: C, led: L) -> Self {
+    pub fn new(spi: S, image_data_receiver: I, classifier: C, led: L, timer: T) -> Self {
         Self {
             mcu: McuInterface::new(spi),
             image_data_receiver,
@@ -73,6 +78,7 @@ where
             classification_enabled: false,
             rotate_image: true,
             calibration_bad_frames: 0,
+            timer,
         }
     }
 
@@ -247,8 +253,12 @@ where
 
     fn check_score(&mut self, name: &str, input_data: &[u8], expected: i8) -> Result<()> {
         self.classifier.input_data_mut().copy_from_slice(input_data);
+        let start = self.timer.now();
         let score = self.classifier.classify_presence();
-        if score != expected {
+        let elapsed = self.timer.elapsed_ms(start);
+        if score == expected {
+            mcu_println!(self, "Got expected result {} in {}ms", expected, elapsed);
+        } else {
             mcu_println!(
                 self,
                 "Unexpected presence score for {}: Expected {}, got {}",

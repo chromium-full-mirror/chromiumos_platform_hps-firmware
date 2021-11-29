@@ -20,6 +20,7 @@ fn main() -> ! {
         fpga_hal::DmaImageDataReceiver::new(p.CAM_CONTROL),
         classifier,
         fpga_hal::DebugLed::new(p.LEDS),
+        fpga_hal::Timer::default(),
     );
     app.run();
 }
