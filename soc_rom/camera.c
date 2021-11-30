@@ -31,7 +31,9 @@ int read_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
   return 0;
 }
 
-int write_camera_i2c(uint16_t* addresses, int num_addresses, uint8_t* values) {
+int write_camera_i2c(uint16_t* addresses,
+                     int num_addresses,
+                     const uint8_t* values) {
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_WRITE_CAMERA_I2C;
   mcu_buf_out[1] = (uint8_t)num_addresses;

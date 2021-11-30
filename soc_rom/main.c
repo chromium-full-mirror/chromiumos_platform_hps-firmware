@@ -18,10 +18,7 @@
 #include "mcu.h"
 #include "litex_shim/shim.h"
 
-static uint8_t ae_target = 100;
-static bool automatic_exposure_enabled = true;
-static int recalibration_threshold = 0;
-
+static const uint8_t ae_target = 100;
 // This version is exposed via an I2C register and has no semantic meaning. It's
 // bumped whenever a developer decides to bump it and is just for development
 // and debugging purposes. Maximum supported value is currently 255, although
@@ -66,6 +63,7 @@ static void calibrate(int nframes) {
 
 // Recalibration is required when AE mean is far from the AE target
 static int calibration_required(void) {
+  static int recalibration_threshold = 0;
   if (recalibration_threshold < 5) {
     recalibration_threshold++;
   }
@@ -209,7 +207,7 @@ void report_boot(void) {
   mcu_transaction();
 }
 
-int main(void) {
+void init(void) {
   irq_setmask(0);
   irq_setie(1);
   spi_init();
@@ -228,100 +226,100 @@ int main(void) {
 
   // Calibrate autoexposure
   write_ae_cfg();
-  int calibration_frames = CALIBRATION_FRAMES;
+}
+
+struct {
+  bool debug_run_classify;
+  bool debug_run_calibration;
+  bool debug_transfer_image_to_host;
+  bool rotate_image;
+} application_state = {false, false, false, true};
+
+void read_all_debug_commands(void) {
+  // Fetch and process debug commands until there aren't any more.
+  while (true) {
+    uint16_t cmd_arg = 0;
+    switch (get_debug_command(&cmd_arg)) {
+      case DEBUG_CMD_CLASSIFY_OFF:
+        mcu_printf("Image classification disabled\n");
+        application_state.debug_run_classify = false;
+        break;
+      case DEBUG_CMD_CLASSIFY_ON:
+        mcu_printf("Image classification enabled\n");
+        application_state.debug_run_classify = true;
+        break;
+      case DEBUG_CMD_TRANSFER_IMAGE_OFF:
+        mcu_printf("Image transfer disabled\n");
+        application_state.debug_transfer_image_to_host = false;
+        break;
+      case DEBUG_CMD_TRANSFER_IMAGE_ON:
+        mcu_printf("Image transfer enabled\n");
+        application_state.debug_transfer_image_to_host = true;
+        break;
+      case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
+        application_state.debug_run_calibration = true;
+        break;
+      case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
+        mcu_printf("Image rotation clockwise disabled\n");
+        application_state.rotate_image = false;
+        break;
+      case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_ON:
+        mcu_printf("Image rotation clockwise enabled\n");
+        application_state.rotate_image = true;
+        break;
+      case DEBUG_CMD_NONE:
+        return;
+    }
+  }
+}
+
+int main(void) {
+  init();
 
   struct configuration configuration = {0};
 
   uint32_t loop_count = 0;
-  bool do_run_classify = false;
-  bool do_run_exposure_calibration = false;
-  bool do_transfer_image_to_host = false;
-  bool rotate_image = true;
   while (1) {
     loop_count++;
     poll_mcu();
-    // Fetch and process debug commands until there aren't any more.
-    bool should_get_command = true;
-    while (should_get_command) {
-      uint16_t cmd_arg = 0;
-      switch (get_debug_command(&cmd_arg)) {
-        case DEBUG_CMD_CLASSIFY_OFF:
-          mcu_printf("Image classification disabled\n");
-          do_run_classify = false;
-          break;
-        case DEBUG_CMD_CLASSIFY_ON:
-          mcu_printf("Image classification enabled\n");
-          do_run_classify = true;
-          break;
-        case DEBUG_CMD_TRANSFER_IMAGE_OFF:
-          mcu_printf("Image transfer disabled\n");
-          do_transfer_image_to_host = false;
-          break;
-        case DEBUG_CMD_TRANSFER_IMAGE_ON:
-          mcu_printf("Image transfer enabled\n");
-          do_transfer_image_to_host = true;
-          break;
-        case DEBUG_CMD_RUN_EXPOSURE_CALIBRATION:
-          do_run_exposure_calibration = true;
-          break;
-        case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
-          mcu_printf("Image rotation clockwise disabled\n");
-          rotate_image = false;
-          break;
-        case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_ON:
-          mcu_printf("Image rotation clockwise enabled\n");
-          rotate_image = true;
-          break;
-        case DEBUG_CMD_NONE:
-          should_get_command = false;
-          break;
-      }
-    }
-    // Run configured functions
+
+    // Request commands from host
+    read_all_debug_commands();
     read_mcu_config(&configuration);
-    struct status inference_status = {0};
-    inference_status.enabled_features = configuration.enabled_features;
-    inference_status.loop_count = loop_count;
 
-    write_ae_cfg();
-    if (do_run_exposure_calibration) {
-      calibration_frames = CALIBRATION_FRAMES;
-      do_run_exposure_calibration = false;
-    }
-    if (calibration_frames > 0) {
-      if (automatic_exposure_enabled) {
-        calibrate(calibration_frames);
-        mcu_printf("Camera calibration completed\n");
-      } else {
-        mcu_printf("Skipping calibration since AE is disabled\n");
-      }
-      calibration_frames = 0;
-    }
-    mcu_printf("Capturing image\n");
-    capture(rotate_image, tflite_get_input());
-
-    // The image entropy value for unusable images is much greater
-    // than for usable. Values above the threshold signal unusability.
-    uint32_t entropy = image_entropy();
-    uint8_t usable = 1;
-    if (entropy >= ENTROPY_THRESHOLD) {
-      mcu_printf("Image unusable (entropy: %d)\n", entropy);
-      usable = 0;
-    }
-    if (calibration_required()) {
+    if (application_state.debug_run_calibration || calibration_required()) {
       calibrate(CALIBRATION_FRAMES);
-      mcu_printf("Automatic re-calibration completed\n");
+      mcu_printf("Camera calibration completed\n");
+      application_state.debug_run_calibration = false;
     }
-    if (do_transfer_image_to_host || configuration.enabled_features & 0x80) {
+    if (application_state.debug_transfer_image_to_host ||
+        configuration.enabled_features & 0x80) {
+      mcu_printf("Capturing image\n");
+      capture(application_state.rotate_image, tflite_get_input());
       transfer_image();
     }
-    // We run classification if it's enabled via HPS-mon or if feature 0 is
-    // enabled from the MCU via I2C.
-    if (do_run_classify || ((configuration.enabled_features & 1) != 0)) {
-      int8_t score = run_classify();
-      inference_status.person_status =
-          (usable << 15) | (((uint16_t)score) & 0xff);
+
+    // Run configured inferences
+    struct status inference_status = {0, configuration.enabled_features,
+                                      loop_count, 0};
+    inference_status.second_person_status = 0;
+
+    write_ae_cfg();  // TODO(avg): is this required?
+    if (application_state.debug_run_classify ||
+        configuration.enabled_features & 1) {
+      mcu_printf("Capturing image\n");
+      capture(application_state.rotate_image, tflite_get_input());
+      // The image entropy value for unusable images is much greater
+      // than for usable. Values above the threshold signal unusability.
+      uint32_t entropy = calculate_entropy(tflite_get_input());
+      if (entropy >= ENTROPY_THRESHOLD) {
+        inference_status.person_status = 0;
+      } else {
+        inference_status.person_status =
+            0x8000 | (0xff & (uint8_t)run_classify());
+      }
     }
+
     write_mcu_status(&inference_status);
     set_mcu_led(loop_count % 2);
   }

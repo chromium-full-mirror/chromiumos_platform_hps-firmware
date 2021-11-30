@@ -24,7 +24,7 @@ int read_camera_i2c(uint16_t*, int, uint8_t*);
 
 // Write to camera registers using I2C bus.
 // The address is 2B size. The value is 1B size. Returns 0 if successful.
-int write_camera_i2c(uint16_t*, int, uint8_t*);
+int write_camera_i2c(uint16_t*, int, const uint8_t*);
 
 // Wait for the camera to return to standby mode.
 void wait_for_camera_standby(void);
