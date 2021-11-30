@@ -12,6 +12,7 @@
 
 #include "camera.h"
 #include "cat_picture.h"
+#include "entropy.h"
 #include "generated/csr.h"
 #include "hps_version.h"
 #include "mcu.h"
@@ -80,15 +81,6 @@ static int calibration_required(void) {
     return 1;
   }
   return 0;
-}
-
-// Fetches a pixel from the TFLite input vector location.
-//
-// Since values are stored in the TFLite vector as signed ints, this function
-// adds 128 to recreate the original unsigned value.
-inline uint8_t get_pixel(size_t x, size_t y) {
-  size_t index = CAM_IMAGE_WIDTH * y + x;
-  return 128 + tflite_get_input()[index];
 }
 
 // Sends status register content to the mcu
@@ -205,50 +197,6 @@ static void transfer_image(void) {
   mcu_stream_flush(&stream);
 }
 
-// Calculates an approximation of ln(x)/ln(2) * 2^24.
-//
-// Accurately calculates the integer portion of ln(x)/ln(2), then relies on
-// the approximation ln(x) ~= (x-1) to calculate the fractional part of the base
-// 2 logarithm. Bit shifting is used to pack integer and fraction into a 32 bit
-// result that is a fixed point number, with the integer part in the top 8 bits
-// and fractional part in the lower 24 bits.
-// The resulting output is accurate to within 6%, with error (generally)
-// decreasing for larger x."
-uint32_t fixed_log2(uint32_t x) {
-  uint32_t shift = 24;
-  uint32_t exp = 0;
-  while (x >= (uint32_t)(1 << (exp + 1))) {
-    exp += 1;
-  }
-  uint32_t frac = x - (1 << exp);
-  return (exp << shift) + (frac << (shift - exp));
-}
-
-// This function calculates if the most recently taken image is usable.
-// Images which contain most of the pixels in a small number of buckets
-// will have much greater entropy value.
-uint32_t image_entropy() {
-  uint32_t histogram[256] = {0};
-  for (int x = 0; x < CAM_IMAGE_WIDTH; x++) {
-    for (int y = 0; y < CAM_IMAGE_HEIGHT; y++) {
-      histogram[get_pixel(x, y)]++;
-    }
-  }
-  // This method of calculating entropy is very custom and it has been
-  // achieved and tested using Rust adequate.
-  // For more details, please refer to b/204518775#comment9.
-  uint64_t entropy = 0;
-  for (int i = 0; i < 256; i++) {
-    if (histogram[i] == 0) {
-      continue;
-    }
-    uint64_t value = histogram[i];
-    // To preserve some of the fraction value, smaller shift is applied.
-    entropy += ((value * fixed_log2(value)) >> 16);
-  }
-  return entropy;
-}
-
 void tflite_error_callback(const char* format, va_list args) {
   mcu_vprintf(format, args);
   mcu_printf("\n");
@@ -351,6 +299,7 @@ int main(void) {
     }
     mcu_printf("Capturing image\n");
     capture(rotate_image, tflite_get_input());
+
     // The image entropy value for unusable images is much greater
     // than for usable. Values above the threshold signal unusability.
     uint32_t entropy = image_entropy();

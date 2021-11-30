@@ -83,6 +83,7 @@ executable("rom.bin") {
     "cpp_support.c",
     "mcu.c",
     "timer.c",
+    "entropy.c",
     "transpose.c",
     "../third_party/litex_i2c/hps_i2c.c",
   ]
