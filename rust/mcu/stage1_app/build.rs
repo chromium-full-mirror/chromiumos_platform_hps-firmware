@@ -5,6 +5,7 @@
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
@@ -29,12 +30,23 @@ fn memory_x_contents() -> String {
 }
 
 fn build_spi_hash() {
-    const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/soc-load --build` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/hps_platform.bit HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/bios.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
     let out_dir =
         PathBuf::from(std::env::var("OUT_DIR").expect("Environment variable OUT_DIR undefined"));
     let spi_hash_path = out_dir.join("spi_hash.inc");
-    let spi_hash_file = File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
 
+    if cfg!(feature = "no-hash-check") {
+        write_dummy_spi_hash_file(&spi_hash_path);
+    } else {
+        write_spi_hash_file(&spi_hash_path);
+    }
+
+    println!("cargo:rerun-if-changed=spi_hash.inc");
+    println!("cargo:rustc-env=SPI_HASH={}", spi_hash_path.display());
+}
+
+fn write_spi_hash_file(spi_hash_path: &Path) {
+    const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/soc-load --build` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/hps_platform.bit HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/bios.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
+    let spi_hash_file = File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
     let bitstream_path =
         PathBuf::from(std::env::var("HPS_SPI_BIT").unwrap_or_else(|_| {
             "../../../build/hps_platform/gateware/hps_platform.bit".to_string()
@@ -45,7 +57,6 @@ fn build_spi_hash() {
             .unwrap_or_else(|_| "../../../build/hps_platform/software/bios/bios.bin".to_string()),
     );
     let mut soc_rom_file = File::open(soc_rom_path).expect(MESSAGE);
-
     let mut full_spi_binary = Vec::<u8>::new();
     bitstream_file
         .read_to_end(&mut full_spi_binary)
@@ -63,7 +74,6 @@ fn build_spi_hash() {
         "FPGA bios is too large"
     );
     full_spi_binary.resize(SPI_FLASH_SIZE as usize, 0xFF);
-
     let mut openssl = Command::new("openssl")
         .arg("dgst")
         .arg("-sha256")
@@ -72,30 +82,25 @@ fn build_spi_hash() {
         .stdout(spi_hash_file)
         .spawn()
         .expect("Failed to spawn openssl process");
-
     let mut stdin = openssl
         .stdin
         .take()
         .expect("Failed to open pipe to openssl");
-
     stdin
         .write_all(&full_spi_binary)
         .expect("Failed to write buffer to openssl");
-
-    // although wait_with_output claims to close stdin
-    // it doesnt if we have it. without this we deadlock.
     drop(stdin);
-
     let out = openssl
         .wait_with_output()
         .expect("Failed to wait for openssl");
-
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-    println!("cargo:rerun-if-changed=spi_hash.inc");
-    println!("cargo:rustc-env=SPI_HASH={}", spi_hash_path.display());
+}
+
+fn write_dummy_spi_hash_file(spi_hash_file: &Path) {
+    std::fs::write(spi_hash_file, [0u8; 32]).expect("Failed to write spi_hash.inc");
 }
 
 fn main() {
