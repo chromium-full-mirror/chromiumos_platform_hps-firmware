@@ -108,9 +108,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 // TODO: Consider unsetting AVERIFY. It's a stage0 bit.
                 common_value | (self.stage_status() | Status::AVERIFY).bits()
             }
-            registers::USER_PRESENT_STATUS => {
-                ((state.status.usable as u16) << 15) | (state.status.score as u16) & 0xff
-            }
+            registers::USER_PRESENT_STATUS => state.status.person_status,
             registers::MEMORY_BANK_AVAILABLE => {
                 if self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
@@ -252,8 +250,7 @@ mod tests {
     #[test]
     fn test_image_usable_user_present() {
         let mut state = ApplicationState::default();
-        state.status.score = 0x55;
-        state.status.usable = 0x01;
+        state.status.person_status = 0x8055;
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
@@ -266,8 +263,7 @@ mod tests {
     #[test]
     fn test_image_usable_no_user_present() {
         let mut state = ApplicationState::default();
-        state.status.score = -85;
-        state.status.usable = 0x01;
+        state.status.person_status = 0x80AB;
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
@@ -280,8 +276,7 @@ mod tests {
     #[test]
     fn test_image_unusable_no_user_present() {
         let mut state = ApplicationState::default();
-        state.status.score = -85;
-        state.status.usable = 0x00;
+        state.status.person_status = 0x00AB;
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(

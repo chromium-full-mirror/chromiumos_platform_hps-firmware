@@ -168,6 +168,7 @@ mod tests {
         let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = crate::fpga::commands::WRITE_STATUS_REGISTERS;
         buffer[1] = 0x12;
+        buffer[2] = 0xab;
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::WriteStatusRegisters);
 
@@ -175,7 +176,7 @@ mod tests {
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::OK);
         assert_eq!(buffer[1], crate::fpga::commands::WRITE_STATUS_REGISTERS);
-        assert_eq!(state.status.score, 0x12);
+        assert_eq!(state.status.person_status, 0xab12);
     }
 
     #[test]

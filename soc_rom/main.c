@@ -43,10 +43,9 @@ struct configuration {
 };
 
 struct status {
-  int8_t score;
+  uint16_t person_status;
   uint16_t enabled_features;
   uint16_t loop_count;
-  uint8_t usable;
 };
 
 // Wait for DMA to finish
@@ -159,9 +158,8 @@ static void write_mcu_status(const struct status* status) {
 
 // Performs the classification.
 //
-// Assumes input data vector is already filled. Writes the result of the
-// classification to `status`.
-void run_classify(struct status* status) {
+// Assumes input data vector is already filled.
+int8_t run_classify() {
   mcu_printf("Running classification\n");
 
   // Start timer0 counting down from UINT32_MAX.
@@ -170,7 +168,8 @@ void run_classify(struct status* status) {
   timer0_load_write(UINT32_MAX);
   timer0_en_write(1);
 
-  tflite_classify(&status->score);
+  int8_t score;
+  tflite_classify(&score);
 
   // Report how long the classification took.
   timer0_update_value_write(1);
@@ -184,20 +183,20 @@ void run_classify(struct status* status) {
                elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
-  mcu_printf("Classification result: %d\n", status->score);
+  mcu_printf("Classification result: %d\n", score);
+  return score;
 }
 
 static void model_selftest(void) {
-  struct status selftest_status = {0};
   const int8_t expected_score = -116;
   int8_t* input = tflite_get_input();
   for (size_t i = 0; i < cat_picture_len; i++) {
     input[i] = (int)cat_picture[i] - 128;
   }
-  run_classify(&selftest_status);
-  if (selftest_status.score != expected_score)
+  int8_t score = run_classify();
+  if (score != expected_score)
     printf("Model self-test FAILED: expected %d, actual %d\n", expected_score,
-           selftest_status.score);
+           score);
 }
 
 // Reads configuration registers from the MCU
@@ -407,10 +406,10 @@ int main(void) {
     // The image entropy value for unusable images is much greater
     // than for usable. Values above the threshold signal unusability.
     uint32_t entropy = image_entropy();
-    inference_status.usable = 1; 
+    uint8_t usable = 1;
     if (entropy >= ENTROPY_THRESHOLD) {
       mcu_printf("Image unusable (entropy: %d)\n", entropy);
-      inference_status.usable = 0;
+      usable = 0;
     }
     if (calibration_required()) {
       calibrate(CALIBRATION_FRAMES);
@@ -422,7 +421,9 @@ int main(void) {
     // We run classification if it's enabled via HPS-mon or if feature 0 is
     // enabled from the MCU via I2C.
     if (do_run_classify || ((configuration.enabled_features & 1) != 0)) {
-      run_classify(&inference_status);
+      int8_t score = run_classify();
+      inference_status.person_status =
+          (usable << 15) | (((uint16_t)score) & 0xff);
     }
     write_mcu_status(&inference_status);
     set_mcu_led(loop_count % 2);

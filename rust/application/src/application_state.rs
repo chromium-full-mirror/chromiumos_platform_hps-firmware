@@ -30,12 +30,11 @@ pub struct Configuration {
 #[repr(C)]
 #[derive(Default)]
 pub(crate) struct Status {
-    pub(crate) score: i8,
+    pub(crate) person_status: u16,
     /// A copy of `Configuration::enabled_features` as used by the last
     /// inference loop.
     pub(crate) enabled_features: u16,
     pub(crate) loop_count: u16,
-    pub(crate) usable: u8,
 }
 
 #[cfg(feature = "image-transfer")]

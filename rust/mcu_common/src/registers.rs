@@ -26,7 +26,8 @@ pub const ERRORS: u8 = 6;
 /// WO: Which application features are enabled.
 pub const ENABLED_FEATURES: u8 = 7;
 
-/// RO: If the user present feature is disabled implied by 0.
+/// RO: Person detection status. See docs/host_device_i2c_protocol.md for
+/// breakdown of individual bits.
 pub const USER_PRESENT_STATUS: u8 = 8;
 
 /// RO: Version register for hpsd.
