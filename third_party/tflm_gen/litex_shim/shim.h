@@ -26,24 +26,16 @@ extern "C" {
 
 typedef void (*report_error_callback_t)(const char*, va_list);
 
-// In this version, the only model evaluated is pdti8
-//
 // Set up TfLM environment
 void tflite_init(report_error_callback_t error_callback);
 
 // Obtain a pointer to the model input vector
-// This is the tensor input data. It is assumed to be a 96x96 greyscale image.
+// This is the tensor input data. It is assumed to be a 320x240 greyscale image.
 // Note that data is signed with black being -128 and white being +127
-int8_t *tflite_get_input();
-
-// Load test data into input vector from ROM
-void tflite_load_person();
-
-// Load test data into input vector from ROM
-void tflite_load_no_person();
+int8_t *tflite_get_input(int model_number);
 
 // Run a classification and return result
-void tflite_classify(int8_t* score);
+void tflite_classify(int model_number, int8_t* score);
 
 #ifdef __cplusplus
 }

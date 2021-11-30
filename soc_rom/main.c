@@ -97,8 +97,8 @@ static void write_mcu_status(const struct status* status) {
 // Performs the classification.
 //
 // Assumes input data vector is already filled.
-int8_t run_classify() {
-  mcu_printf("Running classification\n");
+int8_t run_classify(int model_number) {
+  mcu_printf("Running classification for model %d\n", model_number);
 
   // Start timer0 counting down from UINT32_MAX.
   timer0_en_write(0);
@@ -107,7 +107,7 @@ int8_t run_classify() {
   timer0_en_write(1);
 
   int8_t score;
-  tflite_classify(&score);
+  tflite_classify(model_number, &score);
 
   // Report how long the classification took.
   timer0_update_value_write(1);
@@ -121,17 +121,30 @@ int8_t run_classify() {
                elapsed_cycles / (CONFIG_CLOCK_FREQUENCY / 1000));
   }
 
-  mcu_printf("Classification result: %d\n", score);
+  mcu_printf("Classification model %d result: %d\n", model_number, score);
   return score;
 }
 
-static void model_selftest(void) {
-  const int8_t expected_score = -116;
-  int8_t* input = tflite_get_input();
+uint16_t calculate_feature(bool rotate_image, int model_number) {
+  mcu_printf("Capturing image for model %d\n", model_number);
+  capture(rotate_image, tflite_get_input(model_number));
+  // The image entropy value for unusable images is much greater
+  // than for usable. Values above the threshold signal unusability.
+  uint32_t entropy = calculate_entropy(tflite_get_input(model_number));
+  if (entropy >= ENTROPY_THRESHOLD) {
+    return 0;
+  }
+  return 0x8000 | (0xff & (uint8_t)run_classify(model_number));
+}
+
+static void model_selftest(int model_number) {
+  mcu_printf("Self test model %d\n", model_number);
+  int8_t* input = tflite_get_input(model_number);
   for (size_t i = 0; i < cat_picture_len; i++) {
     input[i] = (int)cat_picture[i] - 128;
   }
-  int8_t score = run_classify();
+  int8_t score = run_classify(model_number);
+  const int8_t expected_score = model_number == 1 ? -77 : -126;
   if (score != expected_score)
     printf("Model self-test FAILED: expected %d, actual %d\n", expected_score,
            score);
@@ -185,12 +198,12 @@ static void set_mcu_led(uint8_t ledstate) {
 const uint8_t kStartImage[] = {13, 174, 212, 250, 191, 30, 138, 125};
 const uint8_t kEndImage[] = {227, 114, 212, 105, 101, 111, 21, 193};
 
-static void transfer_image(void) {
+static void transfer_image(const uint8_t* data) {
   struct mcu_stream stream;
   mcu_stream_initialize(&stream, MCU_COMMAND_SEND_IMAGE);
   size_t image_size = CAM_IMAGE_WIDTH * CAM_IMAGE_HEIGHT;
   mcu_stream_send_data(&stream, kStartImage, sizeof(kStartImage));
-  mcu_stream_send_data(&stream, (const uint8_t*)tflite_get_input(), image_size);
+  mcu_stream_send_data(&stream, data, image_size);
   mcu_stream_send_data(&stream, kEndImage, sizeof(kEndImage));
   mcu_stream_flush(&stream);
 }
@@ -221,8 +234,9 @@ void init(void) {
   // Initialize TFLite
   tflite_init(tflite_error_callback);
 
-  // Perform model self-test
-  model_selftest();
+  // Test evaluation
+  model_selftest(1);
+  model_selftest(2);
 
   // Calibrate autoexposure
   write_ae_cfg();
@@ -295,8 +309,8 @@ int main(void) {
     if (application_state.debug_transfer_image_to_host ||
         configuration.enabled_features & 0x80) {
       mcu_printf("Capturing image\n");
-      capture(application_state.rotate_image, tflite_get_input());
-      transfer_image();
+      capture(application_state.rotate_image, tflite_get_input(1));
+      transfer_image((const uint8_t*)tflite_get_input(1));
     }
 
     // Run configured inferences
@@ -307,17 +321,13 @@ int main(void) {
     write_ae_cfg();  // TODO(avg): is this required?
     if (application_state.debug_run_classify ||
         configuration.enabled_features & 1) {
-      mcu_printf("Capturing image\n");
-      capture(application_state.rotate_image, tflite_get_input());
-      // The image entropy value for unusable images is much greater
-      // than for usable. Values above the threshold signal unusability.
-      uint32_t entropy = calculate_entropy(tflite_get_input());
-      if (entropy >= ENTROPY_THRESHOLD) {
-        inference_status.person_status = 0;
-      } else {
-        inference_status.person_status =
-            0x8000 | (0xff & (uint8_t)run_classify());
-      }
+      inference_status.person_status =
+          calculate_feature(application_state.rotate_image, 1);
+    }
+    if (application_state.debug_run_classify ||
+        configuration.enabled_features & 2) {
+      inference_status.person_status =
+          calculate_feature(application_state.rotate_image, 2);
     }
 
     write_mcu_status(&inference_status);

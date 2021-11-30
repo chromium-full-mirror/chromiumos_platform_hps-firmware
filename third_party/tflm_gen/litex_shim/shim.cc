@@ -20,24 +20,26 @@ limitations under the License.
 #include "litex_shim/shim.h"
 
 #include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/micro/micro_allocator.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#include "hps_model_2021_07_05_tiled.h"
+#include "hps_model_2021_09_20_tiled.h"
+#include "hps_second_2021_11_18_tiled.h"
 
 // Globals
 namespace {
 tflite::ErrorReporter* error_reporter = nullptr;
-const tflite::Model* model = nullptr;
+tflite::MicroInterpreter* interpreter1 = nullptr;
+tflite::MicroInterpreter* interpreter2 = nullptr;
 
-tflite::MicroInterpreter* interpreter = nullptr;
-
-TfLiteTensor* input = nullptr;
+tflite::MicroInterpreter* get_interpreter(int model_number) {
+  return model_number == 1 ? interpreter1 : interpreter2;
+}
 
 // An area of memory to use for input, output, and intermediate arrays.
 constexpr int kTensorArenaSize = 310 * 1024;
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
-}  // namespace
 
 class CallbackErrorReporter : public tflite::ErrorReporter {
  public:
@@ -53,61 +55,60 @@ class CallbackErrorReporter : public tflite::ErrorReporter {
   report_error_callback_t error_callback_;
 };
 
+}  // namespace
+
 void tflite_init(report_error_callback_t error_callback) {
   static CallbackErrorReporter error_reporter_instance(error_callback);
   error_reporter = &error_reporter_instance;
 
-  // Map the model into a usable data structure. This doesn't involve any
-  // copying or parsing, it's a very lightweight operation.
-  const unsigned char* model_data = hps_model_2021_07_05_tiled;
-  model = tflite::GetModel(model_data);
-  if (model->version() != TFLITE_SCHEMA_VERSION) {
-    TF_LITE_REPORT_ERROR(error_reporter,
-                         "Model provided is schema version %d not equal "
-                         "to supported version %d.",
-                         model->version(), TFLITE_SCHEMA_VERSION);
-    return;
-  }
-
   // Pull in only the operation implementations we need.
   // Alternatively, we could pull in all the operations with:
   //   tflite::AllOpsResolver resolver;
-  static tflite::MicroMutableOpResolver<7> resolver;
-  resolver.AddConcatenation();
-  resolver.AddConv2D();
-  resolver.AddFullyConnected();
-  resolver.AddLogistic();
-  resolver.AddMaxPool2D();
-  resolver.AddReshape();
-  resolver.AddStridedSlice();
+  static tflite::MicroMutableOpResolver<8> resolver_instance;
+  resolver_instance.AddConcatenation();
+  resolver_instance.AddConv2D();
+  resolver_instance.AddFullyConnected();
+  resolver_instance.AddLogistic();
+  resolver_instance.AddMaxPool2D();
+  resolver_instance.AddReshape();
+  resolver_instance.AddStridedSlice();
+  resolver_instance.AddPad();
 
-  // Build an interpreter to run the model with.
-  static tflite::MicroInterpreter static_interpreter(
-      model, resolver, tensor_arena, kTensorArenaSize, error_reporter);
-  interpreter = &static_interpreter;
-
-  // Allocate memory from the tensor_arena for the model's tensors.
-  TfLiteStatus allocate_status = interpreter->AllocateTensors();
+  auto* allocator = tflite::MicroAllocator::Create(
+      tensor_arena, kTensorArenaSize, error_reporter);
+  auto model1 = tflite::GetModel(hps_model_2021_09_20_tiled);
+  static tflite::MicroInterpreter interpreter1_instance(
+      model1, resolver_instance, allocator, error_reporter);
+  TfLiteStatus allocate_status = interpreter1_instance.AllocateTensors();
   if (allocate_status != kTfLiteOk) {
-    TF_LITE_REPORT_ERROR(error_reporter, "AllocateTensors() failed");
+    TF_LITE_REPORT_ERROR(error_reporter, "Model 1 AllocateTensors() failed");
     return;
   }
+  interpreter1 = &interpreter1_instance;
 
-  // Get information about the memory area to use for the model's input.
-  input = interpreter->input(0);
+  auto model2 = tflite::GetModel(hps_second_2021_11_18_tiled);
+  static tflite::MicroInterpreter interpreter2_instance(
+      model2, resolver_instance, allocator, error_reporter);
+  allocate_status = interpreter2_instance.AllocateTensors();
+  if (allocate_status != kTfLiteOk) {
+    TF_LITE_REPORT_ERROR(error_reporter, "Model 2 AllocateTensors() failed");
+    return;
+  }
+  interpreter2 = &interpreter2_instance;
 }
 
-int8_t* tflite_get_input() {
-  return input->data.int8;
+// Allocate memory from the tensor_arena for the model's tensors.
+int8_t* tflite_get_input(int model_number) {
+  return get_interpreter(model_number)->input(0)->data.int8;
 }
 
-void tflite_classify(int8_t* score) {
+void tflite_classify(int model_number, int8_t* score) {
   // Run inference
-  if (kTfLiteOk != interpreter->Invoke()) {
+  if (kTfLiteOk != get_interpreter(model_number)->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
   }
 
   // Fetch output
-  TfLiteTensor* output = interpreter->output(0);
+  TfLiteTensor* output = get_interpreter(model_number)->output(0);
   *score = output->data.int8[0];
 }
