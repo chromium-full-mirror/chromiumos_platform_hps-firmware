@@ -109,6 +109,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 common_value | (self.stage_status() | Status::AVERIFY).bits()
             }
             registers::USER_PRESENT_STATUS => state.status.person_status,
+            registers::SECOND_PERSON_STATUS => state.status.second_person_status,
             registers::MEMORY_BANK_AVAILABLE => {
                 if self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
@@ -282,6 +283,20 @@ mod tests {
             assert_eq!(
                 hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
                 0x00AB
+            );
+        }));
+        interface.handle_interrupt(&mut state);
+    }
+
+    #[test]
+    fn test_second_person() {
+        let mut state = ApplicationState::default();
+        state.status.second_person_status = 0x807A;
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = HpsAdapter::without_magic_check(device);
+            assert_eq!(
+                hps.read_register(registers::SECOND_PERSON_STATUS).unwrap() as u16,
+                0x807A
             );
         }));
         interface.handle_interrupt(&mut state);

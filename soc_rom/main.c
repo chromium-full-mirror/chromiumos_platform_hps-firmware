@@ -46,6 +46,7 @@ struct status {
   uint16_t person_status;
   uint16_t enabled_features;
   uint16_t loop_count;
+  uint16_t second_person_status;
 };
 
 // Wait for DMA to finish

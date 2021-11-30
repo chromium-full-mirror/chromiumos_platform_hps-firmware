@@ -30,6 +30,10 @@ pub const ENABLED_FEATURES: u8 = 7;
 /// breakdown of individual bits.
 pub const USER_PRESENT_STATUS: u8 = 8;
 
+/// RO: Second person detection status. See docs/host_device_i2c_protocol.md for
+/// breakdown of individual bits.
+pub const SECOND_PERSON_STATUS: u8 = 9;
+
 /// RO: Version register for hpsd.
 pub const FIRMWARE_VERSION_HIGH: u8 = 10;
 pub const FIRMWARE_VERSION_LOW: u8 = 11;
