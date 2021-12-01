@@ -1,3 +1,4 @@
 # Version
 
-This code was built from github.com/tensor/tensorflow at hash 673079ce30f
+The code in tensorflow/lite and third_party directories was copied from
+CFU-Playground at commit 6b35a9290531d220b2353a9830e279e454fe29b3
