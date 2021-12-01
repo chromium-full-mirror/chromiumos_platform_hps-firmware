@@ -97,24 +97,6 @@ class _CRG(Module):
             self.cd_sys, (por_counter != 0))
 
 
-# Custom template for the build script when using Oxide toolchain.
-# This version adds: --router router1
-_oxide_build_template = [
-    'yosys -l {build_name}.rpt {build_name}.ys',
-    ('nextpnr-nexus '
-     '--json {build_name}.json '
-     '--pdc {build_name}.pdc '
-     '--fasm {build_name}.fasm '
-     '--device {device} '
-     '{timefailarg} '
-     '{ignoreloops} '
-     '--seed {seed} '
-     '--router router1'
-     ),
-    'prjoxide pack {build_name}.fasm {build_name}.bit',
-]
-
-
 # pylint: disable=abstract-method
 class Platform(LatticePlatform):
     """The HPS Platform"""
@@ -134,8 +116,6 @@ class Platform(LatticePlatform):
             io=ios,
             connectors=[],
             toolchain=toolchain)
-        if toolchain == 'oxide':
-            self.toolchain.build_template = _oxide_build_template
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
