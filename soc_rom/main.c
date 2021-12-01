@@ -7,7 +7,6 @@
 #include <hps_i2c.h>
 #include <hw/common.h>
 #include <irq.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "camera.h"
@@ -83,14 +82,13 @@ static int calibration_required(void) {
 
 // Sends status register content to the mcu
 static void write_mcu_status(const struct status* status) {
-  puts("Updating status in MCU");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_WRITE_STATUS_REGISTERS;
   memcpy(&mcu_buf_out[1], status, sizeof(*status));
   mcu_transaction();
   if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
       mcu_buf_in[1] != MCU_COMMAND_WRITE_STATUS_REGISTERS) {
-    puts("MCU did not acknowledge command");
+    mcu_printf("MCU did not acknowledge command");
   }
 }
 
@@ -146,13 +144,12 @@ static void model_selftest(int model_number) {
   int8_t score = run_classify(model_number);
   const int8_t expected_score = model_number == 1 ? -77 : -126;
   if (score != expected_score)
-    printf("Model self-test FAILED: expected %d, actual %d\n", expected_score,
-           score);
+    mcu_printf("Model self-test FAILED: expected %d, actual %d\n",
+               expected_score, score);
 }
 
 // Reads configuration registers from the MCU
 static void read_mcu_config(struct configuration* config) {
-  puts("Reading MCU configuration");
   memset(mcu_buf_out, 0, MCU_BUFFER_LEN);
   mcu_buf_out[0] = MCU_COMMAND_READ_CONFIG_REGISTERS;
   mcu_transaction();
@@ -189,7 +186,7 @@ static void set_mcu_led(uint8_t ledstate) {
   mcu_transaction();
   if (mcu_buf_in[0] != MCU_RESPONSE_OK ||
       mcu_buf_in[1] != MCU_COMMAND_SET_DEBUG_LED) {
-    puts("MCU did not acknowledge SET_DEBUG_LED command");
+    mcu_printf("MCU did not acknowledge SET_DEBUG_LED command");
   }
 }
 
