@@ -4,9 +4,6 @@
 
 use fpga_app::Instant;
 
-// TODO: Use build.rs to extract this value from soc.h.
-const CYCLES_PER_SECOND: u64 = 64285714;
-
 #[derive(Default)]
 pub struct Timer {}
 
@@ -27,6 +24,6 @@ impl fpga_app::Timer for Timer {
 
     fn elapsed_ms(&self, start: Instant) -> u32 {
         let elapsed = self.now().0 - start.0;
-        (elapsed / (CYCLES_PER_SECOND / 1000)) as u32
+        (elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1000)) as u32
     }
 }

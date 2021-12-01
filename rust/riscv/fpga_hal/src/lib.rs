@@ -13,3 +13,11 @@ pub use camera::DmaImageDataReceiver;
 pub use debug_led::DebugLed;
 pub use spi::McuSpi;
 pub use timer::Timer;
+
+// Include constants defined by LiteX. These have been converted to Rust by
+// bindgen in our build.rs. We ignore dead code because LiteX defines a lot of
+// constants that we don't use.
+#[allow(dead_code)]
+mod soc {
+    include!(concat!(env!("OUT_DIR"), "/soc.rs"));
+}
