@@ -64,7 +64,7 @@ class HpsSoC(LiteXSoC):
 
     cpu_type = 'vexriscv'
 
-    def __init__(self, *, platform, debug, cpu_cfu=None, variant=None,
+    def __init__(self, *, platform, cpu_cfu=None, variant=None,
                  litespi_flash=True):
         LiteXSoC.__init__(self,
                           platform=platform,
@@ -223,9 +223,6 @@ def main():
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
     parser.add_argument(
-        '--debug', action='store_true',
-        help='Enable debug mode.')
-    parser.add_argument(
         '--build', action='store_true',
         help='Whether to do a full build, including the bitstream.')
     parser.add_argument(
@@ -252,7 +249,6 @@ def main():
 
     soc = HpsSoC(
         platform=Platform(args.toolchain),
-        debug=args.debug,
         litespi_flash=args.litespi_flash,
         variant=variant,
         cpu_cfu=args.cpu_cfu)
