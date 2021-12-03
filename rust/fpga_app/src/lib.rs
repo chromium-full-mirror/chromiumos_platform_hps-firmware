@@ -66,6 +66,7 @@ pub struct App<S, I, L, C, T> {
     calibration_bad_frames: u8,
     timer: T,
     status: Status,
+    model_number: u32,
 }
 
 impl<S, I, L, C, T> App<S, I, L, C, T>
@@ -89,6 +90,7 @@ where
             calibration_bad_frames: 0,
             timer,
             status: Status::default(),
+            model_number: 1,
         }
     }
 
@@ -133,7 +135,8 @@ where
         #[cfg(feature = "image-transfer")]
         {
             if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_enabled {
-                self.mcu.send_image_data(self.classifier.input_data_mut())?;
+                self.mcu
+                    .send_image_data(self.classifier.input_data_mut(self.model_number))?;
             }
         }
 
@@ -142,7 +145,7 @@ where
         // other data.
         if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
             let start = self.timer.now();
-            let score = self.classifier.classify_presence();
+            let score = self.classifier.run_model(self.model_number);
             // TODO: integrate image usability code and use that to set the
             // usable bit.
             self.status.person_status = 0x8000 | ((score as u16) & 0xff);
@@ -201,7 +204,7 @@ where
         let start = self.timer.now();
         let mcu = &mut self.mcu;
         mcu.wait_for_camera_standby();
-        let buffer = self.classifier.input_data_mut();
+        let buffer = self.classifier.input_data_mut(self.model_number);
         self.image_data_receiver
             .receive_image_data(buffer, &dimensions, || mcu.trigger_frame())?;
         if self.rotate_image {
@@ -278,9 +281,12 @@ where
     }
 
     fn check_score(&mut self, name: &str, input_data: &[u8], expected: i8) -> Result<()> {
-        self.classifier.input_data_mut().copy_from_slice(input_data);
+        let model_number = 1;
+        self.classifier
+            .input_data_mut(model_number)
+            .copy_from_slice(input_data);
         let start = self.timer.now();
-        let score = self.classifier.classify_presence();
+        let score = self.classifier.run_model(model_number);
         let elapsed = self.timer.elapsed_ms(start);
         if score == expected {
             mcu_println!(self, "Got expected result {} in {}ms", expected, elapsed);

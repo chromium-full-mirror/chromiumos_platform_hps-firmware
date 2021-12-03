@@ -12,8 +12,8 @@
 #[link(name = "stdc++")]
 extern "C" {
     fn tflite_init(error_callback: unsafe extern "C" fn(*const u8));
-    fn tflite_get_input() -> *mut u8;
-    fn tflite_classify(score_out: *mut i8);
+    fn tflite_get_input(model_number: u32) -> *mut u8;
+    fn tflite_classify(model_number: u32, score_out: *mut i8);
 }
 
 unsafe extern "C" fn report_error(_format: *const u8) {
@@ -35,17 +35,22 @@ impl TflmClassifier {
 }
 
 impl fpga_app::Classifier for TflmClassifier {
-    fn input_data_mut(&mut self) -> &mut [u8] {
+    fn input_data_mut(&mut self, model_number: u32) -> &mut [u8] {
         // safety: TflmClassifier::sole_instance requries that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
         // large enough to store NUM_PIXELS.
-        unsafe { core::slice::from_raw_parts_mut(tflite_get_input(), fpga_app::camera::NUM_PIXELS) }
+        unsafe {
+            core::slice::from_raw_parts_mut(
+                tflite_get_input(model_number),
+                fpga_app::camera::NUM_PIXELS,
+            )
+        }
     }
 
-    fn classify_presence(&mut self) -> i8 {
+    fn run_model(&mut self, model_number: u32) -> i8 {
         let mut score = 0i8;
-        unsafe { tflite_classify(&mut score as *mut i8) };
+        unsafe { tflite_classify(model_number, &mut score as *mut i8) };
         score
     }
 }

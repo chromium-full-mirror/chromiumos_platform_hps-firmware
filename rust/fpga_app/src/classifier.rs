@@ -4,11 +4,10 @@
 
 pub trait Classifier {
     /// Returns a mutable reference into which the input data can be written.
-    fn input_data_mut(&mut self) -> &mut [u8];
+    fn input_data_mut(&mut self, model_number: u32) -> &mut [u8];
 
-    /// Classify the data previously written into the buffer returned by
-    /// `input_data_mut`
-    fn classify_presence(&mut self) -> i8;
+    /// Run a model.
+    fn run_model(&mut self, model_number: u32) -> i8;
 }
 
 pub struct FakeClassifier {
@@ -20,12 +19,12 @@ pub struct FakeClassifier {
 }
 
 impl Classifier for FakeClassifier {
-    fn input_data_mut(&mut self) -> &mut [u8] {
+    fn input_data_mut(&mut self, _model_number: u32) -> &mut [u8] {
         self.input_data.as_mut()
     }
 
-    fn classify_presence(&mut self) -> i8 {
-        self.models_executed |= 1;
+    fn run_model(&mut self, model_number: u32) -> i8 {
+        self.models_executed |= 1 << (model_number as usize - 1);
         self.model_outputs[0]
     }
 }
