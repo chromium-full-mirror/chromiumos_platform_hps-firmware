@@ -13,46 +13,46 @@ from litex.soc.cores.clock import NXOSCA
 hps_io = [
     # HM01B0 camera connection
     ('cam_control', 0,
-        Subsignal('data', Pins('G8 F7 F8 E7 E8 G9 F9 E9')),
-        Subsignal('fvld', Pins('F6')),
-        Subsignal('lvld', Pins('G5')),
-        Subsignal('pclk', Pins('G7')),
-        # Subsignal('int',  Pins('E2')),  # Shared with serial rx
-        IOStandard('LVCMOS18H')
+     Subsignal('data', Pins('G8 F7 F8 E7 E8 G9 F9 E9')),
+     Subsignal('fvld', Pins('F6')),
+     Subsignal('lvld', Pins('G5')),
+     Subsignal('pclk', Pins('G7')),
+     # Subsignal('int',  Pins('E2')),  # Shared with serial rx
+     IOStandard('LVCMOS18H')
      ),
     ('programn', 0, Pins('A4'), IOStandard('LVCMOS18H')),
     # JTAG: not usually programatically accessible
     ('jtag', 0,
-        Subsignal('en', Pins('C2')),
-        Subsignal('tck', Pins('D2')),
-        Subsignal('tdi', Pins('C3')),
-        Subsignal('tdo', Pins('D3')),
-        Subsignal('tms', Pins('B1')),
-        IOStandard('LVCMOS18H')
+     Subsignal('en', Pins('C2')),
+     Subsignal('tck', Pins('D2')),
+     Subsignal('tdi', Pins('C3')),
+     Subsignal('tdo', Pins('D3')),
+     Subsignal('tms', Pins('B1')),
+     IOStandard('LVCMOS18H')
      ),
     # SPI flash, defined two ways
     ('spiflash', 0,
-        Subsignal('cs_n', Pins('A3')),
-        Subsignal('clk', Pins('B4')),
-        Subsignal('mosi', Pins('B5')),
-        Subsignal('miso', Pins('C4')),
-        Subsignal('wp', Pins('B3')),
-        Subsignal('hold', Pins('B2')),
-        IOStandard('LVCMOS18')
+     Subsignal('cs_n', Pins('A3')),
+     Subsignal('clk', Pins('B4')),
+     Subsignal('mosi', Pins('B5')),
+     Subsignal('miso', Pins('C4')),
+     Subsignal('wp', Pins('B3')),
+     Subsignal('hold', Pins('B2')),
+     IOStandard('LVCMOS18')
      ),
     ('spiflash4x', 0,
-        Subsignal('cs_n', Pins('A3')),
-        Subsignal('clk', Pins('B4')),
-        Subsignal('dq', Pins('B5 C4 B3 B2')),
-        IOStandard('LVCMOS18')
+     Subsignal('cs_n', Pins('A3')),
+     Subsignal('clk', Pins('B4')),
+     Subsignal('dq', Pins('B5 C4 B3 B2')),
+     IOStandard('LVCMOS18')
      ),
     ('mcu_spi', 0,
-        Subsignal('clk', Pins('H1')),
-        Subsignal('cs', Pins('F2')),
-        Subsignal('cipo', Pins('G2')),
-        Subsignal('copi', Pins('H2')),
-        Subsignal('ready', Pins('F3')),
-        IOStandard('LVCMOS18H')
+     Subsignal('clk', Pins('H1')),
+     Subsignal('cs', Pins('F2')),
+     Subsignal('cipo', Pins('G2')),
+     Subsignal('copi', Pins('H2')),
+     Subsignal('ready', Pins('F3')),
+     IOStandard('LVCMOS18H')
      ),
 ]
 
@@ -61,8 +61,8 @@ hps_io = [
 hps_nx17_debug_io = [
     # Debug UART
     ('serial', 0,
-        Subsignal('rx', Pins('E2'), IOStandard('LVCMOS18')),
-        Subsignal('tx', Pins('G1'), IOStandard('LVCMOS18H')),
+     Subsignal('rx', Pins('E2'), IOStandard('LVCMOS18')),
+     Subsignal('tx', Pins('G1'), IOStandard('LVCMOS18H')),
      ),
 ]
 
