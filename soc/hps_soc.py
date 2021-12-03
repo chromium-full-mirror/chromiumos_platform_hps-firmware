@@ -12,8 +12,6 @@ from litex.soc.integration.soc import LiteXSoC, SoCRegion
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
-from litex.build.lattice.radiant import (radiant_build_args,
-                                         radiant_build_argdict)
 from litex.build.lattice.oxide import (oxide_args,
                                        oxide_argdict)
 
@@ -207,7 +205,6 @@ class HpsBuilder(Builder):
 
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
-    radiant_build_args(parser)
     oxide_args(parser)
 
 
@@ -225,9 +222,6 @@ def main():
     parser.add_argument(
         '--build', action='store_true',
         help='Whether to do a full build, including the bitstream.')
-    parser.add_argument(
-        '--toolchain', default='oxide',
-        help='Which toolchain to use, oxide (default) or radiant.')
     parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
@@ -248,7 +242,7 @@ def main():
     print(f'{variantName} variant selected')
 
     soc = HpsSoC(
-        platform=Platform(args.toolchain),
+        platform=Platform(),
         litespi_flash=args.litespi_flash,
         variant=variant,
         cpu_cfu=args.cpu_cfu)
@@ -263,10 +257,7 @@ def main():
 
     builder = create_builder(soc, args)
     builder_kwargs = {}
-    if args.toolchain == 'radiant':
-        builder_kwargs.update(radiant_build_argdict(args))
-    elif args.toolchain == 'oxide':
-        builder_kwargs.update(oxide_argdict(args))
+    builder_kwargs.update(oxide_argdict(args))
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 
