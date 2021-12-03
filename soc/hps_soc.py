@@ -12,8 +12,6 @@ from litex.soc.integration.soc import LiteXSoC, SoCRegion
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
-from litex.build.lattice.oxide import (oxide_args,
-                                       oxide_argdict)
 
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
@@ -205,7 +203,9 @@ class HpsBuilder(Builder):
 
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
-    oxide_args(parser)
+    parser.add_argument('--nextpnr-seed', metavar='NUMBER',
+                        default=1, type=int,
+                        help='Use random seed NUMBER for nextpnr')
 
 
 def create_builder(soc, args):
@@ -256,8 +256,11 @@ def main():
     args.memory_x = f'{args.output_dir}/memory.x'
 
     builder = create_builder(soc, args)
-    builder_kwargs = {}
-    builder_kwargs.update(oxide_argdict(args))
+    builder_kwargs = {
+        'abc9': True,
+        'timingstrict': True,
+        'seed': args.nextpnr_seed,
+    }
     vns = builder.build(**builder_kwargs, run=args.build)
     soc.do_exit(vns)
 
