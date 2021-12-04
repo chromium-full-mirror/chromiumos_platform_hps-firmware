@@ -127,6 +127,8 @@ where
             self.led.turn_off();
         }
 
+        self.select_model(&features);
+
         self.check_calibration()?;
         self.capture_image()?;
 
@@ -143,7 +145,10 @@ where
         // Classification needs to be done after any other uses of the image
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
-        if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
+        if features.contains(Features::MODEL1)
+            || features.contains(Features::MODEL2)
+            || self.classification_enabled
+        {
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number);
             // TODO: integrate image usability code and use that to set the
@@ -151,7 +156,8 @@ where
             self.status.person_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,
-                "Score: {} took: {}ms",
+                "Model {} score: {} took: {}ms",
+                self.model_number,
                 score,
                 self.timer.elapsed_ms(start)
             );
@@ -302,6 +308,25 @@ where
         }
         Ok(())
     }
+
+    /// Selects which model to use for the current loop iteration so that each
+    /// enabled feature gets a turn. If no model features are enabled, will
+    /// select model 1.
+    fn select_model(&mut self, features: &Features) {
+        // Advance to next model number out of 1 and 2.
+        self.model_number = (self.model_number % 2) + 1;
+        // If we're on model 1, but that's not active, advance to model 2.
+        if self.model_number == 1 && !features.contains(Features::MODEL1) {
+            self.model_number = 2;
+        }
+        // If we're on model 2, but that's not active, advance to model 1. Note,
+        // this means that if neither model is active, we'll use model 1. It
+        // won't actually run, but we need a model to always be selected so that
+        // we have a buffer into which to capture images.
+        if self.model_number == 2 && !features.contains(Features::MODEL2) {
+            self.model_number = 1;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -395,7 +420,7 @@ mod tests {
         let mut classifier = FakeClassifier::default();
         classifier.model_outputs[0] = 0x42;
         let config = Configuration {
-            enabled_features: Features::CLASSIFY_PRESENCE.bits(),
+            enabled_features: Features::MODEL1.bits(),
         };
         let status = Status {
             loop_count: 1,
