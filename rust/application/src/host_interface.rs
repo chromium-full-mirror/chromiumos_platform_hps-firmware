@@ -159,11 +159,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
             },
             registers::ENABLED_FEATURES => {
                 state.configuration.enabled_features = value;
-                // If any features are enabled, then we want to try to start the
-                // FPGA.
-                if value != 0 {
-                    return Some(Event::StartFpga);
-                }
             }
             _ => (),
         }
