@@ -29,7 +29,7 @@ const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/appli
 #[clap(name = "config")]
 struct Config {
     /// path to I2C device
-    #[clap(long)]
+    #[clap(long, alias = "bus")]
     dev: Option<PathBuf>,
 
     /// connect to HPS via an MCP2221
