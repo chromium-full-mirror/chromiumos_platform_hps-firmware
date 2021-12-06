@@ -18,7 +18,7 @@ const MCU_POLL_COUNT: u32 = 1000;
 const CAM_MODE_SELECT: u16 = 0x0100;
 
 pub struct McuInterface<S> {
-    spi: S,
+    pub(crate) spi: S,
     buffer: [u8; BUFFER_SIZE],
 }
 

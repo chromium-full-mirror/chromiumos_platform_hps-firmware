@@ -6,3 +6,15 @@ pub trait DebugLed {
     fn turn_on(&mut self);
     fn turn_off(&mut self);
 }
+
+#[cfg(test)]
+pub(crate) mod testing {
+    use super::*;
+
+    pub(crate) struct FakeLed;
+
+    impl DebugLed for FakeLed {
+        fn turn_on(&mut self) {}
+        fn turn_off(&mut self) {}
+    }
+}

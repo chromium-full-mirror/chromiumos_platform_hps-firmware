@@ -4,6 +4,8 @@
 
 use core::num::Wrapping;
 
+pub const CONFIGURATION_SIZE: usize = core::mem::size_of::<Configuration>();
+
 #[derive(Default)]
 pub struct ApplicationState {
     pub(crate) configuration: Configuration,
@@ -20,7 +22,7 @@ pub struct ApplicationState {
 /// as bytes, hence the repr(C). The host writes parts individually via
 /// registers.
 #[repr(C)]
-#[derive(Default)]
+#[derive(Default, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub enabled_features: u16,
 }
@@ -42,5 +44,43 @@ pub(crate) struct Status {
 impl ApplicationState {
     pub fn i2c_image_transfer_enabled(&self) -> bool {
         self.configuration.enabled_features & 0x80 != 0
+    }
+}
+
+impl Configuration {
+    /// Returns `bytes` as a `Configuration`. All our CPUs use little endian.
+    /// This function is not portable to big endian.
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        assert!(bytes.len() >= CONFIGURATION_SIZE);
+        // safety: we're reading an initialized byte array at least as large as
+        // the size of a Status. There are no bit patterns that would give an
+        // invalid Status.
+        unsafe { core::ptr::read_unaligned(bytes.as_ptr() as *const Configuration) }
+    }
+
+    /// Returns `self` as bytes. All our CPUs use little endian. This function
+    /// is not portable to big endian.
+    pub fn to_bytes(&self) -> [u8; CONFIGURATION_SIZE] {
+        // safety: We're reading `self` as bytes. Any value of `self` will give
+        // a valid byte array.
+        unsafe {
+            core::ptr::read_unaligned(
+                self as *const Configuration as *const [u8; CONFIGURATION_SIZE],
+            )
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_configuration_byte_conversion() {
+        let configuration = Configuration {
+            enabled_features: 0x42,
+        };
+        let configuration2 = Configuration::from_bytes(&configuration.to_bytes());
+        assert_eq!(configuration, configuration2);
     }
 }

@@ -14,3 +14,20 @@ pub trait Timer {
 /// generally CPU cycles.
 #[derive(Clone, Copy, Debug)]
 pub struct Instant(pub u64);
+
+#[cfg(test)]
+pub(crate) mod testing {
+    use super::*;
+
+    pub(crate) struct FakeTimer;
+
+    impl Timer for FakeTimer {
+        fn now(&self) -> Instant {
+            Instant(0)
+        }
+
+        fn elapsed_ms(&self, _start: Instant) -> u32 {
+            0
+        }
+    }
+}

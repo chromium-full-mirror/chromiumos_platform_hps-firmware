@@ -38,3 +38,21 @@ pub struct ImageDimensions {
     pub row_start: u32,
     pub row_count: u32,
 }
+
+#[cfg(test)]
+pub(crate) mod testing {
+    use super::*;
+
+    pub(crate) struct FakeImageDataReceiver;
+
+    impl ImageDataReceiver for FakeImageDataReceiver {
+        fn receive_image_data(
+            &mut self,
+            _buffer: &mut [u8],
+            _image_dimensions: &ImageDimensions,
+            trigger_callback: impl FnOnce() -> Result<()>,
+        ) -> Result<()> {
+            (trigger_callback)()
+        }
+    }
+}

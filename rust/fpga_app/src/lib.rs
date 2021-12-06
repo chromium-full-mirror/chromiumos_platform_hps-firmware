@@ -30,11 +30,18 @@ const SOC_ROM_VERSION: u8 = 1;
 /// implements `mcu_mut()`.
 macro_rules! mcu_println {
     ($mcu:expr, $($tts:tt)*) => {
-        let _ = writeln!($mcu.mcu_mut(), $($tts)*);
+        #[cfg(test)]
+        {
+            println!($($tts)*);
+        }
+        #[cfg(not(test))]
+        {
+            let _ = writeln!($mcu.mcu_mut(), $($tts)*);
+        }
     };
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     SpiError,
     McuTimeout,
@@ -276,5 +283,117 @@ where
             return Err(Error::SelfTestFailed);
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::camera::testing::FakeImageDataReceiver;
+    use crate::debug_led::testing::FakeLed;
+    use crate::timer::testing::FakeTimer;
+    use application::fpga;
+    use application::Configuration;
+
+    use super::*;
+
+    #[derive(Default)]
+    struct SpiExpectationsBuilder {
+        expectations: Vec<embedded_hal_mock::spi::Transaction>,
+    }
+
+    fn empty() -> Vec<u8> {
+        vec![0u8; fpga::BUFFER_SIZE]
+    }
+
+    impl SpiExpectationsBuilder {
+        fn expect(mut self, mut request: Vec<u8>, mut response: Vec<u8>) -> Self {
+            assert!(!request.is_empty());
+            response.insert(0, fpga::status::OK);
+            response.insert(1, request[0]);
+            assert!(request.len() <= fpga::BUFFER_SIZE);
+            assert!(response.len() <= fpga::BUFFER_SIZE);
+            request.resize(fpga::BUFFER_SIZE, 0);
+            response.resize(fpga::BUFFER_SIZE, 0);
+            self.expectations
+                .push(embedded_hal_mock::spi::Transaction::transfer(
+                    request,
+                    empty(),
+                ));
+            self.expectations
+                .push(embedded_hal_mock::spi::Transaction::transfer(
+                    empty(),
+                    response,
+                ));
+            self
+        }
+
+        fn expect_get_config(self, config: &Configuration) -> Self {
+            self.expect(
+                vec![fpga::commands::READ_CONFIG_REGISTERS],
+                config.to_bytes().to_vec(),
+            )
+        }
+
+        fn expect_read_camera_reg(self, register: u16, value: u8) -> Self {
+            let register_bytes = register.to_be_bytes();
+            self.expect(
+                vec![
+                    fpga::commands::READ_CAMERA_I2C,
+                    1,
+                    register_bytes[0],
+                    register_bytes[1],
+                ],
+                vec![value],
+            )
+        }
+
+        fn expect_write_camera_reg(self, register: u16, value: u8) -> Self {
+            let register_bytes = register.to_be_bytes();
+            self.expect(
+                vec![
+                    fpga::commands::WRITE_CAMERA_I2C,
+                    1,
+                    register_bytes[0],
+                    register_bytes[1],
+                    value,
+                ],
+                vec![],
+            )
+        }
+
+        fn build(self) -> embedded_hal_mock::spi::Mock {
+            embedded_hal_mock::spi::Mock::new(&self.expectations)
+        }
+    }
+
+    #[test]
+    fn test_feature_enabled() {
+        let config = Configuration {
+            enabled_features: Features::CLASSIFY_PRESENCE.bits(),
+        };
+        let spi = SpiExpectationsBuilder::default()
+            .expect_get_config(&config)
+            // Get AE mean.
+            .expect_read_camera_reg(0x2020, 100)
+            // Wait camera standby.
+            .expect_read_camera_reg(0x0100, 0)
+            // Configure number of frames.
+            .expect_write_camera_reg(0x3020, 1)
+            // Stream N frames.
+            .expect_write_camera_reg(0x0100, 3)
+            .build();
+        let mut app = App::new(
+            spi,
+            FakeImageDataReceiver,
+            FakeClassifier::default(),
+            FakeLed,
+            FakeTimer,
+        );
+
+        assert_eq!(app.loop_body(), Ok(()));
+
+        assert_eq!(app.classifier.models_executed, 1);
+
+        app.mcu.spi.done();
     }
 }

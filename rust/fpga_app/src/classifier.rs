@@ -13,6 +13,9 @@ pub trait Classifier {
 
 pub struct FakeClassifier {
     input_data: [u8; crate::camera::NUM_PIXELS],
+    /// Which models have been executed. Bit 0 being set means that the first
+    /// model has been executed and so on for each successive bit.
+    pub(crate) models_executed: u8,
 }
 
 impl Classifier for FakeClassifier {
@@ -21,7 +24,8 @@ impl Classifier for FakeClassifier {
     }
 
     fn classify_presence(&mut self) -> i8 {
-        0
+        self.models_executed |= 1;
+        42
     }
 }
 
@@ -29,6 +33,7 @@ impl Default for FakeClassifier {
     fn default() -> Self {
         Self {
             input_data: [0u8; crate::camera::NUM_PIXELS],
+            models_executed: 0,
         }
     }
 }
