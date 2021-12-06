@@ -8,6 +8,7 @@ use crate::Result;
 use application::fpga::commands;
 use application::fpga::BUFFER_SIZE;
 use application::Configuration;
+use application::Status;
 use core::convert::TryFrom;
 use embedded_hal::blocking::spi;
 
@@ -66,6 +67,14 @@ where
         Ok(unsafe {
             core::ptr::read_unaligned(&self.buffer[2] as *const u8 as *const Configuration)
         })
+    }
+
+    pub fn report_status(&mut self, status: &Status) -> Result<()> {
+        self.clear_buffer();
+        let status_bytes = status.to_bytes();
+        self.buffer[0] = commands::WRITE_STATUS_REGISTERS;
+        self.buffer[1..1 + status_bytes.len()].copy_from_slice(&status_bytes);
+        self.exchange()
     }
 
     pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
@@ -326,6 +335,18 @@ mod tests {
         let mut mcu = command_response_interface(command, response);
         let value = mcu.next_debug_command();
         assert_eq!(value, Some((DebugCommand::ClassificationOn, 0x1234)));
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_report_status() {
+        let mut mcu = command_response_interface(
+            vec![commands::WRITE_STATUS_REGISTERS, 0, 0, 0, 0, 0x34, 0x12],
+            vec![status::OK, commands::WRITE_STATUS_REGISTERS],
+        );
+        let mut status = Status::default();
+        status.loop_count = 0x1234;
+        mcu.report_status(&status).unwrap();
         mcu.spi.done();
     }
 }

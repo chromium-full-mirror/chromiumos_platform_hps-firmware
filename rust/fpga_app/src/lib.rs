@@ -13,6 +13,7 @@ mod image_rotation;
 mod mcu_interface;
 mod timer;
 
+use application::Status;
 pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
 use core::fmt::Write;
@@ -64,6 +65,7 @@ pub struct App<S, I, L, C, T> {
     rotate_image: bool,
     calibration_bad_frames: u8,
     timer: T,
+    status: Status,
 }
 
 impl<S, I, L, C, T> App<S, I, L, C, T>
@@ -86,6 +88,7 @@ where
             rotate_image: true,
             calibration_bad_frames: 0,
             timer,
+            status: Status::default(),
         }
     }
 
@@ -140,13 +143,22 @@ where
         if features.contains(Features::CLASSIFY_PRESENCE) || self.classification_enabled {
             let start = self.timer.now();
             let score = self.classifier.classify_presence();
+            // TODO: integrate image usability code and use that to set the
+            // usable bit.
+            self.status.person_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,
                 "Score: {} took: {}ms",
                 score,
                 self.timer.elapsed_ms(start)
             );
+        } else {
+            self.status.person_status = 0;
         }
+
+        self.status.loop_count += 1;
+        self.status.enabled_features = config.enabled_features;
+        self.mcu.report_status(&self.status)?;
 
         Ok(())
     }
@@ -361,6 +373,12 @@ mod tests {
             )
         }
 
+        fn expect_report_status(self, status: &Status) -> Self {
+            let mut request = status.to_bytes().to_vec();
+            request.insert(0, fpga::commands::WRITE_STATUS_REGISTERS);
+            self.expect(request, vec![])
+        }
+
         fn build(self) -> embedded_hal_mock::spi::Mock {
             embedded_hal_mock::spi::Mock::new(&self.expectations)
         }
@@ -368,8 +386,16 @@ mod tests {
 
     #[test]
     fn test_feature_enabled() {
+        let mut classifier = FakeClassifier::default();
+        classifier.model_outputs[0] = 0x42;
         let config = Configuration {
             enabled_features: Features::CLASSIFY_PRESENCE.bits(),
+        };
+        let status = Status {
+            loop_count: 1,
+            person_status: 0x8042,
+            enabled_features: config.enabled_features,
+            ..Default::default()
         };
         let spi = SpiExpectationsBuilder::default()
             .expect_get_config(&config)
@@ -381,14 +407,9 @@ mod tests {
             .expect_write_camera_reg(0x3020, 1)
             // Stream N frames.
             .expect_write_camera_reg(0x0100, 3)
+            .expect_report_status(&status)
             .build();
-        let mut app = App::new(
-            spi,
-            FakeImageDataReceiver,
-            FakeClassifier::default(),
-            FakeLed,
-            FakeTimer,
-        );
+        let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeLed, FakeTimer);
 
         assert_eq!(app.loop_body(), Ok(()));
 

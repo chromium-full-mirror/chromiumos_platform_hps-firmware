@@ -5,6 +5,7 @@
 use core::num::Wrapping;
 
 pub const CONFIGURATION_SIZE: usize = core::mem::size_of::<Configuration>();
+pub const STATUS_SIZE: usize = core::mem::size_of::<Status>();
 
 #[derive(Default)]
 pub struct ApplicationState {
@@ -30,20 +31,39 @@ pub struct Configuration {
 /// Current status of the HPS. This is writable by the FPGA and is read by the
 /// host.
 #[repr(C)]
-#[derive(Default)]
-pub(crate) struct Status {
-    pub(crate) person_status: u16,
+#[derive(Default, Debug, PartialEq, Eq)]
+pub struct Status {
+    pub person_status: u16,
     /// A copy of `Configuration::enabled_features` as used by the last
     /// inference loop.
-    pub(crate) enabled_features: u16,
-    pub(crate) loop_count: u16,
-    pub(crate) second_person_status: u16,
+    pub enabled_features: u16,
+    pub loop_count: u16,
+    pub second_person_status: u16,
 }
 
 #[cfg(feature = "image-transfer")]
 impl ApplicationState {
     pub fn i2c_image_transfer_enabled(&self) -> bool {
         self.configuration.enabled_features & 0x80 != 0
+    }
+}
+impl Status {
+    /// Returns `bytes` as a `Status`. All our CPUs use little endian. This
+    /// function is not portable to big endian.
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        assert!(bytes.len() >= STATUS_SIZE);
+        // safety: we're reading an initialized byte array at least as large as
+        // the size of a Status. There are no bit patterns that would give an
+        // invalid Status.
+        unsafe { core::ptr::read_unaligned(bytes.as_ptr() as *const Status) }
+    }
+
+    /// Returns `self` as bytes. All our CPUs use little endian. This function
+    /// is not portable to big endian.
+    pub fn to_bytes(&self) -> [u8; STATUS_SIZE] {
+        // safety: We're reading `self` as bytes. Any value of `self` will give
+        // a valid byte array.
+        unsafe { core::ptr::read_unaligned(self as *const Status as *const [u8; STATUS_SIZE]) }
     }
 }
 
@@ -82,5 +102,17 @@ mod tests {
         };
         let configuration2 = Configuration::from_bytes(&configuration.to_bytes());
         assert_eq!(configuration, configuration2);
+    }
+
+    #[test]
+    fn test_status_byte_conversion() {
+        let status = Status {
+            person_status: 0x1234,
+            enabled_features: 0xabcd,
+            loop_count: 0x5678,
+            second_person_status: 0x9,
+        };
+        let status2 = Status::from_bytes(&status.to_bytes());
+        assert_eq!(status, status2);
     }
 }
