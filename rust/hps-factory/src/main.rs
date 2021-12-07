@@ -104,9 +104,9 @@ struct CaptureImagesConfig {
     #[clap(long)]
     latest_symlink: bool,
 
-    /// wait until the output directory exists
+    /// wait until the parent of the output directory exists
     #[clap(long)]
-    wait_dir_exists: bool,
+    wait_parent_dir_exists: bool,
 
     /// how long to wait with no images being received before failing
     #[clap(long)]

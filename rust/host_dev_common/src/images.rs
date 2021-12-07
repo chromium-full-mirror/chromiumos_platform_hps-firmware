@@ -33,8 +33,7 @@ pub struct OutputDir {
     log_fn: Box<dyn FnMut(String) -> Result<()>>,
     raw_output: bool,
     latest_symlink: bool,
-    wait_dir_exists: bool,
-    output_directory_created: bool,
+    wait_parent_dir_exists: bool,
     error_reported: bool,
     last_receive_timestamp: Instant,
 }
@@ -127,8 +126,7 @@ impl OutputDir {
             log_fn,
             raw_output: true,
             latest_symlink: true,
-            wait_dir_exists: false,
-            output_directory_created: false,
+            wait_parent_dir_exists: false,
             error_reported: false,
             last_receive_timestamp: Instant::now(),
         })
@@ -142,8 +140,8 @@ impl OutputDir {
         self.latest_symlink = latest_symlink;
     }
 
-    pub fn set_wait_dir_exists(&mut self, wait_dir_exists: bool) {
-        self.wait_dir_exists = wait_dir_exists;
+    pub fn set_wait_parent_dir_exists(&mut self, wait_parent_dir_exists: bool) {
+        self.wait_parent_dir_exists = wait_parent_dir_exists;
     }
 
     /// Returns how long it has been since we received an image (or started if
@@ -165,14 +163,19 @@ impl OutputDir {
                 for b in bytes.iter_mut() {
                     *b = (Wrapping(*b) + Wrapping(128)).0;
                 }
-                if !self.wait_dir_exists && !self.output_directory_created {
+                if !self.wait_parent_dir_exists
+                    || self
+                        .path
+                        .parent()
+                        .map(|parent| parent.exists())
+                        .unwrap_or(false)
+                {
                     std::fs::create_dir_all(&self.path)
                         .map_err(|e| anyhow!("Error creating directory {:?}: {}", self.path, e))?;
-                    self.output_directory_created = true;
                 }
                 self.last_receive_timestamp = Instant::now();
                 write_result = self.write_image(bytes);
-                if self.wait_dir_exists {
+                if self.wait_parent_dir_exists {
                     // When in this mode, the output directory could be removed
                     // at any time, so just print the first such error, then
                     // continue.
