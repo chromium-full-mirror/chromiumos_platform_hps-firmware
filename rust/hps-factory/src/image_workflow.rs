@@ -15,6 +15,7 @@ use embedded_hal::blocking::i2c::WriteRead;
 use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use hps_interface::Hps;
+use mcu_common::commands::Command;
 use mcu_common::registers;
 
 const IMAGE_DATA_PACKET_LENGTH: usize = 63;
@@ -34,6 +35,10 @@ where
         i2c.execute_stage1().context("Execute application")?;
         i2c.write_gateware().context("Write gateware")?;
         i2c.write_soc_rom().context("Write SOC ROM")?;
+
+        // Workaround for image capture not working on some devices if we've
+        // written SPI flash since the last reset.
+        i2c.open_hps()?.perform_command(Command::Reset)?;
     }
     i2c.execute_application().context("Execute application")?;
 
