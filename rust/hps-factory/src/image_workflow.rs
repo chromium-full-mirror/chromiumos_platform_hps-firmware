@@ -49,8 +49,13 @@ where
     println!("HPS application started");
 
     // Configure enabled features.
-    let mut enabled_features = Features::IMAGE_TRANSFER;
+    let enabled_features = Features::IMAGE_TRANSFER;
     hps.write_register(registers::ENABLED_FEATURES, enabled_features.bits())?;
+
+    hps.write_register(
+        registers::CAMERA_CONFIG,
+        capture_images_config.rotation.into(),
+    )?;
 
     let mut buffer = Vec::new();
     let start = std::time::Instant::now();

@@ -160,6 +160,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::ENABLED_FEATURES => {
                 state.configuration.enabled_features = value;
             }
+            registers::CAMERA_CONFIG => {
+                state.configuration.camera_config = value;
+            }
             _ => (),
         }
         None

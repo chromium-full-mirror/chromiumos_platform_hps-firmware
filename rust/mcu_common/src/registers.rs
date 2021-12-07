@@ -56,6 +56,9 @@ pub const SPI_FLASH_STATUS: u8 = 15;
 pub const DEBUG_IDX_REG: u8 = 16;
 pub const DEBUG_VAL_REG: u8 = 17;
 
+/// RO: Configuration bits for camera.
+pub const CAMERA_CONFIG: u8 = 18;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

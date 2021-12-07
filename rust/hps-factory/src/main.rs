@@ -111,6 +111,10 @@ struct CaptureImagesConfig {
     /// how long to wait with no images being received before failing
     #[clap(long)]
     timeout_seconds: Option<u64>,
+
+    /// rotation to apply to images from the camera
+    #[clap(long, default_value = "none")]
+    rotation: application::Rotation,
 }
 
 #[derive(Debug, Clap, Clone)]

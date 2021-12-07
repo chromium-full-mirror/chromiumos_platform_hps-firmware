@@ -33,6 +33,7 @@ static const uint8_t ae_target = 100;
 
 struct configuration {
   uint16_t enabled_features;
+  uint16_t camera_config;
 };
 
 struct status {
@@ -243,8 +244,8 @@ struct {
   bool debug_run_classify;
   bool debug_run_calibration;
   bool debug_transfer_image_to_host;
-  bool rotate_image;
-} application_state = {false, false, false, true};
+  bool debug_rotate_image;
+} application_state = {false, false, false, false};
 
 void read_all_debug_commands(void) {
   // Fetch and process debug commands until there aren't any more.
@@ -272,11 +273,11 @@ void read_all_debug_commands(void) {
         break;
       case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_OFF:
         mcu_printf("Image rotation clockwise disabled\n");
-        application_state.rotate_image = false;
+        application_state.debug_rotate_image = false;
         break;
       case DEBUG_CMD_ROTATE_IMAGE_CLOCKWISE_ON:
         mcu_printf("Image rotation clockwise enabled\n");
-        application_state.rotate_image = true;
+        application_state.debug_rotate_image = true;
         break;
       case DEBUG_CMD_NONE:
         return;
@@ -303,10 +304,14 @@ int main(void) {
       mcu_printf("Camera calibration completed\n");
       application_state.debug_run_calibration = false;
     }
+    // We rotate if it's turned on either via the camera configuration
+    // (controllable via I2C) or via the debug command.
+    bool rotate_image = application_state.debug_rotate_image ||
+                        configuration.camera_config == 1;
     if (application_state.debug_transfer_image_to_host ||
         configuration.enabled_features & 0x80) {
       mcu_printf("Capturing image\n");
-      capture(application_state.rotate_image, tflite_get_input(1));
+      capture(rotate_image, tflite_get_input(1));
       transfer_image((const uint8_t*)tflite_get_input(1));
     }
 
@@ -318,13 +323,11 @@ int main(void) {
     write_ae_cfg();  // TODO(avg): is this required?
     if (application_state.debug_run_classify ||
         configuration.enabled_features & 1) {
-      inference_status.person_status =
-          calculate_feature(application_state.rotate_image, 1);
+      inference_status.person_status = calculate_feature(rotate_image, 1);
     }
     if (application_state.debug_run_classify ||
         configuration.enabled_features & 2) {
-      inference_status.person_status =
-          calculate_feature(application_state.rotate_image, 2);
+      inference_status.person_status = calculate_feature(rotate_image, 2);
     }
 
     write_mcu_status(&inference_status);

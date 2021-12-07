@@ -13,9 +13,11 @@ mod image_rotation;
 mod mcu_interface;
 mod timer;
 
+use application::Rotation;
 use application::Status;
 pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
+use core::convert::TryFrom;
 use core::fmt::Write;
 pub use debug_commands::DebugCommand;
 pub use debug_led::DebugLed;
@@ -62,7 +64,7 @@ pub struct App<S, I, L, C, T> {
     #[cfg(feature = "image-transfer")]
     image_transfer_enabled: bool,
     classification_enabled: bool,
-    rotate_image: bool,
+    debug_rotate_image: Option<bool>,
     calibration_bad_frames: u8,
     timer: T,
     status: Status,
@@ -86,7 +88,7 @@ where
             #[cfg(feature = "image-transfer")]
             image_transfer_enabled: false,
             classification_enabled: false,
-            rotate_image: true,
+            debug_rotate_image: None,
             calibration_bad_frames: 0,
             timer,
             status: Status::default(),
@@ -116,6 +118,8 @@ where
     fn loop_body(&mut self) -> Result<()> {
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
+        let rotation =
+            Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?;
 
         if cfg!(feature = "debug-commands") {
             self.process_debug_commands();
@@ -130,7 +134,10 @@ where
         self.select_model(&features);
 
         self.check_calibration()?;
-        self.capture_image()?;
+        self.capture_image(
+            self.debug_rotate_image
+                .unwrap_or_else(|| rotation == Rotation::Clockwise),
+        )?;
 
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).
@@ -196,14 +203,14 @@ where
         Ok(())
     }
 
-    fn capture_image(&mut self) -> Result<()> {
+    fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
         let mut dimensions = camera::ImageDimensions {
             column_start: 2,
             column_count: camera::IMAGE_WIDTH,
             row_start: (324 - camera::IMAGE_HEIGHT) / 2,
             row_count: camera::IMAGE_HEIGHT,
         };
-        if self.rotate_image {
+        if rotate_clockwise {
             core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
             core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
         }
@@ -213,7 +220,7 @@ where
         let buffer = self.classifier.input_data_mut(self.model_number);
         self.image_data_receiver
             .receive_image_data(buffer, &dimensions, || mcu.trigger_frame())?;
-        if self.rotate_image {
+        if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
         mcu_println!(mcu, "Image captured in {}ms", self.timer.elapsed_ms(start));
@@ -235,11 +242,11 @@ where
                     mcu_println!(self, "Classification disabled");
                 }
                 DebugCommand::RotateImageClockwiseOn => {
-                    self.rotate_image = true;
+                    self.debug_rotate_image = Some(true);
                     mcu_println!(self, "Rotation enabled");
                 }
                 DebugCommand::RotateImageClockwiseOff => {
-                    self.rotate_image = false;
+                    self.debug_rotate_image = Some(false);
                     mcu_println!(self, "Rotation disabled");
                 }
                 #[cfg(feature = "image-transfer")]
@@ -421,6 +428,7 @@ mod tests {
         classifier.model_outputs[0] = 0x42;
         let config = Configuration {
             enabled_features: Features::MODEL1.bits(),
+            camera_config: Rotation::Clockwise.into(),
         };
         let status = Status {
             loop_count: 1,

@@ -6,6 +6,9 @@ use core::num::Wrapping;
 
 pub const CONFIGURATION_SIZE: usize = core::mem::size_of::<Configuration>();
 pub const STATUS_SIZE: usize = core::mem::size_of::<Status>();
+use core::str::FromStr;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 
 #[derive(Default)]
 pub struct ApplicationState {
@@ -26,6 +29,7 @@ pub struct ApplicationState {
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub enabled_features: u16,
+    pub camera_config: u16,
 }
 
 /// Current status of the HPS. This is writable by the FPGA and is read by the
@@ -91,6 +95,28 @@ impl Configuration {
     }
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u16)]
+pub enum Rotation {
+    /// Camera is upright. No rotation is required.
+    None = 0,
+    /// Camera is mounted sidewase. Image needs to be rotation 90 degrees
+    /// clockwise.
+    Clockwise = 1,
+}
+
+impl FromStr for Rotation {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> core::result::Result<Self, Self::Err> {
+        match s {
+            "none" => Ok(Rotation::None),
+            "clockwise" => Ok(Rotation::Clockwise),
+            _ => Err("Invalid rotation (supported values are 'none' and 'clockwise'"),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,6 +125,7 @@ mod tests {
     fn test_configuration_byte_conversion() {
         let configuration = Configuration {
             enabled_features: 0x42,
+            camera_config: Rotation::Clockwise.into(),
         };
         let configuration2 = Configuration::from_bytes(&configuration.to_bytes());
         assert_eq!(configuration, configuration2);

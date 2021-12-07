@@ -62,6 +62,7 @@ only used for development and debugging purposes.
 | 15       | RO     | Appl   | SPI flash status bits  |
 | 16       | RO     | Appl   | Debug idx reg          |
 | 17       | RO     | Appl   | Debug val reg          |
+| 18       | RO     | Appl   | Camera config          |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.
@@ -120,6 +121,36 @@ and are not documented here.
 
 16 bit application version number. Only present if AVERIFY is set.
 
+## Camera config
+
+| BIT | NAME         | DESCRIPTION                            |
+|:----|:-------------|:---------------------------------------|
+| 15  |              |                                        |
+| 14  |              |                                        |
+| 13  |              |                                        |
+| 12  |              |                                        |
+| 11  |              |                                        |
+| 10  |              |                                        |
+| 9   |              |                                        |
+| 8   |              |                                        |
+| 7   |              |                                        |
+| 6   |              |                                        |
+| 5   |              |                                        |
+| 4   |              |                                        |
+| 3   |              |                                        |
+| 2   |              |                                        |
+| 1   | ROTATION     | Rotation bit 1                         |
+| 0   | ROTATION     | Rotation bit 0                         |
+
+Supported rotations:
+
+| VALUE | ROTATION   | DESCRIPTION                            |
+|:------|:-----------|----------------------------------------|
+| 0     | UPRIGHT    | No rotation required                   |
+| 1     | CLOCKWISE  | Image needs 90 clockwise rotation      |
+| 2     |            |                                        |
+| 3     |            |                                        |
+
 ## Memory Bank Ready
 
 Bit N is set if memory bank N is available for a Memory Write request.
@@ -148,24 +179,24 @@ The host should poll this register before issuing a Memory Write command.
 
 ## Feature Enable
 
-| BIT | NAME     | DESCRIPTION      |
-|:----|:---------|:-----------------|
-| 15  |          |                  |
-| 14  |          |                  |
-| 13  |          |                  |
-| 12  |          |                  |
-| 11  |          |                  |
-| 10  |          |                  |
-| 9   |          |                  |
-| 8   |          |                  |
-| 7   |          |                  |
-| 6   |          |                  |
-| 5   |          |                  |
-| 4   |          |                  |
-| 3   |          |                  |
-| 2   |          |                  |
-| 1   | FEATURE1 | Enable feature 1 |
-| 0   | FEATURE0 | Enable feature 0 |
+| BIT | NAME      | DESCRIPTION      |
+|:----|:----------|:-----------------|
+| 15  |           |                  |
+| 14  |           |                  |
+| 13  |           |                  |
+| 12  |           |                  |
+| 11  |           |                  |
+| 10  |           |                  |
+| 9   |           |                  |
+| 8   |           |                  |
+| 7   |           |                  |
+| 6   |           |                  |
+| 5   |           |                  |
+| 4   |           |                  |
+| 3   |           |                  |
+| 2   |           |                  |
+| 1   | FEATURE1  | Enable feature 1 |
+| 0   | FEATURE0  | Enable feature 0 |
 
 ## Feature N
 
