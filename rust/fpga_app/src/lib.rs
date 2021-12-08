@@ -20,7 +20,7 @@ use core::fmt::Write;
 pub use debug_commands::DebugCommand;
 pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
-use features::Features;
+pub use features::Features;
 use mcu_interface::McuInterface;
 pub use timer::Instant;
 pub use timer::Timer;

@@ -12,6 +12,7 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
+use fpga_app::Features;
 use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use hps_interface::Hps;
@@ -45,8 +46,9 @@ where
     let mut hps = i2c.open_hps()?;
     println!("HPS application started");
 
-    // Enable image transfer.
-    hps.write_register(registers::ENABLED_FEATURES, 0x80)?;
+    // Configure enabled features.
+    let mut enabled_features = Features::IMAGE_TRANSFER;
+    hps.write_register(registers::ENABLED_FEATURES, enabled_features.bits())?;
 
     let mut buffer = Vec::new();
     let start = std::time::Instant::now();

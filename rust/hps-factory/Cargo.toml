@@ -10,6 +10,7 @@ anyhow = "1.0.42"
 clap = "=3.0.0-beta.2"
 embedded-hal = "0.2.6"
 factory_tester_common = { path = "../factory_tester_common" }
+fpga_app = { path = "../fpga_app" }
 host_dev_common = { path = "../host_dev_common" }
 hps_interface = { path = "../hps_interface" }
 linux-embedded-hal = "0.3.1"
@@ -30,4 +31,4 @@ default = [
     "mcp2221",
 ]
 
-image-transfer = [ "mcu_common/image-transfer" ]
+image-transfer = [ "mcu_common/image-transfer", "fpga_app/image-transfer" ]
