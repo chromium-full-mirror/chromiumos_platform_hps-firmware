@@ -92,6 +92,10 @@ struct CaptureImagesConfig {
     #[clap(long)]
     skip_firmware_writes: bool,
 
+    /// assume that the FPGA bitstream is already up-to-date
+    #[clap(long)]
+    skip_bitstream_write: bool,
+
     /// whether to write raw files in addition to PNGs
     #[clap(long)]
     raw: bool,

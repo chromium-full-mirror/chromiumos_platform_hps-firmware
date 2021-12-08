@@ -34,7 +34,9 @@ where
     if !capture_images_config.skip_firmware_writes {
         i2c.write_stage1(APPLICATION_BYTES)?;
         i2c.execute_stage1().context("Execute application")?;
-        i2c.write_gateware().context("Write gateware")?;
+        if !capture_images_config.skip_bitstream_write {
+            i2c.write_gateware().context("Write gateware")?;
+        }
         i2c.write_soc_rom().context("Write SOC ROM")?;
 
         // Workaround for image capture not working on some devices if we've
