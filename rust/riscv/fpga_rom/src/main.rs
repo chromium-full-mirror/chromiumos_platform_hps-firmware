@@ -22,7 +22,14 @@ fn main() -> ! {
         fpga_hal::DebugLed::new(p.LEDS),
         fpga_hal::Timer::default(),
     );
+    app.set_spi_test_data(spi_test_data());
     app.run();
+}
+
+fn spi_test_data() -> &'static [u8] {
+    const MB: usize = 1024 * 1024;
+    const SPI_FLASH_ORIGIN: usize = 0x20000000;
+    unsafe { core::slice::from_raw_parts((SPI_FLASH_ORIGIN + 15 * MB) as *const u8, MB) }
 }
 
 /// # Safety

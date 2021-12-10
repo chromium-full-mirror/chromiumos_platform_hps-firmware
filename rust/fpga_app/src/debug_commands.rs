@@ -19,4 +19,5 @@ pub enum DebugCommand {
     RotateImageClockwiseOff = 16,
     RotateImageClockwiseOn = 17,
     SelfTest = 18,
+    TestSpiFlashReads = 19,
 }

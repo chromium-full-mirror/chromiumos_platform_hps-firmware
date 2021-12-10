@@ -17,5 +17,13 @@ bitflags! {
         /// Whether to transfer images to the MCU for sending back to the host.
         /// This feature is for development and testing purposes only.
         const IMAGE_TRANSFER = 0x80;
+
+        /// Once enabled, the FPGA will commence testing reading the last 1MB of
+        /// SPI flash repeatedly. The number of 1MB iterations will be reported
+        /// in the loop counter and the number of bytes that were read
+        /// incorrectly will be reported in the person_status register. Once
+        /// started, this mode will run until reset. No other features will be
+        /// processed and turning this feature off will have no effect.
+        const SPI_FLASH_READ_TEST = 0x100;
     }
 }

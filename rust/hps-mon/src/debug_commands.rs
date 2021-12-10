@@ -117,6 +117,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         )),
     },
     AvailableDebugCommand {
+        keyword: "test_fpga_spi_flash_reads",
+        help_text: "Read last 1MB of SPI flash, checking for expected data",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TestSpiFlashReads),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

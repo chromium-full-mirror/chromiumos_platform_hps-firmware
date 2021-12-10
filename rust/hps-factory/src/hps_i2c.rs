@@ -26,7 +26,6 @@ use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
 
-#[cfg(feature = "image-transfer")]
 mod fpga_firmware {
     pub(super) const GATEWARE_BITSTREAM: &[u8] =
         include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
@@ -135,7 +134,6 @@ where
         Ok(())
     }
 
-    #[cfg(feature = "image-transfer")]
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
         self.write_memory_bank(
             "gateware bitstream",
@@ -145,7 +143,6 @@ where
         )
     }
 
-    #[cfg(feature = "image-transfer")]
     pub(crate) fn write_soc_rom(&mut self) -> Result<()> {
         self.write_memory_bank(
             "SOC ROM",
@@ -193,7 +190,6 @@ where
     }
 
     /// Executes the MCU application if it's not already running.
-    #[cfg(feature = "image-transfer")]
     pub(crate) fn execute_application(&mut self) -> Result<()> {
         if let Ok(mut hps) = self.open_hps() {
             if hps.stage()? == Stage::Application {

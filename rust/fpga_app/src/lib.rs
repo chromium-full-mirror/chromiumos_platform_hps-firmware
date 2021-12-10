@@ -69,6 +69,7 @@ pub struct App<S, I, L, C, T> {
     timer: T,
     status: Status,
     model_number: u32,
+    spi_test_data: Option<&'static [u8]>,
 }
 
 impl<S, I, L, C, T> App<S, I, L, C, T>
@@ -93,6 +94,7 @@ where
             timer,
             status: Status::default(),
             model_number: 1,
+            spi_test_data: None,
         }
     }
 
@@ -111,6 +113,10 @@ where
         }
     }
 
+    pub fn set_spi_test_data(&mut self, region: &'static [u8]) {
+        self.spi_test_data = Some(region);
+    }
+
     pub fn mcu_mut(&mut self) -> &mut McuInterface<S> {
         &mut self.mcu
     }
@@ -120,6 +126,10 @@ where
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
         let rotation =
             Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?;
+
+        if features.contains(Features::SPI_FLASH_READ_TEST) {
+            self.spi_flash_read_test();
+        }
 
         if cfg!(feature = "debug-commands") {
             self.process_debug_commands();
@@ -269,6 +279,10 @@ where
                         mcu_println!(self, "Self-test failed");
                     }
                 }
+                DebugCommand::TestSpiFlashReads => {
+                    mcu_println!(self, "Performing SPI flash read integrity test...");
+                    self.spi_flash_read_test();
+                }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
                 }
@@ -314,6 +328,41 @@ where
             return Err(Error::SelfTestFailed);
         }
         Ok(())
+    }
+
+    /// Repeatedly reads some test data that we've previously written to the SPI
+    /// flash and checks it against the expected pattern, reporting the number
+    /// of iteration as well as the number of bad reads we've encountered.
+    fn spi_flash_read_test(&mut self) {
+        let test_data = match self.spi_test_data {
+            Some(x) => x,
+            None => {
+                mcu_println!(self, "SPI test region not supplied");
+                return;
+            }
+        };
+        let mut bad = 0;
+        self.status.loop_count = 0;
+        loop {
+            for chunk in test_data.chunks_exact(256) {
+                for (offset, byte) in chunk.iter().enumerate() {
+                    if *byte != offset as u8 {
+                        bad += 1;
+                    }
+                }
+            }
+            self.status.loop_count += 1;
+            if self.status.loop_count & 0xf == 0 {
+                mcu_println!(
+                    self.mcu,
+                    "{} iterations with {} errors so far",
+                    self.status.loop_count,
+                    bad
+                );
+                self.status.person_status = bad;
+                let _ = self.mcu.report_status(&self.status);
+            }
+        }
     }
 
     /// Selects which model to use for the current loop iteration so that each
