@@ -4,6 +4,7 @@
 
 use anyhow::bail;
 use anyhow::Result;
+use mcu_common::commands;
 use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
@@ -40,6 +41,7 @@ pub(crate) enum LocalOperation {
     ResetMcu,
     WriteGateware,
     WriteSocRom,
+    I2cCommand(mcu_common::commands::Command),
 }
 
 pub(crate) enum Command {
@@ -99,6 +101,13 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "rotate_image_clockwise_on",
         help_text: "Enable image rotation clockwise (for horizontal camera mount)",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOn),
+    },
+    AvailableDebugCommand {
+        keyword: "launch_app",
+        help_text: "Launch application (start FPGA)",
+        command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
+            commands::Command::LaunchApp,
+        )),
     },
     AvailableDebugCommand {
         keyword: "help",

@@ -339,6 +339,14 @@ fn run_loop(
                         eprintln!("--soc-rom must be specified on startup");
                     }
                 }
+                Command::Local(LocalOperation::I2cCommand(command)) => {
+                    if let Some(hps) = &hps {
+                        let mut hps = hps.lock().unwrap();
+                        hps.perform_command(command)?;
+                    } else {
+                        eprintln!("Cannot perform command without I2C connection");
+                    }
+                }
             };
         }
         // If we don't get any data from the device, we sleep, increasing how
