@@ -32,7 +32,8 @@ pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type FpgaPowerGate = gpio::gpiob::PB5<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
-pub type FlashSpi = hal::spi::Spi<
+pub type FlashSpi = hal::stm32::SPI1;
+pub type FlashSpiControl = hal::spi::Spi<
     hal::stm32::SPI1,
     (
         gpio::gpioa::PA5<Analog>,
@@ -56,6 +57,10 @@ pub struct Board {
     pub fpga_spi_cipo: gpio::gpioa::PA3<Analog>,
     pub fpga_spi_copi: gpio::gpioa::PA4<Analog>,
 
+    pub flash_spi_clk: gpio::gpioa::PA5<Analog>,
+    pub flash_spi_cipo: gpio::gpioa::PA6<Analog>,
+    pub flash_spi_copi: gpio::gpioa::PA7<Analog>,
+
     pub host_bus: HostBus,
 
     pub debug_led: DebugLed,
@@ -64,8 +69,8 @@ pub struct Board {
     pub spi_ready: SpiReady,
     pub fpga_spi: FpgaSpi,
 
+    pub flash_spi: FlashSpi,
     pub flash_spi_cs: Option<FlashSpiCs>,
-    pub flash_spi: Option<FlashSpi>,
     pub camera_i2c: Option<CameraI2c>,
     pub camera_mclk: gpio::gpiob::PB1<Analog>,
     // TODO: Change to TIM1 once stm32g0xx-hal is updated beyond 2021-03-18. PB1
@@ -114,12 +119,6 @@ impl Board {
         let flash_spi_clk = a.pa5;
         let flash_spi_copi = a.pa7;
         let flash_spi_cipo = a.pa6;
-        let flash_spi = spi1.spi(
-            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
-            hal::spi::MODE_0,
-            4.mhz(),
-            rcc,
-        );
 
         // The HAL crate implements SDAPin and SCLPin only for pins that are
         // already in open-drain mode. But we don't want to put the pins into
@@ -142,6 +141,10 @@ impl Board {
             fpga_spi_cipo: a.pa3,
             fpga_spi_copi: a.pa4,
 
+            flash_spi_clk,
+            flash_spi_cipo,
+            flash_spi_copi,
+
             host_bus,
 
             debug_led: a.pa1.into_push_pull_output(),
@@ -150,9 +153,8 @@ impl Board {
             spi_ready,
             fpga_spi: spi2,
 
+            flash_spi: spi1,
             flash_spi_cs: Some(flash_spi_cs),
-            flash_spi: Some(flash_spi),
-
             camera_i2c,
             camera_mclk: b.pb1,
             camera_mclk_tim: tim3,

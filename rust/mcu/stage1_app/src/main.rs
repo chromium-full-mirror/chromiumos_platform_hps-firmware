@@ -508,7 +508,7 @@ fn init_peripherals(
     timer.listen();
 
     // Trigger an interrupt when the SPI CS line changes.
-    let spi_cs = board
+    let fpga_spi_cs = board
         .fpga_spi_cs
         .listen(hal::gpio::SignalEdge::All, &mut exti);
 
@@ -517,7 +517,7 @@ fn init_peripherals(
         board.fpga_spi_clk,
         board.fpga_spi_cipo,
         board.fpga_spi_copi,
-        spi_cs,
+        fpga_spi_cs,
         dma.ch1,
         dma.ch2,
         board.spi_ready,
@@ -536,9 +536,19 @@ fn init_peripherals(
     // the SPI flash.
     board.fpga_programn.set_low().unwrap();
 
+    let flash_spi = board.flash_spi.spi(
+        (
+            board.flash_spi_clk,
+            board.flash_spi_cipo,
+            board.flash_spi_copi,
+        ),
+        hal::spi::MODE_0,
+        4.mhz(),
+        &mut rcc,
+    );
     let mut spi_flash = None;
 
-    if let (Some(flash_spi), Some(mut flash_spi_cs)) = (board.flash_spi, board.flash_spi_cs) {
+    if let Some(mut flash_spi_cs) = board.flash_spi_cs {
         // CS line must be set high before we power on the SPI flash.
         flash_spi_cs.set_high().unwrap();
 

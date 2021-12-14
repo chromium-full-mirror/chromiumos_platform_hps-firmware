@@ -16,14 +16,14 @@ const SPI_FLASH_HASH: &[u8; 32] = include_bytes!(env!("SPI_HASH"));
 pub struct FpgaDevice {
     pub hold: board::FpgaProgramn,
     pub power_gate: board::FpgaPowerGate,
-    pub(crate) spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+    pub(crate) spi_flash: Option<Flash<board::FlashSpiControl, board::FlashSpiCs>>,
 }
 
 impl FpgaDevice {
     pub(crate) fn new(
         fpga_hold: board::FpgaProgramn,
         power_gate: board::FpgaPowerGate,
-        spi_flash: Option<Flash<board::FlashSpi, board::FlashSpiCs>>,
+        spi_flash: Option<Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     ) -> Self {
         let mut device = FpgaDevice {
             hold: fpga_hold,
@@ -59,7 +59,7 @@ impl FpgaDevice {
 
 pub(crate) fn get_spi_flash(
     fpga_device: &mut FpgaDevice,
-) -> Result<&mut Flash<board::FlashSpi, board::FlashSpiCs>, Error> {
+) -> Result<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>, Error> {
     if fpga_device.hold.is_set_high().unwrap() {
         // Requesting to do something with the SPI flash when the FPGA has
         // already been started is a bad request.

@@ -22,7 +22,7 @@ const BLOCK_SIZE: u32 = 64 * 1024;
 /// response from the SPI flash. We don't actually use this returned data, but
 /// we don't get any choice about receiving the response.
 pub(crate) fn write(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     address: u32,
     data: &[u8],
 ) -> Result<(), Error> {
@@ -81,7 +81,7 @@ pub(crate) fn write(
 }
 
 pub(crate) fn enable_quad_spi(
-    _flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+    _flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
 ) -> Result<(), SpiFlashError> {
     // Safety: We already have exclusive use of the flash.
     let mut flash = unsafe { SpiFlash::steal() };
@@ -89,7 +89,7 @@ pub(crate) fn enable_quad_spi(
 }
 
 pub(crate) fn debug_read(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     address: u32,
 ) {
     let spi_flash = match spi_flash {
@@ -110,7 +110,7 @@ pub(crate) fn debug_read(
     }
 }
 
-pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>) {
+pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>) {
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
@@ -127,7 +127,7 @@ pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSp
 }
 
 fn hash_internal(
-    spi_flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+    spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
     num_pages: u32,
 ) -> Result<[u8; 32], Error> {
     let mut hasher = Hash::new();
@@ -146,13 +146,13 @@ fn hash_internal(
 }
 
 pub(crate) fn hash(
-    spi_flash: &mut Flash<board::FlashSpi, board::FlashSpiCs>,
+    spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
 ) -> Result<[u8; 32], Error> {
     hash_internal(spi_flash, SPI_FLASH_SIZE / PAGE_SIZE)
 }
 
 pub(crate) fn time_hash(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     num_pages: u32,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
@@ -173,7 +173,7 @@ pub(crate) fn time_hash(
 const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
 
 pub(crate) fn crc_sector(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     block: u16,
 ) -> [u8; 4] {
     let spi_flash = match spi_flash {
@@ -197,7 +197,7 @@ pub(crate) fn crc_sector(
 }
 
 pub(crate) fn test_read_speed(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
     let spi_flash = match spi_flash {
@@ -219,7 +219,7 @@ pub(crate) fn test_read_speed(
 }
 
 pub(crate) fn test_write_speed(
-    spi_flash: Option<&mut Flash<board::FlashSpi, board::FlashSpiCs>>,
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
     let spi_flash = match spi_flash {
@@ -266,7 +266,7 @@ pub(crate) enum SpiFlashError {
 }
 
 pub(crate) struct SpiFlash {
-    pub(crate) spi: board::FlashSpi,
+    pub(crate) spi: board::FlashSpiControl,
     pub(crate) cs: board::FlashSpiCs,
 }
 
