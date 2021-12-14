@@ -174,7 +174,7 @@ cargo +"${RUST_NIGHTLY_VERSION}" miri setup
 
 rustup component add llvm-tools-preview
 
-for i in flip-link probe-run; do
+for i in flip-link; do
     if [ ! -f "${HOME}/.cargo/bin/${i}" ]; then
         cargo install "${i}"
     fi
