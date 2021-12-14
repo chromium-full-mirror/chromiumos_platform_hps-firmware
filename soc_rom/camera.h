@@ -33,6 +33,6 @@ void wait_for_camera_standby(void);
 void set_camera_streaming_mode(uint8_t);
 
 // Capture an image
-void capture(bool rotate_image, int8_t*destination);
+void capture(bool rotate_image, int8_t* destination);
 
 #endif
