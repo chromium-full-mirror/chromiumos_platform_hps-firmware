@@ -272,7 +272,7 @@ def main():
               f'--target riscv '
               f'-i {builder.output_dir}/hps.svd '
               f'-o {pac_out_dir}')
-    os.system(f'rustfmt {pac_out_dir}/*')
+    os.system(f'rustfmt {pac_out_dir}/*.rs')
 
     if not args.build:
         print('Use --build to build the bitstream, if needed')
