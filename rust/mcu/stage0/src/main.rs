@@ -191,14 +191,8 @@ fn init_peripherals(
         .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
 
     let gpioa = p.GPIOA.split(&mut rcc);
-    // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
-    // wp is inverted, i.e., de-assert strapped low.
     let fw_wp = gpioa.pa15.into_floating_input();
-    let wp_state = if fw_wp.is_low().unwrap() {
-        WriteProtectState::Deasserted
-    } else {
-        WriteProtectState::Asserted
-    };
+    let wp_state = read_fw_wp(&fw_wp);
 
     // Configure PB4 as output pin.
     let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
@@ -257,5 +251,15 @@ fn init_peripherals(
         host_interface,
         flash_writer,
         fw_wp,
+    }
+}
+
+fn read_fw_wp(fw_wp: &FwWp) -> WriteProtectState {
+    // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
+    // wp is inverted, i.e., de-assert strapped low.
+    if fw_wp.is_low().unwrap() {
+        WriteProtectState::Deasserted
+    } else {
+        WriteProtectState::Asserted
     }
 }
