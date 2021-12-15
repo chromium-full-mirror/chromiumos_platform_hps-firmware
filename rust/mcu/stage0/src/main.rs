@@ -49,7 +49,6 @@ const APP: () = {
     struct Resources {
         host_interface: HostInterface<Stm32g0I2cPeripheral<I2C1>>,
         flash_writer: FlashWriter,
-        fw_wp: FwWp,
     }
 
     #[init]
@@ -85,7 +84,7 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [flash_writer, fw_wp, host_interface], capacity = 10)]
+    #[task(resources = [flash_writer, host_interface], capacity = 10)]
     fn handle_event(ctx: handle_event::Context, event: HostEvent) {
         let mut host_interface = ctx.resources.host_interface;
         match event {
@@ -250,7 +249,6 @@ fn init_peripherals(
     init::LateResources {
         host_interface,
         flash_writer,
-        fw_wp,
     }
 }
 
