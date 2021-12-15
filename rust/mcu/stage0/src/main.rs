@@ -255,9 +255,18 @@ fn init_peripherals(
 fn read_fw_wp(fw_wp: &FwWp) -> WriteProtectState {
     // NOTE: due to isolation between WP_ODL and the WP signal to HPS,
     // wp is inverted, i.e., de-assert strapped low.
-    if fw_wp.is_low().unwrap() {
-        WriteProtectState::Deasserted
-    } else {
-        WriteProtectState::Asserted
+
+    // The GPIO pin is only sampled every AHB clock cycle (see RM 0444 section
+    // 7.3.1). So we wait a bit before sampling to ensure the value has been
+    // updated.
+    cortex_m::asm::delay(100);
+    // We'd rather accidentally interpret write protect as asserted than the
+    // reverse. So we read it 1000 times and only accept that it deasserted if
+    // it remains low, i.e. never goes high, the entire time.
+    for _ in 0..1000 {
+        if fw_wp.is_high().unwrap() {
+            return WriteProtectState::Asserted;
+        }
     }
+    WriteProtectState::Deasserted
 }
