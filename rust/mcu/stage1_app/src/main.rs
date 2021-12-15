@@ -10,6 +10,7 @@ mod camera;
 mod debug;
 mod fpga_device;
 mod header;
+mod spi_dma_controller;
 mod spi_flash;
 mod spi_peripheral;
 
@@ -536,15 +537,13 @@ fn init_peripherals(
     // the SPI flash.
     board.fpga_programn.set_low().unwrap();
 
-    let flash_spi = board.flash_spi.spi(
-        (
-            board.flash_spi_clk,
-            board.flash_spi_cipo,
-            board.flash_spi_copi,
-        ),
-        hal::spi::MODE_0,
-        4.mhz(),
-        &mut rcc,
+    let flash_spi = spi_dma_controller::SpiDmaController::new(
+        board.flash_spi,
+        board.flash_spi_clk,
+        board.flash_spi_cipo,
+        board.flash_spi_copi,
+        dma.ch3,
+        dma.ch4,
     );
     let mut spi_flash = None;
 

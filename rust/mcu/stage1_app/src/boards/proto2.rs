@@ -4,6 +4,7 @@
 
 //! Configuration for running on the HPS proto2 board.
 
+use crate::spi_dma_controller;
 use hal::dmamux::DmaMuxIndex;
 use hal::gpio;
 use hal::gpio::Analog;
@@ -33,14 +34,7 @@ pub type FpgaPowerGate = gpio::gpiob::PB5<Output<PushPull>>;
 pub type SpiReady = gpio::gpioc::PC14<Output<PushPull>>;
 pub type FpgaSpi = hal::stm32::SPI2;
 pub type FlashSpi = hal::stm32::SPI1;
-pub type FlashSpiControl = hal::spi::Spi<
-    hal::stm32::SPI1,
-    (
-        gpio::gpioa::PA5<Analog>,
-        gpio::gpioa::PA6<Analog>,
-        gpio::gpioa::PA7<Analog>,
-    ),
->;
+pub type FlashSpiControl = spi_dma_controller::SpiDmaController;
 pub type FlashSpiCs = gpio::gpiob::PB0<Output<OpenDrain>>;
 pub type CameraI2c =
     hal::i2c::I2c<I2C2, gpio::gpioa::PA12<Output<OpenDrain>>, gpio::gpioa::PA11<Output<OpenDrain>>>;
@@ -160,6 +154,13 @@ impl Board {
             camera_mclk_tim: tim3,
         }
     }
+}
+
+pub const FLASH_SPI_MUX_RX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_RX;
+pub const FLASH_SPI_MUX_TX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI1_TX;
+
+pub unsafe fn flash_spi_registers() -> *const hal::stm32::spi1::RegisterBlock {
+    hal::stm32::SPI1::ptr()
 }
 
 pub const FPGA_SPI_MUX_RX: DmaMuxIndex = hal::dmamux::DmaMuxIndex::SPI2_RX;
