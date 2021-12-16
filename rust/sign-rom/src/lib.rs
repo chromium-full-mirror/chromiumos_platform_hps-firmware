@@ -7,7 +7,6 @@ use anyhow::Result;
 use mcu_common::Hash;
 use mcu_common::Signature;
 use mcu_common::FLASH_PAGE_SZ;
-use mcu_common::FLASH_WRITE_SZ;
 use mcu_common::SIGNATURE_LENGTH;
 use mcu_common::SIGNATURE_OFFSET;
 
@@ -40,12 +39,7 @@ fn extend_image(image: &[u8], extend_length: usize) -> Vec<u8> {
     let mut v = Vec::new();
     v.extend_from_slice(image);
 
-    // Determine the residue of remaining Bytes that
-    // will complete the write size and pad with zeros.
-    let rem = v.len() % FLASH_WRITE_SZ;
-    v.resize(v.len() + rem, 0x00);
-
-    // Further extend the image to fill the entire region length
+    // Extend the image to fill the entire region length
     // provided by padding the remaining pages with 0xFF.
     v.resize(extend_length, 0xFF);
 
@@ -94,7 +88,7 @@ mod test {
     #[test]
     fn test_hash_image_bytes() {
         // Ensure data size isn't an exact multiple of the flash write size (8) so that
-        // zero-padding is tested.
+        // padding is tested.
         const OFFSET: usize = 32 + 1;
         let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
         let ext_len: usize = 4096;
@@ -105,9 +99,9 @@ mod test {
         assert_eq!(
             ext_img_digest,
             [
-                0x75, 0x4F, 0xD9, 0x7C, 0xE5, 0x81, 0x7C, 0xF3, 0x5A, 0xA2, 0x65, 0x82, 0xB8, 0x4C,
-                0x35, 0xB9, 0x37, 0x38, 0xBA, 0x58, 0xE1, 0x7, 0x7C, 0xDC, 0xF9, 0x94, 0x95, 0x9D,
-                0x57, 0xDD, 0x77, 0xE6,
+                0xB1, 0x9D, 0xFA, 0xD3, 0x83, 0xB7, 0x57, 0xC3, 0xB7, 0x54, 0xEE, 0x78, 0x50, 0x35,
+                0x23, 0xED, 0x67, 0x55, 0x6E, 0xEB, 0xE5, 0x54, 0x30, 0x12, 0xFA, 0x4A, 0xDE, 0xD5,
+                0x1, 0x88, 0x96, 0xCE,
             ]
         );
     }
@@ -115,7 +109,7 @@ mod test {
     #[test]
     fn test_extend_image() {
         // Ensure data size isn't an exact multiple of the flash write size (8) so that
-        // zero-padding is tested.
+        // padding is tested.
         const OFFSET: usize = 32 + 1;
         let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
         let ext_len: usize = 4096;
@@ -123,7 +117,7 @@ mod test {
         let ext_img = super::extend_image(&image, ext_len);
         assert_eq!(ext_img.len(), ext_len);
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET - 1)], 0xCC);
-        assert_eq!(ext_img[super::FLASH_PAGE_SZ + OFFSET], 0x00);
+        assert_eq!(ext_img[super::FLASH_PAGE_SZ + OFFSET], 0xFF);
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET + 1)], 0xFF);
         assert_eq!(ext_img[super::FLASH_PAGE_SZ + (OFFSET * 2)], 0xFF);
     }
