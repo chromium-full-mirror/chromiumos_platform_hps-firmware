@@ -21,10 +21,6 @@ if ! which gdb-multiarch >/dev/null; then
     missing+=(gdb-multiarch)
 fi
 
-if ! which verilator >/dev/null; then
-    missing+=(verilator)
-fi
-
 if ! which ccache >/dev/null; then
     missing+=(ccache)
 fi
