@@ -42,6 +42,7 @@ PATH="${HPS_ROOT}/third_party/gn/out:${PATH}"
 PATH="${HPS_ROOT}/third_party/installed/bin:${PATH}"
 PATH="${RUST_DIR}:${PATH}"
 PATH="${HOSTPATH}:${PATH}"
+PATH="${PROJECT_ROOT}/scripts:${PATH}"
 export PATH
 
 # RADIANT_DIR is optionally defined

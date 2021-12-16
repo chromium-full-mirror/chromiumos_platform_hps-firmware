@@ -117,6 +117,13 @@ class Platform(LatticePlatform):
             connectors=[],
             toolchain='oxide')
 
+        # We inject a shell script to be run between nextpnr-nexus (generates
+        # fasm) and prjoxide (consumes fasm). This shell script changes all
+        # output pins that have SLEWRATE.MED to SLEWRATE.FAST. This lets our SPI
+        # operate at full speed without corruption.
+        self.toolchain.build_template.insert(
+            -1, "fasm-slew-temporary-workaround {build_name}.fasm")
+
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
 
