@@ -11,7 +11,6 @@ mod one_time_init_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
-use anyhow::bail;
 use anyhow::Result;
 use clap::Clap;
 use clap::Subcommand;
@@ -29,8 +28,8 @@ const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/appli
 #[clap(name = "config")]
 struct Config {
     /// path to I2C device
-    #[clap(long, alias = "bus")]
-    dev: Option<PathBuf>,
+    #[clap(long, alias = "bus", default_value = "/dev/i2c-hps-controller")]
+    dev: PathBuf,
 
     /// connect to HPS via an MCP2221
     #[cfg(feature = "mcp2221")]
@@ -156,11 +155,8 @@ fn main() -> Result<()> {
         i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
-    if let Some(dev_path) = &config.dev {
-        let mut i2c = linux_embedded_hal::I2cdev::new(dev_path)?;
-        return run_workflow(&mut i2c, config);
-    }
-    bail!("No supported device flag was specified");
+    let mut i2c = linux_embedded_hal::I2cdev::new(&config.dev)?;
+    run_workflow(&mut i2c, config)
 }
 
 pub(crate) fn run_workflow<E, I>(i2c: &mut I, config: Config) -> Result<()>
