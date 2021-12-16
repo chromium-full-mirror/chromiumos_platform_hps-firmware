@@ -4,7 +4,9 @@
 
 use crate::board;
 use crc::Crc;
+use hal::gpio::Analog;
 use hal::prelude::OutputPin;
+use hal::rcc::Rcc;
 use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
 use log::error;
@@ -257,6 +259,44 @@ pub(crate) fn test_write_speed(
         erase_time / 1000,
         write_time / 1000
     );
+}
+
+/// Uninitializes the SPI interface to the SPI flash. This is used when we're
+/// done talking to the SPI flash and ready for the FPGA to take over. We turn
+/// off the SPI peripheral and reset the pin states to floating inputs.
+pub(crate) fn uninitialize_spi(
+    flash: Flash<board::FlashSpiControl, board::FlashSpiCs>,
+    _rcc: &mut Rcc,
+) {
+    // safety: If spi_memory::Flash supported a method to release its resources
+    // back to us, we'd use it here, but it doesn't. But we own it, so we drop
+    // it then steal its resources.
+    drop(flash);
+    let flash = unsafe { SpiFlash::steal() };
+    flash.cs.into_floating_input();
+
+    // Turn off the SPI peripheral.
+
+    // safety: We need access to the spi1en bit, which is part of RCC, which is
+    // owned by Rcc. We hold an exclusive reference to Rcc. If we can add
+    // support to the HAL crate for turning peripherals on and off, then this
+    // could be improved.
+    let p = unsafe { hal::stm32::Peripherals::steal() };
+    p.RCC.apbenr2.modify(|_, w| w.spi1en().clear_bit());
+
+    // Reset pins as floating inputs.
+
+    // safety: Ownership of these pins was passed to FlashSpiController when it
+    // was constructed, but it had no further use for them, so it dropped them.
+    // We reconjur them out of thin air.
+    unsafe {
+        let clk: hal::gpio::gpioa::PA5<Analog> = core::mem::transmute(());
+        clk.into_floating_input();
+        let cipo: hal::gpio::gpioa::PA6<Analog> = core::mem::transmute(());
+        cipo.into_floating_input();
+        let copi: hal::gpio::gpioa::PA7<Analog> = core::mem::transmute(());
+        copi.into_floating_input();
+    }
 }
 
 pub(crate) enum SpiFlashError {

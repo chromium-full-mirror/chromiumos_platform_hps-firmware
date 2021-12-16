@@ -23,6 +23,7 @@ use application::HostInterface;
 use debug::McuDebugCommandInfo;
 use hal::delay::Delay;
 use hal::prelude::*;
+use hal::rcc::Rcc;
 use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
 use log::error;
@@ -59,6 +60,7 @@ const APP: () = {
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
         tick_count: u32,
+        rcc: Rcc,
     }
 
     #[init]
@@ -237,9 +239,9 @@ const APP: () = {
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(resources = [fpga_device, host_interface, state])]
+    #[task(resources = [fpga_device, host_interface, state, rcc])]
     fn try_start_fpga(mut ctx: try_start_fpga::Context) {
-        match ctx.resources.fpga_device.start_fpga() {
+        match ctx.resources.fpga_device.start_fpga(ctx.resources.rcc) {
             Ok(_) => {
                 ctx.resources
                     .host_interface
@@ -651,5 +653,6 @@ fn init_peripherals(
         camera_i2c,
         stopwatch,
         tick_count: 0,
+        rcc,
     }
 }

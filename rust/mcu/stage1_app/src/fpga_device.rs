@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 //
 
-use hal::prelude::{OutputPin, StatefulOutputPin};
+use hal::prelude::OutputPin;
+use hal::prelude::StatefulOutputPin;
+use hal::rcc::Rcc;
 use log::info;
 use mcu_common::Error;
 use spi_memory::series25::Flash;
@@ -45,10 +47,19 @@ impl FpgaDevice {
         self.hold.set_high().unwrap();
     }
 
-    pub(crate) fn start_fpga(&mut self) -> Result<(), Error> {
+    pub(crate) fn start_fpga(&mut self, rcc: &mut Rcc) -> Result<(), Error> {
         if cfg!(feature = "no-hash-check")
             || &crate::spi_flash::hash(get_spi_flash(self)?)? == SPI_FLASH_HASH
         {
+            // Once we start the FPGA, it will take over as the controller of
+            // the SPI flash. We should not attept to communicate with the SPI
+            // flash. Also, leaving the SPI interface to the SPI flash
+            // initialized could interfere with the signals from the FPGA to the
+            // SPI flash. So we uninitialize our interface.
+            if let Some(spi_flash) = self.spi_flash.take() {
+                crate::spi_flash::uninitialize_spi(spi_flash, rcc);
+            }
+
             self.hold.set_high().unwrap();
             Ok(())
         } else {
