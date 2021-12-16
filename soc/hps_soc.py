@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import time
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
@@ -261,7 +262,15 @@ def main():
         'timingstrict': True,
         'seed': args.nextpnr_seed,
     }
+
+    start_time = time.time()
     vns = builder.build(**builder_kwargs, run=args.build)
+    run_time = time.time() - start_time
+    meta_file = f'{builder.output_dir}/gateware/hps_platform_build.metadata'
+    print(f'Execution time for the build is: {run_time}s')
+    with open(meta_file, 'w') as f:
+      f.write(f'RUN_TIME: {run_time}\n')
+
     soc.do_exit(vns)
 
     # Generate the peripheral access crate (PAC) containing Rust code to use the

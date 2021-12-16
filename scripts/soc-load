@@ -8,11 +8,17 @@ set -o errexit
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 BUILD="${PROJECT_ROOT}/build/hps_platform"
-
 echo "Recompile software and Load the HPS SoC. "
 echo "Use --build to also build gateware"
 
-cd "${PROJECT_ROOT}"
+{
+  cd "${PROJECT_ROOT}"
 
-scripts/pyrun -m soc.hps_soc "$@"
+  scripts/pyrun -m soc.hps_soc "$@"
+} 2>&1 | tee "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform_output.log"
 
+cd "${PROJECT_ROOT}/scripts/"
+
+echo "Getting metrics for the build"
+./get_metrics.sh
+echo "Metrics stored in build/hps_platform"
