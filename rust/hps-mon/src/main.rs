@@ -352,6 +352,9 @@ fn run_loop(
                         eprintln!("Cannot perform command without I2C connection");
                     }
                 }
+                Command::Local(LocalOperation::SleepMilliseconds(ms)) => {
+                    std::thread::sleep(Duration::from_millis(ms));
+                }
             };
         }
         // If we don't get any data from the device, we sleep, increasing how

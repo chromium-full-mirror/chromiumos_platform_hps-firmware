@@ -42,6 +42,7 @@ pub(crate) enum LocalOperation {
     WriteGateware,
     WriteSocRom,
     I2cCommand(mcu_common::commands::Command),
+    SleepMilliseconds(u64),
 }
 
 pub(crate) enum Command {
@@ -180,6 +181,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "reset_mcu",
         help_text: "Reset the MCU",
         command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),
+    },
+    AvailableDebugCommand {
+        keyword: "sleep_second",
+        help_text: "Sleep for a second",
+        command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds(1000)),
     },
     AvailableDebugCommand {
         keyword: "ping_mcu",
