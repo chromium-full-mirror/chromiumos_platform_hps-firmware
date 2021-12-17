@@ -13,6 +13,7 @@ mod header;
 mod spi_dma_controller;
 mod spi_flash;
 mod spi_peripheral;
+mod testing;
 
 use crate::boards::board;
 use crate::fpga_device::{get_spi_flash, FpgaDevice};
@@ -81,7 +82,7 @@ const APP: () = {
     }
 
     #[task(binds = I2C1, resources = [host_interface, state],
-        spawn = [write_spi_flash, try_start_fpga], priority = 3)]
+        spawn = [write_spi_flash, try_start_fpga, write_spi_flash_test_data], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
@@ -90,6 +91,9 @@ const APP: () = {
             }
             Some(application::Event::WriteSpiFlash(write_request)) => {
                 let _ = ctx.spawn.write_spi_flash(write_request);
+            }
+            Some(application::Event::Command(Command::WriteSpiFlashTestData)) => {
+                let _ = ctx.spawn.write_spi_flash_test_data();
             }
             Some(application::Event::Command(Command::LaunchApp)) => {
                 // We can safely ignore failed attempts to swap this task
@@ -258,6 +262,17 @@ const APP: () = {
                 error!("Unable to start FPGA: {:?}", error);
                 host_interface.lock(|host_interface| host_interface.report_error(error));
             }
+        }
+        host_interface.lock(|h| h.command_completed());
+    }
+
+    #[task(resources = [fpga_device, host_interface])]
+    fn write_spi_flash_test_data(ctx: write_spi_flash_test_data::Context) {
+        let mut host_interface = ctx.resources.host_interface;
+        if let Err(error) = get_spi_flash(ctx.resources.fpga_device)
+            .and_then(|spi_flash| testing::write_spi_test_data(spi_flash))
+        {
+            host_interface.lock(|h| h.report_error(error));
         }
         host_interface.lock(|h| h.command_completed());
     }

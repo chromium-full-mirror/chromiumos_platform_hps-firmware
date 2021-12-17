@@ -110,6 +110,13 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         )),
     },
     AvailableDebugCommand {
+        keyword: "write_spi_flash_test_data",
+        help_text: "Write SPI flash test data",
+        command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
+            commands::Command::WriteSpiFlashTestData,
+        )),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),
