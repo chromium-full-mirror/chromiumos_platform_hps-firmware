@@ -30,10 +30,8 @@ pub struct HostInterface<I: I2cPeripheral> {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Event {
-    Reset,
     WriteSpiFlash(WriteMemoryEvent),
-    /// Try to start the FPGA if it isn't already started.
-    StartFpga,
+    Command(Command),
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
@@ -152,11 +150,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
         state: &mut ApplicationState,
     ) -> Option<Event> {
         match register {
-            registers::COMMAND => match Command::try_from(value) {
-                Ok(Command::Reset) => return Some(Event::Reset),
-                Ok(Command::LaunchApp) => return Some(Event::StartFpga),
-                _ => {}
-            },
+            registers::COMMAND => {
+                if let Ok(command) = Command::try_from(value) {
+                    return Some(Event::Command(command));
+                }
+            }
             registers::ENABLED_FEATURES => {
                 state.configuration.enabled_features = value;
             }
@@ -218,7 +216,10 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             hps.perform_command(Command::Reset).unwrap();
         }));
-        assert_eq!(interface.handle_interrupt(&mut state), Some(Event::Reset));
+        assert_eq!(
+            interface.handle_interrupt(&mut state),
+            Some(Event::Command(Command::Reset))
+        );
     }
 
     #[test]
@@ -230,7 +231,7 @@ mod tests {
         }));
         assert_eq!(
             interface.handle_interrupt(&mut state),
-            Some(Event::StartFpga)
+            Some(Event::Command(Command::LaunchApp))
         );
     }
 

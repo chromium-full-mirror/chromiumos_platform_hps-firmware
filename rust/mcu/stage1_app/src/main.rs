@@ -28,6 +28,7 @@ use hal::timer::stopwatch::Stopwatch;
 use hal::timer::Timer;
 use log::error;
 use log::info;
+use mcu_common::commands::Command;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use panic_rtt_target as _;
@@ -84,14 +85,20 @@ const APP: () = {
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
-            Some(application::Event::Reset) => cortex_m::peripheral::SCB::sys_reset(),
+            Some(application::Event::Command(Command::Reset)) => {
+                cortex_m::peripheral::SCB::sys_reset()
+            }
             Some(application::Event::WriteSpiFlash(write_request)) => {
                 let _ = ctx.spawn.write_spi_flash(write_request);
             }
-            Some(application::Event::StartFpga) => {
+            Some(application::Event::Command(Command::LaunchApp)) => {
                 // We can safely ignore failed attempts to swap this task
                 // because 1 attempt to start the FPGA is equivalent to 2.
                 let _ = ctx.spawn.try_start_fpga();
+            }
+            Some(application::Event::Command(command)) => {
+                error!("Unsupported command {:?}", command);
+                host_interface.report_error(mcu_common::Error::HostI2cBadRequest);
             }
             None => {}
         }
