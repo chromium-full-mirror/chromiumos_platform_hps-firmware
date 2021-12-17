@@ -22,6 +22,7 @@ use host_dev_common::images::image_type_from_str;
 use host_dev_common::images::ImageType;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use mcu_common::Status;
 use std::path::PathBuf;
 use std::sync::mpsc;
 use std::sync::Arc;
@@ -343,6 +344,10 @@ fn run_loop(
                     if let Some(hps) = &hps {
                         let mut hps = hps.lock().unwrap();
                         hps.perform_command(command)?;
+                        println!("Command {:?} running", command);
+                        while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
+                        hps.check_errors()?;
+                        println!("Command {:?} complete", command);
                     } else {
                         eprintln!("Cannot perform command without I2C connection");
                     }
