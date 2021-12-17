@@ -99,6 +99,7 @@ const APP: () = {
             Some(application::Event::Command(command)) => {
                 error!("Unsupported command {:?}", command);
                 host_interface.report_error(mcu_common::Error::HostI2cBadRequest);
+                host_interface.command_completed();
             }
             None => {}
         }
@@ -247,20 +248,18 @@ const APP: () = {
     }
 
     #[task(resources = [fpga_device, host_interface, state, rcc])]
-    fn try_start_fpga(mut ctx: try_start_fpga::Context) {
+    fn try_start_fpga(ctx: try_start_fpga::Context) {
+        let mut host_interface = ctx.resources.host_interface;
         match ctx.resources.fpga_device.start_fpga(ctx.resources.rcc) {
             Ok(_) => {
-                ctx.resources
-                    .host_interface
-                    .lock(|h| h.set_application_running(true));
+                host_interface.lock(|h| h.set_application_running(true));
             }
             Err(error) => {
                 error!("Unable to start FPGA: {:?}", error);
-                ctx.resources
-                    .host_interface
-                    .lock(|host_interface| host_interface.report_error(error));
+                host_interface.lock(|host_interface| host_interface.report_error(error));
             }
         }
+        host_interface.lock(|h| h.command_completed());
     }
 
     // Interrupts that we're not using that can be used by RTIC for spawning

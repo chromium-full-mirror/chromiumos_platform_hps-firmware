@@ -77,24 +77,24 @@ and are not documented here.
 
 ## Common System Status
 
-| BIT | NAME      | DESCRIPTION                                          |
-|:----|:----------|:-----------------------------------------------------|
-| 15  |           |                                                      |
-| 14  |           |                                                      |
-| 13  |           |                                                      |
-| 12  |           |                                                      |
-| 11  |           |                                                      |
-| 10  |           |                                                      |
-| 9   | APPLREADY | Application is running, and features may be enabled. |
-| 8   | STAGE1    | Stage 1 has been launched, and is now running.       |
-| 7   |           |                                                      |
-| 6   |           |                                                      |
-| 5   | WPOFF     | Write protect pin off.                               |
-| 4   | WPON      | Write protect pin on.                                |
-| 3   | ANONVER   | The stage 1 image has failed to verify.              |
-| 2   | AVERIFY   | The stage 1 image is verified                        |
-| 1   | FAULT     | System has an unrecoverable fault.                   |
-| 0   | OK        | System is operational.                               |
+| BIT | NAME          | DESCRIPTION                                          |
+|:----|:--------------|:-----------------------------------------------------|
+| 15  |               |                                                      |
+| 14  |               |                                                      |
+| 13  |               |                                                      |
+| 12  |               |                                                      |
+| 11  |               |                                                      |
+| 10  | CMDINPROGRESS | A command is in-progress.                            |
+| 9   | APPLREADY     | Application is running, and features may be enabled. |
+| 8   | STAGE1        | Stage 1 has been launched, and is now running.       |
+| 7   |               |                                                      |
+| 6   |               |                                                      |
+| 5   | WPOFF         | Write protect pin off.                               |
+| 4   | WPON          | Write protect pin on.                                |
+| 3   | ANONVER       | The stage 1 image has failed to verify.              |
+| 2   | AVERIFY       | The stage 1 image is verified                        |
+| 1   | FAULT         | System has an unrecoverable fault.                   |
+| 0   | OK            | System is operational.                               |
 
 ## Common System Commands
 

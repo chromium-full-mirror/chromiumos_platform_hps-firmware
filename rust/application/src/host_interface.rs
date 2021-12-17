@@ -26,6 +26,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     #[cfg(feature = "image-transfer")]
     outgoing_image_data: Option<i2c_protocol::Buffer>,
     application_running: bool,
+    active_command_count: u8,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -44,6 +45,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             #[cfg(feature = "image-transfer")]
             outgoing_image_data: None,
             application_running: false,
+            active_command_count: 0,
         }
     }
 
@@ -102,7 +104,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             .read_register(event.register)
             .unwrap_or(0);
         let result = match event.register {
-            registers::SYSTEM_STATUS => common_value | self.stage_status().bits(),
+            registers::SYSTEM_STATUS => common_value | self.status().bits(),
             registers::USER_PRESENT_STATUS => state.status.person_status,
             registers::SECOND_PERSON_STATUS => state.status.second_person_status,
             registers::MEMORY_BANK_AVAILABLE => {
@@ -149,6 +151,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         match register {
             registers::COMMAND => {
                 if let Ok(command) = Command::try_from(value) {
+                    self.active_command_count += 1;
                     return Some(Event::Command(command));
                 }
             }
@@ -163,8 +166,20 @@ impl<I: I2cPeripheral> HostInterface<I> {
         None
     }
 
+    pub fn command_completed(&mut self) {
+        self.active_command_count -= 1;
+    }
+
     pub fn set_application_running(&mut self, running: bool) {
         self.application_running = running;
+    }
+
+    fn status(&self) -> Status {
+        let mut status = self.stage_status();
+        if self.active_command_count > 0 {
+            status |= Status::COMMAND_IN_PROGRESS;
+        }
+        status
     }
 
     fn stage_status(&self) -> Status {

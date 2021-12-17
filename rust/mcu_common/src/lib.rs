@@ -153,6 +153,7 @@ bitflags! {
         const WPOFF = 1 << 5;
         const STAGE1 = 1 << 8;
         const APPLREADY = 1 << 9;
+        const COMMAND_IN_PROGRESS = 1 << 10;
     }
 }
 
