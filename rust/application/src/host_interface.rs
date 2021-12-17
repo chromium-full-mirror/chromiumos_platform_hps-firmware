@@ -102,10 +102,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             .read_register(event.register)
             .unwrap_or(0);
         let result = match event.register {
-            registers::SYSTEM_STATUS => {
-                // TODO: Consider unsetting AVERIFY. It's a stage0 bit.
-                common_value | (self.stage_status() | Status::AVERIFY).bits()
-            }
+            registers::SYSTEM_STATUS => common_value | self.stage_status().bits(),
             registers::USER_PRESENT_STATUS => state.status.person_status,
             registers::SECOND_PERSON_STATUS => state.status.second_person_status,
             registers::MEMORY_BANK_AVAILABLE => {
@@ -203,7 +200,7 @@ mod tests {
             let mut hps = HpsAdapter::without_magic_check(device);
             assert_eq!(
                 hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                (Status::OK | Status::STAGE1 | Status::AVERIFY).bits()
+                (Status::OK | Status::STAGE1).bits()
             );
         }));
         interface.handle_interrupt(&mut state);
