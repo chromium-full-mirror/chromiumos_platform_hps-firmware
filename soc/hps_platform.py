@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Platform definition file for HPS proto2"""
 
+import os.path
 from migen import Module, ClockDomain, Signal, If, log2_int
 from migen.genlib.resetsync import AsyncResetSynchronizer
 from litex.build.generic_platform import Pins, Subsignal, IOStandard
@@ -121,8 +122,12 @@ class Platform(LatticePlatform):
         # fasm) and prjoxide (consumes fasm). This shell script changes all
         # output pins that have SLEWRATE.MED to SLEWRATE.FAST. This lets our SPI
         # operate at full speed without corruption.
+        script_name = os.path.join(os.path.dirname(__file__),
+                                   '..',
+                                   'scripts',
+                                   'fasm-slew-temporary-workaround')
         self.toolchain.build_template.insert(
-            -1, "fasm-slew-temporary-workaround {build_name}.fasm")
+            -1, f'{script_name} {{build_name}}.fasm')
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
