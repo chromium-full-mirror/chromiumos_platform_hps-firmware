@@ -36,9 +36,9 @@ impl SpiDmaController {
             w.cpha().clear_bit();
             w.cpol().clear_bit();
             w.mstr().set_bit();
-            // Set baud rate to PCLK/16
+            // Set baud rate to PCLK/2
             unsafe {
-                w.br().bits(0b011);
+                w.br().bits(0b000);
             }
             w.lsbfirst().clear_bit();
             w.ssm().set_bit();

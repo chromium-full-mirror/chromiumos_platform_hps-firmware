@@ -13,6 +13,7 @@ use hal::gpio::Input;
 use hal::gpio::OpenDrain;
 use hal::gpio::Output;
 use hal::gpio::PushPull;
+use hal::gpio::Speed;
 use hal::prelude::*;
 use hal::stm32::I2C1;
 use hal::stm32::I2C2;
@@ -110,9 +111,9 @@ impl Board {
         let host_bus = Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl, i2c_config);
 
         let flash_spi_cs = b.pb0.into_open_drain_output();
-        let flash_spi_clk = a.pa5;
-        let flash_spi_copi = a.pa7;
-        let flash_spi_cipo = a.pa6;
+        let flash_spi_clk = a.pa5.set_speed(Speed::VeryHigh);
+        let flash_spi_copi = a.pa7.set_speed(Speed::VeryHigh);
+        let flash_spi_cipo = a.pa6.set_speed(Speed::VeryHigh);
 
         // The HAL crate implements SDAPin and SCLPin only for pins that are
         // already in open-drain mode. But we don't want to put the pins into
