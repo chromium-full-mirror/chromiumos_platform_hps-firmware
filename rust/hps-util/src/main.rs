@@ -289,8 +289,8 @@ fn main() -> Result<()> {
         SubCommand::ListDevices(_) => unreachable!(),
         SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
         SubCommand::Status(_) => {
-            let err_str = query_status(&mut *hps)?;
-            println!("{}", err_str);
+            println!("Status register: {:?}", hps.status()?);
+            println!("{}", query_status(&mut *hps)?);
             Ok(())
         }
         #[cfg(feature = "daemon")]
