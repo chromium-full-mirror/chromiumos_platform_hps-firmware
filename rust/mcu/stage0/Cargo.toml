@@ -20,6 +20,7 @@ stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral" }  # provided by e
 # TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
 # better understood.
 hal = { package = "stm32g0xx-hal", version = "=0.1.0", features = ["rt", "stm32g071"]}
+stm32g0_utils = { path = "../stm32g0_utils" }
 
 [build-dependencies]
 mcu_common = { path = "../../mcu_common" }

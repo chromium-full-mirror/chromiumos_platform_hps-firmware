@@ -48,6 +48,7 @@ use log::info;
 use log::warn;
 use spi_memory::series25::Flash;
 use stm32g0 as _;
+use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 #[cfg(feature = "dev")]
 use panic_rtt_target as _;
@@ -279,18 +280,8 @@ fn init_peripherals(
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
 
-    // The HAL crate implements SDAPin and SCLPin only for pins that are
-    // already in open-drain mode. But we don't want to put the pins into
-    // open-drain mode because that will result in them being temporarily
-    // pulled low. We lie to the HAL crate by pretending we've put the pins
-    // into open-drain mode, when we haven't. This hack can be removed once
-    // we've fixed the HAL crate.
-    // safety: Nothing depends on the mode of the pin for memory-safety and
-    // we drop the real pins to make sure nothing can mistakenly use them
-    core::mem::drop(gpioa.pa12);
-    core::mem::drop(gpioa.pa11);
-    let sda: hal::gpio::gpioa::PA12<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
-    let scl: hal::gpio::gpioa::PA11<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+    let sda = gpioa.pa12.into_open_drain_output_high();
+    let scl = gpioa.pa11.into_open_drain_output_high();
 
     let camera_i2c = p
         .I2C2
@@ -304,18 +295,8 @@ fn init_peripherals(
         duration_us: 10,
     };
 
-    // The HAL crate implements SDAPin and SCLPin only for pins that are already
-    // in open-drain mode. But we don't want to put the pins into open-drain
-    // mode because that will result in them being temporarily pulled low. We
-    // lie to the HAL crate by pretending we've put the pins into open-drain
-    // mode, when we haven't. This hack can be removed once we've fixed the HAL
-    // crate.
-    // safety: Nothing depends on the mode of the pin for memory-safety and we
-    // drop the real pins to make sure nothing can mistakenly use them
-    core::mem::drop(gpiob.pb7);
-    core::mem::drop(gpiob.pb6);
-    let sda: hal::gpio::gpiob::PB7<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
-    let scl: hal::gpio::gpiob::PB6<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+    let sda = gpiob.pb7.into_open_drain_output_high();
+    let scl = gpiob.pb6.into_open_drain_output_high();
 
     hal::i2c::SDAPin::setup(&sda);
     hal::i2c::SCLPin::setup(&scl);

@@ -22,6 +22,7 @@ use hal::stm32::SPI2;
 use hal::stm32::TIM1;
 use hal::stm32::TIM3;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
+use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 /// The type of the SPI CS pin from the FPGA once configured.
 pub type FpgaSpiCsPin = gpio::gpioa::PA8<Input<Floating>>;
@@ -95,18 +96,8 @@ impl Board {
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
 
-        // The HAL crate implements SDAPin and SCLPin only for pins that are
-        // already in open-drain mode. But we don't want to put the pins into
-        // open-drain mode because that will result in them being temporarily
-        // pulled low. We lie to the HAL crate by pretending we've put the pins
-        // into open-drain mode, when we haven't. This hack can be removed once
-        // we've fixed the HAL crate.
-        // safety: Nothing depends on the mode of the pin for memory-safety and
-        // we drop the real pins to make sure nothing can mistakenly use them
-        core::mem::drop(b.pb7);
-        core::mem::drop(b.pb6);
-        let sda: gpio::gpiob::PB7<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
-        let scl: gpio::gpiob::PB6<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+        let sda = b.pb7.into_open_drain_output_high();
+        let scl = b.pb6.into_open_drain_output_high();
 
         let host_bus = Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl, i2c_config);
 
@@ -115,18 +106,8 @@ impl Board {
         let flash_spi_copi = a.pa7.set_speed(Speed::VeryHigh);
         let flash_spi_cipo = a.pa6.set_speed(Speed::VeryHigh);
 
-        // The HAL crate implements SDAPin and SCLPin only for pins that are
-        // already in open-drain mode. But we don't want to put the pins into
-        // open-drain mode because that will result in them being temporarily
-        // pulled low. We lie to the HAL crate by pretending we've put the pins
-        // into open-drain mode, when we haven't. This hack can be removed once
-        // we've fixed the HAL crate.
-        // safety: Nothing depends on the mode of the pin for memory-safety and
-        // we drop the real pins to make sure nothing can mistakenly use them
-        core::mem::drop(a.pa12);
-        core::mem::drop(a.pa11);
-        let sda: gpio::gpioa::PA12<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
-        let scl: gpio::gpioa::PA11<Output<OpenDrain>> = unsafe { core::mem::transmute(()) };
+        let sda = a.pa12.into_open_drain_output_high();
+        let scl = a.pa11.into_open_drain_output_high();
 
         let camera_i2c = Some(i2c2.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc));
 

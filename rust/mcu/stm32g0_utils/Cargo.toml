@@ -1,0 +1,9 @@
+[package]
+name = "stm32g0_utils"
+version = "0.1.0"
+edition = "2018"
+authors = ["Google"]
+license = "BSD-3-Clause"
+
+[dependencies]
+hal = { package = "stm32g0xx-hal", version = "0.1.0", features = [ "stm32g071" ] }
