@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 use crate::board;
+use crate::fpga_device::Segment;
+use crate::fpga_device::SegmentKind;
 use hal::gpio::Analog;
 use hal::prelude::OutputPin;
 use hal::rcc::Rcc;
@@ -10,7 +12,6 @@ use hmac_sha256::Hash;
 use log::error;
 use log::info;
 use mcu_common::Error;
-use mcu_common::SPI_FLASH_SIZE;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
@@ -106,15 +107,13 @@ pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpiControl, board::
 
 pub(crate) fn hash_internal(
     spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
-    num_pages: u32,
+    first_page: u32,
+    end_page: u32,
 ) -> Result<[u8; 32], Error> {
     let mut hasher = Hash::new();
     let mut buf = [0x00; PAGE_SIZE as usize];
-    for page in 0..num_pages {
-        if spi_flash
-            .read((page as u32) * (PAGE_SIZE as u32), &mut buf)
-            .is_err()
-        {
+    for page in first_page..end_page {
+        if spi_flash.read(page * (PAGE_SIZE as u32), &mut buf).is_err() {
             error!("Failed to read back SPI flash");
             return Err(Error::SpiFlash);
         }
@@ -125,8 +124,39 @@ pub(crate) fn hash_internal(
 
 pub(crate) fn hash(
     spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
-) -> Result<[u8; 32], Error> {
-    hash_internal(spi_flash, SPI_FLASH_SIZE / PAGE_SIZE)
+    segments: &[Segment],
+) -> Result<(), Error> {
+    let mut first_page: u32 = 0;
+    let empty_page = [0xFFu8; PAGE_SIZE as usize];
+    for seg in segments {
+        let end_page = first_page + seg.length as u32 / PAGE_SIZE;
+        match seg.kind {
+            SegmentKind::Empty => {
+                let mut buf = [0x00; PAGE_SIZE as usize];
+                for page in first_page..end_page {
+                    if spi_flash
+                        .read((page as u32) * (PAGE_SIZE as u32), &mut buf)
+                        .is_err()
+                    {
+                        error!("Failed to read back SPI flash");
+                        return Err(Error::SpiFlashNotVerified);
+                    }
+                }
+                if empty_page != buf {
+                    error!("Expected SPI flash register to be empty");
+                    return Err(Error::SpiFlashNotVerified);
+                }
+            }
+            SegmentKind::DataWithHash(expected) => {
+                if expected != hash_internal(spi_flash, first_page, end_page).unwrap() {
+                    error!("SPI flash hash does not match");
+                    return Err(Error::SpiFlashNotVerified);
+                }
+            }
+        }
+        first_page = end_page;
+    }
+    Ok(())
 }
 
 /// Uninitializes the SPI interface to the SPI flash. This is used when we're

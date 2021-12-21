@@ -34,6 +34,7 @@ stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral", default-features 
 stm32g0_utils = { path = "../stm32g0_utils" }
 
 [build-dependencies]
+hmac-sha256 = "0.1.6"
 mcu_common = { path = "../../mcu_common", features = [ "std" ] }
 
 [features]

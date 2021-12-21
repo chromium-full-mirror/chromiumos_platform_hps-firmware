@@ -542,7 +542,7 @@ pub(crate) fn time_hash(
         }
     };
     let elapsed_us = stopwatch.trace(|| {
-        let hash = crate::spi_flash::hash_internal(spi_flash, num_pages);
+        let hash = crate::spi_flash::hash_internal(spi_flash, 0, num_pages);
         info!("Hash of first {} pages was: {:?}", num_pages, hash);
     });
     info!("Hashing took {}us", elapsed_us.0);

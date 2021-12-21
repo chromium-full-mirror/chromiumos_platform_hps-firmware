@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use hmac_sha256::Hash;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
+use std::ops::Range;
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::str;
 
 use mcu_common::SOC_ROM_OFFSET;
 use mcu_common::SPI_FLASH_SIZE;
@@ -33,9 +35,8 @@ fn build_spi_hash() {
     let out_dir =
         PathBuf::from(std::env::var("OUT_DIR").expect("Environment variable OUT_DIR undefined"));
     let spi_hash_path = out_dir.join("spi_hash.inc");
-
     if cfg!(feature = "no-hash-check") {
-        write_dummy_spi_hash_file(&spi_hash_path);
+        write_fake_spi_hash_file(&spi_hash_path);
     } else {
         write_spi_hash_file(&spi_hash_path);
     }
@@ -44,63 +45,75 @@ fn build_spi_hash() {
     println!("cargo:rustc-env=SPI_HASH={}", spi_hash_path.display());
 }
 
-fn write_spi_hash_file(spi_hash_path: &Path) {
+fn add_segments_for_file(input_filename: &Path, address_range: Range<u32>, out: &mut File) {
     const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/soc-load --build` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_bitstream.bin HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_application.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
-    let spi_hash_file = File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
+
+    let mut f = File::open(input_filename).expect(MESSAGE);
+    // Creates hashable binary segment.
+    let mut binary = Vec::<u8>::new();
+    f.read_to_end(&mut binary).expect("Failed to read file");
+    // Round-up to next multiplication of PAGE_SIZE.
+    let binary_size: usize = ((binary.len() + 255) / 256) * 256;
+    assert!(
+        binary_size <= (address_range.end - address_range.start) as usize,
+        "File is too large"
+    );
+    let mut hasher = Hash::new();
+    // Pad the binary with 0xFF as the size was rounded-up.
+    binary.resize(binary_size, 0xFFu8);
+    hasher.update(binary);
+    let h = hasher.finalize();
+    writeln!(
+        out,
+        "Segment {{ length: {}, kind: SegmentKind::DataWithHash([{}]) }},",
+        binary_size,
+        h.iter()
+            .map(u8::to_string)
+            .collect::<Vec<String>>()
+            .join(",")
+    )
+    .unwrap();
+    // Creates empty offset segment.
+    writeln!(
+        out,
+        "Segment {{ length: {}, kind: SegmentKind::Empty }},",
+        SOC_ROM_OFFSET as usize - binary_size
+    )
+    .unwrap();
+}
+
+fn write_spi_hash_file(spi_hash_path: &Path) {
+    let mut segment_file =
+        File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
+    writeln!(&mut segment_file, "[").unwrap();
     let bitstream_path =
         PathBuf::from(std::env::var("HPS_SPI_BIT").unwrap_or_else(|_| {
             "../../../build/hps_platform/gateware/hps_platform.bit".to_string()
         }));
-    let mut bitstream_file = File::open(bitstream_path).expect(MESSAGE);
+    add_segments_for_file(&bitstream_path, 0..SOC_ROM_OFFSET, &mut segment_file);
     let soc_rom_path = PathBuf::from(
         std::env::var("HPS_SPI_BIN")
             .unwrap_or_else(|_| "../../../build/hps_platform/fpga_rom.bin".to_string()),
     );
-    let mut soc_rom_file = File::open(soc_rom_path).expect(MESSAGE);
-    let mut full_spi_binary = Vec::<u8>::new();
-    bitstream_file
-        .read_to_end(&mut full_spi_binary)
-        .expect("Failed to read bitstream file");
-    assert!(
-        full_spi_binary.len() <= SOC_ROM_OFFSET as usize,
-        "FPGA bitstream is too large"
+    add_segments_for_file(
+        &soc_rom_path,
+        SOC_ROM_OFFSET..SPI_FLASH_SIZE,
+        &mut segment_file,
     );
-    full_spi_binary.resize(SOC_ROM_OFFSET as usize, 0xFF);
-    soc_rom_file
-        .read_to_end(&mut full_spi_binary)
-        .expect("Failed to read bios file");
-    assert!(
-        full_spi_binary.len() <= SPI_FLASH_SIZE as usize,
-        "FPGA bios is too large"
-    );
-    full_spi_binary.resize(SPI_FLASH_SIZE as usize, 0xFF);
-    let mut openssl = Command::new("openssl")
-        .arg("dgst")
-        .arg("-sha256")
-        .arg("-binary")
-        .stdin(Stdio::piped())
-        .stdout(spi_hash_file)
-        .spawn()
-        .expect("Failed to spawn openssl process");
-    let mut stdin = openssl
-        .stdin
-        .take()
-        .expect("Failed to open pipe to openssl");
-    stdin
-        .write_all(&full_spi_binary)
-        .expect("Failed to write buffer to openssl");
-    drop(stdin);
-    let out = openssl
-        .wait_with_output()
-        .expect("Failed to wait for openssl");
-    if !out.status.success() {
-        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
-        std::process::exit(1);
-    }
+    writeln!(&mut segment_file, "]").unwrap();
+    segment_file.sync_all().unwrap();
 }
 
-fn write_dummy_spi_hash_file(spi_hash_file: &Path) {
-    std::fs::write(spi_hash_file, [0u8; 32]).expect("Failed to write spi_hash.inc");
+fn write_fake_spi_hash_file(spi_hash_path: &Path) {
+    let mut segment_file =
+        File::create(&spi_hash_path).expect("Could not create spi_hash.inc file");
+    writeln!(
+        &mut segment_file,
+        "[ Segment {{ length: {} , kind: SegmentKind::Empty }}, ]",
+        mcu_common::SPI_FLASH_SIZE
+    )
+    .unwrap();
+    segment_file.sync_all().unwrap();
 }
 
 fn main() {

@@ -12,8 +12,18 @@ use spi_memory::series25::Flash;
 
 use crate::board;
 
-// sha256 of the contents of spi flash.
-const SPI_FLASH_HASH: &[u8; 32] = include_bytes!(env!("SPI_HASH"));
+// An array of segments describing the SPI Flash memory elements.
+const SPI_FLASH_SEGMENTS: &[Segment] = &include!(concat!(env!("OUT_DIR"), "/spi_hash.inc"));
+
+pub enum SegmentKind {
+    Empty,
+    DataWithHash([u8; 32]),
+}
+
+pub struct Segment {
+    pub length: usize,
+    pub kind: SegmentKind,
+}
 
 pub struct FpgaDevice {
     pub hold: board::FpgaProgramn,
@@ -49,7 +59,7 @@ impl FpgaDevice {
 
     pub(crate) fn start_fpga(&mut self, rcc: &mut Rcc) -> Result<(), Error> {
         if cfg!(feature = "no-hash-check")
-            || &crate::spi_flash::hash(get_spi_flash(self)?)? == SPI_FLASH_HASH
+            || crate::spi_flash::hash(get_spi_flash(self)?, SPI_FLASH_SEGMENTS).is_ok()
         {
             // Once we start the FPGA, it will take over as the controller of
             // the SPI flash. We should not attept to communicate with the SPI
