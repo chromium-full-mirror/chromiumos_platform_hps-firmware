@@ -58,14 +58,19 @@ Run `./scripts/proto2-run`
 Once it has run. Control-C, unplug your board then plug it back in again (you only need to do that the first time you program it).
 Run `./scripts/proto2-run` again.
 In a separate terminal, run `./scripts/proto2-mon`.
-Press enter to activate the console, then type a command like `reset_mcu`.
+Press enter to activate the console, then type a command `reset_mcu` and `reset_fpga`.
 You should see various debug outputs get printed.
 
 ```
 >> reset_mcu
-MCU> Found expected flash chip
-MCU> MCU application started. CPU is running at 60MHz
-MCU> Resetting FPGA
+MCU> INFO: Found expected flash chip
+MCU> INFO: Default HM01B0 configuration applied
+MCU> INFO: MCU application started. CPU is running at 60MHz
+>> reset_fpga
+MCU> INFO: Resetting FPGA
+MCU> INFO: FPGA reported boot #1
+FPGA>  (built 2021-11-23 22:31:11 UTC by xxx)
+FPGA> Running classification
 ```
 
 ### Collecting images
