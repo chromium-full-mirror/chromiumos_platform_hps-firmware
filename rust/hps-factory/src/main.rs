@@ -206,7 +206,7 @@ where
             )
         }
         Command::PostInstallTest(test_config) => {
-            post_install_test_workflow::run(i2c, test_config, &config)
+            post_install_test_workflow::PostInstallTester::run(i2c, test_config, &config)
         }
     }
 }
