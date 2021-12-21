@@ -22,7 +22,7 @@ use mcu_common::Status;
 
 pub(crate) fn run<I, E>(
     i2c: &mut I,
-    test_config: &crate::FpgaSpiTestConfig,
+    test_config: &crate::PostInstallTestConfig,
     config: &Config,
 ) -> Result<()>
 where

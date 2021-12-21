@@ -4,11 +4,11 @@
 
 mod boot_loop;
 mod erase_stage0_workflow;
-mod fpga_spi_test_workflow;
 mod hps_i2c;
 #[cfg(feature = "image-transfer")]
 mod image_workflow;
 mod one_time_init_workflow;
+mod post_install_test_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
@@ -81,14 +81,13 @@ enum Command {
     #[clap(name = "capture-images")]
     CaptureImages(CaptureImagesConfig),
 
-    /// gets the soft CPU on the FPGA to repeatedly read data from the SPI flash
-    /// and reports read errors.
-    #[clap(name = "fpga-spi-test")]
-    FpgaSpiTest(FpgaSpiTestConfig),
+    /// runs all post-install tests
+    #[clap(name = "post-install-test")]
+    PostInstallTest(PostInstallTestConfig),
 }
 
 #[derive(Debug, Clap, Clone)]
-struct FpgaSpiTestConfig {
+struct PostInstallTestConfig {
     /// whether to skip writing MCU and SPI firmware
     #[clap(long)]
     skip_firmware_writes: bool,
@@ -206,6 +205,8 @@ where
                 },
             )
         }
-        Command::FpgaSpiTest(test_config) => fpga_spi_test_workflow::run(i2c, test_config, &config),
+        Command::PostInstallTest(test_config) => {
+            post_install_test_workflow::run(i2c, test_config, &config)
+        }
     }
 }
