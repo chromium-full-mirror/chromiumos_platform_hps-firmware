@@ -99,6 +99,10 @@ struct PostInstallTestConfig {
     /// number of iterations of FPGA SPI flash read test to perform
     #[clap(long, default_value = "200")]
     fpga_spi_read_iterations: u16,
+
+    /// number of I2C requests to make when checking I2C bus
+    #[clap(long, default_value = "2000")]
+    host_i2c_iterations: u64,
 }
 
 #[cfg(feature = "image-transfer")]

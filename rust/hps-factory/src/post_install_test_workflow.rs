@@ -42,6 +42,7 @@ where
             config: test_config.clone(),
         };
         tester.write_firmware()?;
+        tester.test_i2c_integrity()?;
         tester.test_fpga_spi_flash_reads()?;
         println!("PASS");
         Ok(())
@@ -56,6 +57,21 @@ where
             }
             self.i2c.write_soc_rom().context("Write FPGA ROM")?;
         }
+        Ok(())
+    }
+
+    fn test_i2c_integrity(&mut self) -> Result<()> {
+        if self.config.host_i2c_iterations == 0 {
+            return Ok(());
+        }
+        let mut hps = self.i2c.open_hps()?;
+        println!("Checking host I2C bus");
+        let bar = ProgressBar::new(self.config.host_i2c_iterations);
+        for i in 0..self.config.host_i2c_iterations {
+            hps.check_magic()?;
+            bar.set_position(i);
+        }
+        bar.finish();
         Ok(())
     }
 
