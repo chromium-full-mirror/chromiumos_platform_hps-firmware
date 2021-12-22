@@ -16,6 +16,7 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use fpga_app::Features;
 use hps_interface::Hps;
+use indicatif::ProgressBar;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::Status;
@@ -42,6 +43,7 @@ where
         };
         tester.write_firmware()?;
         tester.test_fpga_spi_flash_reads()?;
+        println!("PASS");
         Ok(())
     }
 
@@ -58,6 +60,9 @@ where
     }
 
     fn test_fpga_spi_flash_reads(&mut self) -> Result<()> {
+        if self.config.fpga_spi_read_iterations == 0 {
+            return Ok(());
+        }
         println!("Writing/verifying test data");
         self.i2c.open_hps()?.perform_command(Command::Reset)?;
         self.i2c.execute_stage1().context("Execute stage1")?;
@@ -70,39 +75,41 @@ where
         self.i2c
             .execute_application()
             .context("Execute application")?;
-        println!("HPS application started");
+        println!("Testing SPI flash reads from FPGA");
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
             registers::ENABLED_FEATURES,
             Features::SPI_FLASH_READ_TEST.bits(),
         )?;
-        let mut iteration_base = 0;
-        let mut last_loop_count = 0;
+        let bar = ProgressBar::new(self.config.fpga_spi_read_iterations.into());
         let mut last_report = Instant::now();
-        let start = Instant::now();
+        let mut last_loop_count = 0;
         loop {
             let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
             let bad_byte_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
-            if loop_count != last_loop_count {
-                last_report = Instant::now();
-                if loop_count < last_loop_count {
-                    iteration_base += 1 << 16;
-                }
-                last_loop_count = loop_count;
-                let iterations = iteration_base + (loop_count as u32);
-                println!(
-                    "{} iterations with {} errors so far. {:0.1}MB/s",
-                    iterations,
+            if bad_byte_count > 0 {
+                bail!(
+                    "FPGA got {} bad reads of SPI flash after {} iterations",
                     bad_byte_count,
-                    iterations as f64 / start.elapsed().as_secs_f64()
+                    loop_count
                 );
+            }
+            bar.set_position(loop_count.into());
+            if loop_count >= self.config.fpga_spi_read_iterations {
+                break;
+            }
+            if loop_count != last_loop_count {
+                last_loop_count = loop_count;
+                last_report = Instant::now();
             } else if last_report.elapsed() > Duration::from_secs(60) {
-                if last_loop_count == 0 && iteration_base == 0 {
+                if last_loop_count == 0 {
                     bail!("FPGA program failed to start");
                 }
                 bail!("FPGA program appears to have crashed");
             }
-            std::thread::sleep(Duration::from_secs(1));
+            std::thread::sleep(Duration::from_millis(100));
         }
+        bar.finish();
+        Ok(())
     }
 }

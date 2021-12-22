@@ -95,6 +95,10 @@ struct PostInstallTestConfig {
     /// assume that the FPGA bitstream is already up-to-date
     #[clap(long)]
     skip_bitstream_write: bool,
+
+    /// number of iterations of FPGA SPI flash read test to perform
+    #[clap(long, default_value = "200")]
+    fpga_spi_read_iterations: u16,
 }
 
 #[cfg(feature = "image-transfer")]
