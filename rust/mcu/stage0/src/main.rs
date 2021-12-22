@@ -20,6 +20,7 @@ use hal::stm32::I2C1;
 use host_interface::HostEvent;
 use host_interface::HostInterface;
 use libstage0::WriteProtectState;
+use mcu_common::commands::Command;
 use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_flash::FlashWriter;
@@ -85,7 +86,7 @@ const APP: () = {
     fn handle_event(ctx: handle_event::Context, event: HostEvent) {
         let mut host_interface = ctx.resources.host_interface;
         match event {
-            HostEvent::LoadApplication => {
+            HostEvent::Command(Command::Launch1) => {
                 if host_interface.lock(|h| h.stage0_ctx.can_jump_to_stage1()) {
                     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
@@ -104,7 +105,7 @@ const APP: () = {
                 // Reenable I2C. It was disabled above in the I2C interrupt handler.
                 host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
             }
-            HostEvent::Reset => {
+            HostEvent::Command(Command::Reset) => {
                 // We want to avoid getting a WriteFlash event followed by a
                 // Reset event and then processing them out of order, since then
                 // the flash wouldn't get written. We achieve this by handling
@@ -112,12 +113,17 @@ const APP: () = {
                 // queue and get processed in order.
                 cortex_m::peripheral::SCB::sys_reset()
             }
-            HostEvent::ErasePage0 => {
+            HostEvent::Command(Command::EraseStage0Start) => {
                 if ctx.resources.flash_writer.erase_page0().is_ok() {
                     cortex_m::peripheral::SCB::sys_reset()
                 } else {
                     host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
+            }
+            HostEvent::Command(Command::LaunchApp | Command::WriteSpiFlashTestData) => {
+                // These commands are only implemented in stage1.
+                // Here in stage0, they are an error.
+                host_interface.lock(|h| h.i2c_report_err(Error::HostI2cBadRequest));
             }
         }
     }

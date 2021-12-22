@@ -76,10 +76,8 @@ pub struct HostInterface<I: I2cPeripheral> {
 }
 
 pub(crate) enum HostEvent {
-    LoadApplication,
     WriteFlash(WriteFlashRequest),
-    Reset,
-    ErasePage0,
+    Command(Command),
 }
 
 pub(crate) struct WriteFlashRequest {
@@ -136,14 +134,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 event.respond_u16(result, &mut self.i2c);
             }
             Ok(i2c_protocol::Event::WriteRegister(event)) => match event.register {
-                registers::COMMAND => match Command::try_from(event.value) {
-                    Ok(Command::Reset) => return Some(HostEvent::Reset),
-                    Ok(Command::Launch1) => {
-                        return Some(HostEvent::LoadApplication);
+                registers::COMMAND => {
+                    if let Ok(command) = Command::try_from(event.value) {
+                        return Some(HostEvent::Command(command));
+                    } else {
+                        self.common_interface.report_error(Error::HostI2cBadRequest);
                     }
-                    Ok(Command::EraseStage0Start) => return Some(HostEvent::ErasePage0),
-                    _ => self.common_interface.report_error(Error::HostI2cBadRequest),
-                },
+                }
                 _ => self.common_interface.report_error(Error::HostI2cBadRequest),
             },
             Ok(i2c_protocol::Event::WriteMemory(event)) => match event.bank {
