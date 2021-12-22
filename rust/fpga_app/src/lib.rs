@@ -359,9 +359,9 @@ where
                     self.status.loop_count,
                     bad
                 );
-                self.status.person_status = bad;
-                let _ = self.mcu.report_status(&self.status);
             }
+            self.status.person_status = bad;
+            let _ = self.mcu.report_status(&self.status);
         }
     }
 
