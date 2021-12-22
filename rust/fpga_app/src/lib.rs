@@ -283,6 +283,10 @@ where
                     mcu_println!(self, "Performing SPI flash read integrity test...");
                     self.spi_flash_read_test();
                 }
+                DebugCommand::TestFpgaMcuComms => {
+                    mcu_println!(self, "Performing FPGA<->MCU communication test...");
+                    self.mcu_fpga_comm_test();
+                }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
                 }
@@ -362,6 +366,33 @@ where
             }
             self.status.person_status = bad;
             let _ = self.mcu.report_status(&self.status);
+        }
+    }
+
+    fn mcu_fpga_comm_test(&mut self) {
+        let mut bad = 0;
+        self.status.loop_count = 0;
+        // We do multiple tests per loop iteration for two reasons. (1) we
+        // report our status each loop iteration, so if we only did one test,
+        // then we'd be sending as many status reports as echo requests and (2)
+        // we'd overflow our loop counter too quickly if we only did a single
+        // test.
+        const TESTS_PER_LOOP: u32 = 100;
+        loop {
+            for _ in 0..TESTS_PER_LOOP {
+                if self.mcu.echo_test().is_err() {
+                    bad += 1;
+                }
+            }
+            self.status.loop_count += 1;
+            self.status.person_status = bad;
+            let _ = self.mcu.report_status(&self.status);
+            mcu_println!(
+                self.mcu,
+                "{} iterations with {} errors so far",
+                self.status.loop_count,
+                bad
+            );
         }
     }
 

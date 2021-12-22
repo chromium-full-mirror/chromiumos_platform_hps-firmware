@@ -123,6 +123,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TestSpiFlashReads),
     },
     AvailableDebugCommand {
+        keyword: "test_fpga_mcu_communication",
+        help_text: "Check communication between the FPGA and the MCU",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TestFpgaMcuComms),
+    },
+    AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),

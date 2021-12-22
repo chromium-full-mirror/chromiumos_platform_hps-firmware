@@ -20,4 +20,5 @@ pub enum DebugCommand {
     RotateImageClockwiseOn = 17,
     SelfTest = 18,
     TestSpiFlashReads = 19,
+    TestFpgaMcuComms = 20,
 }

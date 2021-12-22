@@ -41,3 +41,8 @@ pub const DEBUG_IMAGE: u8 = 0x62;
 
 /// Returns the next debug command sent over RTT if any.
 pub const GET_DEBUG_COMMAND: u8 = 0x63;
+
+/// MCU will respond with the same data that was sent by the FPGA. This is used
+/// for testing the reliability of FPGA<->MCU communication. Note, the first
+/// byte sent by the FPGA actually gets overwritten by the command.
+pub const ECHO: u8 = 0x64;

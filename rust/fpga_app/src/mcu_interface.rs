@@ -98,6 +98,21 @@ where
         }
     }
 
+    /// Sends an echo request to the MCU then checks that we get back the same data.
+    pub fn echo_test(&mut self) -> Result<()> {
+        self.buffer[0] = commands::ECHO;
+        for (index, byte) in self.buffer[2..].iter_mut().enumerate() {
+            *byte = index as u8;
+        }
+        self.exchange()?;
+        for (index, byte) in self.buffer[2..].iter_mut().enumerate() {
+            if *byte != index as u8 {
+                return Err(Error::SpiError);
+            }
+        }
+        Ok(())
+    }
+
     pub fn wait_for_camera_standby(&mut self) {
         while self.read_camera_reg(CAM_MODE_SELECT) != 0 {}
     }

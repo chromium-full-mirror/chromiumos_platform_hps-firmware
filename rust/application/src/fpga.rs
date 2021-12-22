@@ -75,6 +75,10 @@ impl Request {
             crate::fpga::commands::REPORT_FPGA_BOOT => {
                 action = Action::ReportFpgaBoot;
             }
+            crate::fpga::commands::ECHO => {
+                // No action needs to be performed. We just leave the data as it
+                // is in the buffer and it will be returned as-is.
+            }
             _ => {
                 response_code = status::ERROR;
             }
