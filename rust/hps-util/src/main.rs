@@ -69,6 +69,7 @@ enum SubCommand {
     LaunchApp(LaunchApp),
     Reset(Reset),
     EraseStage0(EraseStage0),
+    EraseStage1(EraseStage1),
     #[clap(name = "reg")]
     AccessRegisters(AccessRegisters),
     WriteMemoryBank(WriteMemoryBank),
@@ -98,6 +99,10 @@ struct Launch1 {}
 #[derive(Clap, PartialEq, Debug)]
 /// Erase stage0
 struct EraseStage0 {}
+
+#[derive(Clap, PartialEq, Debug)]
+/// Erase stage1
+struct EraseStage1 {}
 
 #[derive(Clap, PartialEq, Debug)]
 /// Launch application
@@ -276,6 +281,7 @@ fn main() -> Result<()> {
         SubCommand::LaunchApp(_) => hps.perform_command(Command::LaunchApp),
         SubCommand::Reset(_) => hps.perform_command(Command::Reset),
         SubCommand::EraseStage0(_) => hps.perform_command(Command::EraseStage0Start),
+        SubCommand::EraseStage1(_) => hps.perform_command(Command::EraseStage1),
         SubCommand::AccessRegisters(config) => access_registers(&mut *hps, &config),
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)
