@@ -105,8 +105,8 @@ class SpiController(Module, AutoCSR):
                         self.clock_counter.eq(self.clock_counter - 1))
         # Run SPI clock - cycles 0 in first half of count and 1 in second half,
         # returns to zero when done
-        first_half = (self.clock_counter <= self.clock_counter_half)
-        self.comb += self.pads.clk.eq(first_half & (self.clock_counter != 0))
+        second_half = (self.clock_counter <= self.clock_counter_half)
+        self.comb += self.pads.clk.eq(second_half & (self.clock_counter != 0))
 
     def _handle_idle(self):
         """Handle SPI enabled, but idle"""
