@@ -3,10 +3,9 @@
 # found in the LICENSE file.
 """Platform definition file for HPS proto2"""
 
-import os.path
 from migen import Module, ClockDomain, Signal, If, log2_int
 from migen.genlib.resetsync import AsyncResetSynchronizer
-from litex.build.generic_platform import Pins, Subsignal, IOStandard
+from litex.build.generic_platform import Pins, Subsignal, IOStandard, Misc
 from litex.build.lattice import LatticePlatform
 from litex.soc.cores.ram import NXLRAM
 from litex.soc.cores.clock import NXOSCA
@@ -19,7 +18,8 @@ hps_io = [
      Subsignal('lvld', Pins('G5')),
      Subsignal('pclk', Pins('G7')),
      # Subsignal('int',  Pins('E2')),  # Shared with serial rx
-     IOStandard('LVCMOS18H')
+     IOStandard('LVCMOS18H'),
+     Misc('SLEWRATE=FAST'),
      ),
     ('programn', 0, Pins('A4'), IOStandard('LVCMOS18H')),
     # JTAG: not usually programatically accessible
@@ -29,7 +29,8 @@ hps_io = [
      Subsignal('tdi', Pins('C3')),
      Subsignal('tdo', Pins('D3')),
      Subsignal('tms', Pins('B1')),
-     IOStandard('LVCMOS18H')
+     IOStandard('LVCMOS18H'),
+     Misc('SLEWRATE=FAST'),
      ),
     # SPI flash, defined two ways
     ('spiflash', 0,
@@ -39,13 +40,15 @@ hps_io = [
      Subsignal('miso', Pins('C4')),
      Subsignal('wp', Pins('B3')),
      Subsignal('hold', Pins('B2')),
-     IOStandard('LVCMOS18')
+     IOStandard('LVCMOS18'),
+     Misc('SLEWRATE=FAST'),
      ),
     ('spiflash4x', 0,
      Subsignal('cs_n', Pins('A3')),
      Subsignal('clk', Pins('B4')),
      Subsignal('dq', Pins('B5 C4 B3 B2')),
-     IOStandard('LVCMOS18')
+     IOStandard('LVCMOS18'),
+     Misc('SLEWRATE=FAST'),
      ),
     ('mcu_spi', 0,
      Subsignal('clk', Pins('H1')),
@@ -53,7 +56,8 @@ hps_io = [
      Subsignal('cipo', Pins('G2')),
      Subsignal('copi', Pins('H2')),
      Subsignal('ready', Pins('F3')),
-     IOStandard('LVCMOS18H')
+     IOStandard('LVCMOS18H'),
+     Misc('SLEWRATE=FAST'),
      ),
 ]
 
@@ -117,17 +121,6 @@ class Platform(LatticePlatform):
             io=ios,
             connectors=[],
             toolchain='oxide')
-
-        # We inject a shell script to be run between nextpnr-nexus (generates
-        # fasm) and prjoxide (consumes fasm). This shell script changes all
-        # output pins that have SLEWRATE.MED to SLEWRATE.FAST. This lets our SPI
-        # operate at full speed without corruption.
-        script_name = os.path.join(os.path.dirname(__file__),
-                                   '..',
-                                   'scripts',
-                                   'fasm-slew-temporary-workaround')
-        self.toolchain.build_template.insert(
-            -1, f'{script_name} {{build_name}}.fasm')
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
