@@ -44,6 +44,7 @@ where
         tester.write_firmware()?;
         tester.test_i2c_integrity()?;
         tester.test_fpga_spi_flash_reads()?;
+        tester.test_fpga_mcu_comms()?;
         println!("PASS");
         Ok(())
     }
@@ -70,6 +71,41 @@ where
         for i in 0..self.config.host_i2c_iterations {
             hps.check_magic()?;
             bar.set_position(i);
+        }
+        bar.finish();
+        Ok(())
+    }
+
+    fn test_fpga_mcu_comms(&mut self) -> Result<()> {
+        if self.config.fpga_mcu_iterations == 0 {
+            return Ok(());
+        }
+        self.i2c.open_hps()?.perform_command(Command::Reset)?;
+        self.i2c
+            .execute_application()
+            .context("Execute application")?;
+        let mut hps = self.i2c.open_hps()?;
+        println!("Checking FPGA<->MCU comms");
+        let bar = ProgressBar::new(self.config.fpga_mcu_iterations.into());
+        hps.write_register(
+            registers::ENABLED_FEATURES,
+            Features::MCU_FPGA_COMM_TEST.bits(),
+        )?;
+        loop {
+            let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+            let error_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
+            if error_count > 0 {
+                bail!(
+                    "Got {} errors after {} iterations of FPGA<->MCU comms test",
+                    error_count,
+                    loop_count
+                );
+            }
+            bar.set_position(loop_count.into());
+            if loop_count >= self.config.fpga_mcu_iterations {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(100));
         }
         bar.finish();
         Ok(())

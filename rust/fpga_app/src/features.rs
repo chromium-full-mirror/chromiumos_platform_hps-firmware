@@ -25,5 +25,11 @@ bitflags! {
         /// started, this mode will run until reset. No other features will be
         /// processed and turning this feature off will have no effect.
         const SPI_FLASH_READ_TEST = 0x100;
+
+        /// Once enabled, the FPGA will continuously communicate with the MCU,
+        /// checking that no corruption occurs. The number of errors will be
+        /// errors encountered will be reported in the person_status register.
+        /// The number of iterations will be reported in the loop counter.
+        const MCU_FPGA_COMM_TEST = 0x200;
     }
 }

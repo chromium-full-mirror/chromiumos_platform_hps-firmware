@@ -130,6 +130,9 @@ where
         if features.contains(Features::SPI_FLASH_READ_TEST) {
             self.spi_flash_read_test();
         }
+        if features.contains(Features::MCU_FPGA_COMM_TEST) {
+            self.mcu_fpga_comm_test();
+        }
 
         if cfg!(feature = "debug-commands") {
             self.process_debug_commands();
