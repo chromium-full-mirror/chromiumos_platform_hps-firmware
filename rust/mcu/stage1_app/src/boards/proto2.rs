@@ -114,7 +114,7 @@ impl Board {
         Self {
             fpga_spi_cs: a.pa8,
             fpga_spi_clk: a.pa0,
-            fpga_spi_cipo: a.pa3,
+            fpga_spi_cipo: a.pa3.set_speed(Speed::High),
             fpga_spi_copi: a.pa4,
 
             flash_spi_clk,
