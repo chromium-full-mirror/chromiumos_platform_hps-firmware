@@ -155,7 +155,7 @@ struct Flags {
 
     #[clap(long)]
     /// commands to run on startup
-    cmd: Option<String>,
+    cmd: Vec<String>,
 
     #[clap(long)]
     /// don't use i2c via MCP2221 for sending SPI flash data to HPS
@@ -284,8 +284,7 @@ fn run_loop(
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
-    let command_source =
-        debug_commands::create_command_source(console, flags.cmd.as_deref().unwrap_or(""))?;
+    let command_source = debug_commands::create_command_source(console, &flags.cmd.join(";"))?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {
