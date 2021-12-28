@@ -291,6 +291,14 @@ fn main() -> Result<()> {
         SubCommand::Status(_) => {
             println!("Status register: {:?}", hps.status()?);
             println!("{}", query_status(&mut *hps)?);
+            println!(
+                "FPGA boot count: {}",
+                hps.read_register(registers::FPGA_BOOT_COUNT)?
+            );
+            println!(
+                "FPGA loop count: {}",
+                hps.read_register(registers::FPGA_LOOP_COUNT)?
+            );
             Ok(())
         }
         #[cfg(feature = "daemon")]
