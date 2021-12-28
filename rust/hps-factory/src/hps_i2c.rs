@@ -18,6 +18,7 @@ use indicatif::ProgressBar;
 use linux_embedded_hal::Delay;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
+use mcu_common::registers;
 use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
@@ -37,6 +38,9 @@ mod fpga_firmware {
 /// How long we'll wait for the system bootloader or HPS stage0/stage1 to become
 /// responsive to I2C requests.
 const STARTUP_TIMOUT: Duration = Duration::from_millis(1000);
+
+/// How long we'll wait for the soft CPU to start.
+const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// An I2C interface to the HPS. Allows access to both the system bootloader and
 /// HPS functionality.
@@ -201,6 +205,19 @@ where
         hps.perform_command(Command::LaunchApp)?;
         while hps.stage()? != Stage::Application {
             hps.check_errors()?;
+        }
+        let start = Instant::now();
+        loop {
+            if hps.read_register(registers::FPGA_BOOT_COUNT)? > 0 {
+                break;
+            }
+            if start.elapsed() > FPGA_START_TIMEOUT {
+                bail!(
+                    "FPGA soft CPU failed to start within {}s",
+                    FPGA_START_TIMEOUT.as_secs()
+                );
+            }
+            std::thread::sleep(Duration::from_millis(100));
         }
         Ok(())
     }
