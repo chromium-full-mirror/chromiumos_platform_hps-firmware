@@ -29,6 +29,12 @@ pub use timer::Timer;
 
 const SOC_ROM_VERSION: u8 = 1;
 
+// We do multiple tests per loop iteration for two reasons. (1) we report our
+// status each loop iteration, so if we only did one test, then we'd be sending
+// as many status reports as echo requests and (2) we'd overflow our loop
+// counter too quickly if we only did a single test.
+pub const MCU_COMMS_TESTS_PER_LOOP: u32 = 100;
+
 /// Print to hps-mon via the MCU. The first argument can be anything that
 /// implements `mcu_mut()`.
 macro_rules! mcu_println {
@@ -375,14 +381,8 @@ where
     fn mcu_fpga_comm_test(&mut self) {
         let mut bad = 0;
         self.status.loop_count = 0;
-        // We do multiple tests per loop iteration for two reasons. (1) we
-        // report our status each loop iteration, so if we only did one test,
-        // then we'd be sending as many status reports as echo requests and (2)
-        // we'd overflow our loop counter too quickly if we only did a single
-        // test.
-        const TESTS_PER_LOOP: u32 = 100;
         loop {
-            for _ in 0..TESTS_PER_LOOP {
+            for _ in 0..MCU_COMMS_TESTS_PER_LOOP {
                 if self.mcu.echo_test().is_err() {
                     bad += 1;
                 }

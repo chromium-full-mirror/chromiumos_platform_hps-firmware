@@ -91,6 +91,13 @@ where
             registers::ENABLED_FEATURES,
             Features::MCU_FPGA_COMM_TEST.bits(),
         )?;
+        // Make sure the fpga_app has finished initializing and has started
+        // executing the test loop, otherwise our timing will be out.
+        while hps.read_register(registers::FPGA_LOOP_COUNT)? < 5 {
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        let start = Instant::now();
+        let start_loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
         loop {
             let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
             let error_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
@@ -107,7 +114,21 @@ where
             }
             std::thread::sleep(Duration::from_millis(100));
         }
+        let final_loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+        // Note, the * 2 is because each buffer gets transferred twice (from
+        // FPGA->MCU then MCU->FPGA). There is some time spent by the FPGA
+        // setting up the buffer then checking that the returned buffer is
+        // correct. This time is included because excluding it would require
+        // doing the timing on the soft CPU.
+        let bytes_transferred = application::fpga::BUFFER_SIZE
+            * fpga_app::MCU_COMMS_TESTS_PER_LOOP as usize
+            * 2
+            * (final_loop_count - start_loop_count) as usize;
         bar.finish();
+        println!(
+            "Average transfer speed: {} bytes/sec",
+            (bytes_transferred as f64 / start.elapsed().as_secs_f64()) as u32
+        );
         Ok(())
     }
 
