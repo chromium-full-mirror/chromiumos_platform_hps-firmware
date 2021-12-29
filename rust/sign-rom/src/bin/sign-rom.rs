@@ -41,6 +41,11 @@ fn main() -> Result<()> {
     }
     println!("Using region length = 0x{:04X}", config.region_length);
 
+    // Replace any existing signature with zeroes before computing the digest.
+    // This ensures the operation is idempotent, and that we can re-sign an image
+    // using a different key and get the correct result.
+    sign_rom::zero_signature(&mut file_bytes)?;
+
     // Computes the signature of the non-header portion of `file_bytes` then stores
     // that signature into the appropriate location in the header at the start of
     // `file_bytes`

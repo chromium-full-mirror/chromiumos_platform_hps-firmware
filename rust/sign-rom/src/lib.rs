@@ -20,6 +20,16 @@ pub fn write_signature(file_bytes: &mut [u8], signature: &Signature) -> Result<(
     Ok(())
 }
 
+/// Overwrites the signature in `file_bytes` with zeroes.
+pub fn zero_signature(file_bytes: &mut [u8]) -> Result<()> {
+    const SIGNATURE_END: usize = SIGNATURE_OFFSET + SIGNATURE_LENGTH;
+    if file_bytes.len() < SIGNATURE_END {
+        bail!("Input file is too short to contain a signature");
+    }
+    file_bytes[SIGNATURE_OFFSET..SIGNATURE_END].fill(0);
+    Ok(())
+}
+
 /// Compute the digest of the payload image with the required length
 /// extention for later signing.
 pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]> {
@@ -139,5 +149,17 @@ mod test {
             raw_bytes: [42u8; 64],
         };
         assert!(super::write_signature(&mut buffer, &signature).is_err());
+    }
+
+    #[test]
+    fn test_zero_signature() {
+        let mut buffer = [99u8; 100];
+        super::zero_signature(&mut buffer).unwrap();
+        assert_eq!(buffer[0], 99);
+        assert_eq!(buffer[mcu_common::SIGNATURE_OFFSET], 0);
+        assert_eq!(
+            buffer[mcu_common::SIGNATURE_OFFSET + mcu_common::SIGNATURE_LENGTH],
+            99
+        );
     }
 }
