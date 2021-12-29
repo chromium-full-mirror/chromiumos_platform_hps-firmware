@@ -62,11 +62,11 @@ class SpiController(Module, AutoCSR):
         # Add clocking logic
         self.clock_counter_max = int(self.sys_clk_freq // spi_clk_freq) - 1
         self.clock_counter_half = int(self.sys_clk_freq // (spi_clk_freq * 2))
-        self.clock_counter = Signal(max=self.clock_counter_max)
+        self.clock_counter = Signal(max=self.clock_counter_max + 1)
         self._run_clock()
 
         # Add state machine and supporting counters
-        self.bit_count = Signal(max=7)
+        self.bit_count = Signal(max=8)
         self.shift_register = Signal(9)
         self._handle_idle()
         self._handle_running()
