@@ -307,8 +307,8 @@ where
 
         mcu_println!(self, "Testing TFLM on canned data");
 
-        self.check_score("person", PERSON, 126)?;
-        self.check_score("not-person", NOT_PERSON, -127)?;
+        self.check_score("person", PERSON, 106)?;
+        self.check_score("not-person", NOT_PERSON, -128)?;
 
         mcu_println!(self, "Self-test passed");
         Ok(())
