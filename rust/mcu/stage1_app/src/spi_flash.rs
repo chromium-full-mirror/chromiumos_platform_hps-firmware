@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 use crate::board;
-use crc::Crc;
 use hal::gpio::Analog;
 use hal::prelude::OutputPin;
 use hal::rcc::Rcc;
-use hal::timer::stopwatch::Stopwatch;
 use hmac_sha256::Hash;
 use log::error;
 use log::info;
@@ -17,8 +15,8 @@ use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
 
-const PAGE_SIZE: u32 = 256;
-const BLOCK_SIZE: u32 = 64 * 1024;
+pub(crate) const PAGE_SIZE: u32 = 256;
+pub(crate) const BLOCK_SIZE: u32 = 64 * 1024;
 
 /// Write's `data` to `address` in the SPI flash. `data` is updated based on
 /// response from the SPI flash. We don't actually use this returned data, but
@@ -90,28 +88,6 @@ pub(crate) fn enable_quad_spi(
     flash.enable_quad_spi()
 }
 
-pub(crate) fn debug_read(
-    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
-    address: u32,
-) {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return;
-        }
-    };
-    let mut buffer = [0u8; 16];
-    if spi_flash.read(address, &mut buffer).is_err() {
-        error!("Failed to read SPI flash");
-        return;
-    }
-    info!("SPI flash bytes");
-    for v in &buffer {
-        info!("{}, ", v);
-    }
-}
-
 pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>) {
     let spi_flash = match spi_flash {
         Some(x) => x,
@@ -128,7 +104,7 @@ pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpiControl, board::
     }
 }
 
-fn hash_internal(
+pub(crate) fn hash_internal(
     spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
     num_pages: u32,
 ) -> Result<[u8; 32], Error> {
@@ -151,114 +127,6 @@ pub(crate) fn hash(
     spi_flash: &mut Flash<board::FlashSpiControl, board::FlashSpiCs>,
 ) -> Result<[u8; 32], Error> {
     hash_internal(spi_flash, SPI_FLASH_SIZE / PAGE_SIZE)
-}
-
-pub(crate) fn time_hash(
-    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
-    num_pages: u32,
-    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
-) {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return;
-        }
-    };
-    let elapsed_us = stopwatch.trace(|| {
-        let hash = hash_internal(spi_flash, num_pages);
-        info!("Hash of first {} pages was: {:?}", num_pages, hash);
-    });
-    info!("Hashing took {}us", elapsed_us.0);
-}
-
-const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
-
-pub(crate) fn crc_sector(
-    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
-    block: u16,
-) -> [u8; 4] {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return [0, 0, 0, 0];
-        }
-    };
-    let mut digest = CRC.digest();
-    let mut buf = [0x00; PAGE_SIZE as usize];
-    const PAGES_PER_BLOCK: u32 = BLOCK_SIZE / PAGE_SIZE;
-    for page_offset in 0..PAGES_PER_BLOCK {
-        let _ = spi_flash.read(
-            (block as u32 * PAGES_PER_BLOCK + page_offset) * PAGE_SIZE,
-            &mut buf,
-        );
-        digest.update(&buf);
-    }
-    digest.finalize().to_le_bytes()
-}
-
-pub(crate) fn test_read_speed(
-    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
-    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
-) {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return;
-        }
-    };
-    info!("Reading...");
-    const READ_SIZE: u32 = 1024 * 1024;
-    let mut buf = [0u8; PAGE_SIZE as usize];
-    let elapsed_us = stopwatch.trace(|| {
-        for page in 0..(READ_SIZE / PAGE_SIZE) {
-            let _ = spi_flash.read(page * PAGE_SIZE, &mut buf);
-        }
-    });
-    info!("Reading 1MB took {}us", elapsed_us.0);
-}
-
-pub(crate) fn test_write_speed(
-    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
-    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
-) {
-    let spi_flash = match spi_flash {
-        Some(x) => x,
-        None => {
-            error!("SPI flash not available");
-            return;
-        }
-    };
-    info!("Writing...");
-    const READ_SIZE: u32 = 1024 * 1024;
-    let mut buf = [42u8; PAGE_SIZE as usize];
-    let mut erase_time = 0;
-    let mut write_time = 0;
-    for page in 0..(READ_SIZE / PAGE_SIZE) {
-        let address = 9 * 1024 * 1024 + page * PAGE_SIZE;
-        if address % BLOCK_SIZE == 0 {
-            erase_time += stopwatch
-                .trace(|| {
-                    // safety: We hold a mutable reference to Flash, which owns
-                    // the same peripheral.
-                    let mut spi = unsafe { SpiFlash::steal() };
-                    let _ = spi.erase_block(address);
-                })
-                .0;
-        }
-        write_time += stopwatch
-            .trace(|| {
-                let _ = spi_flash.write_bytes(address, &mut buf);
-            })
-            .0;
-    }
-    info!(
-        "Erasing 1MB took {}ms. Writing 1MB took {}ms",
-        erase_time / 1000,
-        write_time / 1000
-    );
 }
 
 /// Uninitializes the SPI interface to the SPI flash. This is used when we're
@@ -367,7 +235,7 @@ impl SpiFlash {
     /// you're using the returned result. i.e. SPI must already be initialized
     /// and you must not access it via other means concurrently with using the
     /// returned interface.
-    unsafe fn steal() -> Self {
+    pub unsafe fn steal() -> Self {
         // safety: We're transmuting a zero-sized type, so there's no state to
         // initialize in the returned value. All initialization lives in the
         // peripheral itself and it's up to the caller to ensure that has
@@ -404,7 +272,7 @@ impl SpiFlash {
         Ok(())
     }
 
-    fn erase_block(&mut self, address: u32) -> Result<(), SpiFlashError> {
+    pub(crate) fn erase_block(&mut self, address: u32) -> Result<(), SpiFlashError> {
         self.write_enable()?;
         let mut buf = [
             Command::EraseBlock as u8,

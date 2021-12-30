@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 use core::convert::TryFrom;
+use crc::Crc;
 use hal::prelude::OutputPin;
 use hal::rcc::Rcc;
+use hal::timer::stopwatch::Stopwatch;
 use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
 use log::error;
@@ -17,9 +19,13 @@ use mcu_common::DEBUG_COMMAND_START;
 use rtt_target::rtt_init;
 use rtt_target::DownChannel;
 use rtt_target::UpChannel;
+use spi_memory::series25::Flash;
 
 use crate::board::CameraI2c;
 use crate::fpga_device::get_spi_flash;
+use crate::spi_flash::SpiFlash;
+
+const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
 
 pub struct DebugResources {
     pub(crate) fpga_up_channel: UpChannel,
@@ -285,7 +291,7 @@ pub(crate) fn handle_mcu_debug_command(
     resources: &mut crate::timer_tick::Resources,
 ) {
     match command.kind {
-        McuDebugCommand::ReadSpiFlash => crate::spi_flash::debug_read(
+        McuDebugCommand::ReadSpiFlash => debug_read(
             get_spi_flash(resources.fpga_device).ok(),
             command.arg as u32,
         ),
@@ -313,27 +319,28 @@ pub(crate) fn handle_mcu_debug_command(
         McuDebugCommand::EraseSpiFlash => {
             crate::spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
         }
-        McuDebugCommand::HashSpiFlash => crate::spi_flash::time_hash(
+        McuDebugCommand::HashSpiFlash => time_hash(
             get_spi_flash(resources.fpga_device).ok(),
             command.arg as u32,
             resources.stopwatch,
         ),
         McuDebugCommand::SpiFlashCrc => {
-            resources.debug_resources.mcu_cmd_response_channel.write(
-                &crate::spi_flash::crc_sector(
+            resources
+                .debug_resources
+                .mcu_cmd_response_channel
+                .write(&crc_sector(
                     get_spi_flash(resources.fpga_device).ok(),
                     command.arg,
-                ),
-            );
+                ));
         }
         McuDebugCommand::SpiFlashReadSpeed => {
-            crate::spi_flash::test_read_speed(
+            test_read_speed(
                 get_spi_flash(resources.fpga_device).ok(),
                 resources.stopwatch,
             );
         }
         McuDebugCommand::SpiFlashWriteSpeed => {
-            crate::spi_flash::test_write_speed(
+            test_write_speed(
                 get_spi_flash(resources.fpga_device).ok(),
                 resources.stopwatch,
             );
@@ -393,4 +400,145 @@ pub(crate) fn handle_mcu_debug_command(
         }
         McuDebugCommand::Ping => info!("Pong!"),
     }
+}
+
+pub(crate) fn debug_read(
+    spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
+    address: u32,
+) {
+    use spi_memory::Read;
+
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return;
+        }
+    };
+    let mut buffer = [0u8; 16];
+    if spi_flash.read(address, &mut buffer).is_err() {
+        error!("Failed to read SPI flash");
+        return;
+    }
+    info!("SPI flash bytes");
+    for v in &buffer {
+        info!("{}, ", v);
+    }
+}
+
+pub(crate) fn crc_sector(
+    spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
+    block: u16,
+) -> [u8; 4] {
+    use crate::spi_flash::BLOCK_SIZE;
+    use crate::spi_flash::PAGE_SIZE;
+    use spi_memory::Read;
+
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return [0, 0, 0, 0];
+        }
+    };
+    let mut digest = CRC.digest();
+    let mut buf = [0x00; PAGE_SIZE as usize];
+    const PAGES_PER_BLOCK: u32 = BLOCK_SIZE / PAGE_SIZE;
+    for page_offset in 0..PAGES_PER_BLOCK {
+        let _ = spi_flash.read(
+            (block as u32 * PAGES_PER_BLOCK + page_offset) * PAGE_SIZE,
+            &mut buf,
+        );
+        digest.update(&buf);
+    }
+    digest.finalize().to_le_bytes()
+}
+
+fn test_read_speed(
+    spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    use crate::spi_flash::PAGE_SIZE;
+    use spi_memory::Read;
+
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return;
+        }
+    };
+    info!("Reading...");
+    const READ_SIZE: u32 = 1024 * 1024;
+    let mut buf = [0u8; PAGE_SIZE as usize];
+    let elapsed_us = stopwatch.trace(|| {
+        for page in 0..(READ_SIZE / PAGE_SIZE) {
+            let _ = spi_flash.read(page * PAGE_SIZE, &mut buf);
+        }
+    });
+    info!("Reading 1MB took {}us", elapsed_us.0);
+}
+
+fn test_write_speed(
+    spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    use crate::spi_flash::BLOCK_SIZE;
+    use crate::spi_flash::PAGE_SIZE;
+    use spi_memory::BlockDevice;
+
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return;
+        }
+    };
+    info!("Writing...");
+    const READ_SIZE: u32 = 1024 * 1024;
+    let mut buf = [42u8; PAGE_SIZE as usize];
+    let mut erase_time = 0;
+    let mut write_time = 0;
+    for page in 0..(READ_SIZE / PAGE_SIZE) {
+        let address = 9 * 1024 * 1024 + page * PAGE_SIZE;
+        if address % BLOCK_SIZE == 0 {
+            erase_time += stopwatch
+                .trace(|| {
+                    // safety: We hold a mutable reference to Flash, which owns
+                    // the same peripheral.
+                    let mut spi = unsafe { SpiFlash::steal() };
+                    let _ = spi.erase_block(address);
+                })
+                .0;
+        }
+        write_time += stopwatch
+            .trace(|| {
+                let _ = spi_flash.write_bytes(address, &mut buf);
+            })
+            .0;
+    }
+    info!(
+        "Erasing 1MB took {}ms. Writing 1MB took {}ms",
+        erase_time / 1000,
+        write_time / 1000
+    );
+}
+
+pub(crate) fn time_hash(
+    spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
+    num_pages: u32,
+    stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
+) {
+    let spi_flash = match spi_flash {
+        Some(x) => x,
+        None => {
+            error!("SPI flash not available");
+            return;
+        }
+    };
+    let elapsed_us = stopwatch.trace(|| {
+        let hash = crate::spi_flash::hash_internal(spi_flash, num_pages);
+        info!("Hash of first {} pages was: {:?}", num_pages, hash);
+    });
+    info!("Hashing took {}us", elapsed_us.0);
 }
