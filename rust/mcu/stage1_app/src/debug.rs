@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use core::convert::TryFrom;
+use hal::prelude::OutputPin;
 use hal::rcc::Rcc;
 use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
@@ -18,6 +19,7 @@ use rtt_target::DownChannel;
 use rtt_target::UpChannel;
 
 use crate::board::CameraI2c;
+use crate::fpga_device::get_spi_flash;
 
 pub struct DebugResources {
     pub(crate) fpga_up_channel: UpChannel,
@@ -276,4 +278,119 @@ pub(crate) fn transfer_image(
         image_channel.write(&buffer[1..]);
     }
     success
+}
+
+pub(crate) fn handle_mcu_debug_command(
+    command: McuDebugCommandInfo,
+    resources: &mut crate::timer_tick::Resources,
+) {
+    match command.kind {
+        McuDebugCommand::ReadSpiFlash => crate::spi_flash::debug_read(
+            get_spi_flash(resources.fpga_device).ok(),
+            command.arg as u32,
+        ),
+        McuDebugCommand::WriteSpiFlash => {
+            if let Some(write_request) = command.write_request {
+                // For now, we ignore returned errors here, since the write
+                // function will have printed the error message in more detail
+                // already.
+                let _ = crate::spi_flash::write(
+                    get_spi_flash(resources.fpga_device).ok(),
+                    write_request.address,
+                    &*write_request.data,
+                );
+                resources
+                    .debug_resources
+                    .mcu_debug_handler
+                    .supply_mem_block(write_request.data.release());
+                resources
+                    .debug_resources
+                    .mcu_cmd_response_channel
+                    .write(&[0, 0, 0, 0]);
+            }
+        }
+        McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
+        McuDebugCommand::EraseSpiFlash => {
+            crate::spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
+        }
+        McuDebugCommand::HashSpiFlash => crate::spi_flash::time_hash(
+            get_spi_flash(resources.fpga_device).ok(),
+            command.arg as u32,
+            resources.stopwatch,
+        ),
+        McuDebugCommand::SpiFlashCrc => {
+            resources.debug_resources.mcu_cmd_response_channel.write(
+                &crate::spi_flash::crc_sector(
+                    get_spi_flash(resources.fpga_device).ok(),
+                    command.arg,
+                ),
+            );
+        }
+        McuDebugCommand::SpiFlashReadSpeed => {
+            crate::spi_flash::test_read_speed(
+                get_spi_flash(resources.fpga_device).ok(),
+                resources.stopwatch,
+            );
+        }
+        McuDebugCommand::SpiFlashWriteSpeed => {
+            crate::spi_flash::test_write_speed(
+                get_spi_flash(resources.fpga_device).ok(),
+                resources.stopwatch,
+            );
+        }
+        McuDebugCommand::FpgaPowerOff => {
+            resources.fpga_device.power_gate.set_high().unwrap();
+            info!("FPGA and SPI flash powered off");
+        }
+        McuDebugCommand::FpgaPowerOn => {
+            resources.fpga_device.power_gate.set_low().unwrap();
+            info!("FPGA and SPI flash powered on");
+        }
+        McuDebugCommand::ResetFpga => {
+            resources.fpga_device.reset_fpga();
+        }
+        McuDebugCommand::ReadCameraRegister => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.read_reg(command.arg) {
+                Ok(v) => info!("Register 0x{:04x} = 0x{:02x}", command.arg, v),
+                Err(_) => info!("Failed to read 0x{:04x}", command.arg),
+            }
+        }
+        McuDebugCommand::ReadCameraId => read_camera_id(resources.camera_i2c),
+        McuDebugCommand::ReadCameraAeConfig => read_camera_ae_config(resources.camera_i2c),
+        McuDebugCommand::ReadCameraIntegrationGains => {
+            read_camera_gains(resources.camera_i2c);
+            read_camera_integration(resources.camera_i2c);
+        }
+        McuDebugCommand::SetCameraDigitalGain => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.set_digital_gain(command.arg) {
+                Ok(_) => read_camera_gains(resources.camera_i2c),
+                Err(_) => info!("Failed to write digital gain"),
+            }
+        }
+        McuDebugCommand::SetCameraAnalogGain => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.set_analog_gain(command.arg) {
+                Ok(_) => read_camera_gains(resources.camera_i2c),
+                Err(_) => info!("Failed to write analog gain"),
+            }
+        }
+        McuDebugCommand::SetCameraIntegration => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            info!("Writing {}", command.arg);
+            match c.set_integration(command.arg) {
+                Ok(_) => read_camera_integration(resources.camera_i2c),
+                Err(_) => info!("Failed to write integration"),
+            }
+        }
+        McuDebugCommand::SetCameraAeTarget => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match c.set_ae_target(command.arg) {
+                Ok(_) => read_camera_ae_config(resources.camera_i2c),
+                Err(_) => info!("Failed to write AE target"),
+            }
+        }
+        McuDebugCommand::Ping => info!("Pong!"),
+    }
 }

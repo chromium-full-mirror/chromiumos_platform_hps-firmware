@@ -21,7 +21,6 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
-use debug::McuDebugCommandInfo;
 use hal::delay::Delay;
 use hal::prelude::*;
 use hal::rcc::Rcc;
@@ -29,7 +28,6 @@ use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 #[cfg(not(feature = "dev"))]
 use panic_halt as _;
@@ -147,7 +145,7 @@ const APP: () = {
             .mcu_debug_handler
             .get_mcu_debug_command()
         {
-            handle_mcu_debug_command(command, &mut ctx.resources);
+            debug::handle_mcu_debug_command(command, &mut ctx.resources);
         }
     }
 
@@ -285,119 +283,6 @@ const APP: () = {
         fn TIM17();
     }
 };
-
-fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
-    match command.kind {
-        McuDebugCommand::ReadSpiFlash => spi_flash::debug_read(
-            get_spi_flash(resources.fpga_device).ok(),
-            command.arg as u32,
-        ),
-        McuDebugCommand::WriteSpiFlash => {
-            if let Some(write_request) = command.write_request {
-                // For now, we ignore returned errors here, since the write
-                // function will have printed the error message in more detail
-                // already.
-                let _ = spi_flash::write(
-                    get_spi_flash(resources.fpga_device).ok(),
-                    write_request.address,
-                    &*write_request.data,
-                );
-                resources
-                    .debug_resources
-                    .mcu_debug_handler
-                    .supply_mem_block(write_request.data.release());
-                resources
-                    .debug_resources
-                    .mcu_cmd_response_channel
-                    .write(&[0, 0, 0, 0]);
-            }
-        }
-        McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
-        McuDebugCommand::EraseSpiFlash => {
-            spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
-        }
-        McuDebugCommand::HashSpiFlash => spi_flash::time_hash(
-            get_spi_flash(resources.fpga_device).ok(),
-            command.arg as u32,
-            resources.stopwatch,
-        ),
-        McuDebugCommand::SpiFlashCrc => {
-            resources
-                .debug_resources
-                .mcu_cmd_response_channel
-                .write(&spi_flash::crc_sector(
-                    get_spi_flash(resources.fpga_device).ok(),
-                    command.arg,
-                ));
-        }
-        McuDebugCommand::SpiFlashReadSpeed => {
-            spi_flash::test_read_speed(
-                get_spi_flash(resources.fpga_device).ok(),
-                resources.stopwatch,
-            );
-        }
-        McuDebugCommand::SpiFlashWriteSpeed => {
-            spi_flash::test_write_speed(
-                get_spi_flash(resources.fpga_device).ok(),
-                resources.stopwatch,
-            );
-        }
-        McuDebugCommand::FpgaPowerOff => {
-            resources.fpga_device.power_gate.set_high().unwrap();
-            info!("FPGA and SPI flash powered off");
-        }
-        McuDebugCommand::FpgaPowerOn => {
-            resources.fpga_device.power_gate.set_low().unwrap();
-            info!("FPGA and SPI flash powered on");
-        }
-        McuDebugCommand::ResetFpga => {
-            resources.fpga_device.reset_fpga();
-        }
-        McuDebugCommand::ReadCameraRegister => {
-            let mut c = hm01b0::Camera::new(resources.camera_i2c);
-            match c.read_reg(command.arg) {
-                Ok(v) => info!("Register 0x{:04x} = 0x{:02x}", command.arg, v),
-                Err(_) => info!("Failed to read 0x{:04x}", command.arg),
-            }
-        }
-        McuDebugCommand::ReadCameraId => debug::read_camera_id(resources.camera_i2c),
-        McuDebugCommand::ReadCameraAeConfig => debug::read_camera_ae_config(resources.camera_i2c),
-        McuDebugCommand::ReadCameraIntegrationGains => {
-            debug::read_camera_gains(resources.camera_i2c);
-            debug::read_camera_integration(resources.camera_i2c);
-        }
-        McuDebugCommand::SetCameraDigitalGain => {
-            let mut c = hm01b0::Camera::new(resources.camera_i2c);
-            match c.set_digital_gain(command.arg) {
-                Ok(_) => debug::read_camera_gains(resources.camera_i2c),
-                Err(_) => info!("Failed to write digital gain"),
-            }
-        }
-        McuDebugCommand::SetCameraAnalogGain => {
-            let mut c = hm01b0::Camera::new(resources.camera_i2c);
-            match c.set_analog_gain(command.arg) {
-                Ok(_) => debug::read_camera_gains(resources.camera_i2c),
-                Err(_) => info!("Failed to write analog gain"),
-            }
-        }
-        McuDebugCommand::SetCameraIntegration => {
-            let mut c = hm01b0::Camera::new(resources.camera_i2c);
-            info!("Writing {}", command.arg);
-            match c.set_integration(command.arg) {
-                Ok(_) => debug::read_camera_integration(resources.camera_i2c),
-                Err(_) => info!("Failed to write integration"),
-            }
-        }
-        McuDebugCommand::SetCameraAeTarget => {
-            let mut c = hm01b0::Camera::new(resources.camera_i2c);
-            match c.set_ae_target(command.arg) {
-                Ok(_) => debug::read_camera_ae_config(resources.camera_i2c),
-                Err(_) => info!("Failed to write AE target"),
-            }
-        }
-        McuDebugCommand::Ping => info!("Pong!"),
-    }
-}
 
 fn rcc_config() -> hal::rcc::Config {
     // Clock our CPU at 60MHz. This is as close as we can get to the maximum
