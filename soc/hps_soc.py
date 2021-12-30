@@ -269,7 +269,7 @@ def main():
     meta_file = f'{builder.output_dir}/gateware/hps_platform_build.metadata'
     print(f'Execution time for the build is: {run_time}s')
     with open(meta_file, 'w') as f:
-      f.write(f'RUN_TIME: {run_time}\n')
+        f.write(f'RUN_TIME: {run_time}\n')
 
     soc.do_exit(vns)
 
