@@ -17,7 +17,7 @@ mcp2221 = { path = "../mcp2221" }
 mcu_common = { path  = "../mcu_common" }
 probe-rs = { version = "0.10.1", optional = true }
 probe-rs-rtt = { version = "0.10.1", optional = true }
-rustyline = "8.2.0"
+rustyline = "9"
 
 [features]
 direct  = [ "probe-rs", "probe-rs-rtt" ]
