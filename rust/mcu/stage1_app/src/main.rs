@@ -189,7 +189,7 @@ const APP: () = {
             }
             #[cfg(feature = "image-transfer")]
             fpga::Action::DebugImage => {
-                if !transfer_image(
+                if !debug::transfer_image(
                     &buffer,
                     &mut ctx.resources.debug_resources.image_channel,
                     ctx.resources.state,
@@ -283,26 +283,6 @@ const APP: () = {
         fn TIM17();
     }
 };
-
-#[cfg(feature = "image-transfer")]
-fn transfer_image(
-    buffer: &MemBlock,
-    image_channel: &mut rtt_target::UpChannel,
-    mut state: resources::state,
-    mut host_interface: resources::host_interface,
-) -> bool {
-    use rtic::Mutex;
-    let i2c_image_xfer_enabled = state.lock(|s| s.i2c_image_transfer_enabled());
-    let mut success = true;
-    if i2c_image_xfer_enabled {
-        host_interface.lock(|host_interface| {
-            success = host_interface.queue_image_data_for_i2c(&buffer[1..]);
-        });
-    } else {
-        image_channel.write(&buffer[1..]);
-    }
-    success
-}
 
 fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_tick::Resources) {
     match command.kind {

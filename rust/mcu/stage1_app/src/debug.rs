@@ -200,3 +200,23 @@ pub(crate) fn read_camera_integration(camera_i2c: &mut CameraI2c) {
         Err(_) => info!("Integration:\tFailed"),
     }
 }
+
+#[cfg(feature = "image-transfer")]
+pub(crate) fn transfer_image(
+    buffer: &MemBlock,
+    image_channel: &mut rtt_target::UpChannel,
+    mut state: crate::resources::state,
+    mut host_interface: crate::resources::host_interface,
+) -> bool {
+    use rtic::Mutex;
+    let i2c_image_xfer_enabled = state.lock(|s| s.i2c_image_transfer_enabled());
+    let mut success = true;
+    if i2c_image_xfer_enabled {
+        host_interface.lock(|host_interface| {
+            success = host_interface.queue_image_data_for_i2c(&buffer[1..]);
+        });
+    } else {
+        image_channel.write(&buffer[1..]);
+    }
+    success
+}
