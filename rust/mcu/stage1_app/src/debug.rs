@@ -14,8 +14,18 @@ use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
 use rtt_target::DownChannel;
+use rtt_target::UpChannel;
 
 use crate::board::CameraI2c;
+
+pub struct DebugResources {
+    pub(crate) fpga_up_channel: UpChannel,
+    #[cfg(feature = "image-transfer")]
+    pub(crate) image_channel: UpChannel,
+    pub(crate) mcu_cmd_response_channel: UpChannel,
+    pub(crate) fpga_debug_handler: DebugCommandHandler,
+    pub(crate) mcu_debug_handler: DebugCommandHandler,
+}
 
 pub struct DebugCommandHandler {
     channel: DownChannel,

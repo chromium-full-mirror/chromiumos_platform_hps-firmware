@@ -26,7 +26,6 @@ use hal::delay::Delay;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::timer::stopwatch::Stopwatch;
-use hal::timer::Timer;
 use log::error;
 use log::info;
 use mcu_common::commands::Command;
@@ -35,7 +34,6 @@ use mcu_common::MemBlock;
 use panic_rtt_target as _;
 use rtic::app;
 use rtt_target::rtt_init;
-use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
 
 const CAMERA_ID: u16 = 0x01b0;
@@ -53,12 +51,8 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_device: FpgaDevice,
-        fpga_up_channel: UpChannel,
-        image_channel: UpChannel,
-        mcu_cmd_response_channel: UpChannel,
-        fpga_debug_handler: debug::DebugCommandHandler,
-        mcu_debug_handler: debug::DebugCommandHandler,
-        timer: Timer<hal::stm32::TIM16>,
+        debug_resources: debug::DebugResources,
+        timer: hal::timer::Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
         tick_count: u32,
@@ -76,6 +70,7 @@ const APP: () = {
             .host_interface
             .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
         resources
+            .debug_resources
             .mcu_debug_handler
             .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
         resources
@@ -133,8 +128,8 @@ const APP: () = {
     }
 
     #[task(binds = TIM16,
-        resources = [mcu_debug_handler, fpga_device, timer, camera_i2c, stopwatch,
-            mcu_cmd_response_channel, debug_led, tick_count])]
+        resources = [debug_resources, fpga_device, timer, camera_i2c, stopwatch,
+            debug_led, tick_count])]
     fn timer_tick(mut ctx: timer_tick::Context) {
         ctx.resources.timer.clear_irq();
         let led = &mut ctx.resources.debug_led;
@@ -144,13 +139,17 @@ const APP: () = {
         } else {
             led.set_high().unwrap();
         }
-        while let Some(command) = ctx.resources.mcu_debug_handler.get_mcu_debug_command() {
+        while let Some(command) = ctx
+            .resources
+            .debug_resources
+            .mcu_debug_handler
+            .get_mcu_debug_command()
+        {
             handle_mcu_debug_command(command, &mut ctx.resources);
         }
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_device, fpga_up_channel,
-        image_channel, fpga_debug_handler, mcu_debug_handler, camera_i2c, host_interface],
+    #[task(resources = [spi, state, debug_led, fpga_device, debug_resources, camera_i2c, host_interface],
         spawn = [handle_spi_packet])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
@@ -181,7 +180,7 @@ const APP: () = {
             }
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
-                    let channel = ctx.resources.fpga_up_channel;
+                    let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
                     use core::fmt::Write;
                     write!(channel, "{}", message).unwrap();
                 } else {
@@ -192,7 +191,7 @@ const APP: () = {
             fpga::Action::DebugImage => {
                 if !transfer_image(
                     &buffer,
-                    ctx.resources.image_channel,
+                    &mut ctx.resources.debug_resources.image_channel,
                     ctx.resources.state,
                     ctx.resources.host_interface,
                 ) {
@@ -204,6 +203,7 @@ const APP: () = {
             }
             fpga::Action::GetDebugCommand => {
                 ctx.resources
+                    .debug_resources
                     .fpga_debug_handler
                     .get_debug_command(&mut buffer[2..]);
             }
@@ -230,7 +230,7 @@ const APP: () = {
         ctx.resources.spi.lock(|spi| spi.send(buffer));
     }
 
-    #[task(resources = [fpga_device, host_interface, mcu_debug_handler])]
+    #[task(resources = [fpga_device, host_interface])]
     fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
         // On writing the first byte, erase the whole flash.
         // This allows a hash of the whole flash to match one calculated offline.
@@ -287,7 +287,7 @@ const APP: () = {
 #[cfg(feature = "image-transfer")]
 fn transfer_image(
     buffer: &MemBlock,
-    image_channel: &mut UpChannel,
+    image_channel: &mut rtt_target::UpChannel,
     mut state: resources::state,
     mut host_interface: resources::host_interface,
 ) -> bool {
@@ -321,9 +321,13 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
                     &*write_request.data,
                 );
                 resources
+                    .debug_resources
                     .mcu_debug_handler
                     .supply_mem_block(write_request.data.release());
-                resources.mcu_cmd_response_channel.write(&[0, 0, 0, 0]);
+                resources
+                    .debug_resources
+                    .mcu_cmd_response_channel
+                    .write(&[0, 0, 0, 0]);
             }
         }
         McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
@@ -337,6 +341,7 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
         ),
         McuDebugCommand::SpiFlashCrc => {
             resources
+                .debug_resources
                 .mcu_cmd_response_channel
                 .write(&spi_flash::crc_sector(
                     get_spi_flash(resources.fpga_device).ok(),
@@ -654,11 +659,14 @@ fn init_peripherals(
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_device,
-        fpga_up_channel: channels.up.1,
-        image_channel: channels.up.2,
-        mcu_cmd_response_channel: channels.up.3,
-        mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
-        fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
+        debug_resources: debug::DebugResources {
+            fpga_up_channel: channels.up.1,
+            #[cfg(feature = "image-transfer")]
+            image_channel: channels.up.2,
+            mcu_cmd_response_channel: channels.up.3,
+            mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
+            fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
+        },
         timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
         stopwatch,
