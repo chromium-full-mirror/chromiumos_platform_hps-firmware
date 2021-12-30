@@ -31,6 +31,9 @@ use log::info;
 use mcu_common::commands::Command;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
+#[cfg(not(feature = "dev"))]
+use panic_halt as _;
+#[cfg(feature = "dev")]
 use panic_rtt_target as _;
 use rtic::app;
 use spi_memory::series25::Flash;
