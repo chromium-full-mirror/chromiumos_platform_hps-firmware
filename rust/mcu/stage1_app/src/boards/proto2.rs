@@ -101,7 +101,7 @@ impl Board {
 
         let host_bus = Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl, i2c_config);
 
-        let flash_spi_cs = b.pb0.into_open_drain_output();
+        let flash_spi_cs = b.pb0.into_open_drain_output_high();
         let flash_spi_clk = a.pa5.set_speed(Speed::VeryHigh);
         let flash_spi_copi = a.pa7.set_speed(Speed::VeryHigh);
         let flash_spi_cipo = a.pa6.set_speed(Speed::VeryHigh);

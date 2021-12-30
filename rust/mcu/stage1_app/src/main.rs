@@ -570,10 +570,7 @@ fn init_peripherals(
     );
     let mut spi_flash = None;
 
-    if let Some(mut flash_spi_cs) = board.flash_spi_cs {
-        // CS line must be set high before we power on the SPI flash.
-        flash_spi_cs.set_high().unwrap();
-
+    if let Some(flash_spi_cs) = board.flash_spi_cs {
         // Ensure FPGA and SPI flash are powered.
         board.fpga_power_gate.set_low().unwrap();
 
