@@ -16,4 +16,5 @@ hps_interface = { path = "../hps_interface" }
 mcu_common = { path = "../mcu_common", features = [ "std" ] }
 
 [features]
+dev = []
 image-transfer = [ "mcu_common/image-transfer" ]

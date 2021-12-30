@@ -195,19 +195,14 @@ const APP: () = {
                     .lock(|state| fpga::report_boot(state, &buffer));
                 info!("FPGA reported boot #{}", count);
             }
+            #[cfg(feature = "dev")]
             fpga::Action::DebugLog => {
-                // This comment is here to prevent rustfmt from removing the
-                // outer braces, which would break compilation. A fix to rustfmt
-                // is pending: https://github.com/rust-lang/rustfmt/pull/5158
-                #[cfg(feature = "dev")]
-                {
-                    if let Some(message) = fpga::payload_as_string(&buffer) {
-                        let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
-                        use core::fmt::Write;
-                        write!(channel, "{}", message).unwrap();
-                    } else {
-                        info!("FPGA sent invalid message");
-                    }
+                if let Some(message) = fpga::payload_as_string(&buffer) {
+                    let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
+                    use core::fmt::Write;
+                    write!(channel, "{}", message).unwrap();
+                } else {
+                    info!("FPGA sent invalid message");
                 }
             }
             #[cfg(feature = "image-transfer")]
@@ -224,17 +219,12 @@ const APP: () = {
                     return;
                 }
             }
+            #[cfg(feature = "dev")]
             fpga::Action::GetDebugCommand => {
-                // This comment is here to prevent rustfmt from removing the
-                // outer braces, which would break compilation. A fix to rustfmt
-                // is pending: https://github.com/rust-lang/rustfmt/pull/5158
-                #[cfg(feature = "dev")]
-                {
-                    ctx.resources
-                        .debug_resources
-                        .fpga_debug_handler
-                        .get_debug_command(&mut buffer[2..]);
-                }
+                ctx.resources
+                    .debug_resources
+                    .fpga_debug_handler
+                    .get_debug_command(&mut buffer[2..]);
             }
             fpga::Action::ReadCameraI2c => {
                 let num_addresses: usize = buffer[1] as usize;

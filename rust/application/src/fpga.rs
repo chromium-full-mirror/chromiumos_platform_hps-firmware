@@ -28,9 +28,11 @@ pub enum Action {
     ResetFpga,
     ReadConfigRegisters,
     WriteStatusRegisters,
+    #[cfg(feature = "dev")]
     DebugLog,
     #[cfg(feature = "image-transfer")]
     DebugImage,
+    #[cfg(feature = "dev")]
     GetDebugCommand,
     ReadCameraI2c,
     WriteCameraI2c,
@@ -56,6 +58,7 @@ impl Request {
                 action = Action::SetDebugLed(buffer[1] != 0);
             }
             crate::fpga::commands::RESET_FPGA => action = Action::ResetFpga,
+            #[cfg(feature = "dev")]
             crate::fpga::commands::DEBUG_LOG => {
                 action = Action::DebugLog;
             }
@@ -63,6 +66,7 @@ impl Request {
             crate::fpga::commands::DEBUG_IMAGE => {
                 action = Action::DebugImage;
             }
+            #[cfg(feature = "dev")]
             crate::fpga::commands::GET_DEBUG_COMMAND => {
                 action = Action::GetDebugCommand;
             }
