@@ -7,6 +7,7 @@
 import argparse
 import os
 import time
+import pkg_resources
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
@@ -248,10 +249,9 @@ def main():
         variant=variant,
         cpu_cfu=args.cpu_cfu)
 
-    vexriscv = f'{SOC_DIR}/../third_party/python/' \
-        f'pythondata-cpu-vexriscv/pythondata_cpu_vexriscv'
     soc.cpu.use_external_variant(
-        f'{vexriscv}/verilog/VexRiscv_{variantName}.v')
+        pkg_resources.resource_filename('pythondata_cpu_vexriscv',
+                                        f'verilog/VexRiscv_{variantName}.v'))
 
     args.csr_svd = f'{args.output_dir}/hps.svd'
     args.memory_x = f'{args.output_dir}/memory.x'
