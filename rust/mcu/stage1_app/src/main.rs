@@ -523,14 +523,6 @@ fn init_peripherals(
 
     let mut host_interface = HostInterface::new(board.host_bus);
 
-    // Set up a periodic timer. This is only needed for polling our debug
-    // channels, so won't be needed in production. 100Hz is chosen in order to
-    // maximize the speed of writing to SPI flash from hps-mon. Going faster
-    // than 100Hz gives little to no gain in write speed.
-    let mut timer = p.TIM16.timer(&mut rcc);
-    timer.start(100.hz());
-    timer.listen();
-
     // Trigger an interrupt when the SPI CS line changes.
     let fpga_spi_cs = board
         .fpga_spi_cs
@@ -667,7 +659,7 @@ fn init_peripherals(
         mcu_cmd_response_channel: channels.up.3,
         mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
         fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
-        timer,
+        timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
         stopwatch,
         tick_count: 0,

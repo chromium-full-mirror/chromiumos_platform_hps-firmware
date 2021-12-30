@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use core::convert::TryFrom;
+use hal::rcc::Rcc;
 use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
 use log::error;
@@ -117,4 +118,20 @@ impl DebugCommandHandler {
             Some(command)
         }
     }
+}
+
+pub(crate) fn init_debug_timer(
+    tim16: hal::stm32::TIM16,
+    rcc: &mut Rcc,
+) -> hal::timer::Timer<hal::stm32::TIM16> {
+    use hal::prelude::*;
+
+    // Set up a periodic timer. This is only needed for polling our debug
+    // channels, so isn't needed in production. 100Hz is chosen in order to
+    // maximize the speed of writing to SPI flash from hps-mon. Going faster
+    // than 100Hz gives little to no gain in write speed.
+    let mut timer = tim16.timer(rcc);
+    timer.start(100.hz());
+    timer.listen();
+    timer
 }
