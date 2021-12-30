@@ -13,6 +13,7 @@ use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
+use rtt_target::rtt_init;
 use rtt_target::DownChannel;
 use rtt_target::UpChannel;
 
@@ -40,6 +41,62 @@ pub(crate) struct McuDebugCommandInfo {
     pub(crate) kind: McuDebugCommand,
     pub(crate) arg: u16,
     pub(crate) write_request: Option<WriteMemoryEvent>,
+}
+
+impl DebugResources {
+    /// # Safety
+    /// Must only be called once. Must be called while interrupts are disabled.
+    pub unsafe fn init() -> DebugResources {
+        let channels = rtt_init!(
+            up: {
+                0: {
+                    size: 256
+                    mode: NoBlockSkip
+                    name: "MCU"
+                }
+                1: {
+                    size: 256
+                    mode: NoBlockSkip
+                    name: "FPGA"
+                }
+                2: {
+                    size: 1024
+                    mode: BlockIfFull
+                    name: "Images"
+                }
+                3: {
+                    size: 128
+                    mode: NoBlockSkip
+                    name: "McuCmdResponses"
+                }
+            }
+            down: {
+                0: {
+                    // This must be at least large enough to fit 256 *
+                    // MAX_OUTSTANDING_COMMANDS (as defined in hps-mon).
+                    size: 8192
+                    mode: NoBlockSkip
+                    name: "McuCommands"
+                }
+                1: {
+                    size: 16
+                    mode: NoBlockSkip
+                    name: "FpgaCommands"
+                }
+            }
+        );
+        rtt_target::set_print_channel(channels.up.0);
+        debug_logger::initialize_logging();
+
+        DebugResources {
+            fpga_up_channel: channels.up.1,
+            #[cfg(feature = "image-transfer")]
+            image_channel: channels.up.2,
+            mcu_cmd_response_channel: channels.up.3,
+            mcu_debug_handler: DebugCommandHandler::new(channels.down.0),
+            fpga_debug_handler: DebugCommandHandler::new(channels.down.1),
+        }
+    }
 }
 
 impl DebugCommandHandler {

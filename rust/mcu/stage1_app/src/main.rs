@@ -33,7 +33,6 @@ use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use panic_rtt_target as _;
 use rtic::app;
-use rtt_target::rtt_init;
 use spi_memory::series25::Flash;
 
 const CAMERA_ID: u16 = 0x01b0;
@@ -51,7 +50,7 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_device: FpgaDevice,
-        debug_resources: debug::DebugResources,
+        debug_resources: crate::debug::DebugResources,
         timer: hal::timer::Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
@@ -420,48 +419,10 @@ fn init_peripherals(
     p: hal::stm32::Peripherals,
     cp: rtic::export::Peripherals,
 ) -> init::LateResources {
-    let channels = rtt_init!(
-        up: {
-            0: {
-                size: 256
-                mode: NoBlockSkip
-                name: "MCU"
-            }
-            1: {
-                size: 256
-                mode: NoBlockSkip
-                name: "FPGA"
-            }
-            2: {
-                size: 1024
-                mode: BlockIfFull
-                name: "Images"
-            }
-            3: {
-                size: 128
-                mode: NoBlockSkip
-                name: "McuCmdResponses"
-            }
-        }
-        down: {
-            0: {
-                // This must be at least large enough to fit 256 *
-                // MAX_OUTSTANDING_COMMANDS (as defined in hps-mon).
-                size: 8192
-                mode: NoBlockSkip
-                name: "McuCommands"
-            }
-            1: {
-                size: 16
-                mode: NoBlockSkip
-                name: "FpgaCommands"
-            }
-        }
-    );
-    rtt_target::set_print_channel(channels.up.0);
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
-    unsafe { debug_logger::initialize_logging() };
+    let debug_resources = unsafe { debug::DebugResources::init() };
+
     // Reset clock source to HSI. This is necessary because the bootloader
     // (either stage0 or the STM32 system bootloader) will have left the clock
     // source configured as the PLL.
@@ -639,14 +600,7 @@ fn init_peripherals(
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_device,
-        debug_resources: debug::DebugResources {
-            fpga_up_channel: channels.up.1,
-            #[cfg(feature = "image-transfer")]
-            image_channel: channels.up.2,
-            mcu_cmd_response_channel: channels.up.3,
-            mcu_debug_handler: debug::DebugCommandHandler::new(channels.down.0),
-            fpga_debug_handler: debug::DebugCommandHandler::new(channels.down.1),
-        },
+        debug_resources,
         timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
         stopwatch,
