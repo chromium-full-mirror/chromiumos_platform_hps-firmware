@@ -85,13 +85,14 @@ fn write_application_bin() {
         .arg("--")
         .arg("-O")
         .arg("binary")
-        .arg(bin_file)
+        .arg(&bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
+    sign_stage1_binary(&bin_file);
 }
 
 fn write_release_application_bin() {
@@ -111,15 +112,15 @@ fn write_release_application_bin() {
         .arg("--")
         .arg("-O")
         .arg("binary")
-        .arg(bin_file)
+        .arg(&bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-    // TODO: Sign the binary so that we can run with FWWP on (provided we're
-    // using a development version of stage0).
+
+    sign_stage1_binary(&bin_file);
 }
 
 fn build_one_time_init() {
@@ -208,4 +209,13 @@ fn get_env_var(var: &str) -> String {
         Ok(x) => x,
         Err(_) => panic!("Environment variable {} undefined", var),
     }
+}
+
+fn sign_stage1_binary(bin_file: &Path) {
+    let mut file_bytes = std::fs::read(bin_file).unwrap();
+    sign_rom::zero_signature(&mut file_bytes).unwrap();
+    let hash = sign_rom::hash_image_bytes(&file_bytes, mcu_common::STAGE1_SLOT_LENGTH).unwrap();
+    let signature = sign_rom::sign_hash(&hash, &sign_rom::development_only_secret_key());
+    sign_rom::write_signature(&mut file_bytes, &signature).unwrap();
+    std::fs::write(bin_file, file_bytes).unwrap();
 }
