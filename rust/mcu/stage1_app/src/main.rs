@@ -373,23 +373,23 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
                 Err(_) => info!("Failed to read 0x{:04x}", command.arg),
             }
         }
-        McuDebugCommand::ReadCameraId => camera::read_camera_id(resources.camera_i2c),
-        McuDebugCommand::ReadCameraAeConfig => camera::read_camera_ae_config(resources.camera_i2c),
+        McuDebugCommand::ReadCameraId => debug::read_camera_id(resources.camera_i2c),
+        McuDebugCommand::ReadCameraAeConfig => debug::read_camera_ae_config(resources.camera_i2c),
         McuDebugCommand::ReadCameraIntegrationGains => {
-            camera::read_camera_gains(resources.camera_i2c);
-            camera::read_camera_integration(resources.camera_i2c);
+            debug::read_camera_gains(resources.camera_i2c);
+            debug::read_camera_integration(resources.camera_i2c);
         }
         McuDebugCommand::SetCameraDigitalGain => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
             match c.set_digital_gain(command.arg) {
-                Ok(_) => camera::read_camera_gains(resources.camera_i2c),
+                Ok(_) => debug::read_camera_gains(resources.camera_i2c),
                 Err(_) => info!("Failed to write digital gain"),
             }
         }
         McuDebugCommand::SetCameraAnalogGain => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
             match c.set_analog_gain(command.arg) {
-                Ok(_) => camera::read_camera_gains(resources.camera_i2c),
+                Ok(_) => debug::read_camera_gains(resources.camera_i2c),
                 Err(_) => info!("Failed to write analog gain"),
             }
         }
@@ -397,14 +397,14 @@ fn handle_mcu_debug_command(command: McuDebugCommandInfo, resources: &mut timer_
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
             info!("Writing {}", command.arg);
             match c.set_integration(command.arg) {
-                Ok(_) => camera::read_camera_integration(resources.camera_i2c),
+                Ok(_) => debug::read_camera_integration(resources.camera_i2c),
                 Err(_) => info!("Failed to write integration"),
             }
         }
         McuDebugCommand::SetCameraAeTarget => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
             match c.set_ae_target(command.arg) {
-                Ok(_) => camera::read_camera_ae_config(resources.camera_i2c),
+                Ok(_) => debug::read_camera_ae_config(resources.camera_i2c),
                 Err(_) => info!("Failed to write AE target"),
             }
         }

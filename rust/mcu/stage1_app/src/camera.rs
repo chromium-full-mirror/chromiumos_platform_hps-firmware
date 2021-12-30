@@ -5,63 +5,9 @@
 use crate::boards::board;
 use hal::prelude::*;
 use log::error;
-use log::info;
 
 /// Camera HM01B0 I2C ID.
 const CAMERA_I2C_ID: u8 = 0x24;
-
-// Returns camera's model ID (01B0).
-pub fn read_camera_id(camera_i2c: &mut board::CameraI2c) {
-    let mut camera = hm01b0::Camera::new(camera_i2c);
-    match camera.get_camera_id() {
-        Ok(v) => info!("0x{:04x}", v),
-        Err(_) => info!("Failed to read camera ID."),
-    }
-}
-
-pub fn read_camera_ae_config(camera_i2c: &mut board::CameraI2c) {
-    let mut camera = hm01b0::Camera::new(camera_i2c);
-    match camera.get_ae_target_mean() {
-        Ok(v) => info!("AE Target:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("AE Target:\tFailed"),
-    }
-    match camera.get_ae_mean() {
-        Ok(v) => info!("AE Mean:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("AE Mean:\tFailed"),
-    }
-    match camera.get_ae_min_mean() {
-        Ok(v) => info!("AE Min Mean:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("AE Min Mean:\tFailed"),
-    }
-    match camera.get_ae_converge_in() {
-        Ok(v) => info!("Conv In:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("Conv In:\tFailed"),
-    }
-    match camera.get_ae_converge_out() {
-        Ok(v) => info!("Conv Out:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("Conv Out:\tFailed"),
-    }
-}
-
-pub fn read_camera_gains(camera_i2c: &mut board::CameraI2c) {
-    let mut camera = hm01b0::Camera::new(camera_i2c);
-    match camera.get_analog_gain() {
-        Ok(v) => info!("Analog Gain:\t{} (0x{:02x})", v, v),
-        Err(_) => info!("Analog Gain:\tFailed"),
-    }
-    match camera.get_digital_gain() {
-        Ok(v) => info!("Digital Gain: {} (0x{:04x})", v, v),
-        Err(_) => info!("Digital Gain: Failed"),
-    }
-}
-
-pub fn read_camera_integration(camera_i2c: &mut board::CameraI2c) {
-    let mut camera = hm01b0::Camera::new(camera_i2c);
-    match camera.get_integration() {
-        Ok(v) => info!("Integration:\t{} (0x{:04x})", v, v),
-        Err(_) => info!("Integration:\tFailed"),
-    }
-}
 
 /// Provides a functionality to read one or more register addresses
 /// from a camera. The register address is 2B size. The response is 1B size.
