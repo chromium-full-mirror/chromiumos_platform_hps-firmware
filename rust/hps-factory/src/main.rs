@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 mod boot_loop;
+mod boot_workflow;
 mod erase_stage0_workflow;
 mod hps_i2c;
 #[cfg(feature = "image-transfer")]
@@ -24,6 +25,8 @@ use std::path::PathBuf;
 const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 const STAGE0_SYS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
 const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
+const APPLICATION_RELEASE_BYTES: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/application.release.bin"));
 
 /// Runs HPS post-install factory workflow
 #[derive(Clap, Debug, Clone)]
@@ -84,6 +87,18 @@ enum Command {
     /// runs all post-install tests
     #[clap(name = "post-install-test")]
     PostInstallTest(PostInstallTestConfig),
+
+    /// writes release firmware and boots it. Requires stage0 to already be
+    /// present
+    #[clap(name = "boot")]
+    Boot(BootConfig),
+}
+
+#[derive(Debug, Clap, Clone)]
+struct BootConfig {
+    /// assume that the FPGA bitstream is already up-to-date
+    #[clap(long)]
+    skip_bitstream_write: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -220,5 +235,6 @@ where
         Command::PostInstallTest(test_config) => {
             post_install_test_workflow::PostInstallTester::run(i2c, test_config, &config)
         }
+        Command::Boot(boot_config) => boot_workflow::run(i2c, boot_config, &config),
     }
 }
