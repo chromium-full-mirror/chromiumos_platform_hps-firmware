@@ -654,3 +654,8 @@ fn init_peripherals(
         rcc,
     }
 }
+
+// We could automatically enable the dev feature when image-transfer is enabled,
+// but we want the bar for enabling image-transfer to be higher.
+#[cfg(all(not(feature = "dev"), feature = "image-transfer"))]
+compile_error!("image-transfer feature requires dev feature");
