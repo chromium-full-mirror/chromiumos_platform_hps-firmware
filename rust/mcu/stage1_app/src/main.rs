@@ -7,6 +7,7 @@
 
 pub mod boards;
 mod camera;
+#[cfg(feature = "dev")]
 mod debug;
 mod fpga_device;
 mod header;
@@ -51,7 +52,9 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_device: FpgaDevice,
+        #[cfg(feature = "dev")]
         debug_resources: crate::debug::DebugResources,
+        #[cfg(feature = "dev")]
         timer: hal::timer::Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
@@ -63,16 +66,20 @@ const APP: () = {
     fn init(ctx: init::Context) -> init::LateResources {
         static mut I2C_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE];
+        #[cfg(feature = "dev")]
         static mut DEBUG_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE];
         let mut resources = init_peripherals(ctx.device, ctx.core);
         resources
             .host_interface
             .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
-        resources
-            .debug_resources
-            .mcu_debug_handler
-            .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
+        #[cfg(feature = "dev")]
+        {
+            resources
+                .debug_resources
+                .mcu_debug_handler
+                .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
+        }
         resources
     }
 
@@ -127,25 +134,35 @@ const APP: () = {
         ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
     }
 
+    // Ideally this whole task would be excluded when the dev feature is
+    // disabled, however this fails to compile (at least with rtic 0.5.9).
+    // Presumably it's trying to include the function in the interrupt table
+    // when it doesn't exist.
     #[task(binds = TIM16,
         resources = [debug_resources, fpga_device, timer, camera_i2c, stopwatch,
             debug_led, tick_count])]
     fn timer_tick(mut ctx: timer_tick::Context) {
-        ctx.resources.timer.clear_irq();
-        let led = &mut ctx.resources.debug_led;
-        *ctx.resources.tick_count = (*ctx.resources.tick_count).wrapping_add(1);
-        if *ctx.resources.tick_count & 16 == 0 {
-            led.set_low().unwrap();
-        } else {
-            led.set_high().unwrap();
-        }
-        while let Some(command) = ctx
-            .resources
-            .debug_resources
-            .mcu_debug_handler
-            .get_mcu_debug_command()
+        // Make "use" of ctx to prevent unused variable warning when dev feature
+        // is off.
+        let _ = &mut ctx;
+        #[cfg(feature = "dev")]
         {
-            debug::handle_mcu_debug_command(command, &mut ctx.resources);
+            ctx.resources.timer.clear_irq();
+            let led = &mut ctx.resources.debug_led;
+            *ctx.resources.tick_count = (*ctx.resources.tick_count).wrapping_add(1);
+            if *ctx.resources.tick_count & 16 == 0 {
+                led.set_low().unwrap();
+            } else {
+                led.set_high().unwrap();
+            }
+            while let Some(command) = ctx
+                .resources
+                .debug_resources
+                .mcu_debug_handler
+                .get_mcu_debug_command()
+            {
+                debug::handle_mcu_debug_command(command, &mut ctx.resources);
+            }
         }
     }
 
@@ -179,12 +196,18 @@ const APP: () = {
                 info!("FPGA reported boot #{}", count);
             }
             fpga::Action::DebugLog => {
-                if let Some(message) = fpga::payload_as_string(&buffer) {
-                    let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
-                    use core::fmt::Write;
-                    write!(channel, "{}", message).unwrap();
-                } else {
-                    info!("FPGA sent invalid message");
+                // This comment is here to prevent rustfmt from removing the
+                // outer braces, which would break compilation. A fix to rustfmt
+                // is pending: https://github.com/rust-lang/rustfmt/pull/5158
+                #[cfg(feature = "dev")]
+                {
+                    if let Some(message) = fpga::payload_as_string(&buffer) {
+                        let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
+                        use core::fmt::Write;
+                        write!(channel, "{}", message).unwrap();
+                    } else {
+                        info!("FPGA sent invalid message");
+                    }
                 }
             }
             #[cfg(feature = "image-transfer")]
@@ -202,10 +225,16 @@ const APP: () = {
                 }
             }
             fpga::Action::GetDebugCommand => {
-                ctx.resources
-                    .debug_resources
-                    .fpga_debug_handler
-                    .get_debug_command(&mut buffer[2..]);
+                // This comment is here to prevent rustfmt from removing the
+                // outer braces, which would break compilation. A fix to rustfmt
+                // is pending: https://github.com/rust-lang/rustfmt/pull/5158
+                #[cfg(feature = "dev")]
+                {
+                    ctx.resources
+                        .debug_resources
+                        .fpga_debug_handler
+                        .get_debug_command(&mut buffer[2..]);
+                }
             }
             fpga::Action::ReadCameraI2c => {
                 let num_addresses: usize = buffer[1] as usize;
@@ -309,6 +338,7 @@ fn init_peripherals(
 ) -> init::LateResources {
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
+    #[allow(unused_variables)]
     let debug_resources = unsafe { debug::DebugResources::init() };
 
     // Reset clock source to HSI. This is necessary because the bootloader
@@ -488,7 +518,9 @@ fn init_peripherals(
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_device,
+        #[cfg(feature = "dev")]
         debug_resources,
+        #[cfg(feature = "dev")]
         timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
         stopwatch,
@@ -501,3 +533,14 @@ fn init_peripherals(
 // but we want the bar for enabling image-transfer to be higher.
 #[cfg(all(not(feature = "dev"), feature = "image-transfer"))]
 compile_error!("image-transfer feature requires dev feature");
+
+// Unfortunately RTIC needs types to be defined even if they're used by resource
+// fields that aren't compiled due to conditional compilation.
+#[cfg(not(feature = "dev"))]
+mod debug {
+    pub struct DebugResources;
+
+    impl DebugResources {
+        pub unsafe fn init() {}
+    }
+}
