@@ -128,8 +128,8 @@ if [ ${#missing[@]} -gt 0 ]; then
 fi
 
 # Ensure specific RISCV compiler installed
-if ! command -v riscv64-unknown-elf-gcc >/dev/null ; then
-    echo "Did not find a RISCV toolchain on PATH" >&2
+if ! riscv64-unknown-elf-gcc --version 2>/dev/null | grep 10.1.0 >/dev/null; then
+    echo "riscv64-unknown-elf-gcc is missing or out-of-date" >&2
     echo -n "Download and install 290MB [y]/n? " >&2
     read -r answer
     if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
