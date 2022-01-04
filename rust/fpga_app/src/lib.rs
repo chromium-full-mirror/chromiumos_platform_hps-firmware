@@ -8,6 +8,7 @@ pub mod camera;
 mod classifier;
 mod debug_commands;
 mod debug_led;
+mod entropy;
 mod features;
 mod image_rotation;
 mod mcu_interface;
@@ -157,6 +158,8 @@ where
             self.debug_rotate_image
                 .unwrap_or_else(|| rotation == Rotation::Clockwise),
         )?;
+        let entropy =
+            crate::entropy::calculate_entropy(self.classifier.input_data_mut(self.model_number));
 
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).
@@ -171,14 +174,13 @@ where
         // Classification needs to be done after any other uses of the image
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
-        if features.contains(Features::MODEL1)
-            || features.contains(Features::MODEL2)
-            || self.classification_enabled
+        if entropy < crate::entropy::ENTROPY_THRESHOLD
+            && (features.contains(Features::MODEL1)
+                || features.contains(Features::MODEL2)
+                || self.classification_enabled)
         {
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number);
-            // TODO: integrate image usability code and use that to set the
-            // usable bit.
             self.status.person_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,

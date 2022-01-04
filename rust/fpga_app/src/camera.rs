@@ -48,10 +48,14 @@ pub(crate) mod testing {
     impl ImageDataReceiver for FakeImageDataReceiver {
         fn receive_image_data(
             &mut self,
-            _buffer: &mut [u8],
+            buffer: &mut [u8],
             _image_dimensions: &ImageDimensions,
             trigger_callback: impl FnOnce() -> Result<()>,
         ) -> Result<()> {
+            // Inserts fake image data to pass entropy calculations.
+            for (i, v) in buffer.iter_mut().enumerate() {
+                *v = i as u8 / 2;
+            }
             (trigger_callback)()
         }
     }
