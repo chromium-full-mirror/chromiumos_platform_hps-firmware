@@ -66,7 +66,7 @@ pub struct Board {
     pub fpga_spi: FpgaSpi,
 
     pub flash_spi: FlashSpi,
-    pub flash_spi_cs: Option<FlashSpiCs>,
+    pub flash_spi_cs: FlashSpiCs,
     pub camera_i2c: Option<CameraI2c>,
     pub camera_mclk: gpio::gpiob::PB1<Analog>,
     // TODO: Change to TIM1 once stm32g0xx-hal is updated beyond 2021-03-18. PB1
@@ -130,7 +130,7 @@ impl Board {
             fpga_spi: spi2,
 
             flash_spi: spi1,
-            flash_spi_cs: Some(flash_spi_cs),
+            flash_spi_cs,
             camera_i2c,
             camera_mclk: b.pb1,
             camera_mclk_tim: tim3,

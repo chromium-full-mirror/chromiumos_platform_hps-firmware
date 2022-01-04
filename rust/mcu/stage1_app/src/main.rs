@@ -416,66 +416,64 @@ fn init_peripherals(
     );
     let mut spi_flash = None;
 
-    if let Some(flash_spi_cs) = board.flash_spi_cs {
-        // Ensure FPGA and SPI flash are powered.
-        board.fpga_power_gate.set_low().unwrap();
+    // Ensure FPGA and SPI flash are powered.
+    board.fpga_power_gate.set_low().unwrap();
 
-        // Give the SPI flash chip a chance to start after we powered it on. The
-        // datasheet says minimum time is 2.5ms. To be generous, we give it
-        // double that.
-        delay.delay(5.ms());
+    // Give the SPI flash chip a chance to start after we powered it on. The
+    // datasheet says minimum time is 2.5ms. To be generous, we give it
+    // double that.
+    delay.delay(5.ms());
 
-        let mut f = spi_flash::SpiFlash {
-            spi: flash_spi,
-            cs: flash_spi_cs,
-        };
+    let mut f = spi_flash::SpiFlash {
+        spi: flash_spi,
+        cs: board.flash_spi_cs,
+    };
 
-        if let Ok(status) = f.read_status() {
-            host_interface.spi_flash_status = status;
-        }
-
-        let flash_spi = f.spi;
-        let flash_spi_cs = f.cs;
-
-        match Flash::init(flash_spi, flash_spi_cs) {
-            Ok(mut flash) => match flash.read_jedec_id() {
-                Ok(id) => {
-                    if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
-                        && id.device_id() == board::SPI_FLASH_DEVICE_ID
-                    {
-                        info!("Found expected flash chip");
-
-                        // Enable quad SPI. This setting is non-volatile, so in
-                        // theory we only need do this once, however the cost of
-                        // doing it every boot is only a single read, which is
-                        // very cheap.
-                        if spi_flash::enable_quad_spi(&mut flash).is_err() {
-                            host_interface.report_error(mcu_common::Error::SpiFlash);
-                            info!("Failed to enable quad SPI");
-                        }
-
-                        spi_flash = Some(flash);
-                    } else {
-                        host_interface.report_error(mcu_common::Error::SpiFlash);
-                        info!(
-                            "Unexpected flash ID {}, [{}, {}]",
-                            id.mfr_code(),
-                            id.device_id()[0],
-                            id.device_id()[1]
-                        );
-                    }
-                }
-                Err(_) => {
-                    host_interface.report_error(mcu_common::Error::SpiFlash);
-                    info!("Failed to read flash ID");
-                }
-            },
-            Err(e) => {
-                host_interface.report_error(mcu_common::Error::SpiFlash);
-                info!("Failed to initialize SPI flash: {:?}", e);
-            }
-        };
+    if let Ok(status) = f.read_status() {
+        host_interface.spi_flash_status = status;
     }
+
+    let flash_spi = f.spi;
+    let flash_spi_cs = f.cs;
+
+    match Flash::init(flash_spi, flash_spi_cs) {
+        Ok(mut flash) => match flash.read_jedec_id() {
+            Ok(id) => {
+                if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
+                    && id.device_id() == board::SPI_FLASH_DEVICE_ID
+                {
+                    info!("Found expected flash chip");
+
+                    // Enable quad SPI. This setting is non-volatile, so in
+                    // theory we only need do this once, however the cost of
+                    // doing it every boot is only a single read, which is
+                    // very cheap.
+                    if spi_flash::enable_quad_spi(&mut flash).is_err() {
+                        host_interface.report_error(mcu_common::Error::SpiFlash);
+                        info!("Failed to enable quad SPI");
+                    }
+
+                    spi_flash = Some(flash);
+                } else {
+                    host_interface.report_error(mcu_common::Error::SpiFlash);
+                    info!(
+                        "Unexpected flash ID {}, [{}, {}]",
+                        id.mfr_code(),
+                        id.device_id()[0],
+                        id.device_id()[1]
+                    );
+                }
+            }
+            Err(_) => {
+                host_interface.report_error(mcu_common::Error::SpiFlash);
+                info!("Failed to read flash ID");
+            }
+        },
+        Err(e) => {
+            host_interface.report_error(mcu_common::Error::SpiFlash);
+            info!("Failed to initialize SPI flash: {:?}", e);
+        }
+    };
 
     let mut camera = hm01b0::Camera::new(&mut camera_i2c);
     match camera.get_camera_id() {
