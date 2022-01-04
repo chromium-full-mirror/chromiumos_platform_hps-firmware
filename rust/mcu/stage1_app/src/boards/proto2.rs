@@ -67,7 +67,7 @@ pub struct Board {
 
     pub flash_spi: FlashSpi,
     pub flash_spi_cs: FlashSpiCs,
-    pub camera_i2c: Option<CameraI2c>,
+    pub camera_i2c: CameraI2c,
     pub camera_mclk: gpio::gpiob::PB1<Analog>,
     // TODO: Change to TIM1 once stm32g0xx-hal is updated beyond 2021-03-18. PB1
     // can use TIM1, but only as an inverted pin. Support for inverted pins was
@@ -109,7 +109,7 @@ impl Board {
         let sda = a.pa12.into_open_drain_output_high();
         let scl = a.pa11.into_open_drain_output_high();
 
-        let camera_i2c = Some(i2c2.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc));
+        let camera_i2c = i2c2.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc);
 
         Self {
             fpga_spi_cs: a.pa8,

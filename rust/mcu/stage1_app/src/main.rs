@@ -395,7 +395,7 @@ fn init_peripherals(
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
 
-    let mut camera_i2c = board.camera_i2c.unwrap();
+    let mut camera_i2c = board.camera_i2c;
 
     let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
