@@ -62,21 +62,16 @@ struct Flags {
 #[derive(Subcommand, PartialEq, Debug)]
 enum SubCommand {
     #[cfg(feature = "ftdi")]
-    #[clap(name = "list_devices")]
     ListDevices(ListDevices),
-    #[clap(name = "flash_mcu")]
     FlashMcu(FlashMcu),
     Launch1(Launch1),
     #[clap(name = "launchapp")]
     LaunchApp(LaunchApp),
     Reset(Reset),
-    #[clap(name = "erase_stage0")]
     EraseStage0(EraseStage0),
     #[clap(name = "reg")]
     AccessRegisters(AccessRegisters),
-    #[clap(name = "write_memory_bank")]
     WriteMemoryBank(WriteMemoryBank),
-    #[clap(name = "stress_test")]
     StressTest(StressTest),
     Status(Status),
     #[cfg(feature = "daemon")]
