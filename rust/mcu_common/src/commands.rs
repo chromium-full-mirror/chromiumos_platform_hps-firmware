@@ -18,6 +18,10 @@ pub enum Command {
     /// Launch the application.
     LaunchApp = 1 << 2,
 
+    /// Erase the RW region of flash in preparation for writing a new
+    /// stage1 image into it.
+    EraseStage1 = 1 << 3,
+
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,

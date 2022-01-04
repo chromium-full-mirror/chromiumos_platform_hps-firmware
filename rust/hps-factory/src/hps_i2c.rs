@@ -71,14 +71,18 @@ where
         if self.open_bootloader().is_ok() {
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
-        let stage = self.open_hps()?.stage()?;
+        let mut hps = self.open_hps()?;
+        let stage = hps.stage()?;
         if stage != Stage::Stage0 {
             bail!(
                 "Need either stage0 or the system bootloader, but got: {:?}",
                 stage
             );
         }
-        self.write_memory_bank("stage1", memory_banks::MCU_RW, 0, program_bytes)
+        println!("Erasing RW region");
+        hps.perform_command(Command::EraseStage1)?;
+        hps.wait_memory_bank_available(memory_banks::MCU_RW)?;
+        Self::write_memory_bank(&mut hps, "stage1", memory_banks::MCU_RW, 0, program_bytes)
     }
 
     /// Writes a `program_bytes` to flash at `address` using the STM32
@@ -113,13 +117,12 @@ where
     }
 
     pub(crate) fn write_memory_bank(
-        &mut self,
+        hps: &mut HpsAdapter<BorrowedI2c<I, E>, E>,
         section_name: &str,
         bank: u8,
         start_address: u32,
         bytes: &[u8],
     ) -> Result<()> {
-        let mut hps = self.open_hps()?;
         hps.check_errors()?;
         if !hps.is_memory_bank_available(bank) {
             bail!("Cannot write to memory bank {}", bank);
@@ -139,7 +142,9 @@ where
     }
 
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
-        self.write_memory_bank(
+        let mut hps = self.open_hps()?;
+        Self::write_memory_bank(
+            &mut hps,
             "gateware bitstream",
             memory_banks::SPI_FLASH,
             0,
@@ -148,7 +153,9 @@ where
     }
 
     pub(crate) fn write_soc_rom(&mut self) -> Result<()> {
-        self.write_memory_bank(
+        let mut hps = self.open_hps()?;
+        Self::write_memory_bank(
+            &mut hps,
             "SOC ROM",
             memory_banks::SPI_FLASH,
             fpga_firmware::SOC_ROM_START_ADDRESS,

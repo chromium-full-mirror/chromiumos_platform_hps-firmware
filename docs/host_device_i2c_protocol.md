@@ -112,7 +112,7 @@ and are not documented here.
 | 6   |                 |                                        |
 | 5   |                 |                                        |
 | 4   |                 |                                        |
-| 3   |                 |                                        |
+| 3   | ERASE_STAGE1    | Erase RW region of MCU flash (stage1)  |
 | 2   | LAUNCHAPP       | Launch application (from stage1)       |
 | 1   | LAUNCH1         | Launch stage1 (from stage0)            |
 | 0   | RESET           | Reset module to stage0                 |
@@ -221,7 +221,8 @@ command.
 A boot sequence with firmware updates can be performed as follows:
 
 * Reset, power cycle, or otherwise ensure that stage0 is running.
-* Write new stage1/application.
+* Erase MCU RW flash region.
+* Write new stage1/application into MCU RW flash region.
 * Issue RESET command
 * Issue LAUNCH1 command
 * Write gateware and SOC ROM.

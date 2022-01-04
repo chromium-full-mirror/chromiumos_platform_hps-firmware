@@ -44,14 +44,18 @@ impl FlashWriter {
             .get(address as usize)
             .ok_or(flash::Error::PageOutOfRange)? as *const u8 as usize;
         let unlocked_flash = self.flash.unlocked()?;
-        let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
-        // Erase only when we are at the start of our page. This
-        // imposes the constraint on our interface that writes must
-        // always start from the start of a page.
-        if page.to_address() == address {
-            unlocked_flash.erase_page(page)?
-        }
         unlocked_flash.write(address as usize, data)?;
+        self.flash.lock();
+        Ok(())
+    }
+
+    pub(crate) fn erase_slot(&mut self) -> Result<(), flash::Error> {
+        let unlocked_flash = self.flash.unlocked()?;
+        let start = self.slot.as_mut_ptr() as usize;
+        for address in (start..(start + self.slot.len())).step_by(PAGE_SIZE) {
+            let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
+            unlocked_flash.erase_page(page)?;
+        }
         self.flash.lock();
         Ok(())
     }

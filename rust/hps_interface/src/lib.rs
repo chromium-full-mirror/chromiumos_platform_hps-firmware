@@ -100,6 +100,7 @@ pub trait Hps {
     }
 
     fn write_firmware(&mut self, bytes: &[u8]) -> Result<()> {
+        self.perform_command(Command::EraseStage1)?;
         let mut address = 0;
         for chunk in bytes.chunks(256) {
             self.wait_memory_bank_available(memory_banks::MCU_RW)?;

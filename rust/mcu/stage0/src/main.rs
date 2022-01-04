@@ -65,7 +65,10 @@ const APP: () = {
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface], priority = 2)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
-            if matches!(event, HostEvent::WriteFlash(_)) {
+            if matches!(
+                event,
+                HostEvent::WriteFlash(_) | HostEvent::Command(Command::EraseStage1)
+            ) {
                 // Disable I2C ACK while writing flash, since writing flash
                 // prevents us from responding to I2C events in time.
                 // The host can then retry the request until it gets through.
@@ -90,6 +93,14 @@ const APP: () = {
                 if host_interface.lock(|h| h.stage0_ctx.can_jump_to_stage1()) {
                     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
                 }
+            }
+            HostEvent::Command(Command::EraseStage1) => {
+                host_interface.lock(|h| h.stage0_ctx.mark_stage1_invalid());
+                if ctx.resources.flash_writer.erase_slot().is_err() {
+                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
+                }
+                // Reenable I2C. It was disabled above in the I2C interrupt handler.
+                host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
             }
             HostEvent::WriteFlash(event) => {
                 host_interface.lock(|h| h.stage0_ctx.mark_stage1_invalid());
