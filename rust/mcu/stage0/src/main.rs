@@ -64,9 +64,7 @@ const APP: () = {
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface], priority = 2)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
-            if cfg!(feature = "no-i2c-clock-stretching")
-                && matches!(event, HostEvent::WriteFlash(_))
-            {
+            if matches!(event, HostEvent::WriteFlash(_)) {
                 // Disable I2C ACK while writing flash, since writing flash
                 // prevents us from responding to I2C events in time.
                 // The host can then retry the request until it gets through.
@@ -103,11 +101,8 @@ const APP: () = {
                     host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
                 host_interface.lock(|h| h.supply_mem_block(event.data.release()));
-                if cfg!(feature = "no-i2c-clock-stretching") {
-                    // Reenable I2C. It was disabled above in the I2C interrupt
-                    // handler.
-                    host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
-                }
+                // Reenable I2C. It was disabled above in the I2C interrupt handler.
+                host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
             }
             HostEvent::Reset => {
                 // We want to avoid getting a WriteFlash event followed by a
