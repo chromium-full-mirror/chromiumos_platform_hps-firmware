@@ -318,7 +318,10 @@ pub(crate) fn handle_mcu_debug_command(
         }
         McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
         McuDebugCommand::EraseSpiFlash => {
-            crate::spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
+            // For now, we ignore returned errors here, since the write
+            // function will have printed the error message in more detail
+            // already.
+            let _ = crate::spi_flash::erase(get_spi_flash(resources.fpga_device).ok());
         }
         McuDebugCommand::HashSpiFlash => time_hash(
             get_spi_flash(resources.fpga_device).ok(),

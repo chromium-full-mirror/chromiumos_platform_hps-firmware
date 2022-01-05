@@ -89,20 +89,24 @@ pub(crate) fn enable_quad_spi(
     flash.enable_quad_spi()
 }
 
-pub(crate) fn erase(spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>) {
+pub(crate) fn erase(
+    spi_flash: Option<&mut Flash<board::FlashSpiControl, board::FlashSpiCs>>,
+) -> Result<(), Error> {
     let spi_flash = match spi_flash {
         Some(x) => x,
         None => {
             error!("SPI flash not available");
-            return;
+            return Err(Error::HostI2cBadRequest);
         }
     };
     info!("Erasing");
     if spi_flash.erase_all().is_err() {
         error!("Failed to erase to SPI flash");
+        return Err(Error::SpiFlash);
     } else {
         info!("Erase complete");
     }
+    Ok(())
 }
 
 pub(crate) fn hash_internal(

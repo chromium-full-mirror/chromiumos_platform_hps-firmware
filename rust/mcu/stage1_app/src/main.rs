@@ -255,7 +255,11 @@ const APP: () = {
         // On writing the first byte, erase the whole flash.
         // This allows a hash of the whole flash to match one calculated offline.
         if request.address == 0 {
-            spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok())
+            if let Err(error) = spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok()) {
+                ctx.resources
+                    .host_interface
+                    .lock(|host_interface| host_interface.report_error(error));
+            }
         }
         if let Err(error) = spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device).ok(),
