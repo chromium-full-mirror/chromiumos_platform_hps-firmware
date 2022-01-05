@@ -13,6 +13,9 @@ fpga_app = { path = "../../fpga_app" }
 fpga_hal = { path = "../fpga_hal" }
 tflm_inference = { path = "../tflm_inference", optional = true }
 
+[build-dependencies]
+anyhow = "1.0.42"
+
 [features]
 image-transfer = [ "fpga_app/image-transfer" ]
 debug-commands = [ "fpga_app/debug-commands" ]

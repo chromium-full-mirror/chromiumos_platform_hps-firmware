@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::bail;
+use anyhow::Context;
+use anyhow::Result;
+use std::ffi::OsStr;
 use std::path::Path;
+use std::process::Command;
 
-fn main() {
+fn main() -> Result<()> {
+    if cfg!(feature = "tflm") {
+        build_tflm()?;
+    }
     let soc_build_dir = Path::new("../../build/hps_platform");
     // Tell linker to look in the directory that contains memory.x
     println!("cargo:rustc-link-search={}", soc_build_dir.display());
@@ -40,6 +48,62 @@ fn main() {
     println!("cargo:rustc-link-search=../../third_party/installed/lib/gcc/riscv64-unknown-elf/10.1.0/rv32im/ilp32");
     // For libtensorflow-microlite.a.
     println!("cargo:rustc-link-search=../../third_party/tflm_gen");
+
+    Ok(())
+}
+
+fn build_tflm() -> Result<()> {
+    const TFLM_GEN_DIR: &str = "../../../third_party/tflm_gen";
+    // A template for calling make. This only needs to be a closure because
+    // Command doesn't implement Clone.
+    let make_cmd = || {
+        let mut cmd = Command::new("../../../scripts/env-run");
+        cmd.arg("make").arg("-C").arg(TFLM_GEN_DIR);
+        cmd
+    };
+    // The tflm_gen makefile does't rebuild object files when only headers have
+    // changed, so we `make clean` to ensure that we're not using stale
+    // artifacts.
+    if !(make_cmd)()
+        .arg("clean")
+        .status()
+        .context("Failed to run make")?
+        .success()
+    {
+        bail!("Failed to run `make clean` on tflm_gen");
+    }
+    if !make_cmd()
+        .arg("-j")
+        .arg("libtensorflow-microlite.a")
+        .status()
+        .context("Failed to run make")?
+        .success()
+    {
+        bail!("Failed to run `make libtensorflow-microlite.a`");
+    }
+    // Make sure that build.rs gets rerun if any source files in TFLM get
+    // changed.
+    print_sources_files_in_dir(Path::new(TFLM_GEN_DIR))?;
+    Ok(())
+}
+
+fn print_sources_files_in_dir(tflm_gen_dir: &Path) -> Result<()> {
+    const SOURCE_EXTENSIONS: &[&str] = &["h", "cc", "c"];
+    for entry in tflm_gen_dir.read_dir()? {
+        let path = entry?.path();
+        if path
+            .extension()
+            .and_then(OsStr::to_str)
+            .map(|extension| SOURCE_EXTENSIONS.contains(&extension))
+            .unwrap_or(false)
+        {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+        if path.is_dir() {
+            print_sources_files_in_dir(&path)?;
+        }
+    }
+    Ok(())
 }
 
 fn write_file(path: &std::path::Path, contents: &str) {
