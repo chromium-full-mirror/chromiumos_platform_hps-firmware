@@ -111,6 +111,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         )),
     },
     AvailableDebugCommand {
+        keyword: "launch_app_without_i2c",
+        help_text: "Launch application (start FPGA) - without using I2C",
+        command_type: CommandType::McuCommand(McuDebugCommand::TryStartFpga),
+    },
+    AvailableDebugCommand {
         keyword: "write_spi_flash_test_data",
         help_text: "Write SPI flash test data",
         command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(

@@ -151,7 +151,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         match register {
             registers::COMMAND => {
                 if let Ok(command) = Command::try_from(value) {
-                    self.active_command_count += 1;
+                    self.command_triggered();
                     return Some(Event::Command(command));
                 }
             }
@@ -164,6 +164,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
             _ => (),
         }
         None
+    }
+
+    pub fn command_triggered(&mut self) {
+        self.active_command_count += 1;
     }
 
     pub fn command_completed(&mut self) {

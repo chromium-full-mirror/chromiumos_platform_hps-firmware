@@ -16,6 +16,7 @@ use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
+use rtic::Mutex;
 use rtt_target::rtt_init;
 use rtt_target::DownChannel;
 use rtt_target::UpChannel;
@@ -273,7 +274,6 @@ pub(crate) fn transfer_image(
     mut state: crate::resources::state,
     mut host_interface: crate::resources::host_interface,
 ) -> bool {
-    use rtic::Mutex;
     let i2c_image_xfer_enabled = state.lock(|s| s.i2c_image_transfer_enabled());
     let mut success = true;
     if i2c_image_xfer_enabled {
@@ -289,6 +289,7 @@ pub(crate) fn transfer_image(
 pub(crate) fn handle_mcu_debug_command(
     command: McuDebugCommandInfo,
     resources: &mut crate::timer_tick::Resources,
+    spawn: &mut crate::timer_tick::Spawn,
 ) {
     match command.kind {
         McuDebugCommand::ReadSpiFlash => debug_read(
@@ -397,6 +398,10 @@ pub(crate) fn handle_mcu_debug_command(
                 Ok(_) => read_camera_ae_config(resources.camera_i2c),
                 Err(_) => info!("Failed to write AE target"),
             }
+        }
+        McuDebugCommand::TryStartFpga => {
+            resources.host_interface.lock(|h| h.command_triggered());
+            let _ = spawn.try_start_fpga();
         }
         McuDebugCommand::Ping => info!("Pong!"),
     }

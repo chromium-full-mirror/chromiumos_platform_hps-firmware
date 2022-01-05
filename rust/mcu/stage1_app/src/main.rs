@@ -140,7 +140,8 @@ const APP: () = {
     // when it doesn't exist.
     #[task(binds = TIM16,
         resources = [debug_resources, fpga_device, timer, camera_i2c, stopwatch,
-            debug_led, tick_count])]
+            debug_led, tick_count, host_interface],
+        spawn = [try_start_fpga])]
     fn timer_tick(mut ctx: timer_tick::Context) {
         // Make "use" of ctx to prevent unused variable warning when dev feature
         // is off.
@@ -161,7 +162,7 @@ const APP: () = {
                 .mcu_debug_handler
                 .get_mcu_debug_command()
             {
-                debug::handle_mcu_debug_command(command, &mut ctx.resources);
+                debug::handle_mcu_debug_command(command, &mut ctx.resources, &mut ctx.spawn);
             }
         }
     }
