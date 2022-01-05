@@ -54,7 +54,7 @@ fn write_spi_hash_file(spi_hash_path: &Path) {
     let mut bitstream_file = File::open(bitstream_path).expect(MESSAGE);
     let soc_rom_path = PathBuf::from(
         std::env::var("HPS_SPI_BIN")
-            .unwrap_or_else(|_| "../../../build/hps_platform/software/bios/bios.bin".to_string()),
+            .unwrap_or_else(|_| "../../../build/hps_platform/fpga_rom.bin".to_string()),
     );
     let mut soc_rom_file = File::open(soc_rom_path).expect(MESSAGE);
     let mut full_spi_binary = Vec::<u8>::new();
