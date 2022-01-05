@@ -45,6 +45,7 @@ where
         tester.test_i2c_integrity()?;
         tester.test_fpga_spi_flash_reads()?;
         tester.test_fpga_mcu_comms()?;
+        tester.test_mcu_to_camera_i2c()?;
         println!("PASS");
         Ok(())
     }
@@ -179,6 +180,27 @@ where
                     bail!("FPGA program failed to start");
                 }
                 bail!("FPGA program appears to have crashed");
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        bar.finish();
+        Ok(())
+    }
+
+    fn test_mcu_to_camera_i2c(&mut self) -> Result<()> {
+        let mut hps = self.i2c.open_hps()?;
+        println!("Testing MCU<->camera I2C communication");
+        hps.write_register(
+            registers::CAMERA_TEST_ITERATIONS,
+            self.config.camera_i2c_iterations,
+        )?;
+        let bar = ProgressBar::new(self.config.camera_i2c_iterations as u64);
+        loop {
+            let remaining = hps.read_register(registers::CAMERA_TEST_ITERATIONS)?;
+            hps.check_errors()?;
+            bar.set_position((self.config.camera_i2c_iterations - remaining) as u64);
+            if remaining == 0 {
+                break;
             }
             std::thread::sleep(Duration::from_millis(100));
         }

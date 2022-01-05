@@ -59,6 +59,11 @@ pub const DEBUG_VAL_REG: u8 = 17;
 /// RO: Configuration bits for camera.
 pub const CAMERA_CONFIG: u8 = 18;
 
+/// RW: Number of camera communication test iterations to perform. Write a
+/// non-zero value then wait until the value read reaches zero. If any
+/// communication errors occur, the camera error bit will be set.
+pub const CAMERA_TEST_ITERATIONS: u8 = 19;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

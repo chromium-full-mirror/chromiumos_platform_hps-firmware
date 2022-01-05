@@ -34,6 +34,7 @@ pub struct HostInterface<I: I2cPeripheral> {
 pub enum Event {
     WriteSpiFlash(WriteMemoryEvent),
     Command(Command),
+    TestCameraI2c,
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
@@ -139,6 +140,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 }
                 0
             }
+            registers::CAMERA_TEST_ITERATIONS => state.camera_test_iterations,
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);
@@ -162,6 +164,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
             }
             registers::CAMERA_CONFIG => {
                 state.configuration.camera_config = value;
+            }
+            registers::CAMERA_TEST_ITERATIONS => {
+                state.camera_test_iterations = value;
+                return Some(Event::TestCameraI2c);
             }
             _ => (),
         }

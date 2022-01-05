@@ -122,6 +122,10 @@ struct PostInstallTestConfig {
     /// number of iterations of FPGA<->MCU communication test to perform
     #[clap(long, default_value = "200")]
     fpga_mcu_iterations: u16,
+
+    /// number of iterations of MCU<->camera I2C test to perform
+    #[clap(long, default_value = "200")]
+    camera_i2c_iterations: u16,
 }
 
 #[cfg(feature = "image-transfer")]

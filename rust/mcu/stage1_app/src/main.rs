@@ -84,8 +84,8 @@ const APP: () = {
     }
 
     #[task(binds = I2C1, resources = [host_interface, state],
-        spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data],
-        priority = 3)]
+        spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data,
+            test_camera_i2c], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
@@ -111,6 +111,9 @@ const APP: () = {
                 error!("Unsupported command {:?}", command);
                 host_interface.report_error(mcu_common::Error::HostI2cBadRequest);
                 host_interface.command_completed();
+            }
+            Some(application::Event::TestCameraI2c) => {
+                let _ = ctx.spawn.test_camera_i2c();
             }
             None => {}
         }
@@ -168,6 +171,35 @@ const APP: () = {
                 .get_mcu_debug_command()
             {
                 debug::handle_mcu_debug_command(command, &mut ctx.resources, &mut ctx.spawn);
+            }
+        }
+    }
+
+    #[task(resources = [camera_i2c, state, host_interface])]
+    fn test_camera_i2c(mut ctx: test_camera_i2c::Context) {
+        let mut camera = hm01b0::Camera::new(ctx.resources.camera_i2c);
+        loop {
+            // For each camera test iteration, we perform 100 reads of the
+            // camera ID.
+            for _ in 0..100 {
+                if !camera
+                    .get_camera_id()
+                    .map(|id| id == CAMERA_ID)
+                    .unwrap_or(false)
+                {
+                    ctx.resources.host_interface.lock(|host_interface| {
+                        host_interface.report_error(mcu_common::Error::Camera)
+                    });
+                    break;
+                }
+            }
+            // Decrement test iteration register and break out of loop if it has
+            // reached zero.
+            if ctx.resources.state.lock(|state| {
+                state.camera_test_iterations = state.camera_test_iterations.saturating_sub(1);
+                state.camera_test_iterations == 0
+            }) {
+                break;
             }
         }
     }
