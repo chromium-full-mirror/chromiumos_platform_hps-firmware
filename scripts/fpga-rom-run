@@ -10,31 +10,9 @@
 set -e
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
-ROM="${PROJECT_ROOT}/build/hps_platform/soc_rom.bin"
+ROM="${PROJECT_ROOT}/build/hps_platform/fpga_rom.bin"
 
-FEATURES=image-transfer,debug-commands
-if [ "$TFLM" != "0" ]; then
-    FEATURES+=,tflm
-fi
-
-cd "${PROJECT_ROOT}/rust/riscv"
-BUILD_FLAGS=(
-    -p fpga_rom
-    --release
-    --no-default-features
-    --features "${FEATURES}")
-
-cargo build "${BUILD_FLAGS[@]}"
-
-# We use our own version of objcopy rather than `cargo objcopy` because the
-# objcopy that comes with rust 1.55.0 seems to result in a non-functional 2.7MB
-# binary rather than a functional 0.7MB binary. Most likely the binary is
-# starting from address 0 rather than address 2M like it's supposed to. This
-# appears to have been fixed with rust 1.56, but we're not using that yet.
-"${PROJECT_ROOT}/third_party/installed/bin/riscv64-unknown-elf-objcopy" \
-    "target/riscv32i-unknown-none-elf/release/fpga_rom" \
-    -O binary \
-    "${ROM}"
+"${PROJECT_ROOT}/scripts/build-fpga-rom-dev"
 
 "${PROJECT_ROOT}/scripts/hps-mon" \
     --openocd-port 4444 \
