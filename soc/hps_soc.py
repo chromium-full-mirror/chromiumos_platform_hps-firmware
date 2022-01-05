@@ -171,36 +171,9 @@ class HpsSoC(LiteXSoC):
         self.configure_rom()
 
     def configure_rom(self):
-        # Have the builder build the BIOS, but not create an integrated ROM
+        # We don't want to build the LiteX BIOS since we don't use it.
         self.integrated_rom_size = 0
-        self.integrated_rom_initialized = False
-
-
-class HpsBuilder(Builder):
-    """Object which coordinates the build process, with HPS customizations."""
-
-    def __init__(self, soc, **kwargs):
-        super().__init__(soc, **kwargs)
-        # TODO(dcallagh): we need to stop pretending our application is a BIOS,
-        # this is getting too messy...
-        litex_soc_dir = f'{SOC_DIR}/../third_party/python/litex/litex/soc'
-        self.software_packages = [
-            ('libcompiler_rt', f'{litex_soc_dir}/software/libcompiler_rt'),
-            ('libbase', f'{litex_soc_dir}/software/libbase'),
-            ('bios', f'{SOC_DIR}/software/bios'),
-        ]
-        self.software_libraries = [
-            'libcompiler_rt',
-            'libbase-nofloat',
-        ]
-
-    def add_software_package(self, name, src_dir=None):
-        # Discard it, we specify our own in __init__
-        pass
-
-    def add_software_library(self, name):
-        # Discard it, we specify our own in __init__
-        pass
+        self.integrated_rom_initialized = True
 
 
 def hps_soc_args(parser: argparse.ArgumentParser):
@@ -211,7 +184,8 @@ def hps_soc_args(parser: argparse.ArgumentParser):
 
 
 def create_builder(soc, args):
-    builder = HpsBuilder(soc, **builder_argdict(args))
+    builder = Builder(soc, **builder_argdict(args))
+    builder.compile_software = False
     builder.output_dir = args.output_dir
     return builder
 
