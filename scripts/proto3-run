@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -e
+
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+cd "${PROJECT_ROOT}/rust/mcu"
+cargo build \
+    -p stage1_app \
+    --no-default-features \
+    --features proto2,standalone,dev,image-transfer,no-hash-check \
+    "$@"
+BINARY="target/thumbv6m-none-eabi/debug/stage1_app"
+probe-run --probe 0483:3748 --chip STM32G071GBUx "${BINARY}"
