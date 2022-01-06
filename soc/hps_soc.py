@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import re
 import time
 import pkg_resources
 
@@ -190,6 +191,27 @@ def create_builder(soc, args):
     return builder
 
 
+def parse_metrics(output_filename):
+    """Scrapes interesting metrics from the FPGA toolchain output."""
+    with open(output_filename, 'r') as f:
+        output_lines = f.readlines()
+    metrics = {}
+    # Find the percentage utilisation of some important FPGA resources.
+    for resource_type in ['OXIDE_FF', 'OXIDE_COMB', 'OXIDE_EBR', 'LRAM_CORE']:
+        for line in output_lines:
+            m = re.search(rf'{resource_type}:.* (\d+)%$', line)
+            if m:
+                metrics[f'{resource_type}_PERCENT'] = m.group(1)
+    # Find the estimated max frequency. Note that the message is printed twice
+    # and only the final one matters.
+    for line in reversed(output_lines):
+        m = re.search(r'Max frequency for clock.*: (\d+\.\d+) MHz ', line)
+        if m:
+            metrics['fMAX_MHz'] = m.group(1)
+            break
+    return metrics
+
+
 def main():
     patch_cpu_variant()
 
@@ -238,10 +260,14 @@ def main():
     start_time = time.time()
     vns = builder.build(**builder_kwargs)
     run_time = time.time() - start_time
+    output_log = f'{builder.output_dir}/gateware/hps_platform_output.log'
+    metrics = parse_metrics(output_log)
     meta_file = f'{builder.output_dir}/gateware/hps_platform_build.metadata'
     print(f'Execution time for the build is: {run_time}s')
     with open(meta_file, 'w') as f:
         f.write(f'RUN_TIME: {run_time}\n')
+        for name, value in metrics.items():
+            f.write(f'{name}: {value}\n')
 
     soc.do_exit(vns)
 

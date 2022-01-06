@@ -12,9 +12,3 @@ BUILD="${PROJECT_ROOT}/build/hps_platform"
 cd "${PROJECT_ROOT}"
 
 scripts/pyrun -m soc.hps_soc "$@"
-
-cd "${PROJECT_ROOT}/scripts/"
-
-echo "Getting metrics for the build"
-./get_metrics.sh
-echo "Metrics stored in build/hps_platform"
