@@ -158,6 +158,10 @@ struct CaptureImagesConfig {
     /// rotation to apply to images from the camera
     #[clap(long, default_value = "none")]
     rotation: application::Rotation,
+
+    /// number of images to capture. 0 (default) for unlimited.
+    #[clap(long, default_value = "0")]
+    num_images: u64,
 }
 
 #[derive(Debug, Clap, Clone)]

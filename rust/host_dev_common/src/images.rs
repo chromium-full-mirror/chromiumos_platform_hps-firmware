@@ -36,6 +36,7 @@ pub struct OutputDir {
     wait_parent_dir_exists: bool,
     error_reported: bool,
     last_receive_timestamp: Instant,
+    image_count: u64,
 }
 
 impl OutputDir {
@@ -129,6 +130,7 @@ impl OutputDir {
             wait_parent_dir_exists: false,
             error_reported: false,
             last_receive_timestamp: Instant::now(),
+            image_count: 0,
         })
     }
 
@@ -142,6 +144,12 @@ impl OutputDir {
 
     pub fn set_wait_parent_dir_exists(&mut self, wait_parent_dir_exists: bool) {
         self.wait_parent_dir_exists = wait_parent_dir_exists;
+    }
+
+    /// Returns the number of images we've received and written to the
+    /// filesystem.
+    pub fn image_count(&self) -> u64 {
+        self.image_count
     }
 
     /// Returns how long it has been since we received an image (or started if
@@ -218,6 +226,7 @@ impl OutputDir {
         }
         self.write_png(&png_filename, raw_bytes)?;
         (self.log_fn)(format!("Wrote {:?}", png_filename))?;
+        self.image_count += 1;
         Ok(())
     }
 

@@ -83,5 +83,10 @@ where
                 bail!("No images received for {} seconds", time);
             }
         }
+        if capture_images_config.num_images != 0
+            && output_dir.image_count() >= capture_images_config.num_images
+        {
+            return Ok(());
+        }
     }
 }
