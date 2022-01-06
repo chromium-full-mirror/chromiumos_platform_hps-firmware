@@ -9,11 +9,9 @@ set -o errexit
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 BUILD="${PROJECT_ROOT}/build/hps_platform"
 
-{
-  cd "${PROJECT_ROOT}"
+cd "${PROJECT_ROOT}"
 
-  scripts/pyrun -m soc.hps_soc "$@"
-} 2>&1 | tee "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform_output.log"
+scripts/pyrun -m soc.hps_soc "$@"
 
 cd "${PROJECT_ROOT}/scripts/"
 

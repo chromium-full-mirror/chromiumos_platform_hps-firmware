@@ -102,6 +102,24 @@ class _CRG(Module):
             self.cd_sys, (por_counter != 0))
 
 
+# Custom template for the bitstream build script.
+_build_template = [
+    '{{',
+    'yosys -l {build_name}.rpt {build_name}.ys',
+    ('nextpnr-nexus '
+     '--json {build_name}.json '
+     '--pdc {build_name}.pdc '
+     '--fasm {build_name}.fasm '
+     '--device {device} '
+     '{timefailarg} '
+     '{ignoreloops} '
+     '--seed {seed} '
+     ),
+    'prjoxide pack {build_name}.fasm {build_name}.bit',
+    '}} 2>&1 | tee {build_name}_output.log',
+]
+
+
 # pylint: disable=abstract-method
 class Platform(LatticePlatform):
     """The HPS Platform"""
@@ -121,6 +139,7 @@ class Platform(LatticePlatform):
             io=ios,
             connectors=[],
             toolchain='oxide')
+        self.toolchain.build_template = _build_template
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
