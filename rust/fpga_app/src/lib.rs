@@ -201,12 +201,17 @@ where
     }
 
     fn calibrate_camera(&mut self, num_frames: u8) -> Result<()> {
+        let start = self.timer.now();
         mcu_println!(self, "Calibrating camera");
         self.mcu.camera().set_ae_target(camera::AE_TARGET.into())?;
         self.mcu.wait_for_camera_standby();
         self.mcu.trigger_n_frames(num_frames)?;
         self.mcu.wait_for_camera_standby();
-        mcu_println!(self, "Calibration complete");
+        mcu_println!(
+            self.mcu,
+            "Calibration complete in {}ms",
+            self.timer.elapsed_ms(start)
+        );
         Ok(())
     }
 
