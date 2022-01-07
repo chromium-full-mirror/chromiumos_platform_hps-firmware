@@ -143,6 +143,9 @@ where
 
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
         let mut hps = self.open_hps()?;
+        println!("Erasing SPI flash");
+        hps.perform_command(Command::EraseSpiFlash)?;
+        hps.wait_memory_bank_available(memory_banks::SPI_FLASH)?;
         Self::write_memory_bank(
             &mut hps,
             "gateware bitstream",
@@ -154,6 +157,8 @@ where
 
     pub(crate) fn write_soc_rom(&mut self) -> Result<()> {
         let mut hps = self.open_hps()?;
+        // TODO(dcallagh): this only works without erasing SPI flash
+        // because we are still also erasing each individual block on write.
         Self::write_memory_bank(
             &mut hps,
             "SOC ROM",

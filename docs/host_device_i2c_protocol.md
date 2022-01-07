@@ -98,24 +98,24 @@ and are not documented here.
 
 ## Common System Commands
 
-| BIT | NAME            | DESCRIPTION                            |
-|:----|:----------------|:---------------------------------------|
-| 15  | ERASE_STAGE0    | Erase first page of MCU flash (stage0) |
-| 14  | WRITE_TEST_DATA | Write SPI flash test data              |
-| 13  |                 |                                        |
-| 12  |                 |                                        |
-| 11  |                 |                                        |
-| 10  |                 |                                        |
-| 9   |                 |                                        |
-| 8   |                 |                                        |
-| 7   |                 |                                        |
-| 6   |                 |                                        |
-| 5   |                 |                                        |
-| 4   |                 |                                        |
-| 3   | ERASE_STAGE1    | Erase RW region of MCU flash (stage1)  |
-| 2   | LAUNCHAPP       | Launch application (from stage1)       |
-| 1   | LAUNCH1         | Launch stage1 (from stage0)            |
-| 0   | RESET           | Reset module to stage0                 |
+| BIT | NAME            | DESCRIPTION                                      |
+|:----|:----------------|:-------------------------------------------------|
+| 15  | ERASE_STAGE0    | Erase first page of MCU flash (stage0)           |
+| 14  | WRITE_TEST_DATA | Write SPI flash test data                        |
+| 13  |                 |                                                  |
+| 12  |                 |                                                  |
+| 11  |                 |                                                  |
+| 10  |                 |                                                  |
+| 9   |                 |                                                  |
+| 8   |                 |                                                  |
+| 7   |                 |                                                  |
+| 6   |                 |                                                  |
+| 5   |                 |                                                  |
+| 4   | ERASE_SPIFLASH  | Erase SPI flash (FPGA bitstream and application) |
+| 3   | ERASE_STAGE1    | Erase RW region of MCU flash (stage1)            |
+| 2   | LAUNCHAPP       | Launch application (from stage1)                 |
+| 1   | LAUNCH1         | Launch stage1 (from stage0)                      |
+| 0   | RESET           | Reset module to stage0                           |
 
 ## Application Version
 
@@ -225,6 +225,7 @@ A boot sequence with firmware updates can be performed as follows:
 * Write new stage1/application into MCU RW flash region.
 * Issue RESET command
 * Issue LAUNCH1 command
-* Write gateware and SOC ROM.
+* Erase SPI flash.
+* Write FPGA bitstream and application into SPI flash.
 * Issue LAUNCHAPP command
 * Operate as per normal (e.g. enable a feature)

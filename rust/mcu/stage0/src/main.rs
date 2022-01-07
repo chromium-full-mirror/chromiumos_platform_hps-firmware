@@ -131,8 +131,8 @@ const APP: () = {
                     host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
             }
-            HostEvent::Command(Command::LaunchApp | Command::WriteSpiFlashTestData) => {
-                // These commands are only implemented in stage1.
+            HostEvent::Command(_) => {
+                // All other commands are only implemented in stage1.
                 // Here in stage0, they are an error.
                 host_interface.lock(|h| h.i2c_report_err(Error::HostI2cBadRequest));
             }

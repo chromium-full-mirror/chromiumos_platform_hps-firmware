@@ -22,6 +22,10 @@ pub enum Command {
     /// stage1 image into it.
     EraseStage1 = 1 << 3,
 
+    /// Erase the SPI flash in preparation for writing new FPGA bitstream
+    /// and application into it.
+    EraseSpiFlash = 1 << 4,
+
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,

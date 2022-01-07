@@ -84,12 +84,17 @@ const APP: () = {
     }
 
     #[task(binds = I2C1, resources = [host_interface, state],
-        spawn = [write_spi_flash, try_start_fpga, write_spi_flash_test_data], priority = 3)]
+        spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data],
+        priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
             Some(application::Event::Command(Command::Reset)) => {
                 cortex_m::peripheral::SCB::sys_reset()
+            }
+            Some(application::Event::Command(Command::EraseSpiFlash)) => {
+                host_interface.set_spi_flash_erasing(true);
+                let _ = ctx.spawn.erase_spi_flash();
             }
             Some(application::Event::WriteSpiFlash(write_request)) => {
                 let _ = ctx.spawn.write_spi_flash(write_request);
@@ -251,16 +256,22 @@ const APP: () = {
     }
 
     #[task(resources = [fpga_device, host_interface])]
-    fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
-        // On writing the first byte, erase the whole flash.
-        // This allows a hash of the whole flash to match one calculated offline.
-        if request.address == 0 {
-            if let Err(error) = spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok()) {
-                ctx.resources
-                    .host_interface
-                    .lock(|host_interface| host_interface.report_error(error));
-            }
+    fn erase_spi_flash(mut ctx: erase_spi_flash::Context) {
+        if let Err(error) = spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok()) {
+            ctx.resources
+                .host_interface
+                .lock(|host_interface| host_interface.report_error(error));
         }
+        ctx.resources
+            .host_interface
+            .lock(|host_interface| host_interface.set_spi_flash_erasing(false));
+        ctx.resources
+            .host_interface
+            .lock(|host_interface| host_interface.command_completed());
+    }
+
+    #[task(resources = [fpga_device, host_interface])]
+    fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
         if let Err(error) = spi_flash::write(
             get_spi_flash(ctx.resources.fpga_device).ok(),
             request.address,

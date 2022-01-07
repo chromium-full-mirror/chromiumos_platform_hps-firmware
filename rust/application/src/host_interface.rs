@@ -27,6 +27,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     outgoing_image_data: Option<i2c_protocol::Buffer>,
     application_running: bool,
     active_command_count: u8,
+    spi_flash_erasing: bool,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -46,6 +47,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             outgoing_image_data: None,
             application_running: false,
             active_command_count: 0,
+            spi_flash_erasing: false,
         }
     }
 
@@ -108,7 +110,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::USER_PRESENT_STATUS => state.status.person_status,
             registers::SECOND_PERSON_STATUS => state.status.second_person_status,
             registers::MEMORY_BANK_AVAILABLE => {
-                if self.protocol_handler.has_receive_buffer() {
+                if !self.spi_flash_erasing && self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
                 } else {
                     0
@@ -192,6 +194,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
         } else {
             Status::STAGE1
         }
+    }
+
+    pub fn set_spi_flash_erasing(&mut self, erasing: bool) {
+        self.spi_flash_erasing = erasing;
     }
 
     #[cfg(feature = "image-transfer")]

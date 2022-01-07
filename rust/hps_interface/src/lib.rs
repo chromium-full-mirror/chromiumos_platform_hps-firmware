@@ -112,6 +112,7 @@ pub trait Hps {
     }
 
     fn write_spi_flash(&mut self, bitstream_bytes: &[u8], app_bytes: &[u8]) -> Result<()> {
+        self.perform_command(Command::EraseSpiFlash)?;
         let mut address = 0;
         for chunk in bitstream_bytes.chunks(256) {
             self.wait_memory_bank_available(memory_banks::FPGA_BITSTREAM)?;
