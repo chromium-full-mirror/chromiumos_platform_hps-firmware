@@ -107,6 +107,7 @@ pub trait Hps {
             self.write_memory(memory_banks::MCU_RW, address, chunk)?;
             address += chunk.len() as u32;
         }
+        self.wait_memory_bank_available(memory_banks::MCU_RW)?;
         Ok(())
     }
 
