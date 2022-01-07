@@ -64,7 +64,13 @@ pub(crate) const INIT_SCRIPT: &[(u16, u8)] = &[
     // Bit width selection.
     (0x3011, 0x70), // 8-bit mode.
     (0x3059, 0x02),
-    (0x3060, 0x20), // Enable gated CLK.
+    (
+        0x3060,
+        // Enable gated CLK
+        0x20
+        // vt_sys_divider = 1
+        | 0b11,
+    ),
     // CMU update.
     (0x0104, 0x00),
     // Standby mode.
