@@ -51,8 +51,8 @@ pub(crate) const INIT_SCRIPT: &[(u16, u8)] = &[
     (0x2111, 0x00),
     (0x2112, 0xA0),
     // Frame rate (42 FPS).
-    (0x0340, 0x01), // Frame length 376 (0x0178).
-    (0x0341, 0x78),
+    (0x0340, 0x01), // Frame length 344 (0x0158).
+    (0x0341, 0x58),
     (0x0342, 0x01), // Line length 376 (0x0178).
     (0x0343, 0x78),
     // Image configuration.
