@@ -13,7 +13,6 @@ use num_enum::TryFromPrimitive;
 pub enum DebugCommand {
     Classification = 1,
     Transfer = 3,
-    ExposureCalibration = 5,
     RotateImageClockwise = 16,
     SelfTest = 18,
     TestSpiFlashReads = 19,

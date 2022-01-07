@@ -16,10 +16,6 @@ pub const END_IMAGE_MARKER: [u8; 8] = [227, 114, 212, 105, 101, 111, 21, 193];
 
 pub const AE_TARGET: u8 = 60;
 
-/// If the AE_MEAN is more than this threshold away from the AE_TARGET for
-/// several frames, then we'll recalibrate.
-pub const AE_RECALIBRATION_THRESHOLD: i16 = 10;
-
 pub trait ImageDataReceiver {
     /// Configures camera DMA to receive into `buffer` then calls
     /// `trigger_callback` then waits for DMA to complete. If `trigger_callback`

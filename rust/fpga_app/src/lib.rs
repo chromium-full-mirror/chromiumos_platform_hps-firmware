@@ -89,7 +89,6 @@ pub struct App<S, I, C, T> {
     histogram_enabled: bool,
     classification_enabled: bool,
     debug_rotate_image: Option<bool>,
-    calibration_bad_frames: u8,
     timer: T,
     status: Status,
     model_number: u32,
@@ -113,7 +112,6 @@ where
             histogram_enabled: false,
             classification_enabled: false,
             debug_rotate_image: None,
-            calibration_bad_frames: 0,
             timer,
             status: Status::default(),
             model_number: 1,
@@ -131,10 +129,7 @@ where
             self.mcu.report_error(mcu_common::Error::TFLITE_FAILURE);
         }
         mcu_println!(self, "");
-        if self.calibrate_camera(15).is_err() {
-            mcu_println!(self, "Failed to calibrate camera");
-            self.mcu.report_error(mcu_common::Error::CAMERA);
-        }
+        self.camera_setup();
         loop {
             if let Err(error) = self.loop_body() {
                 mcu_println!(&mut self.mcu, "Error: {:?}", error);
@@ -181,7 +176,6 @@ where
 
         self.select_model(&features);
 
-        self.check_calibration()?;
         self.capture_image(
             self.debug_rotate_image
                 .unwrap_or_else(|| rotation == Rotation::Clockwise),
@@ -240,33 +234,18 @@ where
         Ok(())
     }
 
-    fn calibrate_camera(&mut self, num_frames: u8) -> Result<()> {
-        let start = self.timer.now();
-        mcu_println!(self, "Calibrating camera");
-        self.mcu.camera().set_ae_target(camera::AE_TARGET.into())?;
-        self.mcu.wait_for_camera_standby();
-        self.mcu.trigger_n_frames(num_frames)?;
-        self.mcu.wait_for_camera_standby();
-        mcu_println!(
-            self.mcu,
-            "Calibration complete in {}ms",
-            self.timer.elapsed_ms(start)
-        );
-        Ok(())
-    }
-
-    fn check_calibration(&mut self) -> Result<()> {
-        let mean = self.mcu.camera().get_ae_mean()?;
-        if (mean as i16 - camera::AE_TARGET as i16).abs() > camera::AE_RECALIBRATION_THRESHOLD {
-            self.calibration_bad_frames += 1;
-            if self.calibration_bad_frames >= 5 {
-                self.calibrate_camera(5)?;
-                self.calibration_bad_frames = 0;
-            }
-        } else {
-            self.calibration_bad_frames = 0;
+    fn camera_setup(&mut self) {
+        if self.mcu.camera().set_mode(hm01b0::Mode::Streaming).is_err() {
+            mcu_println!(self, "Failed to start camera streaming");
         }
-        Ok(())
+        if self
+            .mcu
+            .camera()
+            .set_ae_target(camera::AE_TARGET.into())
+            .is_err()
+        {
+            mcu_println!(self, "Failed to set AE target");
+        }
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
@@ -280,11 +259,9 @@ where
             core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
             core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
         }
-        let mcu = &mut self.mcu;
-        mcu.wait_for_camera_standby();
         let buffer = self.classifier.input_data_mut(self.model_number);
         self.image_data_receiver
-            .receive_image_data(buffer, &dimensions, || mcu.trigger_frame())?;
+            .receive_image_data(buffer, &dimensions, || Ok(()))?;
         if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
@@ -319,11 +296,6 @@ where
                 DebugCommand::Histogram => {
                     self.histogram_enabled = arg != 0;
                     mcu_println!(self, "Histogram: {}", arg != 0);
-                }
-                DebugCommand::ExposureCalibration => {
-                    if self.calibrate_camera(5).is_err() {
-                        mcu_println!(self, "Failed to calibrate camera");
-                    }
                 }
                 DebugCommand::SelfTest => {
                     if self.self_test().is_err() {
@@ -520,7 +492,6 @@ mod tests {
     use crate::fake_mcu::FakeMcu;
     use crate::timer::testing::FakeTimer;
     use application::Configuration;
-    use hm01b0::Camera;
 
     use super::*;
 
@@ -548,7 +519,6 @@ mod tests {
         };
         assert_eq!(app.mcu.spi.state.status, status1);
         assert_eq!(app.classifier.models_executed, 2);
-        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
 
         // Iteration 2: Both models enabled - presence detection runs.
         app.classifier.model_outputs[0] = 0x73;
@@ -563,7 +533,6 @@ mod tests {
         assert_eq!(app.classifier.models_executed, 1);
         assert_eq!(app.status.person_status, 0x8073);
         assert_eq!(app.status.second_person_status, 0x8042);
-        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
 
         // Iteration 3: Both models disabled.
         app.classifier.models_executed = 0;
@@ -580,7 +549,6 @@ mod tests {
         };
         assert_eq!(app.mcu.spi.state.status, status3);
         assert_eq!(app.classifier.models_executed, 0);
-        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
 
         Ok(())
     }
