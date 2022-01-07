@@ -64,6 +64,7 @@ enum SubCommand {
     #[cfg(feature = "ftdi")]
     ListDevices(ListDevices),
     FlashMcu(FlashMcu),
+    FlashSpi(FlashSpi),
     Launch1(Launch1),
     #[clap(name = "launchapp")]
     LaunchApp(LaunchApp),
@@ -90,6 +91,17 @@ struct FlashMcu {
     #[clap(long)]
     /// file from which to read MCU firmware
     file: PathBuf,
+}
+
+#[derive(Clap, PartialEq, Debug)]
+/// Flash FPGA bitstream and application to SPI flash
+struct FlashSpi {
+    #[clap(long)]
+    /// file from which to read FPGA bitstream
+    bitstream: PathBuf,
+    #[clap(long)]
+    /// file from which to read FPGA application ROM
+    application: PathBuf,
 }
 
 #[derive(Clap, PartialEq, Debug)]
@@ -275,6 +287,20 @@ fn main() -> Result<()> {
             let bytes = std::fs::read(file)?;
             hps.write_firmware(&bytes)?;
             println!("Sucessfully wrote {} bytes of firmware", bytes.len());
+            Ok(())
+        }
+        SubCommand::FlashSpi(FlashSpi {
+            bitstream,
+            application,
+        }) => {
+            let bitstream_bytes = std::fs::read(bitstream)?;
+            let app_bytes = std::fs::read(application)?;
+            hps.write_spi_flash(&bitstream_bytes, &app_bytes)?;
+            println!(
+                "Sucessfully wrote {} bytes (bitstream) and {} bytes (application)",
+                bitstream_bytes.len(),
+                app_bytes.len()
+            );
             Ok(())
         }
         SubCommand::Launch1(_) => hps.perform_command(Command::Launch1),
