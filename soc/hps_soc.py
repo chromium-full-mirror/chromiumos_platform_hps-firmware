@@ -195,9 +195,10 @@ def main():
 
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
+    # --build does nothing, accept it for backwards compatibility
     parser.add_argument(
         '--build', action='store_true',
-        help='Whether to do a full build, including the bitstream.')
+        help=argparse.SUPPRESS)
     parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
@@ -238,7 +239,7 @@ def main():
     }
 
     start_time = time.time()
-    vns = builder.build(**builder_kwargs, run=args.build)
+    vns = builder.build(**builder_kwargs)
     run_time = time.time() - start_time
     meta_file = f'{builder.output_dir}/gateware/hps_platform_build.metadata'
     print(f'Execution time for the build is: {run_time}s')
@@ -256,9 +257,6 @@ def main():
               f'-i {builder.output_dir}/hps.svd '
               f'-o {pac_out_dir}')
     os.system(f'rustfmt {pac_out_dir}/*.rs')
-
-    if not args.build:
-        print('Use --build to build the bitstream, if needed')
 
     if args.prog:
         print(f'Loading from output dir: {builder.output_dir}')

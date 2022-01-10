@@ -152,7 +152,6 @@ fn build_soc_rom() {
         let out = Command::new("../../scripts/soc-load")
             .env_clear()
             .env("PATH", std::env::var("PATH").unwrap_or_default())
-            .arg("--build")
             .output()
             .unwrap();
         if !out.status.success() {

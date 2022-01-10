@@ -8,8 +8,6 @@ set -o errexit
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 BUILD="${PROJECT_ROOT}/build/hps_platform"
-echo "Recompile software and Load the HPS SoC. "
-echo "Use --build to also build gateware"
 
 {
   cd "${PROJECT_ROOT}"
