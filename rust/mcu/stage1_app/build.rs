@@ -46,7 +46,7 @@ fn build_spi_hash() {
 }
 
 fn add_segments_for_file(input_filename: &Path, address_range: Range<u32>, out: &mut File) {
-    const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/soc-load` to create it, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_bitstream.bin HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_application.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
+    const MESSAGE: &str = "bios or bitstream file not found, use `./scripts/build-fpga-bitstream` and `./scripts/build-fpga-rom` to create them, or with a cros checkout, try: `env HPS_SPI_BIT=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_bitstream.bin HPS_SPI_BIN=$HOME/chromiumos/src/platform/hps-firmware-images/firmware-bin/fpga_application.bin cargo build` or see https://chromium.googlesource.com/chromiumos/platform/hps-firmware-images/";
 
     let mut f = File::open(input_filename).expect(MESSAGE);
     // Creates hashable binary segment.

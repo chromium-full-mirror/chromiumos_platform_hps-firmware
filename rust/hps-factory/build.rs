@@ -149,7 +149,7 @@ fn build_soc_rom() {
     // Due to how slow it is to build the gateware, we only build if the output
     // files don't exist. i.e. rebuilding is left to the user.
     if !bitstream.exists() {
-        let out = Command::new("../../scripts/soc-load")
+        let out = Command::new("../../scripts/build-fpga-bitstream")
             .env_clear()
             .env("PATH", std::env::var("PATH").unwrap_or_default())
             .output()
