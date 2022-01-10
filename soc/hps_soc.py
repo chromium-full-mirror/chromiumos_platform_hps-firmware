@@ -206,9 +206,6 @@ def main():
     parser.add_argument(
         '--cpu-cfu', default='soc/cfu.v',
         help='Specify file containing CFU Verilog module.')
-    parser.add_argument(
-        '--prog', action='store_true',
-        help='Program the FPGA bitstream and software.')
 
     args = parser.parse_args()
     args.output_dir = 'build/hps_platform'
@@ -258,16 +255,7 @@ def main():
               f'-o {pac_out_dir}')
     os.system(f'rustfmt {pac_out_dir}/*.rs')
 
-    if args.prog:
-        print(f'Loading from output dir: {builder.output_dir}')
-        os.system(
-            f'scripts/prog bitstream '
-            f'{builder.output_dir}/gateware/hps_platform.bit')
-        os.system(
-            f'scripts/prog rom '
-            f'{builder.output_dir}/software/bios/out/riscv-gcc/rom.bin')
-    else:
-        print(f'Build outputs at {builder.output_dir}')
+    print(f'Build outputs at {builder.output_dir}')
 
 
 if __name__ == '__main__':
