@@ -24,26 +24,21 @@ fn build_mcu_test_program(bin_name: &str, features: &str) {
         .current_dir("../mcu/factory_tester_mcu")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
+        .arg("build")
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
         .arg(features)
-        .arg("--")
-        .arg("-O")
-        .arg("binary")
-        // If we don't remove these sections, then LLVM's objcopy includes them
-        // in the .bin file. So we end up with 10KB of zeros at the start of the
-        // file. GNU's objcopy doesn't do this.
-        .arg("--remove-section=.bss")
-        .arg("--remove-section=.uninit")
-        .arg(bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
+    convert_elf_to_bin(
+        "../mcu/target/thumbv6m-none-eabi/release/factory_tester_mcu",
+        &bin_file,
+    );
 }
 
 fn write_stage0_bin(bin_name: &str, features: &str) {
@@ -53,21 +48,18 @@ fn write_stage0_bin(bin_name: &str, features: &str) {
         .current_dir("../mcu/stage0")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
+        .arg("build")
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
         .arg(features)
-        .arg("--")
-        .arg("-O")
-        .arg("binary")
-        .arg(bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
+    convert_elf_to_bin("../mcu/target/thumbv6m-none-eabi/release/stage0", &bin_file);
 }
 
 fn write_application_bin() {
@@ -77,21 +69,21 @@ fn write_application_bin() {
         .current_dir("../mcu/stage1_app")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
+        .arg("build")
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
         .arg("proto2,dev,image-transfer,no-hash-check")
-        .arg("--")
-        .arg("-O")
-        .arg("binary")
-        .arg(&bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
+    convert_elf_to_bin(
+        "../mcu/target/thumbv6m-none-eabi/release/stage1_app",
+        &bin_file,
+    );
     sign_stage1_binary(&bin_file);
 }
 
@@ -102,24 +94,23 @@ fn write_release_application_bin() {
         .current_dir("../mcu/stage1_app")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
+        .arg("build")
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
         // TODO: Remove no-hash-check once stage1 embeds the hash of the Rust
         // fpga_rom rather than the old C soc_rom.
         .arg("proto2,no-hash-check")
-        .arg("--")
-        .arg("-O")
-        .arg("binary")
-        .arg(&bin_file)
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-
+    convert_elf_to_bin(
+        "../mcu/target/thumbv6m-none-eabi/release/stage1_app",
+        &bin_file,
+    );
     sign_stage1_binary(&bin_file);
 }
 
@@ -130,17 +121,17 @@ fn build_one_time_init() {
         .current_dir("../mcu/one_time_init")
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .arg("objcopy")
-        .arg("--")
-        .arg("-O")
-        .arg("binary")
-        .arg(bin_file)
+        .arg("build")
         .output()
         .unwrap();
     if !out.status.success() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
+    convert_elf_to_bin(
+        "../mcu/target/thumbv6m-none-eabi/debug/one_time_init",
+        &bin_file,
+    );
 }
 
 fn build_soc_rom() {
@@ -177,22 +168,10 @@ fn build_soc_rom() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-    // We use our own copy of objcopy rather than `cargo objcopy` because with
-    // rust 1.55, the resulting .bin file starts at address 0 instead of 2MB, so
-    // ends up 2MB bigger than it's supposed to be and is non-functional. This
-    // problem doesn't appear with rust 1.56, but we don't have that yet.
-    let out = Command::new("../../third_party/installed/bin/riscv64-unknown-elf-objcopy")
-        .current_dir("../riscv")
-        .arg("target/riscv32i-unknown-none-elf/release/fpga_rom")
-        .arg("-O")
-        .arg("binary")
-        .arg(fpga_rom)
-        .output()
-        .unwrap();
-    if !out.status.success() {
-        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
-        std::process::exit(1);
-    }
+    convert_elf_to_bin(
+        "../riscv/target/riscv32i-unknown-none-elf/release/fpga_rom",
+        &fpga_rom,
+    );
 }
 
 fn copy_or_die(from: impl AsRef<Path>, to: impl AsRef<Path>) {
@@ -200,6 +179,21 @@ fn copy_or_die(from: impl AsRef<Path>, to: impl AsRef<Path>) {
     let to = to.as_ref();
     if let Err(error) = std::fs::copy(from, to) {
         panic!("Failed to copy {:?} to {:?}: {}", from, to, error);
+    }
+}
+
+fn convert_elf_to_bin(src: impl AsRef<Path>, dst: impl AsRef<Path>) {
+    let cmd = std::env::var("OBJCOPY").unwrap_or_else(|_| "llvm-objcopy".to_string());
+    let out = Command::new(cmd)
+        .arg("-O")
+        .arg("binary")
+        .arg(src.as_ref())
+        .arg(dst.as_ref())
+        .output()
+        .unwrap();
+    if !out.status.success() {
+        eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
+        std::process::exit(1);
     }
 }
 

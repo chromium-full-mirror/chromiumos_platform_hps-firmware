@@ -73,6 +73,10 @@ if ! which lld >/dev/null; then
     missing+=(lld)
 fi
 
+if ! command -v llvm-objcopy-13 >/dev/null ; then
+    missing+=(llvm-13-tools)
+fi
+
 if [ ! -f /usr/include/libusb-1.0/libusb.h ]; then
     missing+=(libusb-1.0-0-dev)
 fi
@@ -175,10 +179,6 @@ for i in flip-link; do
         cargo install "${i}"
     fi
 done
-
-if [ ! -f "${HOME}/.cargo/bin/cargo-objcopy" ]; then
-    cargo install cargo-binutils
-fi
 
 if ! which svd2rust; then
     cargo install svd2rust

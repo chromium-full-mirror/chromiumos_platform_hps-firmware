@@ -8,6 +8,9 @@
 
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+source "${PROJECT_ROOT}/environment"
+
 cd "${PROJECT_ROOT}/rust"
 
 # Force rerun of build.rs, otherwise changes in the various crates that it

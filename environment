@@ -53,6 +53,11 @@ fi
 export OBJCACHE=ccache
 export CC="ccache gcc"
 
+# Debian derivatives don't have an unversioned llvm-objcopy command
+if command -v llvm-objcopy-13 >/dev/null ; then
+    export OBJCOPY="llvm-objcopy-13"
+fi
+
 # We deliberately clear anything that may have already been in PYTHONPATH to
 # prevent accidentally pulling in anything outside this project.
 PYTHONPATH="${HPS_ROOT}/../../.."  # For chromite
