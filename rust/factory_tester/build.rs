@@ -16,6 +16,7 @@ fn build_mcu_test_program() {
     let out = Command::new("cargo")
         .current_dir("../mcu/factory_tester_mcu")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -28,7 +29,7 @@ fn build_mcu_test_program() {
     let out = Command::new(std::env::var("OBJCOPY").unwrap_or_else(|_| "llvm-objcopy".to_string()))
         .arg("-O")
         .arg("binary")
-        .arg("../mcu/target/thumbv6m-none-eabi/release/factory_tester_mcu")
+        .arg(out_dir.join("nested-build/thumbv6m-none-eabi/release/factory_tester_mcu"))
         .arg(bin_file)
         .output()
         .unwrap();

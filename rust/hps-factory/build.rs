@@ -23,6 +23,7 @@ fn build_mcu_test_program(bin_name: &str, features: &str) {
     let out = Command::new("cargo")
         .current_dir("../mcu/factory_tester_mcu")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -35,7 +36,7 @@ fn build_mcu_test_program(bin_name: &str, features: &str) {
         std::process::exit(1);
     }
     convert_elf_to_bin(
-        "../mcu/target/thumbv6m-none-eabi/release/factory_tester_mcu",
+        out_dir.join("nested-build/thumbv6m-none-eabi/release/factory_tester_mcu"),
         &bin_file,
     );
 }
@@ -46,6 +47,7 @@ fn write_stage0_bin(bin_name: &str, features: &str) {
     let out = Command::new("cargo")
         .current_dir("../mcu/stage0")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -57,7 +59,10 @@ fn write_stage0_bin(bin_name: &str, features: &str) {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-    convert_elf_to_bin("../mcu/target/thumbv6m-none-eabi/release/stage0", &bin_file);
+    convert_elf_to_bin(
+        out_dir.join("nested-build/thumbv6m-none-eabi/release/stage0"),
+        &bin_file,
+    );
 }
 
 fn write_application_bin() {
@@ -66,6 +71,7 @@ fn write_application_bin() {
     let out = Command::new("cargo")
         .current_dir("../mcu/stage1_app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -78,7 +84,7 @@ fn write_application_bin() {
         std::process::exit(1);
     }
     convert_elf_to_bin(
-        "../mcu/target/thumbv6m-none-eabi/release/stage1_app",
+        out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
         &bin_file,
     );
     sign_stage1_binary(&bin_file);
@@ -90,6 +96,7 @@ fn write_release_application_bin() {
     let out = Command::new("cargo")
         .current_dir("../mcu/stage1_app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -104,7 +111,7 @@ fn write_release_application_bin() {
         std::process::exit(1);
     }
     convert_elf_to_bin(
-        "../mcu/target/thumbv6m-none-eabi/release/stage1_app",
+        out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
         &bin_file,
     );
     sign_stage1_binary(&bin_file);
@@ -116,6 +123,7 @@ fn build_one_time_init() {
     let out = Command::new("cargo")
         .current_dir("../mcu/one_time_init")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .output()
         .unwrap();
@@ -124,7 +132,7 @@ fn build_one_time_init() {
         std::process::exit(1);
     }
     convert_elf_to_bin(
-        "../mcu/target/thumbv6m-none-eabi/debug/one_time_init",
+        out_dir.join("nested-build/thumbv6m-none-eabi/debug/one_time_init"),
         &bin_file,
     );
 }
@@ -149,6 +157,7 @@ fn build_soc_rom() {
     let out = Command::new("cargo")
         .current_dir("../riscv/fpga_rom")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
+        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -161,7 +170,7 @@ fn build_soc_rom() {
         std::process::exit(1);
     }
     convert_elf_to_bin(
-        "../riscv/target/riscv32i-unknown-none-elf/release/fpga_rom",
+        out_dir.join("nested-build/riscv32i-unknown-none-elf/release/fpga_rom"),
         &fpga_rom,
     );
 }
