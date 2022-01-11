@@ -232,7 +232,7 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                                 // buffer is already in use. Send all bytes to
                                 // /dev/null.
                                 self.state = State::Done;
-                                return Err(Error::BufferNotAvailable);
+                                return Err(Error::BUFFER_NOT_AVAILABLE);
                             }
                         }
                     }
@@ -240,15 +240,15 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         if state.buffer.push(byte).is_err() {
                             // Attempt to write beyond end of buffer.
                             self.state = State::Done;
-                            return Err(Error::BufferOverrun);
+                            return Err(Error::BUFFER_OVERRUN);
                         }
                     }
                     _ => {}
                 },
                 Err(nb::Error::WouldBlock) => return Ok(Event::None),
-                Err(nb::Error::Other(I2cError::Overrun)) => return Err(Error::HostI2cOverrun),
-                Err(nb::Error::Other(I2cError::Underrun)) => return Err(Error::HostI2cUnderrun),
-                Err(nb::Error::Other(I2cError::BusError)) => return Err(Error::HostI2cBusError),
+                Err(nb::Error::Other(I2cError::Overrun)) => return Err(Error::HOST_I2C_OVERRUN),
+                Err(nb::Error::Other(I2cError::Underrun)) => return Err(Error::HOST_I2C_OVERRUN),
+                Err(nb::Error::Other(I2cError::BusError)) => return Err(Error::HOST_I2C_BUS_ERROR),
                 _ => {}
             }
         }
@@ -363,7 +363,7 @@ mod tests {
         assert!(!protocol_handler.has_receive_buffer());
         assert_eq!(
             protocol_handler.next_event(),
-            Err(Error::BufferNotAvailable)
+            Err(Error::BUFFER_NOT_AVAILABLE)
         );
     }
 
@@ -376,6 +376,6 @@ mod tests {
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         protocol_handler.supply_mem_block(MemBlock::with_capacity(2));
-        assert_eq!(protocol_handler.next_event(), Err(Error::BufferOverrun));
+        assert_eq!(protocol_handler.next_event(), Err(Error::BUFFER_OVERRUN));
     }
 }

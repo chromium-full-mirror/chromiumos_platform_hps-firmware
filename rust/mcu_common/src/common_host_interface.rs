@@ -9,9 +9,8 @@ use crate::registers;
 use crate::Error;
 use crate::Status;
 
-#[derive(Default)]
 pub struct CommonHostInterface {
-    error_bits: u16,
+    errors: Error,
 }
 
 impl CommonHostInterface {
@@ -22,21 +21,21 @@ impl CommonHostInterface {
     pub fn read_register(&self, register: u8) -> Option<u16> {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
-            registers::ERRORS => self.error_bits,
-            registers::SYSTEM_STATUS if self.error_bits != 0 => Status::FAULT.bits(),
+            registers::ERRORS => self.errors.bits(),
+            registers::SYSTEM_STATUS if !self.errors.is_empty() => Status::FAULT.bits(),
             registers::SYSTEM_STATUS => Status::OK.bits(),
             _ => return self.read_dev_register(register),
         })
     }
 
     pub fn report_error(&mut self, error: Error) {
-        self.error_bits |= u16::from(error);
+        self.errors |= error;
     }
 
     #[cfg(feature = "dev")]
     fn read_dev_register(&self, register: u8) -> Option<u16> {
         Some(match register {
-            registers::dev::SLOW_READ => dev::fib(self.error_bits.count_ones() as u16 + 20),
+            registers::dev::SLOW_READ => dev::fib(self.errors.bits().count_ones() as u16 + 20),
             _ => return None,
         })
     }
@@ -44,6 +43,14 @@ impl CommonHostInterface {
     #[cfg(not(feature = "dev"))]
     fn read_dev_register(&self, _: u8) -> Option<u16> {
         None
+    }
+}
+
+impl Default for CommonHostInterface {
+    fn default() -> Self {
+        Self {
+            errors: Error::empty(),
+        }
     }
 }
 
@@ -72,15 +79,15 @@ mod tests {
             interface.read_register(registers::SYSTEM_STATUS),
             Some(Status::OK.bits())
         );
-        interface.report_error(Error::HostI2cOverrun);
+        interface.report_error(Error::HOST_I2C_OVERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HostI2cOverrun.unwrap())
+            Some(Error::HOST_I2C_OVERRUN.unwrap())
         );
-        interface.report_error(Error::HostI2cUnderrun);
+        interface.report_error(Error::HOST_I2C_UNDERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HostI2cOverrun.unwrap() | Error::HostI2cUnderrun.unwrap())
+            Some(Error::HOST_I2C_OVERRUN.unwrap() | Error::HOST_I2C_UNDERRUN.unwrap())
         );
     }
 

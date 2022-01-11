@@ -109,7 +109,7 @@ const APP: () = {
             }
             Some(application::Event::Command(command)) => {
                 error!("Unsupported command {:?}", command);
-                host_interface.report_error(mcu_common::Error::HostI2cBadRequest);
+                host_interface.report_error(mcu_common::Error::HOST_I2C_BAD_REQUEST);
                 host_interface.command_completed();
             }
             Some(application::Event::TestCameraI2c) => {
@@ -188,7 +188,7 @@ const APP: () = {
                     .unwrap_or(false)
                 {
                     ctx.resources.host_interface.lock(|host_interface| {
-                        host_interface.report_error(mcu_common::Error::Camera)
+                        host_interface.report_error(mcu_common::Error::CAMERA)
                     });
                     break;
                 }
@@ -497,13 +497,13 @@ fn init_peripherals(
                     // doing it every boot is only a single read, which is
                     // very cheap.
                     if spi_flash::enable_quad_spi(&mut flash).is_err() {
-                        host_interface.report_error(mcu_common::Error::SpiFlash);
+                        host_interface.report_error(mcu_common::Error::SPI_FLASH);
                         info!("Failed to enable quad SPI");
                     }
 
                     spi_flash = Some(flash);
                 } else {
-                    host_interface.report_error(mcu_common::Error::SpiFlash);
+                    host_interface.report_error(mcu_common::Error::SPI_FLASH);
                     info!(
                         "Unexpected flash ID {}, [{}, {}]",
                         id.mfr_code(),
@@ -513,12 +513,12 @@ fn init_peripherals(
                 }
             }
             Err(_) => {
-                host_interface.report_error(mcu_common::Error::SpiFlash);
+                host_interface.report_error(mcu_common::Error::SPI_FLASH);
                 info!("Failed to read flash ID");
             }
         },
         Err(e) => {
-            host_interface.report_error(mcu_common::Error::SpiFlash);
+            host_interface.report_error(mcu_common::Error::SPI_FLASH);
             info!("Failed to initialize SPI flash: {:?}", e);
         }
     };
@@ -526,12 +526,12 @@ fn init_peripherals(
     let mut camera = hm01b0::Camera::new(&mut camera_i2c);
     match camera.get_camera_id() {
         Err(_) => {
-            host_interface.report_error(mcu_common::Error::Camera);
+            host_interface.report_error(mcu_common::Error::CAMERA);
             info!("Failed to read camera ID");
         }
         Ok(CAMERA_ID) => {}
         Ok(id) => {
-            host_interface.report_error(mcu_common::Error::Camera);
+            host_interface.report_error(mcu_common::Error::CAMERA);
             info!("Camera reported unexpected ID: {}", id);
         }
     }

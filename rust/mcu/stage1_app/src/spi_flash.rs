@@ -31,12 +31,12 @@ pub(crate) fn write(
         Some(x) => x,
         None => {
             error!("SPI flash not available, cannot write");
-            return Err(Error::HostI2cBadRequest);
+            return Err(Error::HOST_I2C_BAD_REQUEST);
         }
     };
     if data.len() > PAGE_SIZE as usize {
         error!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
-        return Err(Error::HostI2cBadRequest);
+        return Err(Error::HOST_I2C_BAD_REQUEST);
     }
     // TODO(dml) the whole flash is erased as part of the update sequence, so
     // this is now unnecessary. This is still used for development though so
@@ -45,7 +45,7 @@ pub(crate) fn write(
     // divides this size.
     if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
         error!("SPI write crosses block boundary");
-        return Err(Error::HostI2cBadRequest);
+        return Err(Error::HOST_I2C_BAD_REQUEST);
     }
     if address % BLOCK_SIZE == 0 {
         // The spi-memory crate doesn't support erasing blocks, so we do it
@@ -53,7 +53,7 @@ pub(crate) fn write(
         let mut spi = unsafe { SpiFlash::steal() };
         if spi.erase_block(address).is_err() {
             error!("Failed to erase to block");
-            return Err(Error::SpiFlash);
+            return Err(Error::SPI_FLASH);
         }
     }
     let mut buffer = [0u8; PAGE_SIZE as usize];
@@ -61,12 +61,12 @@ pub(crate) fn write(
     buffer.copy_from_slice(data);
     if spi_flash.write_bytes(address, buffer).is_err() {
         error!("Failed to write to SPI flash");
-        return Err(Error::SpiFlash);
+        return Err(Error::SPI_FLASH);
     }
 
     if spi_flash.read(address, buffer).is_err() {
         error!("Failed to read back SPI flash");
-        return Err(Error::SpiFlash);
+        return Err(Error::SPI_FLASH);
     }
 
     if buffer != data {
@@ -75,7 +75,7 @@ pub(crate) fn write(
             data.len(),
             address
         );
-        return Err(Error::SpiFlash);
+        return Err(Error::SPI_FLASH);
     }
 
     Ok(())
@@ -96,13 +96,13 @@ pub(crate) fn erase(
         Some(x) => x,
         None => {
             error!("SPI flash not available");
-            return Err(Error::HostI2cBadRequest);
+            return Err(Error::HOST_I2C_BAD_REQUEST);
         }
     };
     info!("Erasing");
     if spi_flash.erase_all().is_err() {
         error!("Failed to erase to SPI flash");
-        return Err(Error::SpiFlash);
+        return Err(Error::SPI_FLASH);
     } else {
         info!("Erase complete");
     }
@@ -119,7 +119,7 @@ pub(crate) fn hash_internal(
     for page in first_page..end_page {
         if spi_flash.read(page * (PAGE_SIZE as u32), &mut buf).is_err() {
             error!("Failed to read back SPI flash");
-            return Err(Error::SpiFlash);
+            return Err(Error::SPI_FLASH);
         }
         hasher.update(&buf);
     }
@@ -143,18 +143,18 @@ pub(crate) fn hash(
                         .is_err()
                     {
                         error!("Failed to read back SPI flash");
-                        return Err(Error::SpiFlashNotVerified);
+                        return Err(Error::SPI_FLASH_NOT_VERIFIED);
                     }
                 }
                 if empty_page != buf {
                     error!("Expected SPI flash register to be empty");
-                    return Err(Error::SpiFlashNotVerified);
+                    return Err(Error::SPI_FLASH_NOT_VERIFIED);
                 }
             }
             SegmentKind::DataWithHash(expected) => {
                 if expected != hash_internal(spi_flash, first_page, end_page).unwrap() {
                     error!("SPI flash hash does not match");
-                    return Err(Error::SpiFlashNotVerified);
+                    return Err(Error::SPI_FLASH_NOT_VERIFIED);
                 }
             }
         }

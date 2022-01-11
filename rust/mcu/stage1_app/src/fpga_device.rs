@@ -74,7 +74,7 @@ impl FpgaDevice {
             self.hold.set_high().unwrap();
             Ok(())
         } else {
-            Err(Error::SpiFlashNotVerified)
+            Err(Error::SPI_FLASH_NOT_VERIFIED)
         }
     }
 }
@@ -85,8 +85,8 @@ pub(crate) fn get_spi_flash(
     if fpga_device.hold.is_set_high().unwrap() {
         // Requesting to do something with the SPI flash when the FPGA has
         // already been started is a bad request.
-        Err(Error::HostI2cBadRequest)
+        Err(Error::HOST_I2C_BAD_REQUEST)
     } else {
-        fpga_device.spi_flash.as_mut().ok_or(Error::SpiFlash)
+        fpga_device.spi_flash.as_mut().ok_or(Error::SPI_FLASH)
     }
 }

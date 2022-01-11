@@ -138,10 +138,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     if let Ok(command) = Command::try_from(event.value) {
                         return Some(HostEvent::Command(command));
                     } else {
-                        self.common_interface.report_error(Error::HostI2cBadRequest);
+                        self.common_interface
+                            .report_error(Error::HOST_I2C_BAD_REQUEST);
                     }
                 }
-                _ => self.common_interface.report_error(Error::HostI2cBadRequest),
+                _ => self
+                    .common_interface
+                    .report_error(Error::HOST_I2C_BAD_REQUEST),
             },
             Ok(i2c_protocol::Event::WriteMemory(event)) => match event.bank {
                 memory_banks::MCU_RW => {
@@ -150,7 +153,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         data: event.data,
                     }));
                 }
-                _ => self.common_interface.report_error(Error::HostI2cBadRequest),
+                _ => self
+                    .common_interface
+                    .report_error(Error::HOST_I2C_BAD_REQUEST),
             },
             Err(error) => {
                 self.common_interface.report_error(error);

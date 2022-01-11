@@ -2,51 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use core::convert::From;
-use num_enum::IntoPrimitive;
-use num_enum::TryFromPrimitive;
+use bitflags::bitflags;
+use core::convert::TryFrom;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-#[repr(u16)]
-pub enum Error {
-    /// An I2C underrun occurred.
-    HostI2cUnderrun = 1 << 0,
+bitflags! {
+    pub struct Error: u16 {
+        /// An I2C underrun occurred.
+        const HOST_I2C_UNDERRUN = 1 << 0;
 
-    /// An error occurred writing to MCU flash.
-    McuFlashWriteError = 1 << 1,
+        /// An error occurred writing to MCU flash.
+        const MCU_FLASH_WRITE_ERROR = 1 << 1;
 
-    /// A panic occurred.
-    Panic = 1 << 2,
+        /// A panic occurred.
+        const PANIC = 1 << 2;
 
-    /// An I2C bus error occurred.
-    HostI2cBusError = 1 << 3,
+        /// An I2C bus error occurred.
+        const HOST_I2C_BUS_ERROR = 1 << 3;
 
-    /// An I2C overrun occurred.
-    HostI2cOverrun = 1 << 4,
+        /// An I2C overrun occurred.
+        const HOST_I2C_OVERRUN = 1 << 4;
 
-    /// Something is wrong with the camera.
-    Camera = 1 << 5,
+        /// Something is wrong with the camera.
+        const CAMERA = 1 << 5;
 
-    /// Something is wrong with the SPI flash.
-    SpiFlash = 1 << 6,
+        /// Something is wrong with the SPI flash.
+        const SPI_FLASH = 1 << 6;
 
-    /// Something was wrong with a request from the host.
-    HostI2cBadRequest = 1 << 7,
+        /// Something was wrong with a request from the host.
+        const HOST_I2C_BAD_REQUEST = 1 << 7;
 
-    /// An attempt was made to use a buffer, but the buffer was not available,
-    /// possibly because it was already in use.
-    BufferNotAvailable = 1 << 8,
+        /// An attempt was made to use a buffer, but the buffer was not available,
+        /// possibly because it was already in use.
+        const BUFFER_NOT_AVAILABLE = 1 << 8;
 
-    /// An attempt was made to write beyond the end of a buffer.
-    BufferOverrun = 1 << 9,
+        /// An attempt was made to write beyond the end of a buffer.
+        const BUFFER_OVERRUN = 1 << 9;
 
-    /// The SPI flash does not match the embedded hash, an update is required.
-    SpiFlashNotVerified = 1 << 10,
+        /// The SPI flash does not match the embedded hash, an update is required.
+        const SPI_FLASH_NOT_VERIFIED = 1 << 10;
+    }
 }
 
 impl Error {
+    // TODO: Consider deleting this.
     pub fn unwrap(self) -> u16 {
-        u16::from(self)
+        self.bits()
+    }
+}
+
+impl TryFrom<u16> for Error {
+    type Error = ();
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        Error::from_bits(value).ok_or(())
     }
 }
 
@@ -57,11 +65,11 @@ mod tests {
 
     #[test]
     fn test_from_int() {
-        assert_eq!(Error::try_from(8), Ok(Error::HostI2cBusError));
+        assert_eq!(Error::try_from(8), Ok(Error::HOST_I2C_BUS_ERROR));
     }
 
     #[test]
     fn test_to_int() {
-        assert_eq!(Error::HostI2cBusError.unwrap(), 8u16);
+        assert_eq!(Error::HOST_I2C_BUS_ERROR.unwrap(), 8u16);
     }
 }
