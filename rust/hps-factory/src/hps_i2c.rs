@@ -168,9 +168,9 @@ where
         )
     }
 
-    /// Executes stage1, either using the STM32 bootloader if active, or stage0
-    /// if that's active.
-    pub(crate) fn execute_stage1(&mut self) -> Result<()> {
+    /// Executes a stage1, but doesn't attempt to check that it's running. Can
+    /// be used for stage1 binaries that don't support I2C.
+    pub(crate) fn execute_non_i2c_stage1(&mut self) -> Result<()> {
         if let Ok(mut stm32) = self.open_bootloader() {
             stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
             return Ok(());
@@ -198,6 +198,15 @@ where
             }
         }
         hps.perform_command(Command::Launch1)?;
+        Ok(())
+    }
+
+    /// Executes stage1, either using the STM32 bootloader if active, or stage0
+    /// if that's active.
+    pub(crate) fn execute_stage1(&mut self) -> Result<()> {
+        self.execute_non_i2c_stage1()?;
+
+        // Check that it started.
         let mut hps = self.open_hps()?;
         if !hps.status()?.contains(Status::STAGE1) {
             bail!("Stage1 failed to start");

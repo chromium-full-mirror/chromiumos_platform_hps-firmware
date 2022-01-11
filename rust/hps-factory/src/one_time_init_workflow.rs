@@ -17,7 +17,7 @@ where
 {
     let mut i2c = HpsI2c::new(i2c, config);
     i2c.write_stage1(ONE_TIME_INIT_BYTES)?;
-    i2c.execute_stage1()?;
+    i2c.execute_non_i2c_stage1()?;
 
     if i2c.open_bootloader().is_ok() || i2c.open_hps().is_ok() {
         println!("One-time-init complete");
