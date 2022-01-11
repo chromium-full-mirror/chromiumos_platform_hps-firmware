@@ -230,16 +230,38 @@ where
         }
         Command::Test(test_config) => test_workflow::run(i2c, test_config, &config),
         Command::Factory => {
-            // For now all that's in the factory workflow is the test.
-            // Eventually we'll do other things like writing stage0, locking
-            // stage0 as readonly etc.
             test_workflow::run(
                 i2c,
                 &TestConfig {
                     skip_spi_flash_id_check: false,
                 },
                 &config,
-            )
+            )?;
+            one_time_init_workflow::run(i2c, config.clone())?;
+            post_install_test_workflow::PostInstallTester::run(
+                i2c,
+                // The numbers of iterations used here are higher than the
+                // defaults for the post-install-test subcommand, since we
+                // assume this is running non-interactively, so it's OK to take
+                // a little bit longer.
+                &PostInstallTestConfig {
+                    skip_firmware_writes: false,
+                    skip_bitstream_write: false,
+                    fpga_spi_read_iterations: 500,
+                    host_i2c_iterations: 5000,
+                    fpga_mcu_iterations: 500,
+                    camera_i2c_iterations: 500,
+                },
+                &config,
+            )?;
+            write_stage0_workflow::run(
+                i2c,
+                &config,
+                &WriteStage0Config {
+                    existing_stage0_ok: true,
+                },
+            )?;
+            Ok(())
         }
         Command::PostInstallTest(test_config) => {
             post_install_test_workflow::PostInstallTester::run(i2c, test_config, &config)
