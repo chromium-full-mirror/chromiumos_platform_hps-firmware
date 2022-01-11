@@ -22,8 +22,7 @@ fn build_mcu_test_program(bin_name: &str, features: &str) {
     let bin_file = out_dir.join(bin_name);
     let out = Command::new("cargo")
         .current_dir("../mcu/factory_tester_mcu")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -46,8 +45,7 @@ fn write_stage0_bin(bin_name: &str, features: &str) {
     let bin_file = out_dir.join(bin_name);
     let out = Command::new("cargo")
         .current_dir("../mcu/stage0")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -67,8 +65,7 @@ fn write_application_bin() {
     let bin_file = out_dir.join("application.bin");
     let out = Command::new("cargo")
         .current_dir("../mcu/stage1_app")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -92,8 +89,7 @@ fn write_release_application_bin() {
     let bin_file = out_dir.join("application.release.bin");
     let out = Command::new("cargo")
         .current_dir("../mcu/stage1_app")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
@@ -119,8 +115,7 @@ fn build_one_time_init() {
     let bin_file = out_dir.join("one_time_init.bin");
     let out = Command::new("cargo")
         .current_dir("../mcu/one_time_init")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .output()
         .unwrap();
@@ -141,8 +136,6 @@ fn build_soc_rom() {
     // files don't exist. i.e. rebuilding is left to the user.
     if !bitstream.exists() {
         let out = Command::new("../../scripts/build-fpga-bitstream")
-            .env_clear()
-            .env("PATH", std::env::var("PATH").unwrap_or_default())
             .output()
             .unwrap();
         if !out.status.success() {
@@ -155,8 +148,7 @@ fn build_soc_rom() {
     let fpga_rom = out_dir.join("soc_rom.bin");
     let out = Command::new("cargo")
         .current_dir("../riscv/fpga_rom")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")

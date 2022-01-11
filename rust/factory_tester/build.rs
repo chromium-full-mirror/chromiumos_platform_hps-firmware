@@ -15,8 +15,7 @@ fn build_mcu_test_program() {
     let bin_file = out_dir.join("factory_tester_mcu.bin");
     let out = Command::new("cargo")
         .current_dir("../mcu/factory_tester_mcu")
-        .env_clear()
-        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
