@@ -41,6 +41,12 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(raw_i2c, global_config.clone());
+    // If the HPS is running HPS firmware, start by resetting in order to make
+    // sure we're talking to a bootloader. That bootloader might be stage0 or
+    // the system bootloader.
+    if let Ok(mut hps) = i2c.open_hps() {
+        hps.perform_command(Command::Reset)?;
+    }
     // Check to see if we're connected to a HPS that already has firmware
     // loaded.
     info!("Checking for existing HPS firmware");
