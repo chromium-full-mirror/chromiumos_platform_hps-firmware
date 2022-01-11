@@ -450,9 +450,17 @@ fn init_peripherals(
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
     pwm_channel.enable();
 
+    // Power off the FPGA, since if there is non-standard gateware loaded, it
+    // may ignore reset.
+    board.fpga_power_gate.set_high().unwrap();
+
     // Put the FPGA into reset, otherwise we won't be able to reliably access
     // the SPI flash.
     board.fpga_programn.set_low().unwrap();
+
+    // Wait a bit to make sure that the FPGA has really powered off before we
+    // power it back on.
+    delay.delay(25.ms());
 
     let flash_spi = spi_dma_controller::SpiDmaController::new(
         board.flash_spi,
@@ -467,10 +475,10 @@ fn init_peripherals(
     // Ensure FPGA and SPI flash are powered.
     board.fpga_power_gate.set_low().unwrap();
 
-    // Give the SPI flash chip a chance to start after we powered it on. The
-    // datasheet says minimum time is 2.5ms. To be generous, we give it
-    // double that.
-    delay.delay(5.ms());
+    // Give the SPI flash chip a chance to start after we powered it on.
+    // Experimentally, on one non-dev device, 40ms was insufficient, but 50ms
+    // was sufficient. So we give it double-that to be sure.
+    delay.delay(100.ms());
 
     let mut f = spi_flash::SpiFlash {
         spi: flash_spi,
