@@ -9,6 +9,7 @@ import os
 import re
 import time
 import pkg_resources
+import subprocess
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
@@ -275,11 +276,12 @@ def main():
     # features of our SOC.
     pac_out_dir = f'{builder.output_dir}/litex_pac'
     os.makedirs(pac_out_dir, exist_ok=True)
-    os.system(f'svd2rust '
-              f'--target riscv '
-              f'-i {builder.output_dir}/hps.svd '
-              f'-o {pac_out_dir}')
-    os.system(f'rustfmt {pac_out_dir}/*.rs')
+    subprocess.check_call(['svd2rust',
+                           '--target', 'riscv',
+                           '-i', f'{builder.output_dir}/hps.svd',
+                           '--output-dir', pac_out_dir])
+    subprocess.check_call(
+        ['rustfmt', f'{pac_out_dir}/lib.rs', f'{pac_out_dir}/build.rs'])
 
     print(f'Build outputs at {builder.output_dir}')
 
