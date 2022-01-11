@@ -82,12 +82,12 @@ mod tests {
         interface.report_error(Error::HOST_I2C_OVERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HOST_I2C_OVERRUN.unwrap())
+            Some(Error::HOST_I2C_OVERRUN.bits())
         );
         interface.report_error(Error::HOST_I2C_UNDERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HOST_I2C_OVERRUN.unwrap() | Error::HOST_I2C_UNDERRUN.unwrap())
+            Some(Error::HOST_I2C_OVERRUN.bits() | Error::HOST_I2C_UNDERRUN.bits())
         );
     }
 

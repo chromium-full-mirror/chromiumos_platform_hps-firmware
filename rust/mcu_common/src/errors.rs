@@ -43,13 +43,6 @@ bitflags! {
     }
 }
 
-impl Error {
-    // TODO: Consider deleting this.
-    pub fn unwrap(self) -> u16 {
-        self.bits()
-    }
-}
-
 impl TryFrom<u16> for Error {
     type Error = ();
 
@@ -70,6 +63,6 @@ mod tests {
 
     #[test]
     fn test_to_int() {
-        assert_eq!(Error::HOST_I2C_BUS_ERROR.unwrap(), 8u16);
+        assert_eq!(Error::HOST_I2C_BUS_ERROR.bits(), 8u16);
     }
 }
