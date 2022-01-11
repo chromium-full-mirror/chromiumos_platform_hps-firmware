@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use std::convert::TryFrom;
-use std::time::Duration;
-
+use crate::hps_i2c::HpsI2c;
+use crate::Config;
+use crate::TestConfig;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
@@ -15,19 +15,16 @@ use embedded_hal::blocking::i2c::WriteRead;
 use factory_tester_common::TestStatus;
 use factory_tester_common::ALLOWED_SPI_FLASH_IDS;
 use factory_tester_common::EXPECTED_CHIP_ID;
-use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use factory_tester_common::MCU_LOAD_ADDRESS;
 use factory_tester_common::MCU_TESTER_I2C_ADDRESS;
 use factory_tester_common::TEST_STATUS_SIZE;
 use hps_interface::Hps;
-use hps_interface::HpsAdapter;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::Status;
-use stm32_bootloader_client::Stm32;
-
-use crate::TestConfig;
+use std::convert::TryFrom;
+use std::time::Duration;
 
 const MCU_CODE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
 const MCU_CODE_STAGE1: &[u8] =
@@ -38,16 +35,16 @@ const MCU_CODE_STAGE1: &[u8] =
 /// to be there, so we've got to erase it.
 const TIMEOUT: Duration = Duration::from_secs(20);
 
-pub(crate) fn run<E, I>(i2c: &mut I, config: &TestConfig) -> Result<()>
+pub(crate) fn run<E, I>(raw_i2c: &mut I, config: &TestConfig, global_config: &Config) -> Result<()>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    let mut delay = linux_embedded_hal::Delay;
+    let mut i2c = HpsI2c::new(raw_i2c, global_config.clone());
     // Check to see if we're connected to a HPS that already has firmware
     // loaded.
     info!("Checking for existing HPS firmware");
-    if let Ok(mut hps) = HpsAdapter::from_ref(i2c) {
+    if let Ok(mut hps) = i2c.open_hps() {
         if hps.read_register(registers::HARDWARE_VERSION)? == 0 {
             bail!("HPS is running firmware, but it's not stage0 - cannot perform test");
         }
@@ -73,9 +70,7 @@ where
         info!("Launching stage1");
         hps.perform_command(Command::Launch1)?;
     } else {
-        let stm32_config =
-            stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
-        let mut stm32 = Stm32::new(i2c, &mut delay, stm32_config);
+        let mut stm32 = i2c.open_bootloader()?;
 
         info!("Checking STM32 chip ID");
         match stm32.get_chip_id() {
@@ -112,7 +107,7 @@ where
     let start = std::time::Instant::now();
     let mut buffer = [0u8; TEST_STATUS_SIZE];
     loop {
-        match i2c.read(MCU_TESTER_I2C_ADDRESS, &mut buffer) {
+        match raw_i2c.read(MCU_TESTER_I2C_ADDRESS, &mut buffer) {
             Ok(_) => break,
             Err(error) => {
                 if start.elapsed() > TIMEOUT {

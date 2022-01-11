@@ -228,7 +228,7 @@ where
         Command::WriteStage0(write_stage0_config) => {
             write_stage0_workflow::run(i2c, &config, write_stage0_config)
         }
-        Command::Test(test_config) => test_workflow::run(i2c, test_config),
+        Command::Test(test_config) => test_workflow::run(i2c, test_config, &config),
         Command::Factory => {
             // For now all that's in the factory workflow is the test.
             // Eventually we'll do other things like writing stage0, locking
@@ -238,6 +238,7 @@ where
                 &TestConfig {
                     skip_spi_flash_id_check: false,
                 },
+                &config,
             )
         }
         Command::PostInstallTest(test_config) => {
