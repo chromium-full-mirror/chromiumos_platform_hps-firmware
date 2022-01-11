@@ -17,6 +17,7 @@ const SPI_FLASH_SEGMENTS: &[Segment] = &include!(concat!(env!("OUT_DIR"), "/spi_
 
 pub enum SegmentKind {
     Empty,
+    #[allow(dead_code)] // Won't be constructed if no-hash-check feature is enabled.
     DataWithHash([u8; 32]),
 }
 
