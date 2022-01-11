@@ -368,8 +368,8 @@ pub(crate) fn handle_mcu_debug_command(
             }
         }
         McuDebugCommand::ReadCameraId => read_camera_id(resources.camera_i2c),
-        McuDebugCommand::ReadCameraAeConfig => read_camera_ae_config(resources.camera_i2c),
-        McuDebugCommand::ReadCameraIntegrationGains => {
+        McuDebugCommand::ReadCameraConfig => {
+            read_camera_ae_config(resources.camera_i2c);
             read_camera_gains(resources.camera_i2c);
             read_camera_integration(resources.camera_i2c);
         }
