@@ -20,7 +20,9 @@ source "${PROJECT_ROOT}/environment"
 cd "${PROJECT_ROOT}/rust"
 cargo +$RUST_VERSION test
 
-cargo +"${RUST_NIGHTLY_VERSION}" miri test -- --skip nomiri
+# We exclude hps-factory from miri tests because its build.rs builds lots of
+# other crates that are time-consuming to build.
+cargo +"${RUST_NIGHTLY_VERSION}" miri test --exclude hps-factory -- --skip nomiri
 
 # Harware-specific crates. Just build these.
 
