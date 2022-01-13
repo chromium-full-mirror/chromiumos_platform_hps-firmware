@@ -1,0 +1,9 @@
+# tflite-micro still uses these unfortunate terms.
+#
+# See repohooks/README.md for more details.
+#
+# Tracked in b/214324066
+
+dummy
+master
+native
