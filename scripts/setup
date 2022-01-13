@@ -74,7 +74,7 @@ if ! which lld >/dev/null; then
 fi
 
 if ! command -v llvm-objcopy-13 >/dev/null ; then
-    missing+=(llvm-13-tools)
+    missing+=(llvm-13)
 fi
 
 if [ ! -f /usr/include/libusb-1.0/libusb.h ]; then
