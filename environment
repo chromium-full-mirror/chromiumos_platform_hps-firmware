@@ -55,7 +55,10 @@ export CC="ccache gcc"
 
 # We deliberately clear anything that may have already been in PYTHONPATH to
 # prevent accidentally pulling in anything outside this project.
-PYTHONPATH="${HPS_ROOT}/../../.."  # For chromite
+# For chromite
+PYTHONPATH="${HPS_ROOT}/../../.."
+# For pylint_quotes and other packages
+PYTHONPATH="${PYTHONPATH}:${HPS_ROOT}/../../../chromite/third_party"
 PYTHONPATH="${PYTHONPATH}:${HPS_ROOT}/python"
 for i in "${HPS_ROOT}/third_party/python"/*; do
     PYTHONPATH="${PYTHONPATH}:${i}"
