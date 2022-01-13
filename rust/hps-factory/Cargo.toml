@@ -25,6 +25,7 @@ simple_logger = { version = "1.13.0" }
 stm32_bootloader_client = { path = "../stm32_bootloader_client", features = ["std"] }
 
 [build-dependencies]
+anyhow = "1.0.42"
 clap_derive = "=3.0.0-beta.2"
 mcu_common = { path = "../mcu_common" }
 sign-rom = { path = "../sign-rom" }
