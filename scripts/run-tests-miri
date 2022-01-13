@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs rust tests with MIRI. This can detect many kinds of undefined behavior,
+# but is really slow, so is kept separate from scripts/run-tests. It should be
+# run manually if you're making changes to unsafe code.
+
+set -e
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+source "${PROJECT_ROOT}/environment"
+
+
+cd "${PROJECT_ROOT}/rust"
+
+# We exclude hps-factory from miri tests because its build.rs builds lots of
+# other crates that are time-consuming to build.
+cargo \
+    +"${RUST_NIGHTLY_VERSION}" \
+    miri test \
+    --exclude hps-factory \
+    --workspace \
+    -- \
+    --skip nomiri
