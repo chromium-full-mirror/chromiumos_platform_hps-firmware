@@ -11,4 +11,4 @@ embedded-hal = "0.2.4"
 riscv = "0.7.0"
 
 [build-dependencies]
-bindgen = "0.59.2"
+bindgen = "0.59"
