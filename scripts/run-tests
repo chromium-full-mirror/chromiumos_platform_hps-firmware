@@ -22,7 +22,7 @@ cargo +$RUST_VERSION test
 
 # We exclude hps-factory from miri tests because its build.rs builds lots of
 # other crates that are time-consuming to build.
-cargo +"${RUST_NIGHTLY_VERSION}" miri test --exclude hps-factory -- --skip nomiri
+cargo +"${RUST_NIGHTLY_VERSION}" miri test --exclude hps-factory --workspace -- --skip nomiri
 
 # Harware-specific crates. Just build these.
 
