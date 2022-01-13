@@ -17,15 +17,15 @@ limitations under the License.
 //
 // Based on
 // tensorflow/lite/micro/examples/person_detection_experimental/main_functions.h
-#include "litex_shim/shim.h"
+#include "capi/shim.h"
 
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#include "hps_model_2021_09_20_tiled.h"
-#include "hps_second_2021_11_18_tiled.h"
+#include "models/hps_model_2021_09_20_tiled.h"
+#include "models/hps_second_2021_11_18_tiled.h"
 
 // Globals
 namespace {

@@ -1,6 +1,6 @@
 group("default") {
   deps = [
-    "//soc_rom",
+    "//third_party/tflm(//toolchain:riscv-gcc)",
   ]
 }
 

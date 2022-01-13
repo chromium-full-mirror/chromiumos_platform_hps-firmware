@@ -55,6 +55,15 @@ toolchain("riscv-gcc") {
         [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
+  tool("alink") {
+    libname = "{{target_output_name}}{{output_extension}}"
+    outfile = "{{output_dir}}/$libname"
+    command = "${tool_prefix}ar rcs $outfile {{inputs}}"
+    description = "ALINK $outfile"
+    default_output_dir = "{{root_out_dir}}"
+    outputs = [ outfile ]
+  }
+
   tool("link") {
     exename = "{{target_output_name}}{{output_extension}}"
     outfile = "{{output_dir}}/$exename"
