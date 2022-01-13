@@ -26,7 +26,12 @@ fn build_mcu_test_program() {
         eprintln!("{}", std::str::from_utf8(&out.stderr).unwrap());
         std::process::exit(1);
     }
-    let out = Command::new(std::env::var("OBJCOPY").unwrap_or_else(|_| "llvm-objcopy".to_string()))
+    let mut objcopy = "llvm-objcopy";
+    // Debian derivatives don't have an unversioned llvm-objcopy command.
+    if Command::new(objcopy).output().is_err() {
+        objcopy = "llvm-objcopy-13";
+    }
+    let out = Command::new(objcopy)
         .arg("-O")
         .arg("binary")
         .arg(out_dir.join("nested-build/thumbv6m-none-eabi/release/factory_tester_mcu"))

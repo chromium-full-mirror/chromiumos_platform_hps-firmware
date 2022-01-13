@@ -152,8 +152,12 @@ fn copy_or_die(from: impl AsRef<Path>, to: impl AsRef<Path>) {
 }
 
 fn convert_elf_to_bin(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
-    let cmd = std::env::var("OBJCOPY").unwrap_or_else(|_| "llvm-objcopy".to_string());
-    Command::new(cmd)
+    let mut objcopy = "llvm-objcopy";
+    // Debian derivatives don't have an unversioned llvm-objcopy command.
+    if Command::new(objcopy).output().is_err() {
+        objcopy = "llvm-objcopy-13";
+    }
+    Command::new(objcopy)
         .arg("-O")
         .arg("binary")
         .arg(src.as_ref())
