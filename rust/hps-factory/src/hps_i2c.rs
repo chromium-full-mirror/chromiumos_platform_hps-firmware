@@ -47,7 +47,7 @@ const STARTUP_TIMOUT: Duration = Duration::from_millis(1000);
 const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Path to the sysfs node of the HPS kernel driver.
-const HPS_I2C_SYSFS_PATH: &str = "/sys/bus/i2c/drivers/hps";
+const HPS_I2C_SYSFS_PATH: &str = "/sys/bus/i2c/drivers/cros-hps";
 
 // The i2c device id for HPS.
 const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
