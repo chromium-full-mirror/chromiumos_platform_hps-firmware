@@ -12,9 +12,6 @@ bare-metal = "1.0.0"
 riscv = "0.7.0"
 vcell = "0.1.0"
 
-[build-dependencies]
-svd2rust = "0.19.0"
-
 [dependencies.riscv-rt]
 optional = true
 version = "0.8.0"
