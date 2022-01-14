@@ -223,6 +223,10 @@ def main():
         '--build', action='store_true',
         help=argparse.SUPPRESS)
     parser.add_argument(
+        '--no-build', action='store_true',
+        help='Skip building gateware. This is useful if you just want to ' +
+        'quickly regenerate SVD files or associated artifacts.')
+    parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi.')
@@ -259,7 +263,7 @@ def main():
     }
 
     start_time = time.time()
-    vns = builder.build(**builder_kwargs)
+    vns = builder.build(**builder_kwargs, run=not args.no_build)
     run_time = time.time() - start_time
     output_log = f'{builder.output_dir}/gateware/hps_platform_output.log'
     metrics = parse_metrics(output_log)
