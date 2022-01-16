@@ -72,3 +72,9 @@ export HPS_RUST_DIRS=(
     rust/mcu
     rust/riscv
 )
+
+# Finds "non standard" llvm-objcopy. This is used outside the chroot and
+# finds the objcopy installed by scripts/setup
+if which llvm-objcopy-13 > /dev/null; then
+  OBJCOPY=llvm-objcopy-13
+fi
