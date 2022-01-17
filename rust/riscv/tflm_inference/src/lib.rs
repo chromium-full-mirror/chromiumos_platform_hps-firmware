@@ -4,7 +4,7 @@
 
 #![no_std]
 
-#[link(name = "tensorflow-microlite")]
+#[link(name = "tflite-micro")]
 #[link(name = "c")]
 #[link(name = "gcc")]
 #[link(name = "nosys")]

@@ -47,48 +47,46 @@ fn main() -> Result<()> {
     // For libgcc.a.
     println!("cargo:rustc-link-search=../../third_party/installed/lib/gcc/riscv64-unknown-elf/10.1.0/rv32im/ilp32");
     // For libtensorflow-microlite.a.
-    println!("cargo:rustc-link-search=../../third_party/tflm_gen");
+    println!("cargo:rustc-link-search=../../build/riscv-gcc");
 
     Ok(())
 }
 
 fn build_tflm() -> Result<()> {
-    const TFLM_GEN_DIR: &str = "../../../third_party/tflm_gen";
-    // A template for calling make. This only needs to be a closure because
-    // Command doesn't implement Clone.
-    let make_cmd = || {
-        let mut cmd = Command::new("../../../scripts/env-run");
-        cmd.arg("make").arg("-C").arg(TFLM_GEN_DIR);
-        cmd
-    };
-    // The tflm_gen makefile does't rebuild object files when only headers have
-    // changed, so we `make clean` to ensure that we're not using stale
-    // artifacts.
-    if !(make_cmd)()
-        .arg("clean")
+    const TFLM_DIR: &str = "../../../third_party/tflm";
+
+    // Regenerate ninja config
+    if !Command::new("../../../scripts/env-run")
+        .arg("gn")
+        .arg("gen")
+        .arg("../../../build")
         .status()
-        .context("Failed to run make")?
+        .context("Failed to run gn gen build")?
         .success()
     {
-        bail!("Failed to run `make clean` on tflm_gen");
+        bail!("Failed to run `gn gen build`");
     }
-    if !make_cmd()
-        .arg("-j")
-        .arg("libtensorflow-microlite.a")
+    // Run ninja
+    if !Command::new("../../../scripts/env-run")
+        .arg("ninja")
+        .arg("-C")
+        .arg("../../../build")
+        .arg("riscv-gcc/libtflite-micro.a")
         .status()
-        .context("Failed to run make")?
+        .context("Failed to build libtflite-micro.a with ninja")?
         .success()
     {
-        bail!("Failed to run `make libtensorflow-microlite.a`");
+        bail!("Failed to build libtflite-micro.a with ninja");
     }
+
     // Make sure that build.rs gets rerun if any source files in TFLM get
     // changed.
-    print_sources_files_in_dir(Path::new(TFLM_GEN_DIR))?;
+    print_sources_files_in_dir(Path::new(TFLM_DIR))?;
     Ok(())
 }
 
 fn print_sources_files_in_dir(tflm_gen_dir: &Path) -> Result<()> {
-    const SOURCE_EXTENSIONS: &[&str] = &["h", "cc", "c"];
+    const SOURCE_EXTENSIONS: &[&str] = &["h", "cc", "c", "gn"];
     for entry in tflm_gen_dir.read_dir()? {
         let path = entry?.path();
         if path
