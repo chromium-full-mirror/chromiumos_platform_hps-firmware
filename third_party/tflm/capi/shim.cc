@@ -51,8 +51,11 @@ tflite::MicroInterpreter* get_interpreter(int model_number) {
 }
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 310 * 1024;
-static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
+constexpr int kTensorArenaSize = 256 * 1024;
+
+// The arena is specially placed in memory
+static uint8_t tensor_arena[kTensorArenaSize]
+        __attribute__((section(".arena")));
 
 
 }  // namespace

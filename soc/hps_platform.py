@@ -7,8 +7,8 @@ from migen import Module, ClockDomain, Signal, If, log2_int
 from migen.genlib.resetsync import AsyncResetSynchronizer
 from litex.build.generic_platform import Pins, Subsignal, IOStandard, Misc
 from litex.build.lattice import LatticePlatform
-from litex.soc.cores.ram import NXLRAM
 from litex.soc.cores.clock import NXOSCA
+from hps_lattice_nx import NXLRAM
 
 hps_io = [
     # HM01B0 camera connection
@@ -160,7 +160,7 @@ class Platform(LatticePlatform):
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
 
-    def create_ram(self, width, size):
-        return NXLRAM(width, size)
+    def create_ram(self, width, size, *, dual_port):
+        return NXLRAM(width, size, dual_port)
 
     # TODO: add create_programmer function

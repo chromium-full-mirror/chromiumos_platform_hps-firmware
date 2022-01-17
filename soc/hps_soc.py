@@ -30,8 +30,6 @@ from .spi_controller import SpiController
 KB = 1024
 MB = 1024 * KB
 
-RAM_SIZE = 320 * KB
-
 SOC_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -47,7 +45,9 @@ class HpsSoC(LiteXSoC):
     rom_region = SoCRegion(rom_origin, spiflash_region.size - rom_offset,
                            cached=True, linker=True)
     sram_origin = 0x40000000
-    sram_region = SoCRegion(sram_origin, RAM_SIZE, cached=True, linker=True)
+    sram_region = SoCRegion(sram_origin, 64*KB, cached=True, linker=True)
+    arena_origin = 0x60000000
+    arena_region = SoCRegion(arena_origin, 256*KB, cached=True, linker=True)
     vexriscv_region = SoCRegion(origin=0xf00f0000, size=0x100)
 
     # These variables are needed by builder.py. Normally they're defined by
@@ -58,6 +58,7 @@ class HpsSoC(LiteXSoC):
     mem_map = {
         'rom': rom_offset,
         'sram': sram_origin,
+        'arena': arena_origin,
         'csr': csr_origin,
     }
 
@@ -77,8 +78,9 @@ class HpsSoC(LiteXSoC):
                      reset_address=self.rom_origin,
                      cfu=cpu_cfu)
 
-        # RAM
+        # RAM and arena
         self.setup_ram()
+        self.setup_arena()
 
         # SPI Flash
         self.setup_litespi_flash()
@@ -95,10 +97,15 @@ class HpsSoC(LiteXSoC):
         self.csr.add('mcu_spi')
 
     def setup_ram(self):
-        self.submodules.lram = self.platform.create_ram(
-            32, self.sram_region.size)
-        self.bus.add_slave('sram_lram', self.lram.bus, self.sram_region)
-        self.bus.add_region('sram', self.sram_region)
+        self.submodules.sram = self.platform.create_ram(
+            32, self.sram_region.size, dual_port=False)
+        self.bus.add_slave('sram', self.sram.bus, self.sram_region)
+
+    def setup_arena(self):
+        self.submodules.arena = self.platform.create_ram(
+            32, self.arena_region.size, dual_port=True)
+        self.bus.add_slave('arena', self.arena.bus, self.arena_region)
+        self.add_config('SOC_SEPARATE_ARENA')
 
     def setup_litespi_flash(self):
         self.submodules.spiflash_phy = LiteSPIPHY(

@@ -36,7 +36,24 @@ fn main() -> Result<()> {
     // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
     // is actually used from any reachable code, but linking fails if we don't
     // define `end`.
-    write_file(&out_dir.join("tflm_inference.x"), "PROVIDE( end = . );");
+    //
+    // The arena is a 256KB section region containing the TfLM tensor arena.
+    // Since the standard link script does not know about the arena, We need to
+    // explicitly place arena sections in the arena region.
+    write_file(
+        &out_dir.join("tflm_inference.x"),
+        "
+    PROVIDE( end = . );
+    SECTIONS {
+        .arena (NOLOAD) :
+        {
+                _farena = .;
+                *(.arena)
+                _earena = .;
+        } > arena
+    }
+    ",
+    );
 
     // For tflm_inference.x.
     println!("cargo:rustc-link-search={}", out_dir.display());
