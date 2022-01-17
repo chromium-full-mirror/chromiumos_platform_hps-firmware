@@ -4,6 +4,7 @@
 
 use crate::Config;
 use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
@@ -225,6 +226,7 @@ where
         if !hps.status()?.contains(Status::STAGE1) {
             bail!("Stage1 failed to start");
         }
+        hps.check_errors().context("Errors reported by stage1")?;
         Ok(())
     }
 
