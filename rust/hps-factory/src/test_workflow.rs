@@ -113,7 +113,7 @@ where
     let start = std::time::Instant::now();
     let mut buffer = [0u8; TEST_STATUS_SIZE];
     loop {
-        match raw_i2c.read(MCU_TESTER_I2C_ADDRESS, &mut buffer) {
+        match i2c.i2c.read(MCU_TESTER_I2C_ADDRESS, &mut buffer) {
             Ok(_) => break,
             Err(error) => {
                 if start.elapsed() > TIMEOUT {

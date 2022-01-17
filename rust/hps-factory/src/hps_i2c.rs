@@ -53,7 +53,7 @@ const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
 /// An I2C interface to the HPS. Allows access to both the system bootloader and
 /// HPS functionality.
 pub(crate) struct HpsI2c<'a, I> {
-    i2c: &'a mut I,
+    pub(crate) i2c: &'a mut I,
     config: Config,
 }
 
