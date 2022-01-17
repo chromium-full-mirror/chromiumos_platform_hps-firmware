@@ -53,11 +53,17 @@ where
     fn write_firmware(&mut self) -> Result<()> {
         if !self.config.skip_firmware_writes {
             self.i2c.write_stage1(APPLICATION_BYTES)?;
-            self.i2c.execute_stage1().context("Execute stage1")?;
+            self.i2c
+                .execute_stage1()
+                .context("Failed to execute stage1")?;
             if !self.config.skip_bitstream_write {
-                self.i2c.write_gateware().context("Write gateware")?;
+                self.i2c
+                    .write_gateware()
+                    .context("Failed to write gateware")?;
             }
-            self.i2c.write_soc_rom().context("Write FPGA ROM")?;
+            self.i2c
+                .write_soc_rom()
+                .context("Failed to write FPGA ROM")?;
         }
         Ok(())
     }
@@ -84,7 +90,7 @@ where
         self.i2c.open_hps()?.perform_command(Command::Reset)?;
         self.i2c
             .execute_application()
-            .context("Execute application")?;
+            .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
         println!("Checking FPGA<->MCU comms");
         let bar = ProgressBar::new(self.config.fpga_mcu_iterations.into());
@@ -139,7 +145,9 @@ where
         }
         println!("Writing/verifying test data");
         self.i2c.open_hps()?.perform_command(Command::Reset)?;
-        self.i2c.execute_stage1().context("Execute stage1")?;
+        self.i2c
+            .execute_stage1()
+            .context("Failed to execute stage1")?;
         let mut hps = self.i2c.open_hps()?;
         hps.perform_command(Command::WriteSpiFlashTestData)?;
         while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
@@ -148,7 +156,7 @@ where
 
         self.i2c
             .execute_application()
-            .context("Execute application")?;
+            .context("Failed to execute application")?;
         println!("Testing SPI flash reads from FPGA");
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
