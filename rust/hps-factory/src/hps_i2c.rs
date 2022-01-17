@@ -202,6 +202,11 @@ where
             hps.perform_command(Command::Reset)?;
             // It takes about 690ms to signature-check stage1.
             std::thread::sleep(Duration::from_millis(700));
+            // Check again if we're back to the system bootloader.
+            if let Ok(mut stm32) = self.open_bootloader() {
+                stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
+                return Ok(());
+            }
             hps = self.open_hps()?;
         }
         let status = hps.status()?;

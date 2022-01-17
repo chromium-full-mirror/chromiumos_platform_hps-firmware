@@ -51,7 +51,11 @@ where
     }
 
     fn write_firmware(&mut self) -> Result<()> {
-        if !self.config.skip_firmware_writes {
+        if self.config.skip_firmware_writes {
+            self.i2c
+                .execute_stage1()
+                .context("Failed to execute stage1")?;
+        } else {
             self.i2c.write_stage1(APPLICATION_BYTES)?;
             self.i2c
                 .execute_stage1()
