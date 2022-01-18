@@ -52,19 +52,14 @@ pub fn detect_and_validate_stage1(
 ) -> Result<ValidStage1, Stage1Error> {
     detect_stage1(slot)?;
 
-    let stage1_validation = validate_stage1(slot, public_key);
-
-    match stage1_validation {
-        Ok(_) => Ok(ValidStage1 {
-            firmware_version: get_stage1_version(slot),
-        }),
-        Err(_) => match wp_state {
-            WriteProtectState::Asserted => Err(Stage1Error::InvalidSignature),
-            WriteProtectState::Deasserted => Ok(ValidStage1 {
-                firmware_version: get_stage1_version(slot),
-            }),
-        },
+    // If write-protect is asserted, then check that signature is valid.
+    if wp_state == WriteProtectState::Asserted {
+        validate_stage1(slot, public_key).map_err(|_| Stage1Error::InvalidSignature)?;
     }
+
+    Ok(ValidStage1 {
+        firmware_version: get_stage1_version(slot),
+    })
 }
 
 fn detect_stage1(slot: &[u8]) -> Result<(), Stage1Error> {
