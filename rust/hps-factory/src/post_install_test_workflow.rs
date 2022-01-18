@@ -17,6 +17,7 @@ use embedded_hal::blocking::i2c::WriteRead;
 use fpga_app::Features;
 use hps_interface::Hps;
 use indicatif::ProgressBar;
+use log::info;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::Status;
@@ -77,7 +78,7 @@ where
             return Ok(());
         }
         let mut hps = self.i2c.open_hps()?;
-        println!("Checking host I2C bus");
+        info!("Checking host I2C bus");
         let bar = ProgressBar::new(self.config.host_i2c_iterations);
         for i in 0..self.config.host_i2c_iterations {
             hps.check_magic()?;
@@ -96,7 +97,7 @@ where
             .execute_application()
             .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
-        println!("Checking FPGA<->MCU comms");
+        info!("Checking FPGA<->MCU comms");
         let bar = ProgressBar::new(self.config.fpga_mcu_iterations.into());
         hps.write_register(
             registers::ENABLED_FEATURES,
@@ -136,7 +137,7 @@ where
             * 2
             * (final_loop_count - start_loop_count) as usize;
         bar.finish();
-        println!(
+        info!(
             "Average transfer speed: {} bytes/sec",
             (bytes_transferred as f64 / start.elapsed().as_secs_f64()) as u32
         );
@@ -147,7 +148,7 @@ where
         if self.config.fpga_spi_read_iterations == 0 {
             return Ok(());
         }
-        println!("Writing/verifying test data");
+        info!("Writing/verifying test data");
         self.i2c.reset_to_bootloader()?;
         self.i2c
             .execute_stage1()
@@ -156,12 +157,12 @@ where
         hps.perform_command(Command::WriteSpiFlashTestData)?;
         while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
         hps.check_errors()?;
-        println!("Test data written/verified");
+        info!("Test data written/verified");
 
         self.i2c
             .execute_application()
             .context("Failed to execute application")?;
-        println!("Testing SPI flash reads from FPGA");
+        info!("Testing SPI flash reads from FPGA");
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
             registers::ENABLED_FEATURES,
@@ -201,7 +202,7 @@ where
 
     fn test_mcu_to_camera_i2c(&mut self) -> Result<()> {
         let mut hps = self.i2c.open_hps()?;
-        println!("Testing MCU<->camera I2C communication");
+        info!("Testing MCU<->camera I2C communication");
         hps.write_register(
             registers::CAMERA_TEST_ITERATIONS,
             self.config.camera_i2c_iterations,

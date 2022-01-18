@@ -17,6 +17,7 @@ use hps_interface::HpsAdapter;
 use hps_interface::Stage;
 use indicatif::ProgressBar;
 use linux_embedded_hal::Delay;
+use log::info;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
@@ -89,7 +90,7 @@ where
                 stage
             );
         }
-        println!("Erasing RW region");
+        info!("Erasing RW region");
         hps.perform_command(Command::EraseStage1)?;
         hps.wait_memory_bank_available(memory_banks::MCU_RW)?;
         Self::write_memory_bank(&mut hps, "stage1", memory_banks::MCU_RW, 0, program_bytes)
@@ -106,12 +107,12 @@ where
             let mut current_data = [0u8; 128];
             stm32.read_memory(address, &mut current_data)?;
             if current_data != [0xffu8; 128] {
-                println!("Something already written to flash, erasing...");
+                info!("Something already written to flash, erasing...");
                 stm32.erase_flash()?;
             }
 
             // Write flash
-            println!("Writing {} ({}KiB)", name, program_bytes.len() / 1024);
+            info!("Writing {} ({}KiB)", name, program_bytes.len() / 1024);
             let bar = ProgressBar::new(100);
             stm32.write_bulk(address, program_bytes, |progress| {
                 bar.set_position(progress.percent_complete as u64);
@@ -137,7 +138,7 @@ where
         if !hps.is_memory_bank_available(bank) {
             bail!("Cannot write to memory bank {}", bank);
         }
-        println!("Writing {} ({}KiB)", section_name, bytes.len() / 1024);
+        info!("Writing {} ({}KiB)", section_name, bytes.len() / 1024);
         let bar = ProgressBar::new(bytes.len() as u64);
         let mut address = start_address;
         for chunk in bytes.chunks(256) {
@@ -153,7 +154,7 @@ where
 
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
         let mut hps = self.open_hps()?;
-        println!("Erasing SPI flash");
+        info!("Erasing SPI flash");
         hps.perform_command(Command::EraseSpiFlash)?;
         hps.wait_memory_bank_available(memory_banks::SPI_FLASH)?;
         Self::write_memory_bank(
@@ -291,7 +292,7 @@ where
         address: u32,
         program_bytes: &[u8],
     ) -> Result<()> {
-        println!("Verifying {} ({}KiB)", name, program_bytes.len() / 1024);
+        info!("Verifying {} ({}KiB)", name, program_bytes.len() / 1024);
         let bar = ProgressBar::new(100);
         stm32.verify(address, program_bytes, |progress| {
             bar.set_position(progress.percent_complete as u64);
