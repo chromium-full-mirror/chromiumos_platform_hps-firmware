@@ -93,9 +93,10 @@ where
 
         // Flash the MCU test program.
         info!("Sending MCU test program");
-        stm32
-            .write_bulk(MCU_LOAD_ADDRESS, MCU_CODE, |_| {})
-            .map_err(|error| anyhow!("Failed to write MCU memory: {}", &error))?;
+        i2c.write("test firmware", MCU_LOAD_ADDRESS, MCU_CODE)
+            .context("Failed to write test firmware")?;
+
+        let mut stm32 = i2c.open_bootloader()?;
 
         // Start execution of MCU test program.
         info!("Starting MCU test program");
