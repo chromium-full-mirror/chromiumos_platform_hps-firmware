@@ -4,6 +4,12 @@
 
 #![no_std]
 
+use fpga_app::Error::TfLiteFailure;
+use fpga_app::Result;
+use fpga_app::TfLiteInitStatus;
+
+use core::convert::TryFrom;
+
 #[link(name = "tflite-micro")]
 #[link(name = "c")]
 #[link(name = "gcc")]
@@ -11,26 +17,28 @@
 #[link(name = "m")]
 #[link(name = "stdc++")]
 extern "C" {
-    fn tflite_init(error_callback: unsafe extern "C" fn(*const u8));
+    fn tflite_init() -> i32;
     fn tflite_get_input(model_number: u32) -> *mut u8;
-    fn tflite_classify(model_number: u32, score_out: *mut i8);
-}
-
-unsafe extern "C" fn report_error(_format: *const u8) {
-    // TODO: Implement error reporting. We'll need to change the code in
-    // shim.cc.
+    fn tflite_classify(model_number: u32, score_out: *mut i8) -> bool;
 }
 
 #[non_exhaustive]
-pub struct TflmClassifier {}
+pub struct TflmClassifier {
+    init_status: TfLiteInitStatus,
+}
 
 impl TflmClassifier {
     /// # Safety
     ///
     /// Must only be called once.
     pub unsafe fn sole_instance() -> Self {
-        tflite_init(report_error);
-        Self {}
+        Self {
+            init_status: Self::from_int(tflite_init()),
+        }
+    }
+
+    fn from_int(status: i32) -> TfLiteInitStatus {
+        TfLiteInitStatus::try_from(status).unwrap_or(TfLiteInitStatus::OtherFailure)
     }
 }
 
@@ -48,9 +56,16 @@ impl fpga_app::Classifier for TflmClassifier {
         }
     }
 
-    fn run_model(&mut self, model_number: u32) -> i8 {
+    fn run_model(&mut self, model_number: u32) -> Result<i8> {
         let mut score = 0i8;
-        unsafe { tflite_classify(model_number, &mut score as *mut i8) };
-        score
+        if unsafe { tflite_classify(model_number, &mut score as *mut i8) } {
+            Ok(score)
+        } else {
+            Err(TfLiteFailure)
+        }
+    }
+
+    fn init_status(&self) -> TfLiteInitStatus {
+        self.init_status
     }
 }

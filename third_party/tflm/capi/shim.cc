@@ -29,7 +29,20 @@ limitations under the License.
 
 // Globals
 namespace {
-tflite::ErrorReporter* error_reporter = nullptr;
+
+// Ignores errors messages.
+// Many of the "errors" reported here are actually debugging messages.
+class IgnoringErrorReporter : public tflite::ErrorReporter {
+ public:
+  IgnoringErrorReporter() {}
+  virtual ~IgnoringErrorReporter() {}
+  virtual int Report(const char* format, va_list args) {
+    //ignore
+    return 0;
+  }
+};
+
+IgnoringErrorReporter* error_reporter = nullptr;
 tflite::MicroInterpreter* interpreter1 = nullptr;
 tflite::MicroInterpreter* interpreter2 = nullptr;
 
@@ -41,24 +54,11 @@ tflite::MicroInterpreter* get_interpreter(int model_number) {
 constexpr int kTensorArenaSize = 310 * 1024;
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
 
-class CallbackErrorReporter : public tflite::ErrorReporter {
- public:
-  CallbackErrorReporter(report_error_callback_t error_callback)
-      : error_callback_(error_callback) {}
-  virtual ~CallbackErrorReporter() {}
-  virtual int Report(const char* format, va_list args) {
-    error_callback_(format, args);
-    return 0;
-  }
-
- private:
-  report_error_callback_t error_callback_;
-};
 
 }  // namespace
 
-void tflite_init(report_error_callback_t error_callback) {
-  static CallbackErrorReporter error_reporter_instance(error_callback);
+int tflite_init() {
+  static IgnoringErrorReporter error_reporter_instance;
   error_reporter = &error_reporter_instance;
 
   // Pull in only the operation implementations we need.
@@ -74,6 +74,7 @@ void tflite_init(report_error_callback_t error_callback) {
   resolver_instance.AddStridedSlice();
   resolver_instance.AddPad();
 
+  // Model one is presence sensor
   auto* allocator = tflite::MicroAllocator::Create(
       tensor_arena, kTensorArenaSize, error_reporter);
   auto model1 = tflite::GetModel(hps_model_2021_09_20_tiled);
@@ -82,19 +83,23 @@ void tflite_init(report_error_callback_t error_callback) {
   TfLiteStatus allocate_status = interpreter1_instance.AllocateTensors();
   if (allocate_status != kTfLiteOk) {
     TF_LITE_REPORT_ERROR(error_reporter, "Model 1 AllocateTensors() failed");
-    return;
+    return TLITE_INIT_ERR_MODEL_1;
   }
   interpreter1 = &interpreter1_instance;
 
+  // Model two is second person detector
   auto model2 = tflite::GetModel(hps_second_2021_11_18_tiled);
   static tflite::MicroInterpreter interpreter2_instance(
       model2, resolver_instance, allocator, error_reporter);
   allocate_status = interpreter2_instance.AllocateTensors();
   if (allocate_status != kTfLiteOk) {
     TF_LITE_REPORT_ERROR(error_reporter, "Model 2 AllocateTensors() failed");
-    return;
+    return TLITE_INIT_ERR_MODEL_2;
   }
   interpreter2 = &interpreter2_instance;
+
+  // If seen no errors, then we are all good
+  return TLITE_INIT_OK;
 }
 
 // Allocate memory from the tensor_arena for the model's tensors.
@@ -102,13 +107,16 @@ int8_t* tflite_get_input(int model_number) {
   return get_interpreter(model_number)->input(0)->data.int8;
 }
 
-void tflite_classify(int model_number, int8_t* score) {
+bool tflite_classify(int model_number, int8_t* score) {
   // Run inference
   if (kTfLiteOk != get_interpreter(model_number)->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
+    return false;
   }
 
   // Fetch output
   TfLiteTensor* output = get_interpreter(model_number)->output(0);
   *score = output->data.int8[0];
+
+  return true;
 }

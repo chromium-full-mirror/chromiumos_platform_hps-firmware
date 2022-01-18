@@ -24,21 +24,29 @@ limitations under the License.
 extern "C" {
 #endif
 
-typedef void (*report_error_callback_t)(const char*, va_list);
+// Possible status from tflite_init
+enum TfLiteInitStatus : int32_t {
+  TLITE_INIT_OK = 0,
+  TLITE_INIT_ERR_MODEL_1 = 1,
+  TLITE_INIT_ERR_MODEL_2 = 2,
+  TLITE_INIT_ERR_OTHER = -1,
+};
 
 // Set up TfLM environment
-void tflite_init(report_error_callback_t error_callback);
+// Returns a value from enum TfLiteInitStatus
+int tflite_init();
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 320x240 greyscale image.
 // Note that data is signed with black being -128 and white being +127
-int8_t *tflite_get_input(int model_number);
+int8_t* tflite_get_input(int model_number);
 
 // Run a classification and return result
-void tflite_classify(int model_number, int8_t* score);
+// Returns true on successful model run, false if error detected
+bool tflite_classify(int model_number, int8_t* score);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _TFLITE_LITEX_H_
+#endif  // _TFLITE_LITEX_H_

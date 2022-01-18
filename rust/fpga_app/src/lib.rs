@@ -18,6 +18,7 @@ use application::Rotation;
 use application::Status;
 pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
+pub use classifier::TfLiteInitStatus;
 use core::convert::TryFrom;
 use core::fmt::Write;
 pub use debug_commands::DebugCommand;
@@ -53,12 +54,13 @@ macro_rules! mcu_println {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
-    SpiError,
-    McuTimeout,
-    InvalidArg,
-    UnknownFeature,
-    SelfTestFailed,
     Camera,
+    InvalidArg,
+    McuTimeout,
+    SelfTestFailed,
+    SpiError,
+    TfLiteFailure,
+    UnknownFeature,
 }
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -110,6 +112,9 @@ where
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         mcu_println!(self, "Hello from the Rust FPGA");
         self.led.turn_on();
+        let status = self.classifier.init_status();
+        mcu_println!(self, "Classifier status: {:?}", status);
+        mcu_println!(self, "");
         if self.calibrate_camera(15).is_err() {
             mcu_println!(self, "Failed to calibrate camera");
         }
@@ -181,7 +186,7 @@ where
                 || self.classification_enabled)
         {
             let start = self.timer.now();
-            let score = self.classifier.run_model(self.model_number);
+            let score = self.classifier.run_model(self.model_number)?;
             model_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,
@@ -339,7 +344,7 @@ where
             .input_data_mut(model_number)
             .copy_from_slice(input_data);
         let start = self.timer.now();
-        let score = self.classifier.run_model(model_number);
+        let score = self.classifier.run_model(model_number)?;
         let elapsed = self.timer.elapsed_ms(start);
         if score == expected {
             mcu_println!(self, "Got expected result {} in {}ms", expected, elapsed);

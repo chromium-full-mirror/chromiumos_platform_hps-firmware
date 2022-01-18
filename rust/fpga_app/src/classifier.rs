@@ -2,12 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::Result;
+
+use num_enum::TryFromPrimitive;
+
+/// Describes how TfLite classifier is initialized
+/// Matches values in shim.4
+#[derive(Copy, Clone, Debug, PartialEq, Eq, TryFromPrimitive)]
+#[repr(i32)]
+pub enum TfLiteInitStatus {
+    InitOk = 0,
+    Model1Failed = 1,
+    Model2Failed = 2,
+    OtherFailure = -1,
+}
+
 pub trait Classifier {
     /// Returns a mutable reference into which the input data can be written.
     fn input_data_mut(&mut self, model_number: u32) -> &mut [u8];
 
     /// Run a model.
-    fn run_model(&mut self, model_number: u32) -> i8;
+    fn run_model(&mut self, model_number: u32) -> Result<i8>;
+
+    /// Did initialization succeed?
+    fn init_status(&self) -> TfLiteInitStatus;
 }
 
 pub struct FakeClassifier {
@@ -23,9 +41,12 @@ impl Classifier for FakeClassifier {
         self.input_data.as_mut()
     }
 
-    fn run_model(&mut self, model_number: u32) -> i8 {
+    fn run_model(&mut self, model_number: u32) -> Result<i8> {
         self.models_executed |= 1 << (model_number as usize - 1);
-        self.model_outputs[0]
+        Ok(self.model_outputs[0])
+    }
+    fn init_status(&self) -> TfLiteInitStatus {
+        TfLiteInitStatus::InitOk
     }
 }
 
