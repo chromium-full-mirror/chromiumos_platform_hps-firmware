@@ -60,12 +60,10 @@ where
         hps.check_errors()
             .context("Failed to read status after writing test program")?;
         info!("Write complete, resetting HPS");
-        hps.perform_command(Command::Reset)
-            .context("Failed to reset stage0")?;
-        std::thread::sleep(Duration::from_millis(1000));
-        let status = hps
-            .status()
-            .context("Stage0 didn't come back after reset")?;
+        i2c.reset_to_bootloader()
+            .context("Failed to reset to stage0")?;
+        let mut hps = i2c.open_hps()?;
+        let status = hps.status()?;
         if !status.contains(Status::AVERIFY) {
             if status.contains(Status::WPON) {
                 bail!("Firmware write protect is asserted - Cannot perform test");
