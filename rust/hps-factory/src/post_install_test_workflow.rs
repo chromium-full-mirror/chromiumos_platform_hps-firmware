@@ -91,7 +91,7 @@ where
         if self.config.fpga_mcu_iterations == 0 {
             return Ok(());
         }
-        self.i2c.open_hps()?.perform_command(Command::Reset)?;
+        self.i2c.reset_to_bootloader()?;
         self.i2c
             .execute_application()
             .context("Failed to execute application")?;
@@ -148,7 +148,7 @@ where
             return Ok(());
         }
         println!("Writing/verifying test data");
-        self.i2c.open_hps()?.perform_command(Command::Reset)?;
+        self.i2c.reset_to_bootloader()?;
         self.i2c
             .execute_stage1()
             .context("Failed to execute stage1")?;

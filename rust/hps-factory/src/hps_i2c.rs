@@ -321,6 +321,37 @@ where
         bar.finish();
         Ok(())
     }
+
+    /// Resets to the bootloader - either the sytem bootloader or stage0,
+    /// whichever is active.
+    pub(crate) fn reset_to_bootloader(&mut self) -> Result<()> {
+        // Check if the system bootloader is already running.
+        if self
+            .i2c
+            .read(FACTORY_BOOTLOADER_I2C_ADDRESS, &mut [0])
+            .is_ok()
+        {
+            return Ok(());
+        }
+        self.open_hps()?.perform_command(Command::Reset)?;
+
+        // Wait until one or other bootloader responds on I2C.
+        let start = Instant::now();
+        loop {
+            std::thread::sleep(Duration::from_millis(20));
+            if self
+                .i2c
+                .read(FACTORY_BOOTLOADER_I2C_ADDRESS, &mut [0])
+                .is_ok()
+                || self.i2c.read(HPS_ADDRESS, &mut [0]).is_ok()
+            {
+                return Ok(());
+            }
+            if start.elapsed() > STARTUP_TIMOUT {
+                bail!("Neither the system bootloader nor HPS stage0 returned after reset");
+            }
+        }
+    }
 }
 
 impl<'a, I> HpsI2c<'a, I> {
