@@ -76,13 +76,8 @@ where
     /// Writes `program_bytes` into the stage1 slot using either the STM32
     /// bootloader if active, or stage0 if that's active.
     pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
-        // If we're running HPS firmware, but it's not stage0, then we need to
-        // reset in order to get to either the system bootloader or stage0.
-        if let Ok(mut hps) = self.open_hps() {
-            if hps.stage()? != Stage::Stage0 {
-                hps.perform_command(Command::Reset)?;
-            }
-        }
+        // We need to be running some kind of bootloader in order to write stage1.
+        self.reset_to_bootloader()?;
         if self.open_bootloader().is_ok() {
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
@@ -186,29 +181,12 @@ where
     /// Executes a stage1, but doesn't attempt to check that it's running. Can
     /// be used for stage1 binaries that don't support I2C.
     pub(crate) fn execute_non_i2c_stage1(&mut self) -> Result<()> {
+        self.reset_to_bootloader()?;
         if let Ok(mut stm32) = self.open_bootloader() {
             stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
             return Ok(());
         }
         let mut hps = self.open_hps()?;
-        let status = hps.status()?;
-        if status.contains(Status::STAGE1) {
-            // Stage1 is already running.
-            return Ok(());
-        }
-        // If stage0 is running, but stage1 hasn't been verified, or if the
-        // application is running, then reset to get back to stage0.
-        if status.contains(Status::ANONVER) || status.contains(Status::APPLREADY) {
-            hps.perform_command(Command::Reset)?;
-            // It takes about 690ms to signature-check stage1.
-            std::thread::sleep(Duration::from_millis(700));
-            // Check again if we're back to the system bootloader.
-            if let Ok(mut stm32) = self.open_bootloader() {
-                stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
-                return Ok(());
-            }
-            hps = self.open_hps()?;
-        }
         let status = hps.status()?;
         if status.contains(Status::ANONVER) {
             if status.contains(Status::WPON) {
