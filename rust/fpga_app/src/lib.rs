@@ -174,6 +174,7 @@ where
         // Classification needs to be done after any other uses of the image
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
+        let model_status;
         if entropy < crate::entropy::ENTROPY_THRESHOLD
             && (features.contains(Features::MODEL1)
                 || features.contains(Features::MODEL2)
@@ -181,7 +182,7 @@ where
         {
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number);
-            self.status.person_status = 0x8000 | ((score as u16) & 0xff);
+            model_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,
                 "Model {} score: {} took: {}ms",
@@ -190,7 +191,12 @@ where
                 self.timer.elapsed_ms(start)
             );
         } else {
-            self.status.person_status = 0;
+            model_status = 0;
+        }
+        if self.model_number == 1 {
+            self.status.person_status = model_status;
+        } else {
+            self.status.second_person_status = model_status;
         }
 
         self.status.loop_count += 1;
@@ -517,14 +523,19 @@ mod tests {
         let mut classifier = FakeClassifier::default();
         classifier.model_outputs[0] = 0x42;
         let config = Configuration {
-            enabled_features: Features::MODEL1.bits(),
+            enabled_features: (Features::MODEL1 | Features::MODEL2).bits(),
             camera_config: Rotation::Clockwise.into(),
         };
-        let status = Status {
+        let status1 = Status {
             loop_count: 1,
-            person_status: 0x8042,
+            person_status: 0,
+            second_person_status: 0x8042,
             enabled_features: config.enabled_features,
-            ..Default::default()
+        };
+        let status2 = Status {
+            person_status: 0x8042,
+            loop_count: 2,
+            ..status1
         };
         let spi = SpiExpectationsBuilder::default()
             .expect_get_config(&config)
@@ -536,13 +547,24 @@ mod tests {
             .expect_write_camera_reg(0x3020, 1)
             // Stream N frames.
             .expect_write_camera_reg(0x0100, 3)
-            .expect_report_status(&status)
+            .expect_report_status(&status1)
+            .expect_get_config(&config)
+            // Get AE mean.
+            .expect_read_camera_reg(0x2020, 100)
+            // Wait camera standby.
+            .expect_read_camera_reg(0x0100, 0)
+            // Configure number of frames.
+            .expect_write_camera_reg(0x3020, 1)
+            // Stream N frames.
+            .expect_write_camera_reg(0x0100, 3)
+            .expect_report_status(&status2)
             .build();
         let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeLed, FakeTimer);
 
         assert_eq!(app.loop_body(), Ok(()));
+        assert_eq!(app.loop_body(), Ok(()));
 
-        assert_eq!(app.classifier.models_executed, 1);
+        assert_eq!(app.classifier.models_executed, 1 | 2);
 
         app.mcu.spi.done();
     }
