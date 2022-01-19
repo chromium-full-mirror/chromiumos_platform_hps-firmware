@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use clap::Clap;
-
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
+use clap::Clap;
 use mcu_common::Signature;
 use mcu_common::SIGNATURE_LENGTH;
 use std::path::PathBuf;
@@ -26,6 +26,14 @@ struct Config {
     /// input signature
     #[clap(short, long)]
     signature: Option<String>,
+
+    /// private key filename
+    #[clap(long, required_unless_present("use-insecure-dev-key"))]
+    private_key: Option<PathBuf>,
+
+    /// sign with publicly-disclosed development key
+    #[clap(long, conflicts_with = "private-key")]
+    use_insecure_dev_key: bool,
 
     /// output filename
     #[clap(short, long)]
@@ -75,7 +83,17 @@ fn get_signature(config: &Config, hash: &[u8]) -> Result<Signature> {
             raw_bytes: signature_bytes,
         })
     } else {
-        let secret_key = sign_rom::development_only_secret_key();
+        let secret_key = get_secret_key(config)?;
         Ok(sign_rom::sign_hash(hash, &secret_key))
+    }
+}
+
+fn get_secret_key(config: &Config) -> Result<ed25519_compact::SecretKey> {
+    if config.use_insecure_dev_key {
+        Ok(sign_rom::development_only_secret_key())
+    } else {
+        let pem_key = std::fs::read_to_string(config.private_key.as_ref().unwrap())?;
+        ed25519_compact::SecretKey::from_pem(&pem_key)
+            .map_err(|error| anyhow!("Failed to parse private key file: {}", error))
     }
 }
