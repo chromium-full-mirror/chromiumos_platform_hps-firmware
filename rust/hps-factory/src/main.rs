@@ -36,6 +36,11 @@ struct Config {
     #[clap(long, alias = "bus", default_value = "/dev/i2c-hps-controller")]
     dev: PathBuf,
 
+    /// offset of GPIO pin that controls power to the HPS. Only GPIO chip 0 is
+    /// supported. Set to the empty string to prevent power control.
+    #[clap(long, default_value = "327")]
+    power_gpio_offset: String,
+
     /// connect to HPS via an MCP2221
     #[cfg(feature = "mcp2221")]
     #[clap(long)]
@@ -190,12 +195,15 @@ struct BootLoopConfig {
 }
 
 fn main() -> Result<()> {
-    let config = Config::parse();
+    let mut config = Config::parse();
     if config.verbose {
         simple_logger::SimpleLogger::new().init()?;
     }
     #[cfg(feature = "mcp2221")]
     if config.mcp {
+        // Prevent power control via GPIO when using an MCP2221, since it's
+        // unlikely to do what we want.
+        config.power_gpio_offset.clear();
         let mut i2c_config = mcp2221::I2cConfig::default();
         i2c_config.speed_hz = 400_000;
         // This timeout needs to be shorter than the STARTUP_TIMEOUT in

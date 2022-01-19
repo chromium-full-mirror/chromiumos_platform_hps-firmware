@@ -315,7 +315,8 @@ where
         self.open_hps()?.perform_command(Command::Reset)?;
 
         // Wait until one or other bootloader responds on I2C.
-        let start = Instant::now();
+        let mut start = Instant::now();
+        let mut has_tried_power_cycle = false;
         loop {
             std::thread::sleep(Duration::from_millis(20));
             if self
@@ -327,9 +328,46 @@ where
                 return Ok(());
             }
             if start.elapsed() > STARTUP_TIMOUT {
-                bail!("Neither the system bootloader nor HPS stage0 returned after reset");
+                // Attempt to power-cycle the HPS. This will only work if running as root.
+                if !has_tried_power_cycle && self.power_cycle_hps().is_ok() {
+                    info!("HPS successfully power-cycled");
+                    has_tried_power_cycle = true;
+                    start = Instant::now();
+                } else {
+                    bail!("Neither the system bootloader nor HPS stage0 returned after reset");
+                }
             }
         }
+    }
+
+    fn power_cycle_hps(&self) -> Result<()> {
+        let gpio_offset = &self.config.power_gpio_offset;
+        if gpio_offset.is_empty() {
+            bail!("Power control is disabled");
+        }
+        // Note, we don't actually provide any output from gpioset to the user here.
+        // Running gpioset to power-cycle the HPS is a last-resort. In many cases
+        // gpioset might not be available or might not run (non-root).
+        if !std::process::Command::new("gpioset")
+            .arg("0")
+            .arg(format!("{}=0", gpio_offset))
+            .output()?
+            .status
+            .success()
+        {
+            bail!("gpioset returned non-zero value");
+        }
+        std::thread::sleep(Duration::from_millis(100));
+        if !std::process::Command::new("gpioset")
+            .arg("0")
+            .arg(format!("{}=1", gpio_offset))
+            .output()?
+            .status
+            .success()
+        {
+            bail!("gpioset returned non-zero value");
+        }
+        Ok(())
     }
 }
 
