@@ -112,19 +112,19 @@ struct PostInstallTestConfig {
     skip_bitstream_write: bool,
 
     /// number of iterations of FPGA SPI flash read test to perform
-    #[clap(long, default_value = "200")]
+    #[clap(long, default_value = "50")]
     fpga_spi_read_iterations: u16,
 
     /// number of I2C requests to make when checking I2C bus
-    #[clap(long, default_value = "2000")]
+    #[clap(long, default_value = "500")]
     host_i2c_iterations: u64,
 
     /// number of iterations of FPGA<->MCU communication test to perform
-    #[clap(long, default_value = "200")]
+    #[clap(long, default_value = "50")]
     fpga_mcu_iterations: u16,
 
     /// number of iterations of MCU<->camera I2C test to perform
-    #[clap(long, default_value = "200")]
+    #[clap(long, default_value = "50")]
     camera_i2c_iterations: u16,
 }
 
