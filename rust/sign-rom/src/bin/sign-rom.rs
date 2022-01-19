@@ -58,13 +58,13 @@ fn main() -> Result<()> {
     // that signature into the appropriate location in the header at the start of
     // `file_bytes`
     let hash = sign_rom::hash_image_bytes(&file_bytes, config.region_length)?;
-    println!("Calculated image digest = {:?}", hash);
+    println!("Calculated image digest = {:02X?}", hash);
 
     // If a path to output file is provided, write out image with modified
     // header containing signature.
     if let Some(output) = &config.output {
         let signature = get_signature(&config, &hash)?;
-        println!("injecting signature = {:#02X?}", signature.raw_bytes());
+        println!("injecting signature = {:02X?}", signature.raw_bytes());
         sign_rom::write_signature(&mut file_bytes, &signature)?;
 
         std::fs::write(&output, file_bytes)?;

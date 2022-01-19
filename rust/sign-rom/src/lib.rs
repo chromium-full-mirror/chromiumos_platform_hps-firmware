@@ -53,7 +53,6 @@ pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]
         hasher.update(block);
     }
     let hash = hasher.finalize();
-    println!("signing with digest = {:#02X?}", hash);
     Ok(hash)
 }
 
