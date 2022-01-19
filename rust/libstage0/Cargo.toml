@@ -5,7 +5,7 @@ edition = "2018"
 license = "BSD-3-Clause"
 
 [dependencies]
-ed25519-compact = { version = "0.1.9", default-features = false }
+ed25519-compact = { version = "1", default-features = false }
 mcu_common = { path = "../mcu_common" }
 
 [dev-dependencies]
