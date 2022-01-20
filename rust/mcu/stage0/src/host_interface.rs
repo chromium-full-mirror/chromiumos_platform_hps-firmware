@@ -35,6 +35,9 @@ impl StageZContext {
     pub(crate) fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
         self.write_protect_state = write_protect_state;
     }
+    pub(crate) fn get_write_protect_state(&mut self) -> WriteProtectState {
+        self.write_protect_state
+    }
     /// Called when we've determined that stage1 is valid and jumping to it is
     /// permitted. i.e. either it had a valid signature or firmware write
     /// protect was deasserted.
