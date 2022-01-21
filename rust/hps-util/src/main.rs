@@ -4,6 +4,7 @@
 
 use anyhow::anyhow;
 use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
 use clap::Clap;
 use clap::Subcommand;
@@ -20,6 +21,10 @@ use hps_util::query_status;
 struct Flags {
     #[clap(subcommand)]
     sub_command: SubCommand,
+
+    #[clap(long)]
+    /// path to a linux I2C device
+    dev: Option<PathBuf>,
 
     #[clap(long)]
     /// open HPS via an MCP2221 I2C adapter
@@ -193,6 +198,12 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         dev.configure_gpio(&gpio_config)?;
 
         return Ok(Box::new(HpsAdapter::new(dev)?));
+    }
+    if let Some(i2c_dev_path) = &flags.dev {
+        let i2c = linux_embedded_hal::I2cdev::new(i2c_dev_path).with_context(|| {
+            format!("Couldn't open HPS I2C device '{}'", i2c_dev_path.display())
+        })?;
+        return Ok(Box::new(HpsAdapter::new(i2c)?));
     }
     bail!("No method of connecting to HPS specified, try --mcp");
 }

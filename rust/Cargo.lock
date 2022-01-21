@@ -713,6 +713,7 @@ dependencies = [
  "clap",
  "embedded-hal",
  "hps_interface",
+ "linux-embedded-hal",
  "mcp2221",
  "mcu_common",
  "serialport",
