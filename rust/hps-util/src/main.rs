@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
@@ -25,6 +24,7 @@ struct Flags {
     /// path to a linux I2C device
     dev: PathBuf,
 
+    #[cfg(feature = "mcp2221")]
     #[clap(long)]
     /// open HPS via an MCP2221 I2C adapter
     mcp: bool,
@@ -184,11 +184,12 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         };
         return Ok(Box::new(fhps));
     }
+    #[cfg(feature = "mcp2221")]
     if flags.mcp {
         let mut config = mcp2221::I2cConfig::default();
         config.speed_hz = 400_000;
         let mut dev = mcp2221::I2c::open_first(&config)
-            .map_err(|error| anyhow!("Failed to open HPS via I2C: {}", error))?;
+            .map_err(|error| anyhow::anyhow!("Failed to open HPS via I2C: {}", error))?;
 
         // Enable the level shifter that connects the MCP2221 to the HPS.
         let mut gpio_config = mcp2221::GpioConfig::default();
