@@ -10,6 +10,7 @@ clap = "=3.0.0-beta.2"
 embedded-hal = "0.2.4"
 ftd2xx-embedded-hal = { version = "0.7.0", optional = true }
 hps_interface = { path = "../hps_interface" }
+linux-embedded-hal = "0.3.1"
 mcp2221 = { path = "../mcp2221" }
 mcu_common = { path = "../mcu_common" }
 serialport = "4.0.1"
