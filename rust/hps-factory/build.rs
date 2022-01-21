@@ -113,7 +113,8 @@ fn build_one_time_init() -> Result<()> {
     convert_elf_to_bin(
         out_dir.join("nested-build/thumbv6m-none-eabi/debug/one_time_init"),
         &bin_file,
-    )
+    )?;
+    sign_stage1_binary(&bin_file)
 }
 
 fn build_soc_rom() -> Result<()> {
