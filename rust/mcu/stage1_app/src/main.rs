@@ -555,6 +555,10 @@ fn init_peripherals(
 
     let fpga_device = FpgaDevice::new(board.fpga_programn, board.fpga_power_gate, spi_flash);
 
+    // If something tried to address us while we were still initializing, the
+    // bus might have ended up in a bad state, reset it.
+    host_interface.reset_bus();
+
     init::LateResources {
         host_interface,
         spi,

@@ -11,6 +11,8 @@ pub trait I2cPeripheral {
     /// Write a byte to I2C. Should only be called when `I2cEvent::NeedByte` is
     /// received.
     fn write_byte(&mut self, byte: u8);
+
+    fn reset(&mut self);
 }
 
 #[derive(Eq, PartialEq, Debug)]

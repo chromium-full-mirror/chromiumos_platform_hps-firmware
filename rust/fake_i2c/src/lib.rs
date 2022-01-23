@@ -121,6 +121,8 @@ impl I2cPeripheral for FakeI2cPeripheral {
     fn write_byte(&mut self, byte: u8) {
         let _ = self.bytes_to_host.send(byte);
     }
+
+    fn reset(&mut self) {}
 }
 
 impl From<mpsc::RecvError> for Error {

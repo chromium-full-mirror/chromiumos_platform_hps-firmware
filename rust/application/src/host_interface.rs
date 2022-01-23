@@ -52,6 +52,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
         }
     }
 
+    pub fn reset_bus(&mut self) {
+        self.protocol_handler.i2c_mut().reset();
+    }
+
     pub fn trace(&mut self, ss: Subsystem, device: u8, value: u16) {
         self.trace.trace(ss, device, value)
     }

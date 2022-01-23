@@ -196,6 +196,11 @@ impl<I2C: I2cBusController> I2cPeripheral for Stm32g0I2cPeripheral<I2C> {
     fn write_byte(&mut self, byte: u8) {
         self.i2c.txdr.write(|w| unsafe { w.txdata().bits(byte) });
     }
+
+    fn reset(&mut self) {
+        self.i2c.cr1.modify(|_, w| w.pe().clear_bit());
+        self.i2c.cr1.modify(|_, w| w.pe().set_bit());
+    }
 }
 
 /// Returns the timing configuration in order to run i2c at the specified speed.
