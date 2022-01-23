@@ -411,6 +411,12 @@ where
     fn select_model(&mut self, features: &Features) {
         // Advance to next model number out of 1 and 2.
         self.model_number = (self.model_number % 2) + 1;
+
+        // If debug classification enabled, run both models
+        if self.classification_enabled {
+            return;
+        }
+
         // If we're on model 1, but that's not active, advance to model 2.
         if self.model_number == 1 && !features.contains(Features::MODEL1) {
             self.model_number = 2;
