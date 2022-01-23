@@ -314,23 +314,28 @@ where
             mcu_println!(self, "Self-test feature not enabled");
             return Err(Error::UnknownFeature);
         }
-        const NOT_PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/not-person.raw"));
-        const PERSON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/person.raw"));
+        const CAT: &[u8] = include_bytes!("../test_data/cat_picture.dat");
 
         mcu_println!(self, "Testing TFLM on canned data");
 
-        self.check_score("person", PERSON, 106)?;
-        self.check_score("not-person", NOT_PERSON, -128)?;
+        self.check_score(1, "presence", CAT, -101)?;
+        self.check_score(2, "second", CAT, -117)?;
 
         mcu_println!(self, "Self-test passed");
         Ok(())
     }
 
-    fn check_score(&mut self, name: &str, input_data: &[u8], expected: i8) -> Result<()> {
-        let model_number = 1;
-        self.classifier
-            .input_data_mut(model_number)
-            .copy_from_slice(input_data);
+    fn check_score(
+        &mut self,
+        model_number: u32,
+        name: &str,
+        input_data: &[u8],
+        expected: i8,
+    ) -> Result<()> {
+        let buffer = self.classifier.input_data_mut(model_number);
+        for i in 0..buffer.len() {
+            buffer[i] = (i16::from(input_data[i]) - 128) as u8;
+        }
         let start = self.timer.now();
         let score = self.classifier.run_model(model_number)?;
         let elapsed = self.timer.elapsed_ms(start);
