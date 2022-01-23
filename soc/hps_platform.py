@@ -102,12 +102,13 @@ class _CRG(Module):
             self.cd_sys, (por_counter != 0))
 
 
-# Custom template for the bitstream build script.
-_build_template = [
+# Usual template for the bitstream build script.
+_standard_build_template = [
     '{{',
     'yosys -l {build_name}.rpt {build_name}.ys',
     ('nextpnr-nexus '
      '--json {build_name}.json '
+     '--placer-heap-timingweight 79 '
      '--pdc {build_name}.pdc '
      '--fasm {build_name}.fasm '
      '--device {device} '
@@ -139,7 +140,7 @@ class Platform(LatticePlatform):
             io=ios,
             connectors=[],
             toolchain='oxide')
-        self.toolchain.build_template = _build_template
+        self.toolchain.build_template = _standard_build_template
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
