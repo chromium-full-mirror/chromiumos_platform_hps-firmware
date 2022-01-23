@@ -21,6 +21,8 @@ from litespi.opcodes import SpiNorFlashOpCodes as Codes
 from litespi.phy.generic import LiteSPIPHY
 from litespi import LiteSPI
 
+from migen import Record
+
 from .hps_platform import Platform
 from .cam_control import CameraControl
 from .patch_cpu_variant import patch_cpu_variant
@@ -81,6 +83,7 @@ class HpsSoC(LiteXSoC):
         # RAM and arena
         self.setup_ram()
         self.setup_arena()
+        self.connect_cfu_to_lram()
 
         # SPI Flash
         self.setup_litespi_flash()
@@ -106,6 +109,40 @@ class HpsSoC(LiteXSoC):
             32, self.arena_region.size, dual_port=True)
         self.bus.add_slave('arena', self.arena.bus, self.arena_region)
         self.add_config('SOC_SEPARATE_ARENA')
+
+    def connect_cfu_to_lram(self):
+        # create cfu <-> lram bus
+        cfu_lram_bus_layout = [
+            ('lram0', [('addr', 14), ('din', 32)]),
+            ('lram1', [('addr', 14), ('din', 32)]),
+            ('lram2', [('addr', 14), ('din', 32)]),
+            ('lram3', [('addr', 14), ('din', 32)])]
+        cfu_lram_bus = Record(cfu_lram_bus_layout)
+
+        # add extra ports to the cfu pinout
+        self.cpu.cfu_params.update(
+            o_port0_addr=cfu_lram_bus.lram0.addr,
+            i_port0_din=cfu_lram_bus.lram0.din,
+            o_port1_addr=cfu_lram_bus.lram1.addr,
+            i_port1_din=cfu_lram_bus.lram1.din,
+            o_port2_addr=cfu_lram_bus.lram2.addr,
+            i_port2_din=cfu_lram_bus.lram2.din,
+            o_port3_addr=cfu_lram_bus.lram3.addr,
+            i_port3_din=cfu_lram_bus.lram3.din,
+        )
+
+        # connect them to the lram module
+        self.comb += [
+            self.arena.b_addrs[0].eq(cfu_lram_bus.lram0.addr),
+            self.arena.b_addrs[1].eq(cfu_lram_bus.lram1.addr),
+            self.arena.b_addrs[2].eq(cfu_lram_bus.lram2.addr),
+            self.arena.b_addrs[3].eq(cfu_lram_bus.lram3.addr),
+
+            cfu_lram_bus.lram0.din.eq(self.arena.b_douts[0]),
+            cfu_lram_bus.lram1.din.eq(self.arena.b_douts[1]),
+            cfu_lram_bus.lram2.din.eq(self.arena.b_douts[2]),
+            cfu_lram_bus.lram3.din.eq(self.arena.b_douts[3]),
+        ]
 
     def setup_litespi_flash(self):
         self.submodules.spiflash_phy = LiteSPIPHY(

@@ -46,8 +46,14 @@ config("tflm-config") {
   defines = [
     "NDEBUG",
     "__vexriscv__",
-    "GATEWARE_GEN=1",
+    "GATEWARE_GEN=2",
     "ACCEL_CONV",
+    "ACCEL_PAD",
+    # TODO: reenable when https://github.com/google/CFU-Playground/issues/451
+    # is resolved.
+    # "ACCEL_MAX_POOL",
+    "ACCEL_FULLY_CONNECTED",
+    "ACCEL_STRIDED_SLICE",
     "TF_LITE_STATIC_MEMORY",
     "TF_LITE_USE_GLOBAL_CMATH_FUNCTIONS",
     "TF_LITE_USE_GLOBAL_MIN",
