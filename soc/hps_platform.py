@@ -121,6 +121,18 @@ _standard_build_template = [
 ]
 
 
+# Parallel build template for use when searching for a seed
+_parallel_nextpnr_template = [
+    '{{',
+    'yosys -l {build_name}.rpt {build_name}.ys',
+    ('parallel-nextpnr-nexus {build_name}.json {build_name}.pdc '
+     '{build_name}.fasm  $(nproc) {seed}'
+     ),
+    'prjoxide pack {build_name}.fasm {build_name}.bit',
+    '}} 2>&1 | tee {build_name}_output.log',
+]
+
+
 # pylint: disable=abstract-method
 class Platform(LatticePlatform):
     """The HPS Platform"""
@@ -129,7 +141,7 @@ class Platform(LatticePlatform):
     clk_divisor = 7
     sys_clk_freq = int(450e6 / clk_divisor)
 
-    def __init__(self):
+    def __init__(self, *, parallel_nextpnr=False):
         # The HPS actually has the LIFCL-17-7UWG72C, but that doesn't seem to
         # be available in Radiant 2.2, at least on Linux.
         device = 'LIFCL-17-8UWG72C'
@@ -140,7 +152,9 @@ class Platform(LatticePlatform):
             io=ios,
             connectors=[],
             toolchain='oxide')
-        self.toolchain.build_template = _standard_build_template
+        template = (_parallel_nextpnr_template if parallel_nextpnr
+                    else _standard_build_template)
+        self.toolchain.build_template = template
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)

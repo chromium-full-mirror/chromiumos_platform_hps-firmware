@@ -1,0 +1,106 @@
+#!/bin/bash
+# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs multiple nextpnrs, stopping on the first successful run
+
+# TODO: Better argument handling
+# TODO: Include support for device, timefailarg and ignoreloops parameters
+# TODO: Include support for setting seed (or baseseed in this case)
+if [[ $# -ne 5 ]]; then
+  echo "Expected 5 arguments"
+  exit 255
+fi
+
+name="$(basename "$0")"
+JSON="$1"
+PDC="$2"
+RESULT_FASM="$3"
+SEED_COUNT="$4"
+SEED_BASE="$5"
+
+
+### Only bash 5.1 and later have "wait -p"
+if ! wait -p ZZZ; then
+    echo "${name}: ERROR this version of bash (${BASH_VERSION}) does not have"
+    echo "required feature wait -p."
+    exit 1
+fi
+
+# A standard array containing all child process ids
+declare -a CHILD_PIDS
+
+# Associative array mapping child process to seed used to start it
+declare -A PID_TO_SEED
+
+# This lets us detect a nextpnr-nexus failure in the pipelines spawned below
+set -o pipefail
+
+# Launch a number of nextpnrs
+echo "${name}: running ${SEED_COUNT} nextpnr-nexus instances."
+rm -rf runs
+mkdir runs
+for s in $(seq 0 $(("${SEED_COUNT}"-1))); do
+  seed=$(("${SEED_BASE}" + s))
+  DIR="runs/seed-${seed}"
+  mkdir "${DIR}"
+  (
+    nextpnr-nexus \
+        --json "${JSON}" \
+        --placer-heap-timingweight 79 \
+        --pdc "${PDC}" \
+        --fasm "${DIR}/output.fasm" \
+        --device LIFCL-17-8UWG72C \
+        --report="${DIR}/report.json" \
+        --detailed-timing-report \
+        --seed "${seed}" 2>&1 | \
+      (while read -r line; do
+        echo "$(date +%H:%M:%S) ${line}"; done
+      ) > "${DIR}/nextpnr-nexus.log"
+  ) &
+  PID=$!
+  # Record process ID
+  CHILD_PIDS+=("${PID}")
+  echo "Launched nextpnr with output to ${DIR}"
+  # Record mapping to seed
+  PID_TO_SEED[${PID}]="${seed}"
+done
+
+
+# While there are still running children
+while [[ ${#CHILD_PIDS} -gt 1 ]]; do
+  # Wait for a child to finish then check for success or failure
+  wait -n -p TERMINATED "${CHILD_PIDS[@]}"
+  result=$?
+
+  # Remove finished child from list
+  new_CHILD_PIDS=()
+  for p in "${CHILD_PIDS[@]}"; do
+    # shellcheck disable=SC2154  # TERMINATED assigned above by wait -p
+    if [[ "${p}" -ne "${TERMINATED}" ]]; then
+      new_CHILD_PIDS+=("${p}")
+    fi
+  done
+  CHILD_PIDS=("${new_CHILD_PIDS[@]}")
+
+  # Take action depending on success or failure
+  if [[ "${result}" -eq "0" ]]; then
+    # Child succeeded - copy result and finish
+    seed="${PID_TO_SEED[${TERMINATED}]}"
+    echo "SUCCESS: nextpnr with seed=${seed}"
+    cp "runs/seed-${seed}/output.fasm" "${RESULT_FASM}"
+    cp "runs/seed-${seed}/nextpnr-nexus.log" nextpnr-nexus.log
+    cp "runs/seed-${seed}/report.json" report.json
+    # TODO: find a more elegant solution for halting all children
+    for p in "${CHILD_PIDS[@]}"; do pkill -P "${p}"; done
+    exit 0
+  else
+    # Child failed - output a message and continue
+    seed="${PID_TO_SEED[${TERMINATED}]}"
+    echo "FAIL: nextpnr with seed=${seed}"
+  fi
+done
+
+# No success found
+echo "All seeds failed"

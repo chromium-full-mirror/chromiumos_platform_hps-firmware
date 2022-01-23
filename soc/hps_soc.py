@@ -222,6 +222,10 @@ def main():
         help='Skip building gateware. This is useful if you just want to ' +
         'quickly regenerate SVD files or associated artifacts.')
     parser.add_argument(
+        '--parallel-nextpnr', action='store_true',
+        help='Runs $(nproc) copies of nextpnr in parallel. Used to search ' +
+        'for a seed.')
+    parser.add_argument(
         '--no-litespi-flash', dest='litespi_flash',
         action='store_false', default=True,
         help='Use Litex minimal SPI flash instead of Litespi.')
@@ -238,7 +242,7 @@ def main():
     print(f'{variantName} variant selected')
 
     soc = HpsSoC(
-        platform=Platform(),
+        platform=Platform(parallel_nextpnr=args.parallel_nextpnr),
         litespi_flash=args.litespi_flash,
         variant=variant,
         cpu_cfu=args.cpu_cfu)
