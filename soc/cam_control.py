@@ -257,19 +257,6 @@ class WordPacker(Module):
                      )
 
 
-class ItemCounter(stream.CombinatorialActor):
-    """Counts items as they pass through the stream."""
-
-    def __init__(self, layout):
-        self.sink = stream.Endpoint(layout)
-        self.source = stream.Endpoint(layout)
-        super().__init__()
-        self.counter = Signal(32)
-        self.comb += self.source.payload.eq(self.sink.payload)
-        self.sync += If(self.sink.ready & self.sink.valid,
-                        self.counter.eq(self.counter + 1))
-
-
 class CameraControl(Module, AutoCSR):
     """Handles outputs from the camera and outputs bytes of data to memory.
 
@@ -286,8 +273,6 @@ class CameraControl(Module, AutoCSR):
             'transfer is complete.')
         self._idle = CSRStatus(
             1, description='Device may be started only when idle.')
-        self._pixel_index = CSRStatus(
-            20, description='Current pixel index of sensor.')
         self._reset = CSRStorage(
             1,
             description='Write a 1 to this field to force the device ' +
@@ -313,10 +298,6 @@ class CameraControl(Module, AutoCSR):
             9, description='Index of input row on which to start')
         self._row_count = CSRStorage(
             9, description='Number of consecutive rows to read')
-        self._pixels_read = CSRStatus(
-            32, description='Number of pixels read from camera')
-        self._pixels_cropped = CSRStatus(
-            32, description='Number of pixels cropped from images')
 
         # Contruct all modules
         modules_reset = Signal()
@@ -324,9 +305,7 @@ class CameraControl(Module, AutoCSR):
             ('producer', PixelProducer(pads=pads,
                                        num_pixels=raw_columns * raw_rows)),
             ('frame_gate', FrameGate()),
-            ('read_counter', ItemCounter(_PIXEL_STREAM_LAYOUT)),
             ('cropper', Cropper(raw_columns, raw_rows)),
-            ('crop_counter', ItemCounter(_PIXEL_STREAM_LAYOUT)),
             ('adder', Add128Pipeline()),
             ('fifo', stream.SyncFIFO(_PIXEL_STREAM_LAYOUT, depth=4)),
             ('packer', WordPacker()),
@@ -339,10 +318,8 @@ class CameraControl(Module, AutoCSR):
         # Connect streams between modules
         self.comb += [
             self.producer.output.connect(self.frame_gate.input),
-            self.frame_gate.output.connect(self.read_counter.sink),
-            self.read_counter.source.connect(self.cropper.input),
-            self.cropper.output.connect(self.crop_counter.sink),
-            self.crop_counter.source.connect(self.adder.sink),
+            self.frame_gate.output.connect(self.cropper.input),
+            self.cropper.output.connect(self.adder.sink),
             self.adder.source.connect(self.fifo.sink),
             self.fifo.source.connect(self.packer.input),
         ]
@@ -404,8 +381,3 @@ class CameraControl(Module, AutoCSR):
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
-
-        # Transfer debug counter values to registers
-        self.sync += self._pixels_read.status.eq(self.read_counter.counter)
-        self.sync += self._pixels_cropped.status.eq(self.crop_counter.counter)
-        self.sync += self._pixel_index.status.eq(self.producer.index)

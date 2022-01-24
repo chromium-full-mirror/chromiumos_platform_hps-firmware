@@ -350,43 +350,6 @@ class WordPackerTest(TestCase):
             ])])
 
 
-class ItemCounterTest(TestCase):
-    """Tests for the StreamCounter."""
-
-    def setUp(self):
-        self.dut = cam_control.ItemCounter([('data', 8)])
-
-    def test_it_counts(self):
-        DATA = [
-            ((0, 11, 0), 0),
-            ((1, 22, 0), 0),
-            ((1, 33, 1), 0),
-            ((1, 44, 1), 1),
-            ((1, 55, 1), 2),
-            ((1, 66, 0), 3),
-            ((1, 77, 0), 3),
-            ((0, 88, 1), 3),
-            ((1, 99, 1), 3),
-            ((0, 11, 0), 4),
-        ]
-
-        def run():
-            sink = self.dut.sink
-            source = self.dut.source
-            for (input, expected) in DATA:  # pylint: disable=redefined-builtin
-                sink_valid, sink_data, source_ready = input
-                yield sink.valid.eq(sink_valid)
-                yield sink.data.eq(sink_data)
-                yield source.ready.eq(source_ready)
-                yield
-                self.assertEqual((yield source.valid), sink_valid)
-                self.assertEqual((yield source.data), sink_data)
-                self.assertEqual((yield sink.ready), source_ready)
-                self.assertEqual((yield self.dut.counter), expected)
-
-        run_simulation(self.dut, generators=[run()])
-
-
 class CameraControlIntegrationTest(TestCase):
     """Integration test for CameraControl"""
     # pylint: disable=protected-access
@@ -494,8 +457,6 @@ class CameraControlIntegrationTest(TestCase):
             yield from self.check_data(column_start, column_count, row_start,
                                        row_count)
             self.assertEqual(self.words_written, words_per_frame)
-            self.assertEqual((yield from self.dut._pixels_cropped.read()),
-                             pixels_per_frame)
             yield from self.dut._reset.write(1)
             yield
 
