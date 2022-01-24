@@ -191,7 +191,7 @@ class Cropper(Module):
 
 
 class Add128Pipeline(stream.PipelinedActor):
-    """Optionally adds 128 to incoming data.
+    """Adds 128 to incoming data.
 
     This has the effect of converting the unsigned 0-255 representation
     to a signed -128-127 representation.
@@ -202,10 +202,8 @@ class Add128Pipeline(stream.PipelinedActor):
         self.sink = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
         self.source = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
         super().__init__(latency=1)
-        self.enable_add = Signal()
 
-        self.sync += self.source.data.eq(self.sink.data +
-                                         Mux(self.enable_add, 128, 0))
+        self.sync += self.source.data.eq(self.sink.data + 128)
 
 
 class WordPacker(Module):
@@ -280,12 +278,6 @@ class CameraControl(Module, AutoCSR):
         self._start_run = CSRStorage(
             1,
             description='Writing a 1 to this field while idle starts the transfer.')
-        # TODO(dml): Rename to remove "dma" from the name - or we could just get
-        # rid of this and always convert to signed (to save some resources).
-        self._signed_dma = CSRStorage(
-            1,
-            description='Set to adjust pixel values to ' +
-            'signed representation.')
         self._pixels_ready = CSRStatus(
             1, description='Whether we have 4 bytes of pixel data ready.')
         self._pixels = CSRStatus(
@@ -346,7 +338,6 @@ class CameraControl(Module, AutoCSR):
             NextValue(self.cropper.column_end, column_end),
             NextValue(self.cropper.row_start, row_start),
             NextValue(self.cropper.row_end, row_end),
-            NextValue(self.adder.enable_add, self._signed_dma.storage),
             # When requested, start
             If(self._start_run.re & self._start_run.storage,
                NextState('waiting_for_data'),

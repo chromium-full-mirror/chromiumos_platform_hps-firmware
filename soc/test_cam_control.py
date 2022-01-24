@@ -432,7 +432,6 @@ class CameraControlIntegrationTest(TestCase):
 
     def set_control(self, column_start,
                     column_count, row_start, row_count):
-        yield from self.dut._signed_dma.write(1)
         yield from self.dut._column_start.write(column_start)
         yield from self.dut._column_count.write(column_count)
         yield from self.dut._row_start.write(row_start)

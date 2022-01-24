@@ -26,7 +26,6 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         self.reset();
         self.wait_idle();
         self.configure_cropping(image_dimensions);
-        self.enable_signed_dma();
         self.start();
         if let Err(error) = (trigger_callback)() {
             self.reset();
@@ -88,10 +87,6 @@ impl DmaImageDataReceiver {
             cam.row_start.write(|w| w.bits(dim.row_start));
             cam.row_count.write(|w| w.bits(dim.row_count));
         }
-    }
-
-    fn enable_signed_dma(&mut self) {
-        self.camera.signed_dma.write(|w| w.signed_dma().set_bit());
     }
 
     fn start(&mut self) {
