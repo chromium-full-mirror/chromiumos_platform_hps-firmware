@@ -18,11 +18,11 @@ codegen-units = 1
 
 [profile.dev]
 lto = true
-opt-level = "z"
+opt-level = 3
 panic = "abort"
 
 [profile.release]
 debug = true
 lto = true
-opt-level = "z"
+opt-level = 3
 panic = "abort"
