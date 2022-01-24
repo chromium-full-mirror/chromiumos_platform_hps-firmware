@@ -40,7 +40,7 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         let buffer_u32 = unsafe {
             core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)
         };
-        self.transfer_image_data(buffer_u32);
+        self.transfer_image_data(buffer_u32)?;
 
         Ok(())
     }
@@ -60,22 +60,22 @@ impl DmaImageDataReceiver {
     }
 
     #[inline(never)]
-    fn transfer_image_data(&mut self, buffer_u32: &mut [u32]) {
+    fn transfer_image_data(&mut self, buffer_u32: &mut [u32]) -> Result<()> {
         for word in buffer_u32 {
-            self.wait_for_data();
+            self.wait_for_data()?;
             *word = self.camera.pixels.read().bits();
         }
+        Ok(())
     }
 
     #[inline(always)]
-    fn wait_for_data(&mut self) {
-        while self
-            .camera
-            .pixels_ready
-            .read()
-            .pixels_ready()
-            .bit_is_clear()
-        {}
+    fn wait_for_data(&mut self) -> Result<()> {
+        for _ in 0..10_000_000 {
+            if self.camera.pixels_ready.read().pixels_ready().bit_is_set() {
+                return Ok(());
+            }
+        }
+        Err(Error::Camera)
     }
 
     fn configure_cropping(&mut self, dim: &ImageDimensions) {
