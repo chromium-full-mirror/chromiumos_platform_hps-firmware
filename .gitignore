@@ -5,6 +5,5 @@ build
 *.bin
 *.elf
 target
-Cargo.lock
 third_party/installed
 .env
