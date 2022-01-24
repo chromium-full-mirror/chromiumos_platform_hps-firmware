@@ -15,7 +15,6 @@ import pkg_resources
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
-from litex.soc.cores.led import LedChaser
 
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
@@ -87,16 +86,10 @@ class HpsSoC(LiteXSoC):
         # ROM (part of SPI Flash)
         self.bus.add_region('rom', self.rom_region)
 
-        # "LEDS" - Just one LED on JTAG port
-        self.submodules.leds = LedChaser(
-            pads=platform.request_all('user_led'),
-            sys_clk_freq=platform.sys_clk_freq)
-        self.csr.add('leds')
 
         # Timer
         self.add_timer(name='timer0')
         self.timer0.add_uptime()
-
         # Camera
         self.setup_camera()
 

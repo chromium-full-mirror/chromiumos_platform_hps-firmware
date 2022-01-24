@@ -7,7 +7,6 @@
 pub mod camera;
 mod classifier;
 mod debug_commands;
-mod debug_led;
 mod entropy;
 mod features;
 mod image_rotation;
@@ -22,7 +21,6 @@ pub use classifier::TfLiteInitStatus;
 use core::convert::TryFrom;
 use core::fmt::Write;
 pub use debug_commands::DebugCommand;
-pub use debug_led::DebugLed;
 use embedded_hal::blocking::spi;
 pub use features::Features;
 use mcu_interface::McuInterface;
@@ -65,11 +63,10 @@ pub enum Error {
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-pub struct App<S, I, L, C, T> {
+pub struct App<S, I, C, T> {
     mcu: McuInterface<S>,
     image_data_receiver: I,
     classifier: C,
-    led: L,
     #[cfg(feature = "image-transfer")]
     image_transfer_enabled: bool,
     classification_enabled: bool,
@@ -81,20 +78,18 @@ pub struct App<S, I, L, C, T> {
     spi_test_data: Option<&'static [u8]>,
 }
 
-impl<S, I, L, C, T> App<S, I, L, C, T>
+impl<S, I, C, T> App<S, I, C, T>
 where
     S: spi::Transfer<u8>,
     I: camera::ImageDataReceiver,
-    L: DebugLed,
     C: Classifier,
     T: Timer,
 {
-    pub fn new(spi: S, image_data_receiver: I, classifier: C, led: L, timer: T) -> Self {
+    pub fn new(spi: S, image_data_receiver: I, classifier: C, timer: T) -> Self {
         Self {
             mcu: McuInterface::new(spi),
             image_data_receiver,
             classifier,
-            led,
             #[cfg(feature = "image-transfer")]
             image_transfer_enabled: false,
             classification_enabled: false,
@@ -111,7 +106,6 @@ where
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
         mcu_println!(self, "Hello from the Rust FPGA");
-        self.led.turn_on();
         let status = self.classifier.init_status();
         mcu_println!(self, "Classifier status: {:?}", status);
         mcu_println!(self, "");
@@ -148,12 +142,6 @@ where
 
         if cfg!(feature = "debug-commands") {
             self.process_debug_commands();
-        }
-
-        if features.contains(Features::DEBUG_LED) {
-            self.led.turn_on();
-        } else {
-            self.led.turn_off();
         }
 
         self.select_model(&features);
@@ -440,7 +428,6 @@ where
 #[cfg(test)]
 mod tests {
     use crate::camera::testing::FakeImageDataReceiver;
-    use crate::debug_led::testing::FakeLed;
     use crate::timer::testing::FakeTimer;
     use application::fpga;
     use application::Configuration;
@@ -564,7 +551,7 @@ mod tests {
             .expect_write_camera_reg(0x0100, 3)
             .expect_report_status(&status2)
             .build();
-        let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeLed, FakeTimer);
+        let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeTimer);
 
         assert_eq!(app.loop_body(), Ok(()));
         assert_eq!(app.loop_body(), Ok(()));
