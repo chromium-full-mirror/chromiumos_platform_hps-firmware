@@ -139,13 +139,8 @@ class HpsSoC(LiteXSoC):
             region=self.spiflash_region)
 
     def setup_camera(self):
-        bus = wishbone.Interface(
-            data_width=self.bus.data_width,
-            adr_width=self.bus.address_width)
         self.submodules.cam_control = CameraControl(
-            bus=bus,
             pads=self.platform.request('cam_control'))
-        self.bus.add_master('cam_control', master=bus)
         self.csr.add('cam_control')
 
     def create_spi_controller(self, pads):

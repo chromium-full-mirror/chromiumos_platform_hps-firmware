@@ -7,7 +7,6 @@
 import random
 from unittest import TestCase
 
-from litex.soc.interconnect import wishbone
 from migen.sim.core import passive
 from migen import Record, run_simulation
 
@@ -316,11 +315,11 @@ class WordPackerTest(TestCase):
                 ((1, 0, 0x10, 1), (0, X, X, 1)),
                 ((1, 0, 0x20, 1), (0, X, X, 1)),
                 ((1, 0, 0x30, 1), (0, X, X, 1)),
-                ((1, 0, 0x40, 1), (1, 0, 0x10203040, 1)),
+                ((1, 0, 0x40, 1), (1, 0, 0x40302010, 1)),
                 ((1, 0, 0x50, 1), (0, X, X, 1)),
                 ((1, 0, 0x60, 1), (0, X, X, 1)),
                 ((1, 0, 0x70, 1), (0, X, X, 1)),
-                ((1, 1, 0x80, 1), (1, 1, 0x50607080, 1)),
+                ((1, 1, 0x80, 1), (1, 1, 0x80706050, 1)),
             ])])
 
     def test_it_can_handle_delays(self):
@@ -332,9 +331,9 @@ class WordPackerTest(TestCase):
                 ((1, 0, 0x10, 1), (0, X, X, 0)),
                 ((1, 0, 0x20, 1), (0, X, X, 0)),
                 ((1, 0, 0x30, 1), (0, X, X, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x10203040, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x10203040, 0)),
-                ((1, 1, 0x40, 1), (1, 1, 0x10203040, 1)),
+                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
+                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
+                ((1, 1, 0x40, 1), (1, 1, 0x40302010, 1)),
                 # Same but also send input slowly
                 ((0, 0, 0x00, 0), (0, X, X, 0)),
                 ((1, 0, 0x10, 1), (0, X, X, 0)),
@@ -345,54 +344,10 @@ class WordPackerTest(TestCase):
                 ((0, 0, 0x00, 0), (0, X, X, 0)),
                 ((1, 0, 0x30, 1), (0, X, X, 0)),
                 ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x10203040, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x10203040, 0)),
-                ((1, 1, 0x40, 1), (1, 1, 0x10203040, 1)),
+                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
+                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
+                ((1, 1, 0x40, 1), (1, 1, 0x40302010, 1)),
             ])])
-
-
-class AddressGeneratorTest(TestCase):
-    """Tests for the AddressGenerator."""
-
-    def setUp(self):
-        self.dut = cam_control.AddressGenerator()
-
-    def send_receive(self, value, expected_address, *,
-                     last=False, expected_done=False):
-        input = self.dut.input  # pylint: disable=redefined-builtin
-        output = self.dut.output
-        yield input.valid.eq(True)
-        yield input.data.eq(value)
-        yield input.last.eq(last)
-        yield output.ready.eq(True)
-        yield
-        self.assertTrue((yield output.valid))
-        self.assertTrue((yield input.ready))
-        self.assertEqual((yield output.data), value)
-        self.assertEqual((yield output.address), expected_address)
-        self.assertEqual((yield self.dut.done), expected_done)
-        yield input.valid.eq(False)
-        yield output.ready.eq(False)
-        yield
-
-    def test_it_increments_addess(self):
-        def run():
-            yield self.dut.base.eq(0x4000)
-            yield from self.send_receive(1111, 0x4000)
-            yield from self.send_receive(2222, 0x4001)
-            yield from self.send_receive(3333, 0x4002)
-            yield from self.send_receive(4444, 0x4003)
-            yield from self.send_receive(5555, 0x4004)
-        run_simulation(self.dut, generators=[run()])
-
-    def test_it_signals_done(self):
-        def run():
-            yield self.dut.base.eq(0x4000)
-            yield from self.send_receive(0x1100_0000, 0x4000)
-            yield from self.send_receive(0x2200_0000, 0x4001)
-            yield from self.send_receive(0x3300_0000, 0x4002,
-                                         last=True, expected_done=True)
-        run_simulation(self.dut, generators=[run()])
 
 
 class ItemCounterTest(TestCase):
@@ -440,12 +395,10 @@ class CameraControlIntegrationTest(TestCase):
     RAW_ROWS = 10
 
     def setUp(self):
-        self.dma_words_written = 0
+        self.words_written = 0
         self.pads = Record(cam_control.PAD_LAYOUT)
-        self.bus = wishbone.Interface()
         self.dut = cam_control.CameraControl(
             pads=self.pads,
-            bus=self.bus,
             raw_columns=self.RAW_COLUMNS,
             raw_rows=self.RAW_ROWS)
 
@@ -484,55 +437,45 @@ class CameraControlIntegrationTest(TestCase):
             result += b << (i * 8)
         return result
 
-    @passive
-    def check_data(self, addr_start, column_start,
+    def check_data(self, column_start,
                    column_count, row_start, row_count):
-        """checks data received on bus"""
-        bus = self.bus
-        expected_address = addr_start
+        """checks data received from camera"""
         column = column_start
         row = row_start
-        while True:
+        while row < row_start + row_count:
             # Wait for a bus transaction
             waited = 0
-            while not (yield bus.cyc & bus.stb):
+            while not (yield from self.dut._pixels_ready.read()):
                 waited += 1
                 if waited > 50000:
                     self.fail(f'no data after waiting {waited} cycles')
                 yield
             # check transaction is a write with all necessary attributes
-            self.assertTrue((yield self.bus.we))
-            self.assertEqual((yield self.bus.adr), expected_address >> 2)
-            self.assertEqual((yield self.bus.sel), 0xf)
-            actual = (yield self.bus.dat_w)
+            actual = (yield from self.dut._pixels.read())
             expected = self.expected_word_for(row, column)
             self.assertEqual(actual, expected,
                              f'{actual:08x} != {expected:08x}')
-            yield self.bus.ack.eq(1)
+            # Reading the data should have cleared _pixels_ready.
             yield
-            yield self.bus.ack.eq(0)
-            yield
-            self.dma_words_written += 1
-            expected_address += 4
+            self.assertFalse((yield from self.dut._pixels_ready.read()))
+            self.words_written += 1
             column += 4
             if column == column_start + column_count:
                 column = column_start
                 row += 1
-                if row == row_start + row_count:
-                    row = row_start
-                    expected_address = addr_start
+        # Wait until the frame finishes.
+        while (yield from self.dut._running.read()):
+            pass
 
-    def set_control(self, addr_start, column_start,
+    def set_control(self, column_start,
                     column_count, row_start, row_count):
         yield from self.dut._signed_dma.write(1)
         yield from self.dut._column_start.write(column_start)
         yield from self.dut._column_count.write(column_count)
         yield from self.dut._row_start.write(row_start)
         yield from self.dut._row_count.write(row_count)
-        yield from self.dut._base_address.write(addr_start)
 
     def test_it_receives_twice(self):
-        addr_start = 0x10000
         column_start = 1
         column_count = 8
         row_start = 2
@@ -541,39 +484,36 @@ class CameraControlIntegrationTest(TestCase):
         words_per_frame = pixels_per_frame >> 2
 
         def run():
-            # Check is idle
             yield
             yield
-            self.assertTrue((yield from self.dut._idle.read()))
-            yield from self.set_control(addr_start, column_start,
+            yield from self.set_control(column_start,
                                         column_count, row_start, row_count)
             yield from self.dut._start_run.write(1)  # start
             yield
             # set control running, wait until done then check word count
-            while (yield from self.dut._running.read()):
-                yield
-            self.assertEqual(self.dma_words_written, words_per_frame)
+            yield from self.check_data(column_start, column_count, row_start,
+                                       row_count)
+            self.assertEqual(self.words_written, words_per_frame)
             self.assertEqual((yield from self.dut._pixels_cropped.read()),
                              pixels_per_frame)
+            yield from self.dut._reset.write(1)
+            yield
+
             # start again
-            while not (yield from self.dut._idle.read()):
-                yield
             yield from self.dut._start_run.write(1)  # start
             yield
-            while (yield from self.dut._running.read()):
-                yield
-            self.assertEqual(self.dma_words_written, 2 * words_per_frame)
+            yield from self.check_data(column_start, column_count, row_start,
+                                       row_count)
+            self.assertEqual(self.words_written, 2 * words_per_frame)
 
-            # Wait a bit and check no additional words written
+            # Wait a bit and check no additional words become available.
             for _ in range(300):
                 yield
-            self.assertEqual(self.dma_words_written, 2 * words_per_frame)
+                self.assertFalse((yield self.dut._pixels_ready.status))
 
         run_simulation(
             self.dut,
             generators=[
                 run(),
-                self.run_camera(),
-                self.check_data(addr_start, column_start,
-                                column_count, row_start, row_count)]
+                self.run_camera()]
         )

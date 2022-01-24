@@ -27,15 +27,20 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         self.wait_idle();
         self.configure_cropping(image_dimensions);
         self.enable_signed_dma();
-        self.set_dma_base_address(buffer.as_mut_ptr());
         self.start();
         if let Err(error) = (trigger_callback)() {
-            // Make sure that no DMA is going to occur after we return.
             self.reset();
             self.wait_idle();
             return Err(error);
         }
-        self.dma_wait();
+        // TODO(dml): Change the buffer to [u32] so that we don't need this.
+        if (buffer.as_ptr() as usize) & 0x3 != 0 {
+            return Err(Error::InvalidArg);
+        }
+        let buffer_u32 = unsafe {
+            core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)
+        };
+        self.transfer_image_data(buffer_u32);
 
         Ok(())
     }
@@ -54,6 +59,25 @@ impl DmaImageDataReceiver {
         while self.camera.idle.read().idle().bit_is_clear() {}
     }
 
+    #[inline(never)]
+    fn transfer_image_data(&mut self, buffer_u32: &mut [u32]) {
+        for word in buffer_u32 {
+            self.wait_for_data();
+            *word = self.camera.pixels.read().bits();
+        }
+    }
+
+    #[inline(always)]
+    fn wait_for_data(&mut self) {
+        while self
+            .camera
+            .pixels_ready
+            .read()
+            .pixels_ready()
+            .bit_is_clear()
+        {}
+    }
+
     fn configure_cropping(&mut self, dim: &ImageDimensions) {
         let cam = &mut self.camera;
         // safety: The .bits calls are marked unsafe because svd2rust doesn't
@@ -70,17 +94,7 @@ impl DmaImageDataReceiver {
         self.camera.signed_dma.write(|w| w.signed_dma().set_bit());
     }
 
-    fn set_dma_base_address(&mut self, address: *mut u8) {
-        self.camera
-            .base_address
-            .write(|w| unsafe { w.bits(address as u32) });
-    }
-
     fn start(&mut self) {
         self.camera.start_run.write(|w| w.start_run().set_bit());
-    }
-
-    fn dma_wait(&mut self) {
-        while self.camera.running.read().running().bit_is_set() {}
     }
 }

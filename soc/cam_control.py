@@ -10,7 +10,6 @@ from migen import (
 
 from litex.soc.interconnect import stream
 from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
-from litex.soc.cores import dma
 
 
 # Defines the I/O input signals from the camera
@@ -26,10 +25,6 @@ _PIXEL_STREAM_LAYOUT = stream.EndpointDescription([
     ('data', 8),  # The pixel value
 ])
 _WORD_STREAM_LAYOUT = stream.EndpointDescription([('data', 32)])
-_DMA_LAYOUT = [
-    ('address', 30),
-    ('data', 32),
-]
 
 # Raw camera image dimensions
 # Must match camera configuration - eg 324x244 (QVGA) or 324x324
@@ -228,7 +223,7 @@ class WordPacker(Module):
         byte2 = Signal(8)
         self.comb += [
             self.output.data.eq(
-                Cat(self.input.data, byte2, byte1, byte0)),
+                Cat(byte0, byte1, byte2, self.input.data)),
             self.output.last.eq(self.input.last),
         ]
 
@@ -262,38 +257,6 @@ class WordPacker(Module):
                      )
 
 
-class AddressGenerator(Module):
-    """Generates incrementing addresses for DMA.
-
-    Adds addresses an address to an incoming data stream, allowing it to be
-    written to memory via DMA. Resets to base address when a payload marked
-    "last" is received.
-    """
-
-    def __init__(self):
-        self.base = Signal(30)  # Word address, not byte address
-        self.index = Signal(30)  # Word Index after base
-        self.done = Signal()
-        self.input = stream.Endpoint(_WORD_STREAM_LAYOUT)
-        self.output = stream.Endpoint(_DMA_LAYOUT)
-
-        # Pass input stream data to output and add address
-        self.comb += [
-            self.output.valid.eq(self.input.valid),
-            self.output.data.eq(self.input.data),
-            self.output.address.eq(self.base + self.index),
-            self.input.ready.eq(self.output.ready),
-        ]
-        transferring = self.output.valid & self.output.ready
-
-        # Increment address on transfer out, and reset to zero on last
-        self.sync += If(transferring,
-                        self.index.eq(Mux(self.input.last, 0, self.index + 1)))
-
-        # Signal done when last input is being transferred out
-        self.comb += self.done.eq(self.input.last & transferring)
-
-
 class ItemCounter(stream.CombinatorialActor):
     """Counts items as they pass through the stream."""
 
@@ -312,20 +275,17 @@ class CameraControl(Module, AutoCSR):
 
     Device has three state:
     - idle: may be started
-    - running: DMA started but not yet finished
-    - not running and not idle: DMA complete, but device still busy
+    - running: Transfer started but not yet finished
     """
 
-    def __init__(self, *, pads, bus, raw_columns=_RAW_IMAGE_COLUMNS,
+    def __init__(self, *, pads, raw_columns=_RAW_IMAGE_COLUMNS,
                  raw_rows=_RAW_IMAGE_ROWS):
         self._running = CSRStatus(
             1,
-            description='Set when DMA start is requested and reset when ' +
-            'DMA is complete.')
+            description='Set when transfer start is requested and reset when ' +
+            'transfer is complete.')
         self._idle = CSRStatus(
             1, description='Device may be started only when idle.')
-        self._wait_frame_end = CSRStatus(
-            1, description='waiting for end of frame')
         self._pixel_index = CSRStatus(
             20, description='Current pixel index of sensor.')
         self._reset = CSRStorage(
@@ -334,11 +294,17 @@ class CameraControl(Module, AutoCSR):
             'to reset')
         self._start_run = CSRStorage(
             1,
-            description='Writing a 1 to this field while idle starts a DMA.')
+            description='Writing a 1 to this field while idle starts the transfer.')
+        # TODO(dml): Rename to remove "dma" from the name - or we could just get
+        # rid of this and always convert to signed (to save some resources).
         self._signed_dma = CSRStorage(
             1,
             description='Set to adjust pixel values to ' +
             'signed representation.')
+        self._pixels_ready = CSRStatus(
+            1, description='Whether we have 4 bytes of pixel data ready.')
+        self._pixels = CSRStatus(
+            32, description='4 bytes of pixel data.')
         self._column_start = CSRStorage(
             9, description='Index of column on which to start')
         self._column_count = CSRStorage(
@@ -347,8 +313,6 @@ class CameraControl(Module, AutoCSR):
             9, description='Index of input row on which to start')
         self._row_count = CSRStorage(
             9, description='Number of consecutive rows to read')
-        self._base_address = CSRStorage(
-            32, description='Base address to which to write data')
         self._pixels_read = CSRStatus(
             32, description='Number of pixels read from camera')
         self._pixels_cropped = CSRStatus(
@@ -366,8 +330,6 @@ class CameraControl(Module, AutoCSR):
             ('adder', Add128Pipeline()),
             ('fifo', stream.SyncFIFO(_PIXEL_STREAM_LAYOUT, depth=4)),
             ('packer', WordPacker()),
-            ('addresser', AddressGenerator()),
-            ('writer', dma.WishboneDMAWriter(bus=bus)),
         ]
         for (name, module) in modules:
             wrapped = ResetInserter()(module)
@@ -383,8 +345,6 @@ class CameraControl(Module, AutoCSR):
             self.crop_counter.source.connect(self.adder.sink),
             self.adder.source.connect(self.fifo.sink),
             self.fifo.source.connect(self.packer.input),
-            self.packer.output.connect(self.addresser.input),
-            self.addresser.output.connect(self.writer.sink),
         ]
 
         column_start = self._column_start.storage
@@ -410,31 +370,37 @@ class CameraControl(Module, AutoCSR):
             NextValue(self.cropper.row_start, row_start),
             NextValue(self.cropper.row_end, row_end),
             NextValue(self.adder.enable_add, self._signed_dma.storage),
-            NextValue(self.addresser.base, self._base_address.storage[2:]),
             # When requested, start
             If(self._start_run.re & self._start_run.storage,
-               NextState('running'),
+               NextState('waiting_for_data'),
                self.frame_gate.request.eq(1),
                ),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
         self.fsm.act(
-            'running',
+            'waiting_for_data',
             self._running.status.eq(True),
-            If(self.frame_gate.last, NextValue(seen_frame_last, True)),
-            If(self.addresser.done, NextState('wait_frame_end')),
+            self.packer.output.ready.eq(1),
+            If(self.frame_gate.last, NextState('fsm_reset')),
+            If(self.packer.output.valid,
+               NextValue(self._pixels.status, self.packer.output.data),
+               self._pixels_ready.status.eq(1),
+               NextState('has_data')),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
         self.fsm.act(
-            'wait_frame_end',
-            self._wait_frame_end.status.eq(True),
-            # Can't reset until we've seen frame end as well as addresser done
-            # We don't know what order this will happen in,
-            If(self.frame_gate.last | seen_frame_last,
-               NextState('fsm_reset')
-               ),
+            'has_data',
+            self._running.status.eq(True),
+            self.packer.output.ready.eq(1),
+            If(self.frame_gate.last, NextState('fsm_reset')),
+            self._pixels_ready.status.eq(1),
+            # When the CPU reads the pixel data (we write to the bus), clear the
+            # pixels_ready bit and return to the waiting state.
+            If(self._pixels.we,
+               self._pixels_ready.status.eq(0),
+               NextState('waiting_for_data')),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
