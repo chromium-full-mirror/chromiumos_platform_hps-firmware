@@ -5,7 +5,7 @@ edition = "2018"
 license = "BSD-3-Clause"
 
 [dependencies]
-anyhow = "1.0.40"
+anyhow = "1.0.38"
 bayer = "0.1.5"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 fpga_app = { path = "../fpga_app" }

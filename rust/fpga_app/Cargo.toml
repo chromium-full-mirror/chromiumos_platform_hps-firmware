@@ -17,7 +17,7 @@ image = { version = "0.23.14", default-features = false, features = ["png"] }
 
 [build-dependencies]
 image = { version = "0.23.14", default-features = false, features = ["png"] }
-anyhow = "1.0.42"
+anyhow = "1.0.38"
 
 [features]
 image-transfer = [ "application/image-transfer" ]
