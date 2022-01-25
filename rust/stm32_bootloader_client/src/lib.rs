@@ -132,7 +132,10 @@ where
     ) -> Result<()> {
         let mut complete = 0;
         for chunk in bytes.chunks(MAX_READ_WRITE_SIZE) {
-            self.write_memory(address, chunk)?;
+            // Write-memory sometimes gets a NACK, so allow a single retry.
+            if self.write_memory(address, chunk).is_err() {
+                self.write_memory(address, chunk)?;
+            }
             complete += chunk.len();
             address += chunk.len() as u32;
             progress_cb(Progress {
