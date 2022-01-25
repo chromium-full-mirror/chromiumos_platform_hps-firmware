@@ -7,9 +7,10 @@
 import argparse
 import os
 import re
-import time
 import subprocess
-
+import sys
+import time
+import types
 import pkg_resources
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
@@ -170,10 +171,28 @@ def hps_soc_args(parser: argparse.ArgumentParser):
                         help='Use random seed NUMBER for nextpnr')
 
 
+def monkey_patch_fake_picolibc():
+    """Fakes a pythondata_software_picolibc module.
+
+    pythondata_software_picolibc is only used by LiteX when building BIOS, which
+    our configuration does not do. Nevertheless the module is a hard dependency
+    of LiteX and must be present to allow a build to proceed.
+
+    By providing this fake we do not need to have the actual module present,
+    which saves some complexity in ebuild files.
+    """
+    name = 'pythondata_software_picolibc'
+    module = types.ModuleType(name)
+    module.data_location = ''
+    sys.modules[name] = module
+
+
 def create_builder(soc, args):
+    """Creates builder, with correct defaults."""
     builder = Builder(soc, **builder_argdict(args))
     builder.compile_software = False
     builder.output_dir = args.output_dir
+    monkey_patch_fake_picolibc()
     return builder
 
 
