@@ -271,7 +271,6 @@ where
     /// Waits until the specified I2C address starts responding or until the
     /// timeout is reached.
     fn wait_i2c_ready(&mut self, address: u8, name: &str) -> Result<()> {
-        std::thread::sleep(Duration::from_millis(100));
         let start = Instant::now();
         loop {
             match self.i2c.read(address, &mut [0]) {
