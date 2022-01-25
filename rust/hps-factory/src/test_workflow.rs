@@ -141,6 +141,6 @@ where
         );
     }
 
-    println!("Pre-install test passed");
+    info!("Pre-install test passed");
     Ok(())
 }

@@ -15,6 +15,7 @@ use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
 use hps_interface::Stage;
 use indicatif::ProgressBar;
+use log::info;
 use mcu_common::commands::Command;
 use mcu_common::FLASH_START;
 use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
@@ -37,7 +38,7 @@ where
             match hps.stage()? {
                 Stage::Stage0 => {
                     if write_stage0_config.existing_stage0_ok {
-                        println!("Stage0 already present on device");
+                        info!("Stage0 already present on device");
                         return Ok(());
                     } else {
                         bail!("Stage0 already present and needs to be erased before update");
@@ -51,7 +52,7 @@ where
     }
     let mut stm32 = i2c.open_bootloader()?;
 
-    println!("Erasing MCU flash");
+    info!("Erasing MCU flash");
     stm32.erase_flash()?;
 
     let mut stage0_bytes = STAGE0_BYTES.to_vec();
@@ -66,7 +67,7 @@ where
     // result in the system bootloader not starting next time we boot. This
     // could result in a bricked device that would require physical access to
     // the debug pins to unbrick.
-    println!("Writing stage0");
+    info!("Writing stage0");
     let bar = ProgressBar::new(stage0_bytes.len() as u64);
     let mut read_back = [0u8; MAX_READ_WRITE_SIZE];
     for (chunk_number, chunk) in stage0_bytes.chunks(MAX_READ_WRITE_SIZE).enumerate().rev() {
@@ -85,7 +86,7 @@ where
         bar.inc(chunk.len() as u64);
     }
     bar.finish();
-    println!("Stage0 written and verified");
+    info!("Stage0 written and verified");
 
     Ok(())
 }

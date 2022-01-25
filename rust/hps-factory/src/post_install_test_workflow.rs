@@ -47,7 +47,7 @@ where
         tester.test_fpga_spi_flash_reads()?;
         tester.test_fpga_mcu_comms()?;
         tester.test_mcu_to_camera_i2c()?;
-        println!("Post-install test passed");
+        info!("Post-install test passed");
         Ok(())
     }
 

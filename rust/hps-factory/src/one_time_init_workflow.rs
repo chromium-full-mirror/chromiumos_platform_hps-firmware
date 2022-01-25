@@ -7,6 +7,7 @@ use crate::Config;
 use anyhow::bail;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
+use log::info;
 
 const ONE_TIME_INIT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init.bin"));
 
@@ -20,7 +21,7 @@ where
     i2c.execute_non_i2c_stage1()?;
 
     if i2c.open_bootloader().is_ok() || i2c.open_hps().is_ok() {
-        println!("One-time-init complete");
+        info!("One-time-init complete");
     } else {
         bail!("HPS reset after one-time-init failed");
     }
