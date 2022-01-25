@@ -29,6 +29,7 @@ pub struct Config {
     pub mass_erase_max_ms: u32,
 }
 
+#[derive(Clone, Copy)]
 #[repr(u8)]
 enum Command {
     GetVersion = 0x01,
@@ -85,7 +86,7 @@ where
         // always be 3 bytes.
         let mut buffer = [0u8; 3];
         self.read(&mut buffer)?;
-        self.get_ack()?;
+        self.get_ack_for_command(Command::GetId)?;
         Ok(u16::from_be_bytes([buffer[1], buffer[2]]))
     }
 
@@ -100,7 +101,7 @@ where
         buffer[0] = (out.len() - 1) as u8;
         buffer[1] = checksum(&buffer[0..1]);
         self.write(&buffer)?;
-        self.get_ack()?;
+        self.get_ack_for_command(Command::ReadMemory)?;
         self.read(out)?;
 
         Ok(())
@@ -120,7 +121,7 @@ where
         buffer[1 + data.len()] = checksum(&buffer[0..1 + data.len()]);
         self.write(&buffer[..data.len() + 2])?;
 
-        self.get_ack()
+        self.get_ack_for_command(Command::WriteMemory)
     }
 
     /// Writes `bytes` to `address`, calling `progress_cb` after each block.
@@ -188,7 +189,7 @@ where
         self.send_command(Command::GetVersion)?;
         let mut buffer = [0];
         self.read(&mut buffer)?;
-        self.get_ack()?;
+        self.get_ack_for_command(Command::GetVersion)?;
         Ok(buffer[0])
     }
 
@@ -231,12 +232,9 @@ where
     }
 
     fn send_command(&mut self, command: Command) -> Result<()> {
-        let command = command as u8;
-        self.write(&[command, !command])?;
-        self.get_ack().map_err(|e| match e {
-            Error::Nack => Error::NackFromCommand(command),
-            x => x,
-        })
+        let command_u8 = command as u8;
+        self.write(&[command_u8, !command_u8])?;
+        self.get_ack_for_command(command)
     }
 
     fn get_ack(&mut self) -> Result<()> {
@@ -248,6 +246,13 @@ where
             BOOTLOADER_BUSY => Err(Error::Busy),
             _ => Err(Error::UnexpectedResponse),
         }
+    }
+
+    fn get_ack_for_command(&mut self, command: Command) -> Result<()> {
+        self.get_ack().map_err(|error| match error {
+            Error::Nack => Error::NackFromCommand(command as u8),
+            x => x,
+        })
     }
 
     fn send_address(&mut self, address: u32) -> Result<()> {
