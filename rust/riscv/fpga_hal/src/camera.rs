@@ -23,9 +23,13 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         {
             return Err(Error::InvalidArg);
         }
+        // Column count must be a multiple of 4, since we read and write a word
+        // at a time.
+        if image_dimensions.column_count & 3 != 0 {
+            return Err(Error::InvalidArg);
+        }
         self.reset();
         self.wait_idle();
-        self.configure_cropping(image_dimensions);
         self.start();
         if let Err(error) = (trigger_callback)() {
             self.reset();
@@ -39,7 +43,7 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         let buffer_u32 = unsafe {
             core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)
         };
-        self.transfer_image_data(buffer_u32)?;
+        self.transfer_image_data(buffer_u32, image_dimensions)?;
 
         Ok(())
     }
@@ -59,10 +63,52 @@ impl DmaImageDataReceiver {
     }
 
     #[inline(never)]
-    fn transfer_image_data(&mut self, buffer_u32: &mut [u32]) -> Result<()> {
-        for word in buffer_u32 {
+    fn transfer_image_data(
+        &mut self,
+        buffer_u32: &mut [u32],
+        image_dimensions: &ImageDimensions,
+    ) -> Result<()> {
+        let row_out_len = (image_dimensions.column_count >> 2) as usize;
+        // Convert column start from pixels to words. We discard the low two
+        // bits in the process. So if column_start is 1, 2 or 3, then we'll
+        // start from 0. We could have instead said that such column_starts are
+        // invalid, however it's convenient to make them valid, since a
+        // column_start=2 when rotated becomes a row_start=2, which is valid.
+        let left_margin_words = image_dimensions.column_start >> 2;
+        let mut row_index = 0;
+        for row_out in buffer_u32.chunks_exact_mut(row_out_len) {
+            loop {
+                // We always receive the row, even if we haven't yet reached the
+                // starting row. Thay way the code to read the row gets into
+                // cache.
+                self.receive_row(row_out, left_margin_words)?;
+                row_index += 1;
+                if row_index >= image_dimensions.row_start {
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn receive_row(&mut self, row_out: &mut [u32], left_margin_words: u32) -> Result<()> {
+        // Skip pixels to the left of the cropping area.
+        self.skip_words(left_margin_words)?;
+        // Transfer the image data.
+        for word in row_out {
             self.wait_for_data()?;
             *word = self.camera.pixels.read().bits();
+        }
+        // Next read, if any, should wait for the start of the next row.
+        self.camera.wait_row.write(|w| w.wait_row().set_bit());
+        Ok(())
+    }
+
+    #[inline(always)]
+    fn skip_words(&mut self, num_words: u32) -> Result<()> {
+        for _ in 0..num_words {
+            self.wait_for_data()?;
+            self.camera.pixels.read().bits();
         }
         Ok(())
     }
@@ -75,18 +121,6 @@ impl DmaImageDataReceiver {
             }
         }
         Err(Error::Camera)
-    }
-
-    fn configure_cropping(&mut self, dim: &ImageDimensions) {
-        let cam = &mut self.camera;
-        // safety: The .bits calls are marked unsafe because svd2rust doesn't
-        // know if every bit pattern is valid.
-        unsafe {
-            cam.column_start.write(|w| w.bits(dim.column_start));
-            cam.column_count.write(|w| w.bits(dim.column_count));
-            cam.row_start.write(|w| w.bits(dim.row_start));
-            cam.row_count.write(|w| w.bits(dim.row_count));
-        }
     }
 
     fn start(&mut self) {

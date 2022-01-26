@@ -184,104 +184,6 @@ def pulse(signal):
     yield signal.eq(0)
 
 
-class FrameGateTest(TestCase):
-    """Tests for FrameGate"""
-
-    def setUp(self):
-        self.pads = Record(cam_control.PAD_LAYOUT)
-        self.dut = cam_control.FrameGate()
-        self.total_received = 0
-
-    def check_received(self, data, first, last):
-        self.total_received += 1
-        self.assertEqual(
-            (yield from receive(self.dut.output)),
-            (data & 0xff, first, last))
-
-    def test_it_passes_frame_on_request(self):
-        def send_frame(base, n, request_at=-1):
-            for i in range(n):
-                if i == request_at:
-                    yield from pulse(self.dut.request)
-                yield from send(self.dut.input,
-                                (base + i) & 0xff, i == 0, i == n - 1)
-
-        def sender():
-            yield from send_frame(100, 5)  # Ignored
-            yield from pulse(self.dut.request)
-            yield from send_frame(200, 5)  # Passed to output
-            yield from send_frame(300, 5)  # Ignored
-            yield from send_frame(400, 5, 3)  # Request halfway through
-            yield from send_frame(500, 5)  # Passed to output
-            yield from send_frame(600, 5)  # Ignored
-            for _ in range(10):  # let any remaining data percolate
-                yield
-
-        @passive
-        def receiver():
-            for base in [200, 500]:
-                yield from self.check_received(base + 0, 1, 0)
-                yield from self.check_received(base + 1, 0, 0)
-                yield from self.check_received(base + 2, 0, 0)
-                yield from self.check_received(base + 3, 0, 0)
-                yield from self.check_received(base + 4, 0, 1)
-
-        run_simulation(
-            self.dut,
-            generators=[sender(), receiver()])
-        self.assertEqual(self.total_received, 10)
-
-
-class CropperTest(TestCase):
-    """Tests for the input cropper"""
-
-    def setUp(self):
-        self.dut = cam_control.Cropper(raw_rows=10, raw_columns=10)
-
-    def send_one_hundred_pixels(self):
-        for _ in range(10):
-            yield
-        input = self.dut.input  # pylint: disable=redefined-builtin
-        for i in range(100):
-            yield input.data.eq(i)
-            yield input.valid.eq(1)
-            yield
-            while not (yield input.ready):
-                yield
-            yield input.valid.eq(0)
-            yield
-        yield
-
-    def check_expected(self, expected_output):
-        output = self.dut.output
-        yield output.ready.eq(1)
-        for d in expected_output:
-            while not (yield output.valid):
-                yield
-            self.assertEqual((yield output.data), d)
-            yield
-
-    def test_it_crops_8_rows_of_6(self):
-        def run():
-            yield self.dut.row_start.eq(1)
-            yield self.dut.row_end.eq(8)
-            yield self.dut.column_start.eq(2)
-            yield self.dut.column_end.eq(7)
-            yield
-            yield from self.check_expected([
-                12, 13, 14, 15, 16, 17,
-                22, 23, 24, 25, 26, 27,
-                32, 33, 34, 35, 36, 37,
-                42, 43, 44, 45, 46, 47,
-                52, 53, 54, 55, 56, 57,
-                62, 63, 64, 65, 66, 67,
-                72, 73, 74, 75, 76, 77,
-                82, 83, 84, 85, 86, 87,
-            ])
-        run_simulation(self.dut,
-                       generators=[self.send_one_hundred_pixels(), run()])
-
-
 class WordPackerTest(TestCase):
     """Tests for the WordPacker."""
 
@@ -311,6 +213,8 @@ class WordPackerTest(TestCase):
             self.check_sequence([
                 # input: valid, last, data, ready
                 # then output: valid, last, data, ready
+                ((0, 0, 0x01, X), (0, X, X, 0)),
+                ((0, 0, 0x02, X), (0, X, X, 0)),
                 ((0, 0, 0x00, X), (0, X, X, 0)),
                 ((1, 0, 0x10, 1), (0, X, X, 1)),
                 ((1, 0, 0x20, 1), (0, X, X, 1)),
@@ -322,43 +226,15 @@ class WordPackerTest(TestCase):
                 ((1, 1, 0x80, 1), (1, 1, 0x80706050, 1)),
             ])])
 
-    def test_it_can_handle_delays(self):
-        X = None
-        run_simulation(self.dut, generators=[
-            self.check_sequence([
-                # Send input quickly, but output not ready
-                ((0, 0, 0x00, X), (0, X, X, 0)),
-                ((1, 0, 0x10, 1), (0, X, X, 0)),
-                ((1, 0, 0x20, 1), (0, X, X, 0)),
-                ((1, 0, 0x30, 1), (0, X, X, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
-                ((1, 1, 0x40, 1), (1, 1, 0x40302010, 1)),
-                # Same but also send input slowly
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((1, 0, 0x10, 1), (0, X, X, 0)),
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((1, 0, 0x20, 1), (0, X, X, 0)),
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((1, 0, 0x30, 1), (0, X, X, 0)),
-                ((0, 0, 0x00, 0), (0, X, X, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
-                ((1, 1, 0x40, 0), (1, 1, 0x40302010, 0)),
-                ((1, 1, 0x40, 1), (1, 1, 0x40302010, 1)),
-            ])])
-
 
 class CameraControlIntegrationTest(TestCase):
     """Integration test for CameraControl"""
     # pylint: disable=protected-access
 
-    RAW_COLUMNS = 10
-    RAW_ROWS = 10
+    RAW_COLUMNS = 12
+    RAW_ROWS = 12
 
     def setUp(self):
-        self.words_written = 0
         self.pads = Record(cam_control.PAD_LAYOUT)
         self.dut = cam_control.CameraControl(
             pads=self.pads,
@@ -376,6 +252,7 @@ class CameraControlIntegrationTest(TestCase):
             yield from wait(100)
             yield pads.fvld.eq(1)
             for r in range(self.RAW_ROWS):
+                yield from wait(10)
                 yield pads.lvld.eq(1)
                 yield from wait(10)
                 for c in range(self.RAW_COLUMNS):
@@ -400,71 +277,60 @@ class CameraControlIntegrationTest(TestCase):
             result += b << (i * 8)
         return result
 
-    def check_data(self, column_start,
-                   column_count, row_start, row_count):
+    def check_data(self, start_row, num_columns):
         """checks data received from camera"""
-        column = column_start
-        row = row_start
-        while row < row_start + row_count:
+        column = 0
+        row = 0
+        while row < self.RAW_ROWS:
             # Wait for a bus transaction
             waited = 0
             while not (yield from self.dut._pixels_ready.read()):
                 waited += 1
-                if waited > 50000:
+                if waited > 1000:
                     self.fail(f'no data after waiting {waited} cycles')
                 yield
+            if row < start_row:
+                yield from self.dut._wait_row.write(1)
+                yield
+                row += 1
+                continue
             # check transaction is a write with all necessary attributes
             actual = (yield from self.dut._pixels.read())
             expected = self.expected_word_for(row, column)
-            self.assertEqual(actual, expected,
-                             f'{actual:08x} != {expected:08x}')
+            self.assertEqual(
+                actual, expected,
+                f'{actual:08x} != {expected:08x} @{row}, {column}')
             # Reading the data should have cleared _pixels_ready.
             yield
             self.assertFalse((yield from self.dut._pixels_ready.read()))
-            self.words_written += 1
             column += 4
-            if column == column_start + column_count:
-                column = column_start
+            if column == num_columns:
+                yield from self.dut._wait_row.write(1)
+                yield
+                column = 0
                 row += 1
+        # Reset
+        yield from self.dut._reset.write(1)
+        yield
         # Wait until the frame finishes.
         while (yield from self.dut._running.read()):
             pass
 
-    def set_control(self, column_start,
-                    column_count, row_start, row_count):
-        yield from self.dut._column_start.write(column_start)
-        yield from self.dut._column_count.write(column_count)
-        yield from self.dut._row_start.write(row_start)
-        yield from self.dut._row_count.write(row_count)
-
     def test_it_receives_twice(self):
-        column_start = 1
-        column_count = 8
-        row_start = 2
-        row_count = 6
-        pixels_per_frame = column_count * row_count
-        words_per_frame = pixels_per_frame >> 2
-
         def run():
             yield
             yield
-            yield from self.set_control(column_start,
-                                        column_count, row_start, row_count)
             yield from self.dut._start_run.write(1)  # start
             yield
             # set control running, wait until done then check word count
-            yield from self.check_data(column_start, column_count, row_start,
-                                       row_count)
-            self.assertEqual(self.words_written, words_per_frame)
-            yield from self.dut._reset.write(1)
+            yield from self.check_data(4, 8)
+            yield from self.dut._start_run.write(0)  # start
             yield
 
             # start again
             yield from self.dut._start_run.write(1)  # start
             yield
-            yield from self.check_data(column_start, column_count, row_start,
-                                       row_count)
-            self.assertEqual(self.words_written, 2 * words_per_frame)
+            yield from self.check_data(4, 8)
 
             # Wait a bit and check no additional words become available.
             for _ in range(300):

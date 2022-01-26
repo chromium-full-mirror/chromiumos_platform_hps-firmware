@@ -5,7 +5,7 @@
 """Gateware for receiving data from the HM01B0 camera."""
 
 from migen import (
-    Cat, FSM, If, Module, Mux, NextState, NextValue,
+    Cat, FSM, If, Module, NextState, NextValue,
     Signal, Record, ResetInserter)
 
 from litex.soc.interconnect import stream
@@ -49,11 +49,23 @@ class PixelProducer(Module):
         self.index = Signal(max=num_pixels)
         sigs = Record(PAD_LAYOUT)
         self.comb += sigs.eq(self._cross_domain(pads))
+        self.start_of_row = Signal()
+        self.start_of_frame = Signal()
 
         # Find rising edge of pixel clock
         last_pclk = Signal()
         self.sync += last_pclk.eq(sigs.pclk)
         pclk_rising = sigs.pclk & ~last_pclk
+
+        # Find rising edge of line clock
+        last_lvld = Signal()
+        self.sync += last_lvld.eq(sigs.lvld)
+        self.start_of_row = sigs.lvld & ~last_lvld
+
+        # Find rising edge of frame clock
+        last_fvld = Signal()
+        self.sync += last_fvld.eq(sigs.fvld)
+        self.start_of_frame = sigs.fvld & ~last_fvld
 
         # On pclk rising, while frame valid
         # Send item on output stream and increment index
@@ -86,108 +98,6 @@ class PixelProducer(Module):
             self.sync += cross_next.eq(cross)
             cross = cross_next
         return cross
-
-
-class FrameGate(Module):
-    """Allows full frames to pass, on request.
-
-    input: Endpoint() in
-      The input pixels
-
-    output: Endpoint() out
-      The output pixels
-
-    request: Signal() in
-      Pulse high for a single cycle to request that next frame be passed
-      through the gate.
-    """
-
-    def __init__(self):
-        self.input = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self.output = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self.request = Signal()
-        self.last = Signal()
-        self._get_requested = Signal()
-        self._getting = Signal()
-        self._in_frame = Signal()
-
-        # Always ready to receive
-        self.comb += self.input.ready.eq(1)
-
-        # The conditions under which getting will start and stop
-        start_getting = (
-            self.input.valid & self.input.first & self._get_requested)
-        self.comb += self.last.eq(self.input.valid & self.input.last)
-
-        # When "getting", comb input to output
-        self.comb += If(
-            start_getting | self._getting,
-            self.output.valid.eq(self.input.valid),
-            self.output.first.eq(self.input.first),
-            self.output.last.eq(self.input.last),
-            self.output.data.eq(self.input.data),
-        )
-
-        # Start and stop "getting"
-        self.sync += If(
-            start_getting,
-            self._getting.eq(1),
-            self._get_requested.eq(0),
-        ).Elif(
-            self.last,
-            self._getting.eq(0),
-        )
-
-        # Set _get_requested when requested
-        self.sync += If(self.request, self._get_requested.eq(1))
-
-
-class Cropper(Module):
-    """Crops rectangular regions from a larger 324 x 324 image.
-
-       Does not provide or respect backpressure.
-    """
-
-    def __init__(self, raw_columns, raw_rows):
-        self.column_start = Signal(max=raw_columns)
-        self.column_end = Signal(max=raw_columns)
-        self.row_start = Signal(max=raw_rows)
-        self.row_end = Signal(max=raw_rows)
-        self.input = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self.output = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self._curr_column = Signal(max=raw_columns)
-        self._curr_row = Signal(max=raw_rows)
-
-        column_in_range = (
-            self._curr_column >= self.column_start) & (
-            self._curr_column <= self.column_end)
-
-        row_in_range = (
-            self._curr_row >= self.row_start) & (
-            self._curr_row <= self.row_end)
-
-        in_range = column_in_range & row_in_range
-
-        # Always ready to receive. Applies no back pressure
-        self.comb += self.input.ready.eq(1)
-
-        # Plumb data through then set output valid on transfer when
-        # in row and column range
-        self.comb += [
-            self.output.data.eq(self.input.data),
-            self.output.valid.eq(self.input.valid & in_range),
-            self.output.last.eq((self._curr_column == self.column_end) & (
-                self._curr_row == self.row_end))
-        ]
-
-        # Increment counters
-        at_last_column = self._curr_column == (raw_columns - 1)
-        at_last_row = self._curr_row == (raw_rows - 1)
-        self.sync += If(self.input.valid,
-                        If(at_last_column, self._curr_column.eq(0),
-                           If(at_last_row, self._curr_row.eq(0)
-                              ).Else(self._curr_row.eq(self._curr_row + 1))
-                           ).Else(self._curr_column.eq(self._curr_column + 1)))
 
 
 class Add128Pipeline(stream.PipelinedActor):
@@ -229,13 +139,14 @@ class WordPacker(Module):
         self.fsm.act('receive0',
                      self.input.ready.eq(1),
                      self.output.valid.eq(0),
-                     If(self.input.valid,
+                     If(self.input.valid & self.output.ready,
                         NextValue(byte0, self.input.data),
                         NextState('receive1'))
                      )
         self.fsm.act('receive1',
                      self.input.ready.eq(1),
                      self.output.valid.eq(0),
+                     If(~self.output.ready, NextState('receive0')),
                      If(self.input.valid,
                         NextValue(byte1, self.input.data),
                         NextState('receive2'))
@@ -243,6 +154,7 @@ class WordPacker(Module):
         self.fsm.act('receive2',
                      self.input.ready.eq(1),
                      self.output.valid.eq(0),
+                     If(~self.output.ready, NextState('receive0')),
                      If(self.input.valid,
                         NextValue(byte2, self.input.data),
                         NextState('receive3'))
@@ -250,7 +162,8 @@ class WordPacker(Module):
         self.fsm.act('receive3',
                      self.input.ready.eq(self.output.ready),
                      self.output.valid.eq(self.input.valid),
-                     If(self.output.valid & self.output.ready,
+                     If(~self.output.ready, NextState('receive0')),
+                     If(self.output.valid,
                         NextState('receive0'))
                      )
 
@@ -278,28 +191,21 @@ class CameraControl(Module, AutoCSR):
         self._start_run = CSRStorage(
             1,
             description='Writing a 1 to this field while idle starts the transfer.')
+        self._wait_row = CSRStorage(
+            1,
+            description='Writing a 1 to this field while running waits ' +
+            'for the start of the next row.')
         self._pixels_ready = CSRStatus(
             1, description='Whether we have 4 bytes of pixel data ready.')
         self._pixels = CSRStatus(
             32, description='4 bytes of pixel data.')
-        self._column_start = CSRStorage(
-            9, description='Index of column on which to start')
-        self._column_count = CSRStorage(
-            9, description='Number of columns to read')
-        self._row_start = CSRStorage(
-            9, description='Index of input row on which to start')
-        self._row_count = CSRStorage(
-            9, description='Number of consecutive rows to read')
 
         # Contruct all modules
         modules_reset = Signal()
         modules = [
             ('producer', PixelProducer(pads=pads,
                                        num_pixels=raw_columns * raw_rows)),
-            ('frame_gate', FrameGate()),
-            ('cropper', Cropper(raw_columns, raw_rows)),
             ('adder', Add128Pipeline()),
-            ('fifo', stream.SyncFIFO(_PIXEL_STREAM_LAYOUT, depth=4)),
             ('packer', WordPacker()),
         ]
         for (name, module) in modules:
@@ -309,19 +215,12 @@ class CameraControl(Module, AutoCSR):
 
         # Connect streams between modules
         self.comb += [
-            self.producer.output.connect(self.frame_gate.input),
-            self.frame_gate.output.connect(self.cropper.input),
-            self.cropper.output.connect(self.adder.sink),
-            self.adder.source.connect(self.fifo.sink),
-            self.fifo.source.connect(self.packer.input),
+            self.producer.output.connect(self.adder.sink),
+            self.adder.source.connect(self.packer.input),
         ]
 
-        column_start = self._column_start.storage
-        column_end = self._column_start.storage + self._column_count.storage - 1
-        row_start = self._row_start.storage
-        row_end = self._row_start.storage + self._row_count.storage - 1
-
         reset_requested = self._reset.re & self._reset.storage
+        next_row_requested = self._wait_row.re & self._wait_row.storage
         self.submodules.fsm = FSM(reset_state='fsm_reset')
         self.fsm.act(
             'fsm_reset',
@@ -331,16 +230,29 @@ class CameraControl(Module, AutoCSR):
         self.fsm.act(
             'idle',
             self._idle.status.eq(True),
-            # Peripheral is not running, so config allowed to change
-            NextValue(self.cropper.column_start, column_start),
-            NextValue(self.cropper.column_end, column_end),
-            NextValue(self.cropper.row_start, row_start),
-            NextValue(self.cropper.row_end, row_end),
             # When requested, start
             If(self._start_run.re & self._start_run.storage,
-               NextState('waiting_for_data'),
-               self.frame_gate.request.eq(1),
-               ),
+               NextState('waiting_for_frame')),
+            # When requested, reset
+            If(reset_requested, NextState('fsm_reset'))
+        )
+        self.fsm.act(
+            'waiting_for_frame',
+            self._running.status.eq(True),
+            self.packer.output.ready.eq(0),
+            self._pixels_ready.status.eq(0),
+            If(self.producer.start_of_frame,
+               NextState('waiting_for_row')),
+            # When requested, reset
+            If(reset_requested, NextState('fsm_reset'))
+        )
+        self.fsm.act(
+            'waiting_for_row',
+            self._running.status.eq(True),
+            self.packer.output.ready.eq(0),
+            self._pixels_ready.status.eq(0),
+            If(self.producer.start_of_row,
+               NextState('waiting_for_data')),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
@@ -348,11 +260,12 @@ class CameraControl(Module, AutoCSR):
             'waiting_for_data',
             self._running.status.eq(True),
             self.packer.output.ready.eq(1),
-            If(self.frame_gate.last, NextState('fsm_reset')),
             If(self.packer.output.valid,
                NextValue(self._pixels.status, self.packer.output.data),
                self._pixels_ready.status.eq(1),
                NextState('has_data')),
+            If(next_row_requested,
+               NextState('waiting_for_row')),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
@@ -360,13 +273,14 @@ class CameraControl(Module, AutoCSR):
             'has_data',
             self._running.status.eq(True),
             self.packer.output.ready.eq(1),
-            If(self.frame_gate.last, NextState('fsm_reset')),
             self._pixels_ready.status.eq(1),
             # When the CPU reads the pixel data (we write to the bus), clear the
             # pixels_ready bit and return to the waiting state.
             If(self._pixels.we,
                self._pixels_ready.status.eq(0),
                NextState('waiting_for_data')),
+            If(next_row_requested,
+               NextState('waiting_for_row')),
             # When requested, reset
             If(reset_requested, NextState('fsm_reset'))
         )
