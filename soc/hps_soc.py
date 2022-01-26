@@ -8,12 +8,12 @@ import argparse
 import os
 import re
 import time
-import pkg_resources
 import subprocess
+
+import pkg_resources
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
-from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.spi_flash import SpiFlash
 
@@ -189,7 +189,7 @@ def create_builder(soc, args):
 
 def parse_metrics(output_filename):
     """Scrapes interesting metrics from the FPGA toolchain output."""
-    with open(output_filename, 'r') as f:
+    with open(output_filename, 'r', encoding='latin-1') as f:
         output_lines = f.readlines()
     metrics = {}
     # Find the percentage utilisation of some important FPGA resources.
@@ -268,7 +268,7 @@ def main():
     metrics = parse_metrics(output_log)
     meta_file = f'{builder.output_dir}/gateware/hps_platform_build.metadata'
     print(f'Execution time for the build is: {run_time}s')
-    with open(meta_file, 'w') as f:
+    with open(meta_file, 'w', encoding='latin-1') as f:
         f.write(f'RUN_TIME: {run_time}\n')
         for name, value in metrics.items():
             f.write(f'{name}: {value}\n')
