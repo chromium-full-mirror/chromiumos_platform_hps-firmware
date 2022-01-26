@@ -3,7 +3,7 @@
 	url = https://github.com/enjoy-digital/litex.git
 [submodule "third_party/python/migen"]
 	path = third_party/python/migen
-	url = https://github.com/m-labs/migen
+	url = https://github.com/m-labs/migen.git
 [submodule "third_party/python/nmigen"]
 	path = third_party/python/nmigen
 	url = https://github.com/nmigen/nmigen
