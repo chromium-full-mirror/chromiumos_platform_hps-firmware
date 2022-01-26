@@ -15,7 +15,6 @@ import pkg_resources
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
 from litex.soc.cores.led import LedChaser
-from litex.soc.cores.spi_flash import SpiFlash
 
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
@@ -83,10 +82,7 @@ class HpsSoC(LiteXSoC):
         self.setup_ram()
 
         # SPI Flash
-        if litespi_flash:
-            self.setup_litespi_flash()
-        else:
-            self.setup_flash()
+        self.setup_litespi_flash()
 
         # ROM (part of SPI Flash)
         self.bus.add_region('rom', self.rom_region)
@@ -114,12 +110,6 @@ class HpsSoC(LiteXSoC):
             32, self.sram_region.size)
         self.bus.add_slave('sram_lram', self.lram.bus, self.sram_region)
         self.bus.add_region('sram', self.sram_region)
-
-    def setup_flash(self):
-        self.submodules.spiflash = SpiFlash(self.platform.request('spiflash'),
-                                            dummy=8, endianness='little', div=4)
-        self.bus.add_slave('spiflash', self.spiflash.bus, self.spiflash_region)
-        self.csr.add('spiflash')
 
     def setup_litespi_flash(self):
         self.submodules.spiflash_phy = LiteSPIPHY(
