@@ -20,8 +20,7 @@ class PixelProducerTest(TestCase):
 
     def setUp(self):
         self.pads = Record(cam_control.PAD_LAYOUT)
-        self.dut = cam_control.PixelProducer(
-            pads=self.pads, num_pixels=self._FRAME_PIXELS)
+        self.dut = cam_control.PixelProducer(pads=self.pads)
 
     def send_pixel(self, byte):
         yield
@@ -41,8 +40,6 @@ class PixelProducerTest(TestCase):
             while not (yield self.dut.output.valid):
                 yield
             self.assertEqual((yield self.dut.output.data), value)
-            self.assertEqual((yield self.dut.output.first), first)
-            self.assertEqual((yield self.dut.output.last), last)
             yield self.dut.output.ready.eq(0)
             yield
         self.assertFalse((yield self.dut.output.valid))
@@ -154,11 +151,9 @@ class PixelProducerTest(TestCase):
                 self.assert_stream_content(EXPECTED)])
 
 
-def send(stream, data, first=False, last=False):
+def send(stream, data):
     """Sends data on a stream"""
     yield stream.data.eq(data)
-    yield stream.first.eq(first)
-    yield stream.last.eq(last)
     yield stream.valid.eq(1)
     yield
     while not (yield stream.ready):
@@ -172,7 +167,7 @@ def receive(stream):
     yield
     while not (yield stream.valid):
         yield
-    result = ((yield stream.data), (yield stream.first), (yield stream.last))
+    result = (yield stream.data)
     yield stream.ready.eq(0)
     return result
 
@@ -192,18 +187,15 @@ class WordPackerTest(TestCase):
 
     def check_sequence(self, data):
         for (input, output) in data:  # pylint: disable=redefined-builtin
-            i_valid, i_last, i_data, i_ready = input
-            o_valid, o_last, o_data, o_ready = output
+            i_valid, i_data, i_ready = input
+            o_valid, o_data, o_ready = output
             yield self.dut.input.valid.eq(i_valid)
-            yield self.dut.input.last.eq(i_last)
             yield self.dut.input.data.eq(i_data)
             yield self.dut.output.ready.eq(o_ready)
             yield
             if i_ready:
                 self.assertEqual((yield self.dut.input.ready), i_ready)
             self.assertEqual((yield self.dut.output.valid), o_valid)
-            if o_last:
-                self.assertEqual((yield self.dut.output.last), o_last)
             if o_data:
                 self.assertEqual((yield self.dut.output.data), o_data)
 
@@ -211,19 +203,19 @@ class WordPackerTest(TestCase):
         X = None
         run_simulation(self.dut, generators=[
             self.check_sequence([
-                # input: valid, last, data, ready
-                # then output: valid, last, data, ready
-                ((0, 0, 0x01, X), (0, X, X, 0)),
-                ((0, 0, 0x02, X), (0, X, X, 0)),
-                ((0, 0, 0x00, X), (0, X, X, 0)),
-                ((1, 0, 0x10, 1), (0, X, X, 1)),
-                ((1, 0, 0x20, 1), (0, X, X, 1)),
-                ((1, 0, 0x30, 1), (0, X, X, 1)),
-                ((1, 0, 0x40, 1), (1, 0, 0x40302010, 1)),
-                ((1, 0, 0x50, 1), (0, X, X, 1)),
-                ((1, 0, 0x60, 1), (0, X, X, 1)),
-                ((1, 0, 0x70, 1), (0, X, X, 1)),
-                ((1, 1, 0x80, 1), (1, 1, 0x80706050, 1)),
+                # input: valid, data, ready
+                # then output: valid, data, ready
+                ((0, 0x01, X), (0, X, 0)),
+                ((0, 0x02, X), (0, X, 0)),
+                ((0, 0x00, X), (0, X, 0)),
+                ((1, 0x10, 1), (0, X, 1)),
+                ((1, 0x20, 1), (0, X, 1)),
+                ((1, 0x30, 1), (0, X, 1)),
+                ((1, 0x40, 1), (1, 0x40302010, 1)),
+                ((1, 0x50, 1), (0, X, 1)),
+                ((1, 0x60, 1), (0, X, 1)),
+                ((1, 0x70, 1), (0, X, 1)),
+                ((1, 0x80, 1), (1, 0x80706050, 1)),
             ])])
 
 
@@ -236,10 +228,7 @@ class CameraControlIntegrationTest(TestCase):
 
     def setUp(self):
         self.pads = Record(cam_control.PAD_LAYOUT)
-        self.dut = cam_control.CameraControl(
-            pads=self.pads,
-            raw_columns=self.RAW_COLUMNS,
-            raw_rows=self.RAW_ROWS)
+        self.dut = cam_control.CameraControl(pads=self.pads)
 
     @passive
     def run_camera(self):

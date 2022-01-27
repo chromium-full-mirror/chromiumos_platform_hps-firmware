@@ -26,27 +26,15 @@ _PIXEL_STREAM_LAYOUT = stream.EndpointDescription([
 ])
 _WORD_STREAM_LAYOUT = stream.EndpointDescription([('data', 32)])
 
-# Raw camera image dimensions
-# Must match camera configuration - eg 324x244 (QVGA) or 324x324
-_RAW_IMAGE_COLUMNS = 324
-_RAW_IMAGE_ROWS = 324
-_NUM_PIXELS = _RAW_IMAGE_COLUMNS * _RAW_IMAGE_ROWS
-
 
 class PixelProducer(Module):
     """Receives pixels from camera puts them on a stream.
 
-    Also signals the first and last pixel of a frame.
-
-    Assumes exactly num_pixels per valid frame, but will resynchronize
-    on start of frame.
-
     Does not respect backpressure from the output stream.
     """
 
-    def __init__(self, *, pads, num_pixels=_NUM_PIXELS):
+    def __init__(self, *, pads):
         self.output = stream.Endpoint(_PIXEL_STREAM_LAYOUT)
-        self.index = Signal(max=num_pixels)
         sigs = Record(PAD_LAYOUT)
         self.comb += sigs.eq(self._cross_domain(pads))
         self.start_of_row = Signal()
@@ -68,22 +56,15 @@ class PixelProducer(Module):
         self.start_of_frame = sigs.fvld & ~last_fvld
 
         # On pclk rising, while frame valid
-        # Send item on output stream and increment index
+        # Send item on output stream
         self.sync += If(sigs.fvld & pclk_rising,
                         self.output.valid.eq(1),
                         self.output.data.eq(sigs.data),
-                        self.output.first.eq(self.index == 0),
-                        self.output.last.eq(self.index == num_pixels - 1),
-                        self.index.eq(self.index + 1),
                         )
 
         # Lower valid after a transfer
         self.sync += If(self.output.ready & self.output.valid,
                         self.output.valid.eq(0))
-
-        # While frame is not valid, reset pixel index
-        self.sync += If(~sigs.fvld,
-                        self.index.eq(0))
 
     def _cross_domain(self, pads):
         """Bring signals save across from I/O Domain"""
@@ -119,8 +100,7 @@ class Add128Pipeline(stream.PipelinedActor):
 class WordPacker(Module):
     """Packs 4 8 bit pixel values into a 32 bit word.
 
-    Similar to stream.Gearbox. Passes on last signal if last is set on
-    last byte of a word.
+    Similar to stream.Gearbox.
     """
 
     def __init__(self):
@@ -132,7 +112,6 @@ class WordPacker(Module):
         self.comb += [
             self.output.data.eq(
                 Cat(byte0, byte1, byte2, self.input.data)),
-            self.output.last.eq(self.input.last),
         ]
 
         self.submodules.fsm = FSM(reset_state='receive0')
@@ -176,8 +155,7 @@ class CameraControl(Module, AutoCSR):
     - running: Transfer started but not yet finished
     """
 
-    def __init__(self, *, pads, raw_columns=_RAW_IMAGE_COLUMNS,
-                 raw_rows=_RAW_IMAGE_ROWS):
+    def __init__(self, *, pads):
         self._running = CSRStatus(
             1,
             description='Set when transfer start is requested and reset when ' +
@@ -203,8 +181,7 @@ class CameraControl(Module, AutoCSR):
         # Contruct all modules
         modules_reset = Signal()
         modules = [
-            ('producer', PixelProducer(pads=pads,
-                                       num_pixels=raw_columns * raw_rows)),
+            ('producer', PixelProducer(pads=pads)),
             ('adder', Add128Pipeline()),
             ('packer', WordPacker()),
         ]
