@@ -195,12 +195,13 @@ struct BootLoopConfig {
 }
 
 fn main() -> Result<()> {
-    let mut config = Config::parse();
+    let config = Config::parse();
     if config.verbose {
         simple_logger::SimpleLogger::new().init()?;
     }
     #[cfg(feature = "mcp2221")]
     if config.mcp {
+        let mut config = config;
         // Prevent power control via GPIO when using an MCP2221, since it's
         // unlikely to do what we want.
         config.power_gpio_offset.clear();
