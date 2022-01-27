@@ -321,13 +321,11 @@ class CameraControl(Module, AutoCSR):
         row_start = self._row_start.storage
         row_end = self._row_start.storage + self._row_count.storage - 1
 
-        seen_frame_last = Signal()
         reset_requested = self._reset.re & self._reset.storage
         self.submodules.fsm = FSM(reset_state='fsm_reset')
         self.fsm.act(
             'fsm_reset',
             modules_reset.eq(1),
-            NextValue(seen_frame_last, False),
             NextState('idle')
         )
         self.fsm.act(
