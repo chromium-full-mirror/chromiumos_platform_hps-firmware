@@ -133,6 +133,13 @@ where
         let rotation =
             Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?;
 
+        if !features.contains(Features::MODEL1) {
+            self.status.person_status = 0;
+        }
+        if !features.contains(Features::MODEL2) {
+            self.status.second_person_status = 0;
+        }
+
         if features.contains(Features::SPI_FLASH_READ_TEST) {
             self.spi_flash_read_test();
         }
@@ -522,7 +529,7 @@ mod tests {
     }
 
     #[test]
-    fn test_feature_enabled() {
+    fn test_feature_toggle() {
         let mut classifier = FakeClassifier::default();
         classifier.model_outputs[0] = 0x42;
         let config = Configuration {
@@ -539,6 +546,21 @@ mod tests {
             person_status: 0x8042,
             loop_count: 2,
             ..status1
+        };
+        let config_disabled = Configuration {
+            enabled_features: Features::DISABLED.bits(),
+            camera_config: Rotation::Clockwise.into(),
+        };
+        let status3 = Status {
+            loop_count: 3,
+            person_status: 0,
+            second_person_status: 0,
+            enabled_features: config_disabled.enabled_features,
+        };
+        let status4 = Status {
+            person_status: 0,
+            loop_count: 4,
+            ..status3
         };
         let spi = SpiExpectationsBuilder::default()
             .expect_get_config(&config)
@@ -561,12 +583,38 @@ mod tests {
             // Stream N frames.
             .expect_write_camera_reg(0x0100, 3)
             .expect_report_status(&status2)
+            .expect_get_config(&config_disabled)
+            // Get AE mean.
+            .expect_read_camera_reg(0x2020, 100)
+            // Wait camera standby.
+            .expect_read_camera_reg(0x0100, 0)
+            // Configure number of frames.
+            .expect_write_camera_reg(0x3020, 1)
+            // Stream N frames.
+            .expect_write_camera_reg(0x0100, 3)
+            .expect_report_status(&status3)
+            .expect_get_config(&config_disabled)
+            // Get AE mean.
+            .expect_read_camera_reg(0x2020, 100)
+            // Wait camera standby.
+            .expect_read_camera_reg(0x0100, 0)
+            // Configure number of frames.
+            .expect_write_camera_reg(0x3020, 1)
+            // Stream N frames.
+            .expect_write_camera_reg(0x0100, 3)
+            .expect_report_status(&status4)
             .build();
         let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeTimer);
 
         assert_eq!(app.loop_body(), Ok(()));
         assert_eq!(app.loop_body(), Ok(()));
-
+        assert_eq!(app.classifier.models_executed, 1 | 2);
+        assert_eq!(app.status.person_status, 0x8042);
+        assert_eq!(app.status.second_person_status, 0x8042);
+        assert_eq!(app.loop_body(), Ok(()));
+        assert_eq!(app.loop_body(), Ok(()));
+        assert_eq!(app.status.person_status, 0);
+        assert_eq!(app.status.second_person_status, 0);
         assert_eq!(app.classifier.models_executed, 1 | 2);
 
         app.mcu.spi.done();
