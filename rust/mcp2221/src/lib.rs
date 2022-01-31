@@ -39,6 +39,8 @@ const RESET_SEQUENCE: [u8; 4] = [COMMAND_RESET, 0xAB, 0xCD, 0xEF];
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_millis(1000);
 
+const RESET_TIMEOUT: Duration = Duration::from_millis(5000);
+
 const I2C_BUSY: u8 = 1;
 
 const NUM_GPIO_PINS: usize = 4;
@@ -160,12 +162,14 @@ impl McpDevice {
             buffer[..RESET_SEQUENCE.len()].copy_from_slice(&RESET_SEQUENCE);
             handle.write_interrupt(MCP_WRITE_ENDPOINT, &buffer, config.timeout)?;
             std::thread::sleep(Duration::from_millis(1000));
-
-            if let Some(device) = first_device_on_bus(bus_number)? {
-                Ok(device.open()?)
-            } else {
-                Err(Error::DeviceLostOnReset)
+            let start = Instant::now();
+            while start.elapsed() < RESET_TIMEOUT {
+                if let Some(device) = first_device_on_bus(bus_number)? {
+                    return Ok(device.open()?);
+                }
+                std::thread::sleep(Duration::from_millis(100));
             }
+            Err(Error::DeviceLostOnReset)
         } else {
             Ok(self.device.open()?)
         }
