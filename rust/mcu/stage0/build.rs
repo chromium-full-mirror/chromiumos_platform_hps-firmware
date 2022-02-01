@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::Context;
+use anyhow::Result;
+
 #[cfg(not(feature = "sys_bootloader"))]
 const STAGE0_FLASH_START: u32 = 0x08000000;
 
@@ -29,7 +32,20 @@ PROVIDE(_slot = ORIGIN(SLOT));
     )
 }
 
-fn main() {
+fn write_raw_public_key() -> Result<()> {
+    let pem_path = std::path::PathBuf::from("keys/dev.pub.pem");
+    let pem_key = std::fs::read_to_string(&pem_path)
+        .with_context(|| format!("Failed to read PEM public key from {:?}", &pem_path))?;
+    let key = ed25519_compact::PublicKey::from_pem(&pem_key)
+        .with_context(|| format!("Failed to parse PEM public key from {:?}", &pem_path))?;
+    let key_bytes: [u8; ed25519_compact::PublicKey::BYTES] = *key;
+    let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR")?);
+    std::fs::write(out_dir.join("raw-public-key"), key_bytes)?;
+    println!("cargo:rerun-if-changed={}", pem_path.to_str().unwrap());
+    Ok(())
+}
+
+fn main() -> Result<()> {
     let out_dir = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("OUT_DIR not set"));
     let memory_x_filename = out_dir.join("memory.x");
     let contents = memory_x_contents();
@@ -44,4 +60,8 @@ fn main() {
     println!("cargo:rustc-link-search={}", out_dir.display());
     // Tell cargo to rebuild if memory.x has changed.
     println!("cargo:rerun-if-changed=memory.x");
+
+    write_raw_public_key()?;
+
+    Ok(())
 }

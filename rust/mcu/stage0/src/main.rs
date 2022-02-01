@@ -35,11 +35,8 @@ extern "C" {
     pub static VECTOR_TABLE: u32;
 }
 
-// TODO: Press this down into RO fuse memory in the MCU?
-const PUBLIC_KEY: [u8; libstage0::verification::PUBLIC_KEY_LENGTH] = [
-    0x01, 0xB5, 0x9C, 0x83, 0xD3, 0x8D, 0x40, 0x9B, 0x71, 0x18, 0xA8, 0x38, 0x19, 0xEB, 0x4C, 0x77,
-    0x22, 0x01, 0x9D, 0x3C, 0xB7, 0x27, 0x5A, 0x23, 0xC8, 0x45, 0x0C, 0x88, 0xB3, 0xB0, 0x02, 0x6A,
-];
+const PUBLIC_KEY: &[u8; libstage0::verification::PUBLIC_KEY_LENGTH] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/raw-public-key"));
 
 /// Whether we're done running stage0 and we should now load stage1.
 static BOOTLOAD_TRIGGER: AtomicBool = AtomicBool::new(false);
@@ -240,7 +237,7 @@ fn init_peripherals(
     // initialized so that we NACK rather than clock stretching during
     // validation.
     let valid_stage1_result =
-        libstage0::verification::detect_and_validate_stage1(slot, &PUBLIC_KEY, wp_state);
+        libstage0::verification::detect_and_validate_stage1(slot, PUBLIC_KEY, wp_state);
 
     let sda = gpiob.pb7.into_open_drain_output_high();
     let scl = gpiob.pb6.into_open_drain_output_high();
