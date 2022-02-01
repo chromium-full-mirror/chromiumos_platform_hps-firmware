@@ -86,10 +86,6 @@ class HpsSoC(LiteXSoC):
         # ROM (part of SPI Flash)
         self.bus.add_region('rom', self.rom_region)
 
-
-        # Timer
-        self.add_timer(name='timer0')
-        self.timer0.add_uptime()
         # Camera
         self.setup_camera()
 
