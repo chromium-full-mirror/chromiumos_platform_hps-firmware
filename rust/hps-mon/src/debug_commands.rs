@@ -213,11 +213,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::LocalOperation(LocalOperation::WriteSocRom),
     },
     AvailableDebugCommand {
-        keyword: "fpga_hold_in_reset",
-        help_text: "Put the FPGA into reset and leave it that way",
-        command_type: CommandType::McuCommand(McuDebugCommand::FpgaHoldInReset),
-    },
-    AvailableDebugCommand {
         keyword: "erase_spi_flash",
         help_text: "Erase entire SPI flash",
         command_type: CommandType::McuCommand(McuDebugCommand::EraseSpiFlash),

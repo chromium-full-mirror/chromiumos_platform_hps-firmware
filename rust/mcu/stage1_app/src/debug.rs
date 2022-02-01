@@ -368,7 +368,6 @@ pub(crate) fn handle_mcu_debug_command(
                     .write(&[0, 0, 0, 0]);
             }
         }
-        McuDebugCommand::FpgaHoldInReset => resources.fpga_device.hold.set_low().unwrap(),
         McuDebugCommand::EraseSpiFlash => {
             // For now, we ignore returned errors here, since the write
             // function will have printed the error message in more detail
