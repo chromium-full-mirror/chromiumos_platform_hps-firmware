@@ -48,12 +48,13 @@ for s in $(seq 0 $(("${SEED_COUNT}"-1))); do
   (
     nextpnr-nexus \
         --json "${JSON}" \
-        --placer-heap-timingweight 79 \
         --pdc "${PDC}" \
         --fasm "${DIR}/output.fasm" \
         --device LIFCL-17-8UWG72C \
         --report="${DIR}/report.json" \
         --detailed-timing-report \
+        --placer-heap-timingweight 50 \
+        --estimate-delay-mult 25 \
         --seed "${seed}" 2>&1 | \
       (while read -r line; do
         echo "$(date +%H:%M:%S) ${line}"; done

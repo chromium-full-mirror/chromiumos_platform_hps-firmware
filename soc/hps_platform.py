@@ -87,11 +87,11 @@ class _CRG(Module):
         # Clock from HFOSC
         self.submodules.sys_clk = sys_osc = NXOSCA()
         sys_osc.create_hf_clk(self.cd_sys, sys_clk_freq)
-        # We make the period constraint 10% tighter than our actual system
+        # We make the period constraint 15% tighter than our actual system
         # clock frequency, because the CrossLink-NX internal oscillator runs
-        # at ±10% of nominal frequency.
+        # at ±15% of nominal frequency.
         platform.add_period_constraint(self.cd_sys.clk,
-                                       1e9 / (sys_clk_freq * 1.1))
+                                       1e9 / (sys_clk_freq * 1.15))
 
         # Power On Reset
         por_cycles = 4096
@@ -108,13 +108,14 @@ _standard_build_template = [
     'yosys -l {build_name}.rpt {build_name}.ys',
     ('nextpnr-nexus '
      '--json {build_name}.json '
-     '--placer-heap-timingweight 79 '
      '--pdc {build_name}.pdc '
      '--fasm {build_name}.fasm '
      '--device {device} '
      '{timefailarg} '
      '{ignoreloops} '
      '--seed {seed} '
+     '--placer-heap-timingweight 50 '
+     '--estimate-delay-mult 25 '
      ),
     'prjoxide pack {build_name}.fasm {build_name}.bit',
     '}} 2>&1 | tee {build_name}_output.log',
