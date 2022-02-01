@@ -15,8 +15,8 @@ fn main() -> Result<()> {
     write_application_bin()?;
     write_release_application_bin()?;
     build_soc_rom()?;
-    write_stage0_bin("stage0.bin", "")?;
-    write_stage0_bin("stage0.sys.bin", "sys_bootloader")?;
+    write_stage0_bin("stage0.bin", "insecure-dev-key")?;
+    write_stage0_bin("stage0.sys.bin", "insecure-dev-key,sys_bootloader")?;
     build_one_time_init()?;
     Ok(())
 }

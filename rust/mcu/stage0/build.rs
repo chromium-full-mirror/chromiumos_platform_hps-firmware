@@ -32,16 +32,22 @@ PROVIDE(_slot = ORIGIN(SLOT));
     )
 }
 
-fn write_raw_public_key() -> Result<()> {
-    let pem_path = std::path::PathBuf::from("keys/dev.pub.pem");
-    let pem_key = std::fs::read_to_string(&pem_path)
-        .with_context(|| format!("Failed to read PEM public key from {:?}", &pem_path))?;
-    let key = ed25519_compact::PublicKey::from_pem(&pem_key)
-        .with_context(|| format!("Failed to parse PEM public key from {:?}", &pem_path))?;
+fn write_raw_public_key<P: AsRef<std::path::Path>>(pem_path: P) -> Result<()> {
+    let pem_key = std::fs::read_to_string(pem_path.as_ref())
+        .with_context(|| format!("Failed to read PEM public key from {:?}", pem_path.as_ref()))?;
+    let key = ed25519_compact::PublicKey::from_pem(&pem_key).with_context(|| {
+        format!(
+            "Failed to parse PEM public key from {:?}",
+            pem_path.as_ref()
+        )
+    })?;
     let key_bytes: [u8; ed25519_compact::PublicKey::BYTES] = *key;
     let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR")?);
     std::fs::write(out_dir.join("raw-public-key"), key_bytes)?;
-    println!("cargo:rerun-if-changed={}", pem_path.to_str().unwrap());
+    println!(
+        "cargo:rerun-if-changed={}",
+        pem_path.as_ref().to_str().unwrap()
+    );
     Ok(())
 }
 
@@ -61,7 +67,19 @@ fn main() -> Result<()> {
     // Tell cargo to rebuild if memory.x has changed.
     println!("cargo:rerun-if-changed=memory.x");
 
-    write_raw_public_key()?;
+    // Exactly one '*-key' feature must be enabled when building this crate,
+    // otherwise you will get a compile error on the lines below.
+    let pem_path = {
+        #[cfg(feature = "insecure-dev-key")]
+        {
+            "keys/dev.pub.pem"
+        }
+        #[cfg(feature = "test-key")]
+        {
+            "keys/hps-test.pub.pem"
+        }
+    };
+    write_raw_public_key(pem_path)?;
 
     Ok(())
 }
