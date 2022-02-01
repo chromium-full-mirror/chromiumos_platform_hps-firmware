@@ -25,7 +25,6 @@ pub struct Request {
 pub enum Action {
     None,
     SetDebugLed(bool),
-    ResetFpga,
     ReadConfigRegisters,
     WriteStatusRegisters,
     #[cfg(feature = "dev")]
@@ -57,7 +56,6 @@ impl Request {
             crate::fpga::commands::SET_DEBUG_LED => {
                 action = Action::SetDebugLed(buffer[1] != 0);
             }
-            crate::fpga::commands::RESET_FPGA => action = Action::ResetFpga,
             #[cfg(feature = "dev")]
             crate::fpga::commands::DEBUG_LOG => {
                 action = Action::DebugLog;
@@ -206,14 +204,6 @@ mod tests {
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::ERROR);
         assert_eq!(buffer[1], 0xff);
-    }
-
-    #[test]
-    fn test_fpga_reset() {
-        let mut buffer = MemBlock::with_capacity(64);
-        buffer[0] = crate::fpga::commands::RESET_FPGA;
-        let request = Request::from_received_packet(&buffer);
-        assert_eq!(request.action, Action::ResetFpga);
     }
 
     #[test]

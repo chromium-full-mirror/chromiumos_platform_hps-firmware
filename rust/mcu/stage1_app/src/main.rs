@@ -256,9 +256,6 @@ const APP: () = {
             fpga::Action::SetDebugLed(false) => {
                 ctx.resources.debug_led.set_low().unwrap();
             }
-            fpga::Action::ResetFpga => {
-                ctx.resources.fpga_device.reset_fpga();
-            }
             fpga::Action::ReadConfigRegisters => ctx
                 .resources
                 .state

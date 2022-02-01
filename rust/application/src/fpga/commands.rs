@@ -25,9 +25,6 @@ pub const WRITE_STATUS_REGISTERS: u8 = 0x21;
 /// version number.
 pub const REPORT_FPGA_BOOT: u8 = 0x22;
 
-/// Resets the FPGA.
-pub const RESET_FPGA: u8 = 0x40;
-
 /// Sets the debug LED on or off based on whether the first byte of the payload
 /// is 1 or 0 respectively.
 pub const SET_DEBUG_LED: u8 = 0x60;
