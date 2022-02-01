@@ -26,7 +26,11 @@ pub struct Segment {
 }
 
 pub struct FpgaDevice {
-    pub hold: board::FpgaProgramn,
+    /// Controls whether the FPGA is in reset. Set high to take the FPGA out of
+    /// reset. We must be careful that we don't allow the FPGA to be taken out
+    /// of reset without first checking the hash of the SPI flash. For that
+    /// reason, this field is private to make it easier to audit usage.
+    hold: board::FpgaProgramn,
     pub power_gate: board::FpgaPowerGate,
     pub(crate) spi_flash: Option<Flash<board::FlashSpiControl, board::FlashSpiCs>>,
 }
