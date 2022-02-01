@@ -14,8 +14,7 @@ from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
 
 
 # SPI clock
-# TODO(avg): Tune upwards when appropriate
-DEFAULT_SPI_CLK_FREQ = 750_000
+DEFAULT_SPI_CLK_FREQ = 4_000_000
 
 
 def bitfield(name, size, reset, desc):
