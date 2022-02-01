@@ -54,6 +54,10 @@ impl FpgaDevice {
 
     #[cfg(feature = "dev")]
     pub(crate) fn reset_fpga(&mut self) {
+        if self.hold.is_set_low().unwrap_or_default() {
+            log::error!("Cannot reset FPGA since it isn't running");
+            return;
+        }
         log::info!("Resetting FPGA");
         // Hold programn low for long enough to reset the FPGA. Experimentally 2
         // iterations is sufficient, so we do 4 just to be sure.

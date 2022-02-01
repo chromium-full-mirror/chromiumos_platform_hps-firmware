@@ -18,5 +18,5 @@ ROM="${PROJECT_ROOT}/build/hps_platform/fpga_rom.bin"
     --openocd-port 4444 \
     --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
     --soc-rom "${ROM}" \
-    --cmd 'reset_mcu; write_gateware; write_soc_rom; reset_fpga' \
+    --cmd 'reset_mcu; write_gateware; write_soc_rom; launch_app_without_i2c' \
     "$@"
