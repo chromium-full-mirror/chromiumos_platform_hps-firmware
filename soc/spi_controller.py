@@ -56,29 +56,44 @@ class SpiController(Module, AutoCSR):
             description='Receive data register')
         self.pads = pads
 
+        # Prescaler
+        # Counts from self.ps_top to -1(inclusive) which corresponds to
+        # 2x the SPI frequency. The counter is one bit wider as detection
+        # of overflow to -1 is less expensive in logic. Signal ps_tick
+        # is asserted for one clock cycle each time the prescaler overflows.
+        ps_max = int(self.sys_clk_freq // (spi_clk_freq * 2))
+        self.ps_top = ps_max - 2
+        assert self.ps_top >= 0
+
+        self.ps_cnt = Signal(self.ps_top.bit_length() + 1)
+        self.ps_pha = Signal()
+        self.ps_tick = Signal()
+
+        # Bit counter and shift register. The bit counter works similarly to
+        # the prescaler
+        self.bit_count = Signal(4, reset=-1)
+        self.shift_register = Signal(8)
+
+        # Busy signal. Set to high when a byte transfer is pending
+        self.busy = Signal()
+        self.comb += self.busy.eq(~self.bit_count[-1])
+
+        # Run stuff
         self._connect_cs()
+        self._connect_ready()
         self._watch_tx_rx()
-
-        # Add clocking logic
-        self.clock_counter_max = int(self.sys_clk_freq // spi_clk_freq) - 1
-        self.clock_counter_half = int(self.sys_clk_freq // (spi_clk_freq * 2))
-        self.clock_counter = Signal(max=self.clock_counter_max + 1)
+        self._run_prescaler()
         self._run_clock()
-
-        # Add state machine and supporting counters
-        self.bit_count = Signal(max=8)
-        self.shift_register = Signal(9)
-        self._handle_idle()
-        self._handle_running()
-
-        # Finally, when not enabled, hold everything in reset
+        self._handle_transmission()
         self._reset_on_disable()
 
-        self._connect_ready()
-
     def _connect_cs(self):
-        """Connect chip select - independent of all other state"""
-        self.comb += self.pads.cs.eq(self._cr.fields.cs)
+        """Connect chip select but synchronize it with CLK.
+
+        Does not allow changing CS during transmission.
+        """
+        self.sync += If(~self.busy & self.ps_tick,
+                        self.pads.cs.eq(self._cr.fields.cs))
 
     def _connect_ready(self):
         """Connect the peripheral ready line - independent of all other state"""
@@ -98,55 +113,74 @@ class SpiController(Module, AutoCSR):
         self.sync += If(self._rxd.we, self._flags.fields.rxe.eq(1))
         self.sync += If(self._txd.re, self._flags.fields.txe.eq(0))
 
+    def _run_prescaler(self):
+        """Prescaler logic"""
+
+        # Counter
+        self.sync += If(self.ps_cnt[-1] == 1,
+                        self.ps_cnt.eq(self.ps_top)
+                        ).Else(
+                            self.ps_cnt.eq(self.ps_cnt - 1))
+
+        # Phase
+        self.sync += If(self.ps_cnt[-1] == 1, self.ps_pha.eq(~self.ps_pha))
+
+        # Tick
+        self.sync += self.ps_tick.eq(~self.ps_tick &
+                                     self.ps_cnt[-1] & self.ps_pha)
+
     def _run_clock(self):
         """Outputs the SPI clock."""
-        # Clock counter counts down until it reaches zero
-        self.sync += If(self.clock_counter != 0,
-                        self.clock_counter.eq(self.clock_counter - 1))
-        # Run SPI clock - cycles 0 in first half of count and 1 in second half,
-        # returns to zero when done
-        second_half = (self.clock_counter <= self.clock_counter_half)
-        self.comb += self.pads.clk.eq(second_half & (self.clock_counter != 0))
+        self.sync += self.pads.clk.eq(self.busy & self.ps_pha)
 
-    def _handle_idle(self):
-        """Handle SPI enabled, but idle"""
-        # If data placed into TXD move it to shift register and start working
-        is_idle = (self.bit_count == 0) & (self.clock_counter == 0)
-        self.sync += If(is_idle & (self._flags.fields.txe == 0),
-                        self.shift_register[1:].eq(self._txd.storage),
-                        self._flags.fields.txe.eq(1),
-                        self.bit_count.eq(7),
-                        self.clock_counter.eq(self.clock_counter_max))
+    def _handle_transmission(self):
+        """Handles data transmission"""
 
-    def _handle_running(self):
-        """Handle SPI enabled and running state"""
-        # Always output MSB of shift register
+        # Data input with input filter. The signal from outside the fabric
+        # passes through two flip-flops to remove any possible metastablilty.
+        din_raw = self.pads.copi if self.loopback else self.pads.cipo
+        din_dly = Signal(2)
+        din = Signal()
+
+        self.sync += din_dly.eq(Cat(din_raw, din_dly[:-1]))
+        self.comb += din.eq(din_dly[-1])
+
+        # TX logic
         self.comb += self.pads.copi.eq(self.shift_register[-1])
+        self.sync += If(self.ps_tick,
+                        If(~self.busy & ~self._flags.fields.txe,
+                           self._flags.fields.txe.eq(1),
+                           self.bit_count.eq(7),
+                           self.shift_register.eq(self._txd.storage)
+                           ).Elif(self.busy,
+                                  self.bit_count.eq(self.bit_count - 1),
+                                  self.shift_register[1:].eq(
+                                      self.shift_register[:-1])
+                                  )
+                        )
 
-        # On half clock counter, handle receiving data
-        # On last bit, move data to RXD, else put into shift register
-        half_counter = self.clock_counter == self.clock_counter_half
-        data_in = self.pads.copi if self.loopback else self.pads.cipo
-        self.sync += If(half_counter & (self.bit_count == 0),
-                        self._rxd.status.eq(
-                            Cat(data_in, self.shift_register[1:])),
-                        self._flags.fields.rxe.eq(0))
-        self.sync += If(half_counter & (self.bit_count != 0),
-                        self.shift_register[0].eq(data_in))
+        # RX logic
+        self.sync += If(self.busy & self.ps_tick,
+                        self.shift_register[0].eq(din)
+                        )
 
-        # On zero clock counter but not last bit, shift shift register
-        self.sync += If((self.clock_counter == 0) & (self.bit_count != 0),
-                        self.bit_count.eq(self.bit_count - 1),
-                        self.clock_counter.eq(self.clock_counter_max),
-                        self.shift_register[1:].eq(self.shift_register[:-1]))
+        # Output data latch. Detects end of the busy state
+        prev = Signal()
+        self.sync += prev.eq(~self.busy)
+        self.sync += If(~prev & ~self.busy & self._flags.fields.rxe,
+                        self._rxd.status.eq(self.shift_register),
+                        self._flags.fields.rxe.eq(0)
+                        )
 
     def _reset_on_disable(self):
         """If disabled, then hold everything in reset"""
         self.sync += If(~self._cr.fields.en,
-                        self.bit_count.eq(0),
-                        self.clock_counter.eq(0),
+                        self.bit_count.eq(-1),
+                        self.ps_cnt.eq(self.ps_top),
                         self._flags.fields.txe.eq(1),
-                        self._flags.fields.rxe.eq(1))
+                        self._flags.fields.rxe.eq(1),
+                        self.pads.cs.eq(1),
+                        self.pads.clk.eq(0))
 
 
 class DummyPads:
@@ -187,21 +221,42 @@ class SpiControllerTest(TestCase):
     def test_cs(self):
         # Toggle CS and ensure its value is reflected at the output pin
         def run():
-            yield self.dut._cr.fields.cs.eq(1)
-            yield
+
+            # Enable
+            yield self.dut._cr.fields.en.eq(1)
             for _ in range(5):
-                self.assertTrue((yield self.pads.cs))
                 yield
+
+            # Set CS to 0, wait at most 100 cycles
             yield self.dut._cr.fields.cs.eq(0)
-            yield
-            for _ in range(25):
-                self.assertFalse((yield self.pads.cs))
+            for _ in range(100):
                 yield
+                if (yield self.pads.cs) == 0:
+                    break
+            else:
+                self.fail()
+
+            # Set CS to 1, wait at most 100 cycles
             yield self.dut._cr.fields.cs.eq(1)
-            yield
-            for _ in range(5):
-                self.assertTrue((yield self.pads.cs))
+            for _ in range(100):
                 yield
+                if (yield self.pads.cs) == 1:
+                    break
+            else:
+                self.fail()
+
+            # Set CS to 0, wait at most 100 cycles
+            yield self.dut._cr.fields.cs.eq(0)
+            for _ in range(100):
+                yield
+                if (yield self.pads.cs) == 0:
+                    break
+            else:
+                self.fail()
+
+            for _ in range(5):
+                yield
+
         run_simulation(self.dut, generators=[run()])
 
     def test_tx_rx(self):
