@@ -104,3 +104,4 @@ done
 
 # No success found
 echo "All seeds failed"
+exit 1
