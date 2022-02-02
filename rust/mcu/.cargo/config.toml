@@ -1,5 +1,6 @@
 [target.thumbv6m-none-eabi]
-runner = 'probe-run --probe 0483:374b --chip stm32g071'
+# This can be used for running on a Nucleo board.
+runner = 'probe-run --probe 0483:374b --chip STM32G071RBTx'
 linker = "ld.lld"
 rustflags = [
   "-C", "link-arg=-Tlink.x",
