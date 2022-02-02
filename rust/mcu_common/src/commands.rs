@@ -26,6 +26,11 @@ pub enum Command {
     /// and application into it.
     EraseSpiFlash = 1 << 4,
 
+    /// Removes write protection from stage0 and erases stage0. This command
+    /// will fail if the write protect was made permanent (level 2).
+    #[cfg(feature = "dev")]
+    UnlockStage0 = 1 << 13,
+
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,

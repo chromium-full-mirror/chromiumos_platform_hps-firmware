@@ -50,7 +50,7 @@ no-i2c-clock-stretching = []
 # Build application such that it can be flashed as standalone.
 standalone = []
 
-dev = [ "debug_logger/dev", "panic-rtt-target", "application/dev" ]
+dev = [ "debug_logger/dev", "panic-rtt-target", "application/dev", "mcu_common/dev" ]
 
 # This is intended for internal testing only. Must never be enabled in
 # production.
