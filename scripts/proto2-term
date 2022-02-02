@@ -39,7 +39,8 @@ def main():
         port = args.port
 
     term = LiteXTerm(serial_boot=False, kernel_image=None,
-                     kernel_address=None, json_images=None)
+                     kernel_address=None, json_images=None,
+                     safe=True)
     term.open(port, args.speed)
     # Set C channel pin 4 high, to enable the level shifter for the FPGA UART
     term.port.dtr = False
