@@ -17,10 +17,16 @@ use hps_interface::Stage;
 use indicatif::ProgressBar;
 use log::info;
 use mcu_common::commands::Command;
+use mcu_common::registers;
+use mcu_common::OptionBytesConfigRequest;
+use mcu_common::APPLICATION_START_ADDRESS;
+use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::FLASH_START;
 use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
 
 const ROW_SIZE: usize = 256;
+
+const ONE_TIME_INIT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init.bin"));
 
 pub(crate) fn run<I, E>(
     i2c: &mut I,
@@ -87,6 +93,43 @@ where
     }
     bar.finish();
     info!("Stage0 written and verified");
+
+    i2c.write(
+        "one-time-init",
+        APPLICATION_START_ADDRESS,
+        ONE_TIME_INIT_BYTES,
+    )?;
+
+    // Launch the one-time-init program. It will detect that it was launched
+    // from the system bootloader and will reset into stage0.
+    i2c.open_bootloader()?
+        .go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
+
+    // Tell stage0 to launch one-time-init again.
+    i2c.execute_non_i2c_stage1()?;
+    let mut hps = i2c.open_hps()?;
+    let stage = hps.stage()?;
+    if stage != Stage::OneTimeInit {
+        bail!(
+            "Expected to be running one-time-init stage, but found: {:?}",
+            stage
+        );
+    }
+    let options = OptionBytesConfigRequest::RESET_PIN | OptionBytesConfigRequest::RELOAD;
+    hps.write_register(registers::CONFIGURE_OPTION_BYTES, options.bits())
+        .context("Failed to configure option bytes")?;
+    // The configure option bytes request, assuming it succeeded, will have
+    // reset the device, so we need to reopen it.
+    let mut hps = i2c
+        .open_hps()
+        .context("HPS lost after updating option bytes")?;
+    hps.check_errors()?;
+    let stage = hps.stage()?;
+    if stage != Stage::Stage0 {
+        bail!("Expected to reset to Stage0, but found {:?}", stage);
+    }
+
+    info!("Option bytes configured and stage0 started");
 
     Ok(())
 }

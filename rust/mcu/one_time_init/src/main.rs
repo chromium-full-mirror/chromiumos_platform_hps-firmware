@@ -37,6 +37,20 @@ pub struct State {
     flash: stm32::FLASH,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum OptionBytesConfig {
+    /// By default, when a software reset is performed, the STM32 pulls the reset
+    /// pin low and waits for it to actually go low. If something else is pulling
+    /// it high strongly enough, then we'll never reset. We reconfigure the IRHEN
+    /// option bit to 0 to change this behavior. It will still pulse the reset
+    /// pin when a software reset occurs, but it won't wait for it to go low.
+    ConfigureResetPin,
+
+    /// Don't change any configuration, just reload the option bytes (will
+    /// reset).
+    Reload,
+}
+
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
@@ -52,6 +66,26 @@ const APP: () = {
     #[init]
     fn init(ctx: init::Context) -> init::LateResources {
         let p = ctx.device;
+
+        let mut flash = p.FLASH;
+
+        // The system bootloader leaves the flash in an unlocked state. We
+        // expect it to be locked. If we try to unlock it when it's already
+        // unlocked then a hard fault will result, so we lock it now. Locking
+        // when already locked doesn't cause a fault, so even if the system
+        // bootloader sometimes doesn't leave the flash unlocked, this should be
+        // safe.
+        flash.cr.modify(|_, w| w.lock().set_bit());
+
+        // For some reason the rest of this program doesn't work if we've been
+        // loaded from the system bootloader. We detect if that's the case by
+        // checking if the reset vector (address 4) is pointing to somewhere in
+        // system memory. If it is, then we reload the option bytes, which will
+        // cause us to reset into stage0 (which should have been written
+        // already).
+        if unsafe { core::ptr::read_volatile(0x4 as *const u32) } & 0x1fff0000 == 0x1fff0000 {
+            let _ = configure_option_bytes(&mut flash, OptionBytesConfigRequest::RELOAD);
+        }
 
         // Reset clock source to HSI. This is necessary because the bootloader
         // (either stage0 or the STM32 system bootloader) will have left the
@@ -79,7 +113,7 @@ const APP: () = {
         init::LateResources {
             state: State {
                 protocol_handler,
-                flash: p.FLASH,
+                flash,
                 common_interface: CommonHostInterface::default(),
             },
         }

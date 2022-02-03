@@ -8,7 +8,6 @@ mod erase_stage0_workflow;
 mod hps_i2c;
 #[cfg(feature = "image-transfer")]
 mod image_workflow;
-mod one_time_init_workflow;
 mod post_install_test_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
@@ -75,10 +74,6 @@ enum Command {
     /// becomes active again after a power-cycle.
     #[clap(name = "erase-stage0")]
     EraseStage0,
-
-    /// performs one-time initialization of the HPS module
-    #[clap(name = "one-time-init")]
-    OneTimeInit,
 
     /// runs the boot sequence in a loop
     #[clap(name = "boot-loop")]
@@ -228,7 +223,6 @@ where
 {
     match &config.command {
         Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, boot_loop_config),
-        Command::OneTimeInit => one_time_init_workflow::run(i2c, config),
         Command::EraseStage0 => erase_stage0_workflow::run(i2c, config),
         #[cfg(feature = "image-transfer")]
         Command::CaptureImages(capture_images_config) => {
@@ -246,7 +240,13 @@ where
                 },
                 &config,
             )?;
-            one_time_init_workflow::run(i2c, config.clone())?;
+            write_stage0_workflow::run(
+                i2c,
+                &config,
+                &WriteStage0Config {
+                    existing_stage0_ok: true,
+                },
+            )?;
             post_install_test_workflow::PostInstallTester::run(
                 i2c,
                 // The numbers of iterations used here are higher than the
@@ -262,13 +262,6 @@ where
                     camera_i2c_iterations: 500,
                 },
                 &config,
-            )?;
-            write_stage0_workflow::run(
-                i2c,
-                &config,
-                &WriteStage0Config {
-                    existing_stage0_ok: true,
-                },
             )?;
             Ok(())
         }
