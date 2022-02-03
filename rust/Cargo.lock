@@ -851,7 +851,6 @@ dependencies = [
  "ftd2xx-embedded-hal",
  "futures",
  "hps_interface",
- "linux-embedded-hal",
  "mcp2221",
  "mcu_common",
  "serialport",
