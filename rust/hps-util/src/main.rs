@@ -7,24 +7,12 @@ use anyhow::bail;
 use anyhow::Result;
 use clap::Clap;
 use clap::Subcommand;
-#[cfg(feature = "ftdi")]
-use ftd2xx_embedded_hal::libftd2xx::DeviceTypeError;
-#[cfg(feature = "ftdi")]
-use ftd2xx_embedded_hal::libftd2xx::FtStatus;
-#[cfg(feature = "ftdi")]
-use ftd2xx_embedded_hal::Ft2232hHal;
-#[cfg(feature = "ftdi")]
-use ftd2xx_embedded_hal::Initialized;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
-#[cfg(feature = "ftdi")]
-use hps_util::SendI2c;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use std::path::PathBuf;
 
-#[cfg(feature = "ftdi")]
-use hps_util::print_device_list;
 use hps_util::query_status;
 
 #[cfg(feature = "daemon")]
@@ -35,16 +23,6 @@ mod ipc;
 struct Flags {
     #[clap(subcommand)]
     sub_command: SubCommand,
-
-    #[cfg(feature = "ftdi")]
-    #[clap(long)]
-    /// open HPS via an FT2232H adapter
-    ftdi: bool,
-
-    #[cfg(feature = "ftdi")]
-    #[clap(long)]
-    /// ftdi device serial number
-    ftdi_serial: Option<String>,
 
     #[clap(long)]
     /// open HPS via an MCP2221 I2C adapter
@@ -61,8 +39,6 @@ struct Flags {
 
 #[derive(Subcommand, PartialEq, Debug)]
 enum SubCommand {
-    #[cfg(feature = "ftdi")]
-    ListDevices(ListDevices),
     FlashMcu(FlashMcu),
     FlashSpi(FlashSpi),
     Launch1(Launch1),
@@ -79,11 +55,6 @@ enum SubCommand {
     #[cfg(feature = "daemon")]
     Daemon(Daemon),
 }
-
-#[cfg(feature = "ftdi")]
-#[derive(Clap, PartialEq, Debug)]
-/// List FTDI devices
-struct ListDevices {}
 
 #[derive(Clap, PartialEq, Debug)]
 /// Flash MCU application
@@ -163,30 +134,6 @@ struct StressTest {
 /// Run HPS util in daemon mode.
 struct Daemon {}
 
-#[cfg(feature = "ftdi")]
-fn open_ftdi(flags: &Flags) -> Result<Ft2232hHal<Initialized>> {
-    let ft_hal;
-    if let Some(serial_number) = &flags.ftdi_serial {
-        ft_hal = Ft2232hHal::with_serial_number(serial_number);
-    } else {
-        ft_hal = Ft2232hHal::new();
-    }
-    match ft_hal {
-        Ok(x) => Ok(x.init_default()?),
-        Err(DeviceTypeError::FtStatus(FtStatus::DEVICE_NOT_OPENED)) => {
-            // libftdi2 has a known issue that the ftdi_sio module interferes
-            // with its operation, so we provide a more helpful message for that
-            // case.
-            bail!(
-                "Failed to open FT device. Please run `sudo rmmod ftdi_sio` then try again.\n\
-                   To make this permanent, run:\n\
-                   echo \"blacklist ftdi_sio\" | sudo tee /etc/modprobe.d/local-dontload.conf"
-            );
-        }
-        Err(x) => Err(x.into()),
-    }
-}
-
 fn access_registers(hps: &mut dyn Hps, flags: &AccessRegisters) -> Result<()> {
     for reg in &flags.values {
         if let Some((register, length)) = parse_long_reg_spec(reg) {
@@ -257,29 +204,11 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
 
         return Ok(Box::new(HpsAdapter::new(dev)?));
     }
-    #[cfg(feature = "ftdi")]
-    if flags.ftdi {
-        let ftdi = Box::leak(Box::new(open_ftdi(flags)?));
-        let i2c = ftdi.i2c()?;
-        // ftd2xx_embedded_hal::FtInner contains a `*mut c_void`, which isn't Send
-        // by default, so we wrap it in a type that implements Send.
-        //
-        // TODO: Determine if it's really safe to send between threads and add the
-        // appropriate Send implementation in the upstream library.
-        let hps = HpsAdapter::new(unsafe { SendI2c::new(i2c) })?;
-        return Ok(Box::new(hps));
-    }
     bail!("No method of connecting to HPS specified, try --mcp");
 }
 
 fn main() -> Result<()> {
     let flags: Flags = Flags::parse();
-    #[cfg(feature = "ftdi")]
-    if matches!(flags.sub_command, SubCommand::ListDevices(_)) {
-        let v = print_device_list()?;
-        println!("{:#?}", v);
-        return Ok(());
-    }
     let mut hps = open_device(&flags)?;
     println!("HPS detected");
     match flags.sub_command {
@@ -312,8 +241,6 @@ fn main() -> Result<()> {
         SubCommand::WriteMemoryBank(config) => {
             hps.write_memory(config.bank, config.address, &config.values)
         }
-        #[cfg(feature = "ftdi")]
-        SubCommand::ListDevices(_) => unreachable!(),
         SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
         SubCommand::Status(_) => {
             println!("Status register: {:?}", hps.status()?);

@@ -590,17 +590,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ftd2xx-embedded-hal"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a87ad8a07da118cc104f410491123f37bc88ea41efbb0226ab064a953e78393b"
-dependencies = [
- "embedded-hal",
- "libftd2xx",
- "nb 1.0.0",
-]
-
-[[package]]
 name = "futures"
 version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -848,7 +837,6 @@ dependencies = [
  "dbus-crossroads",
  "dbus-tokio",
  "embedded-hal",
- "ftd2xx-embedded-hal",
  "futures",
  "hps_interface",
  "mcp2221",
@@ -1003,26 +991,6 @@ dependencies = [
  "crc32fast",
  "rle-decode-fast",
  "take_mut",
-]
-
-[[package]]
-name = "libftd2xx"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8df776525f18c3212572cee0fa38b545650b84ffdc5f80706df5e561cd040e0a"
-dependencies = [
- "libftd2xx-ffi",
- "log",
- "paste",
-]
-
-[[package]]
-name = "libftd2xx-ffi"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01d8ee24e4fd513104526ea5fc5af512cee36cbe5f1e92d0ad80ae34ac0d0e07"
-dependencies = [
- "cfg-if 1.0.0",
 ]
 
 [[package]]
@@ -1363,12 +1331,6 @@ name = "os_str_bytes"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afb2e1c3ee07430c2cf76151675e583e0f19985fa6efae47d6848a3e2c824f85"
-
-[[package]]
-name = "paste"
-version = "1.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0744126afe1a6dd7f394cb50a716dbe086cb06e255e53d8d0185d82828358fb5"
 
 [[package]]
 name = "pin-project-lite"
