@@ -64,12 +64,11 @@ class HpsSoC(LiteXSoC):
 
     cpu_type = 'vexriscv'
 
-    def __init__(self, *, platform, cpu_cfu=None, variant=None,
-                 litespi_flash=True):
+    def __init__(self, *, platform, cpu_cfu=None, variant=None):
         LiteXSoC.__init__(self,
                           platform=platform,
                           sys_clk_freq=platform.sys_clk_freq,
-                          csr_data_width=32 if litespi_flash else 8)
+                          csr_data_width=32)
 
         # Clock, Controller, CPU
         self.submodules.crg = platform.create_crg()
@@ -235,10 +234,6 @@ def main():
         help='Runs $(nproc) copies of nextpnr in parallel. Used to search ' +
         'for a seed.')
     parser.add_argument(
-        '--no-litespi-flash', dest='litespi_flash',
-        action='store_false', default=True,
-        help='Use Litex minimal SPI flash instead of Litespi.')
-    parser.add_argument(
         '--cpu-cfu', default='soc/cfu.v',
         help='Specify file containing CFU Verilog module.')
 
@@ -252,7 +247,6 @@ def main():
 
     soc = HpsSoC(
         platform=Platform(parallel_nextpnr=args.parallel_nextpnr),
-        litespi_flash=args.litespi_flash,
         variant=variant,
         cpu_cfu=args.cpu_cfu)
 
