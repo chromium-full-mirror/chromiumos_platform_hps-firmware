@@ -36,25 +36,23 @@ fn configure_reset_pin(p: &mut hal::stm32::Peripherals) -> Result<(), Error> {
     use hal::flash::FlashExt;
 
     let flash = &mut p.FLASH;
-    if flash.optr.read().irhen().bit_is_set() {
-        // Unlocking flash results in us losing direct access to the flash
-        // registers. We steal the peripherals so that we can get a second
-        // handle on the flash, allowing us to unlock it while still retaining
-        // access.
-        if let Ok(unlocked_flash) = unsafe { hal::stm32::Peripherals::steal() }.FLASH.unlock() {
-            flash.optkeyr.write(|w| unsafe { w.bits(0x08192A3B) });
-            flash.optkeyr.write(|w| unsafe { w.bits(0x4C5D6E7F) });
-            if flash.cr.read().optlock().bit_is_set() {
-                unlocked_flash.lock();
-                return Err(Error);
-            }
-            flash.optr.modify(|_, w| w.irhen().clear_bit());
-            while flash.sr.read().bsy().bit_is_set() {}
-            flash.cr.modify(|_, w| w.optstrt().set_bit());
-            while flash.sr.read().bsy().bit_is_set() {}
+    // Unlocking flash results in us losing direct access to the flash
+    // registers. We steal the peripherals so that we can get a second
+    // handle on the flash, allowing us to unlock it while still retaining
+    // access.
+    if let Ok(unlocked_flash) = unsafe { hal::stm32::Peripherals::steal() }.FLASH.unlock() {
+        flash.optkeyr.write(|w| unsafe { w.bits(0x08192A3B) });
+        flash.optkeyr.write(|w| unsafe { w.bits(0x4C5D6E7F) });
+        if flash.cr.read().optlock().bit_is_set() {
             unlocked_flash.lock();
-            flash.cr.modify(|_, w| w.obl_launch().set_bit());
+            return Err(Error);
         }
+        flash.optr.modify(|_, w| w.irhen().clear_bit());
+        while flash.sr.read().bsy().bit_is_set() {}
+        flash.cr.modify(|_, w| w.optstrt().set_bit());
+        while flash.sr.read().bsy().bit_is_set() {}
+        unlocked_flash.lock();
+        flash.cr.modify(|_, w| w.obl_launch().set_bit());
     }
     Ok(())
 }
