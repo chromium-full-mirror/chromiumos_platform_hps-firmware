@@ -15,9 +15,6 @@ use std::path::PathBuf;
 
 use hps_util::query_status;
 
-#[cfg(feature = "daemon")]
-mod ipc;
-
 #[derive(Clap)]
 /// Communicates with the HPS.
 struct Flags {
@@ -52,8 +49,6 @@ enum SubCommand {
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
     Status(Status),
-    #[cfg(feature = "daemon")]
-    Daemon(Daemon),
 }
 
 #[derive(Clap, PartialEq, Debug)]
@@ -128,11 +123,6 @@ struct StressTest {
     /// number of iterations
     iterations: u32,
 }
-
-#[cfg(feature = "daemon")]
-#[derive(Clap, PartialEq, Debug)]
-/// Run HPS util in daemon mode.
-struct Daemon {}
 
 fn access_registers(hps: &mut dyn Hps, flags: &AccessRegisters) -> Result<()> {
     for reg in &flags.values {
@@ -253,11 +243,6 @@ fn main() -> Result<()> {
                 "FPGA loop count: {}",
                 hps.read_register(registers::FPGA_LOOP_COUNT)?
             );
-            Ok(())
-        }
-        #[cfg(feature = "daemon")]
-        SubCommand::Daemon(_) => {
-            ipc::setup_ipc(hps)?;
             Ok(())
         }
     }
