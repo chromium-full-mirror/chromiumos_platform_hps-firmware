@@ -113,9 +113,9 @@ where
 
             // Write flash
             info!("Writing {} ({}KiB)", name, program_bytes.len() / 1024);
-            let bar = ProgressBar::new(100);
+            let bar = ProgressBar::new(program_bytes.len() as u64);
             stm32.write_bulk(address, program_bytes, |progress| {
-                bar.set_position(progress.percent_complete as u64);
+                bar.set_position(progress.bytes_complete as u64);
             })?;
             bar.finish();
 
@@ -292,9 +292,9 @@ where
         program_bytes: &[u8],
     ) -> Result<()> {
         info!("Verifying {} ({}KiB)", name, program_bytes.len() / 1024);
-        let bar = ProgressBar::new(100);
+        let bar = ProgressBar::new(program_bytes.len() as u64);
         stm32.verify(address, program_bytes, |progress| {
-            bar.set_position(progress.percent_complete as u64);
+            bar.set_position(progress.bytes_complete as u64);
         })?;
         bar.finish();
         Ok(())
