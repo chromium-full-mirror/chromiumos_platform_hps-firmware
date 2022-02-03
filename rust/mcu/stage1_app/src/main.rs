@@ -86,7 +86,7 @@ const APP: () = {
 
     #[task(binds = I2C1, resources = [host_interface, state],
         spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data,
-            test_camera_i2c, unlock_stage0], priority = 3)]
+            test_camera_i2c, unlock_stage0, erase_stage0], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
@@ -106,6 +106,10 @@ const APP: () = {
             #[cfg(feature = "dev")]
             Some(application::Event::Command(Command::UnlockStage0)) => {
                 let _ = ctx.spawn.unlock_stage0();
+            }
+            #[cfg(feature = "dev")]
+            Some(application::Event::Command(Command::EraseStage0Start)) => {
+                let _ = ctx.spawn.erase_stage0();
             }
             Some(application::Event::Command(Command::LaunchApp)) => {
                 // We can safely ignore failed attempts to swap this task
@@ -215,6 +219,22 @@ const APP: () = {
         {
             let mut ctx = _ctx;
             if ctx.resources.debug_resources.remove_flash_lock().is_err() {
+                ctx.resources.host_interface.lock(|host_interface| {
+                    host_interface.report_error(mcu_common::Error::MCU_FLASH_WRITE_ERROR)
+                });
+            }
+            ctx.resources
+                .host_interface
+                .lock(|host_interface| host_interface.command_completed());
+        }
+    }
+
+    #[task(resources = [debug_resources, host_interface])]
+    fn erase_stage0(_ctx: erase_stage0::Context) {
+        #[cfg(feature = "dev")]
+        {
+            let mut ctx = _ctx;
+            if ctx.resources.debug_resources.erase_stage0().is_err() {
                 ctx.resources.host_interface.lock(|host_interface| {
                     host_interface.report_error(mcu_common::Error::MCU_FLASH_WRITE_ERROR)
                 });

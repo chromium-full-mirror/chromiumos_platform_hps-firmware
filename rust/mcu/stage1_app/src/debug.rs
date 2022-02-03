@@ -145,6 +145,19 @@ impl DebugResources {
         unlocked_flash.lock();
         Ok(())
     }
+
+    pub(crate) fn erase_stage0(&mut self) -> Result<(), hal::flash::Error> {
+        // The HAL has a really inconvenient API for locking the flash, which
+        // transfers ownership of the flash, so we conjur ourselves a second
+        // instance for it to take ownership of.
+        let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
+            .FLASH
+            .unlock()
+            .map_err(|_| hal::flash::Error::Failure)?;
+        use hal::flash::WriteErase;
+        unlocked_flash.erase_page(hal::flash::FlashPage(0))?;
+        Ok(())
+    }
 }
 
 impl DebugCommandHandler {
