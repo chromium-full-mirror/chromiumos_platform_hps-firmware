@@ -4,14 +4,17 @@
 
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
+use crate::APPLICATION_BYTES;
 use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
-use hps_interface::Stage;
+use log::info;
 use mcu_common::commands::Command;
+use mcu_common::Status;
 
 pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<()>
 where
@@ -19,17 +22,25 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config);
+
+    // Erasing is done by stage1_app. Write an up-to-date dev version of
+    // stage1_app so that we know it supports the required commands.
+    i2c.write_stage1(APPLICATION_BYTES)?;
+    i2c.execute_stage1().context("Failed to execute stage1")?;
+
     let mut hps = i2c.open_hps()?;
-    let stage = hps.stage()?;
-    // If we're not in stage0, then reset
-    if stage != Stage::Stage0 {
-        hps.perform_command(Command::Reset)?;
+    if hps.status()?.contains(Status::STAGE0_PERM_LOCKED) {
+        bail!("Stage0 is permanently write-protected and cannot be erased");
     }
-    hps = i2c.open_hps()?;
-    if hps.stage()? != Stage::Stage0 {
-        bail!("Failed to reset into stage0")
+    // If stage0 is non-permanently locked, then unlocking it will cause the RDP
+    // level to be reset to 0, which will automatically trigger a full erase of
+    // the MCU flash. Otherwise, we erase.
+    if hps.status()?.contains(Status::STAGE0_LOCKED) {
+        info!("Stage0 is non-permanently locked. Unlocking.");
+        hps.perform_command(Command::UnlockStage0)?;
+    } else {
+        hps.perform_command(Command::EraseStage0Start)?;
     }
-    hps.perform_command(Command::EraseStage0Start)?;
     println!("Stage0 erased. Please power-cycle the HPS to return to the system bootloader");
     Ok(())
 }

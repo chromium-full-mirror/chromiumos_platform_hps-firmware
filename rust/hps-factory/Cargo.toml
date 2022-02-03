@@ -27,7 +27,7 @@ stm32_bootloader_client = { path = "../stm32_bootloader_client", features = ["st
 [build-dependencies]
 anyhow = "1.0.38"
 clap_derive = "=3.0.0-beta.2"
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../mcu_common", features = [ "dev" ] }
 sign-rom = { path = "../sign-rom" }
 
 [features]
