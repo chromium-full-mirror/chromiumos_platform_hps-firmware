@@ -422,9 +422,13 @@ dependencies = [
  "cortex-m 0.7.3",
  "cortex-m-rt",
  "cortex-m-rtic",
+ "i2c_peripheral",
+ "i2c_protocol",
  "mcu_common",
  "panic-halt",
  "stm32g0",
+ "stm32g0_i2c_peripheral",
+ "stm32g0_utils",
  "stm32g0xx-hal",
 ]
 

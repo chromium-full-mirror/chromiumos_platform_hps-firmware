@@ -81,7 +81,7 @@ and are not documented here.
 |:----|:-------------------|:-----------------------------------------------------|
 | 15  |                    |                                                      |
 | 14  |                    |                                                      |
-| 13  |                    |                                                      |
+| 13  | ONE_TIME_INIT      | Whether the one_time_init binary is running          |
 | 12  | STAGE0_PERM_LOCKED | Whether stage0 has been made permanently read-only   |
 | 11  | STAGE0_LOCKED      | Whether stage0 has been made read-only               |
 | 10  | CMDINPROGRESS      | A command is in-progress.                            |

@@ -159,6 +159,18 @@ bitflags! {
         const COMMAND_IN_PROGRESS = 1 << 10;
         const STAGE0_LOCKED = 1 << 11;
         const STAGE0_PERM_LOCKED = 1 << 12;
+        const ONE_TIME_INIT = 1 << 13;
+    }
+}
+
+bitflags! {
+    pub struct OptionBytesConfigRequest: u16 {
+        /// Whether to reload the option bytes when done. Will trigger a reset.
+        const RELOAD = 1 << 0;
+
+        /// Whether to configure the the MCU so that reset won't wait for the
+        /// reset pin to be pulled low before actually resetting.
+        const RESET_PIN = 1 << 1;
     }
 }
 

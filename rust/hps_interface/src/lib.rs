@@ -25,6 +25,7 @@ pub enum Stage {
     Stage0,
     Stage1,
     Application,
+    OneTimeInit,
 }
 
 pub trait Hps {
@@ -62,6 +63,8 @@ pub trait Hps {
             Ok(Stage::Application)
         } else if status.contains(Status::ANONVER) || status.contains(Status::AVERIFY) {
             Ok(Stage::Stage0)
+        } else if status.contains(Status::ONE_TIME_INIT) {
+            Ok(Stage::OneTimeInit)
         } else {
             Ok(Stage::Unknown)
         }
