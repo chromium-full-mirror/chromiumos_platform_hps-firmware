@@ -1,9 +1,15 @@
+# Tracked in b/198859874
+
 # LiteX still uses the unfortunate terms "master" and "slave" to describe
 # bus controllers and periherals.
 #
 # See repohooks/README.md for more details.
 #
-# Tracked in b/198859874
 
 master
 slave
+
+# LiteX SPI interface uses 'dummy' to indicate 'dummy bits' an industry term
+# describing bits inserted into protocol purely for timing purposes.
+
+dummy
