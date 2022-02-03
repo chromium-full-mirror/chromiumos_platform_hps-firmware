@@ -5,9 +5,9 @@
 #![no_main]
 #![no_std]
 
-use cortex_m_rt::entry;
 use mcu_common::ImageHeader;
 use panic_halt as _;
+use rtic::app;
 use stm32g0 as _;
 
 struct Error;
@@ -17,13 +17,15 @@ struct Error;
 #[used]
 pub static __IMAGE_HDR: ImageHeader = ImageHeader::empty();
 
-#[entry]
-fn main() -> ! {
-    let mut p = hal::stm32::Peripherals::take().unwrap();
-    // We don't currently have any way to report errors, so we ignore them.
-    let _ = configure_reset_pin(&mut p);
-    cortex_m::peripheral::SCB::sys_reset()
-}
+#[app(device = hal::stm32, peripherals = true)]
+const APP: () = {
+    #[init]
+    fn init(mut ctx: init::Context) {
+        // We don't currently have any way to report errors, so we ignore them.
+        let _ = configure_reset_pin(&mut ctx.device);
+        cortex_m::peripheral::SCB::sys_reset()
+    }
+};
 
 /// By default, when a software reset is performed, the STM32 pulls the reset
 /// pin low and waits for it to actually go low. If something else is pulling it

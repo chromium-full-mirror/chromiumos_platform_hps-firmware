@@ -421,6 +421,7 @@ version = "0.1.0"
 dependencies = [
  "cortex-m 0.7.3",
  "cortex-m-rt",
+ "cortex-m-rtic",
  "mcu_common",
  "panic-halt",
  "stm32g0",
