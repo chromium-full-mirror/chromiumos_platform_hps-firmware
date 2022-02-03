@@ -22,17 +22,14 @@ const APP: () = {
     #[init]
     fn init(mut ctx: init::Context) {
         // We don't currently have any way to report errors, so we ignore them.
-        let _ = configure_reset_pin(&mut ctx.device);
+        let _ = configure_option_bytes(&mut ctx.device);
         cortex_m::peripheral::SCB::sys_reset()
     }
 };
 
-/// By default, when a software reset is performed, the STM32 pulls the reset
-/// pin low and waits for it to actually go low. If something else is pulling it
-/// high strongly enough, then we'll never reset. We reconfigure the IRHEN
-/// option bit to 0 to change this behavior. It will still pulse the reset pin
-/// when a software reset occurs, but it won't wait for it to go low.
-fn configure_reset_pin(p: &mut hal::stm32::Peripherals) -> Result<(), Error> {
+/// Configures the option bytes. This function will either reset or return an
+/// error.
+fn configure_option_bytes(p: &mut hal::stm32::Peripherals) -> Result<(), Error> {
     use hal::flash::FlashExt;
 
     let flash = &mut p.FLASH;
@@ -50,11 +47,26 @@ fn configure_reset_pin(p: &mut hal::stm32::Peripherals) -> Result<(), Error> {
         unlocked_flash.lock();
         return Err(Error);
     }
+
+    // By default, when a software reset is performed, the STM32 pulls the reset
+    // pin low and waits for it to actually go low. If something else is pulling
+    // it high strongly enough, then we'll never reset. We reconfigure the IRHEN
+    // option bit to 0 to change this behavior. It will still pulse the reset
+    // pin when a software reset occurs, but it won't wait for it to go low.
     flash.optr.modify(|_, w| w.irhen().clear_bit());
+
     while flash.sr.read().bsy().bit_is_set() {}
     flash.cr.modify(|_, w| w.optstrt().set_bit());
     while flash.sr.read().bsy().bit_is_set() {}
-    unlocked_flash.lock();
+
+    // Apply new option bytes. This will reset the MCU.
     flash.cr.modify(|_, w| w.obl_launch().set_bit());
-    Ok(())
+
+    // Wait for load to complete.
+    while flash.cr.read().obl_launch().bit_is_set() {}
+
+    // OBL_LAUNCH should have reset the MCU, so we shouldn't reach here. If we
+    // do, something has gone wrong. Relock the flash and return an error.
+    unlocked_flash.lock();
+    Err(Error)
 }
