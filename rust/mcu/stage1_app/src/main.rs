@@ -30,6 +30,7 @@ use log::error;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::MemBlock;
+use mcu_common::Status;
 #[cfg(not(feature = "dev"))]
 use panic_halt as _;
 #[cfg(feature = "dev")]
@@ -374,6 +375,12 @@ fn init_peripherals(
     p: hal::stm32::Peripherals,
     cp: rtic::export::Peripherals,
 ) -> init::LateResources {
+    let mut init_status = Status::empty();
+    match p.FLASH.optr.read().rdp().bits() {
+        0xaa => {}
+        0xcc => init_status |= Status::STAGE0_PERM_LOCKED,
+        _ => init_status |= Status::STAGE0_LOCKED,
+    }
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
     #[allow(unused_variables)]
@@ -424,6 +431,7 @@ fn init_peripherals(
     let mut exti = p.EXTI;
 
     let mut host_interface = HostInterface::new(board.host_bus);
+    host_interface.init_status = init_status;
 
     // Trigger an interrupt when the SPI CS line changes.
     let fpga_spi_cs = board

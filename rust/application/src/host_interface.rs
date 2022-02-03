@@ -28,6 +28,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     application_running: bool,
     active_command_count: u8,
     spi_flash_erasing: bool,
+    pub init_status: Status,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -49,6 +50,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             application_running: false,
             active_command_count: 0,
             spi_flash_erasing: false,
+            init_status: Status::empty(),
         }
     }
 
@@ -195,7 +197,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         if self.active_command_count > 0 {
             status |= Status::COMMAND_IN_PROGRESS;
         }
-        status
+        status | self.init_status
     }
 
     fn stage_status(&self) -> Status {

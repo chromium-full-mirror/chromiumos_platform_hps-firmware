@@ -157,6 +157,8 @@ bitflags! {
         const STAGE1 = 1 << 8;
         const APPLREADY = 1 << 9;
         const COMMAND_IN_PROGRESS = 1 << 10;
+        const STAGE0_LOCKED = 1 << 11;
+        const STAGE0_PERM_LOCKED = 1 << 12;
     }
 }
 
