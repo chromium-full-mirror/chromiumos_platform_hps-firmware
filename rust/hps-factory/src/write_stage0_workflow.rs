@@ -118,7 +118,10 @@ where
             stage
         );
     }
-    let mut options = OptionBytesConfigRequest::RESET_PIN | OptionBytesConfigRequest::RELOAD;
+    info!("Configuring option bytes");
+    let options = OptionBytesConfigRequest::RESET_PIN
+        | OptionBytesConfigRequest::RELOAD
+        | OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
     if write_stage0_config.disable_boot0 {
         options |= OptionBytesConfigRequest::DISABLE_BOOT0_PIN;
     }
@@ -135,7 +138,7 @@ where
         bail!("Expected to reset to Stage0, but found {:?}", stage);
     }
 
-    info!("Option bytes configured and stage0 started");
+    info!("Stage0 written and non-permanently locked");
 
     Ok(())
 }

@@ -174,6 +174,9 @@ bitflags! {
 
         /// Whether to disable boot0 pin, forcing boot from flash.
         const DISABLE_BOOT0_PIN = 1 << 2;
+
+        /// Whether to non-permanently write protect stage0 (RDP level 1).
+        const NON_PERMANENT_WRITE_PROTECT = 1 << 3;
     }
 }
 

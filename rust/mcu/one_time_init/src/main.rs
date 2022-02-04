@@ -180,6 +180,12 @@ fn configure_option_bytes(
         return Err(Error::MCU_FLASH_WRITE_ERROR);
     }
 
+    if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
+        // Write protect flash from page 0x00 to 0x1f inclusive. i.e. the first
+        // 64KB of flash.
+        unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x001f_0000) };
+    }
+
     flash.optr.modify(|_, w| {
         if request.contains(OptionBytesConfigRequest::RESET_PIN) {
             // By default, when a software reset is performed, the STM32 pulls the
@@ -196,6 +202,13 @@ fn configure_option_bytes(
             // non-empty, this means that we will always boot from flash.
             w.n_boot_sel().set_bit();
             w.n_boot0().set_bit();
+        }
+
+        if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
+            // Set RDP level 1.
+            // TODO: Assume we decide to do so, set to level 2 (0xcc), which
+            // can never be reverted.
+            unsafe { w.rdp().bits(0xbb) };
         }
 
         w
