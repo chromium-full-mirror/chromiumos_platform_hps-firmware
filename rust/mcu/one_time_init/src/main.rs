@@ -190,6 +190,14 @@ fn configure_option_bytes(
             // won't wait for it to go low.
             w.irhen().clear_bit();
         }
+
+        if request.contains(OptionBytesConfigRequest::DISABLE_BOOT0_PIN) {
+            // Disable the boot0 pin. Since the first word of flash is
+            // non-empty, this means that we will always boot from flash.
+            w.n_boot_sel().set_bit();
+            w.n_boot0().set_bit();
+        }
+
         w
     });
 

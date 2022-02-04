@@ -188,6 +188,10 @@ struct WriteStage0Config {
     /// whether to erase existing stage0 if present
     #[clap(long)]
     update: bool,
+
+    /// whether to disable the boot0 pin
+    #[clap(long)]
+    disable_boot0: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -258,6 +262,7 @@ where
                 &WriteStage0Config {
                     existing_stage0_ok: true,
                     update: false,
+                    disable_boot0: false,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(

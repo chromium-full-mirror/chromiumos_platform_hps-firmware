@@ -171,6 +171,9 @@ bitflags! {
         /// Whether to configure the the MCU so that reset won't wait for the
         /// reset pin to be pulled low before actually resetting.
         const RESET_PIN = 1 << 1;
+
+        /// Whether to disable boot0 pin, forcing boot from flash.
+        const DISABLE_BOOT0_PIN = 1 << 2;
     }
 }
 
