@@ -204,10 +204,11 @@ fn configure_option_bytes(
             w.n_boot0().set_bit();
         }
 
-        if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
+        if request.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT) {
+            // Set RDP level 2. Once done, this can never be undone.
+            unsafe { w.rdp().bits(0xcc) };
+        } else if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
             // Set RDP level 1.
-            // TODO: Assume we decide to do so, set to level 2 (0xcc), which
-            // can never be reverted.
             unsafe { w.rdp().bits(0xbb) };
         }
 

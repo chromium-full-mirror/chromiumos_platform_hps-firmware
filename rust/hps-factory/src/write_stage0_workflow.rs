@@ -119,12 +119,16 @@ where
         );
     }
     info!("Configuring option bytes");
-    let options = OptionBytesConfigRequest::RESET_PIN
-        | OptionBytesConfigRequest::RELOAD
-        | OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
+    let mut options = OptionBytesConfigRequest::RESET_PIN | OptionBytesConfigRequest::RELOAD;
     if write_stage0_config.disable_boot0 {
         options |= OptionBytesConfigRequest::DISABLE_BOOT0_PIN;
     }
+    if write_stage0_config.permanent_lock {
+        options |= OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT;
+    } else {
+        options |= OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
+    }
+
     hps.write_register(registers::CONFIGURE_OPTION_BYTES, options.bits())
         .context("Failed to configure option bytes")?;
     // The configure option bytes request, assuming it succeeded, will have

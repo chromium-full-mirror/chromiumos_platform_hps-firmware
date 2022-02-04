@@ -60,7 +60,7 @@ struct Config {
 enum Command {
     /// runs the factory workflow
     #[clap(name = "factory")]
-    Factory,
+    Factory(FactoryConfig),
 
     /// runs the test workflow
     #[clap(name = "test")]
@@ -192,6 +192,19 @@ struct WriteStage0Config {
     /// whether to disable the boot0 pin
     #[clap(long)]
     disable_boot0: bool,
+
+    /// whether to permanently lock stage0 read-only. Once done, this cannot be
+    /// undone.
+    #[clap(long)]
+    permanent_lock: bool,
+}
+
+#[derive(Debug, Clap, Clone)]
+struct FactoryConfig {
+    /// whether to permanently lock stage0 read-only. Once done, this cannot be
+    /// undone.
+    #[clap(long)]
+    permanent_lock: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -248,7 +261,7 @@ where
             write_stage0_workflow::run(i2c, &config, write_stage0_config)
         }
         Command::Test(test_config) => test_workflow::run(i2c, test_config, &config),
-        Command::Factory => {
+        Command::Factory(factory_config) => {
             test_workflow::run(
                 i2c,
                 &TestConfig {
@@ -263,6 +276,7 @@ where
                     existing_stage0_ok: true,
                     update: false,
                     disable_boot0: false,
+                    permanent_lock: factory_config.permanent_lock,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(

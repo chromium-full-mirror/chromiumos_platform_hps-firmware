@@ -177,6 +177,9 @@ bitflags! {
 
         /// Whether to non-permanently write protect stage0 (RDP level 1).
         const NON_PERMANENT_WRITE_PROTECT = 1 << 3;
+
+        /// Whether to permanently write protect stage0 (RDP level 2).
+        const PERMANENT_WRITE_PROTECT = 1 << 4;
     }
 }
 
