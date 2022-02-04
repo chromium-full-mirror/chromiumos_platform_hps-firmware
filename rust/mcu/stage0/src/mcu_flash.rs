@@ -59,12 +59,6 @@ impl FlashWriter {
         self.flash.lock();
         Ok(())
     }
-
-    pub(crate) fn erase_page0(&mut self) -> Result<(), flash::Error> {
-        let unlocked_flash = self.flash.unlocked()?;
-        unlocked_flash.erase_page(FlashPage(0))?;
-        Ok(())
-    }
 }
 
 impl FlashState {

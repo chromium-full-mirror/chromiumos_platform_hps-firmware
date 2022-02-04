@@ -121,22 +121,6 @@ const APP: () = {
                 // queue and get processed in order.
                 cortex_m::peripheral::SCB::sys_reset()
             }
-            HostEvent::Command(Command::EraseStage0Start) => {
-                // Erasing stage0 is permitted only when firmware write protect
-                // is deasserted. This gives us some level of protection even if
-                // stage0 is not permanently write-protected.
-                let write_protect_state =
-                    host_interface.lock(|h| h.stage0_ctx.get_write_protect_state());
-                if write_protect_state == WriteProtectState::Asserted {
-                    host_interface.lock(|h| h.i2c_report_err(Error::HOST_I2C_BAD_REQUEST));
-                } else {
-                    if ctx.resources.flash_writer.erase_page0().is_ok() {
-                        cortex_m::peripheral::SCB::sys_reset()
-                    } else {
-                        host_interface.lock(|h| h.i2c_report_err(Error::MCU_FLASH_WRITE_ERROR));
-                    }
-                }
-            }
             HostEvent::Command(_) => {
                 // All other commands are only implemented in stage1.
                 // Here in stage0, they are an error.
