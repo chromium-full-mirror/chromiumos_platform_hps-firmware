@@ -184,6 +184,10 @@ struct WriteStage0Config {
     /// don't report stage0 already present as an error
     #[clap(long)]
     existing_stage0_ok: bool,
+
+    /// whether to erase existing stage0 if present
+    #[clap(long)]
+    update: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -227,7 +231,11 @@ where
 {
     match &config.command {
         Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, boot_loop_config),
-        Command::EraseStage0 => erase_stage0_workflow::run(i2c, config),
+        Command::EraseStage0 => {
+            erase_stage0_workflow::run(i2c, config)?;
+            println!("Stage0 erased");
+            Ok(())
+        }
         #[cfg(feature = "image-transfer")]
         Command::CaptureImages(capture_images_config) => {
             image_workflow::capture_images(i2c, capture_images_config, &config)
@@ -249,6 +257,7 @@ where
                 &config,
                 &WriteStage0Config {
                     existing_stage0_ok: true,
+                    update: false,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(

@@ -32,6 +32,5 @@ where
         bail!("Stage0 is permanently write-protected and cannot be erased");
     }
     hps.perform_command(Command::EraseStage0Start)?;
-    println!("Stage0 erased");
     Ok(())
 }

@@ -46,6 +46,9 @@ where
                     if write_stage0_config.existing_stage0_ok {
                         info!("Stage0 already present on device");
                         return Ok(());
+                    } else if write_stage0_config.update {
+                        info!("Stage0 already present on device, erasing.");
+                        crate::erase_stage0_workflow::run(i2c.i2c, config.clone())?;
                     } else {
                         bail!("Stage0 already present and needs to be erased before update");
                     }
