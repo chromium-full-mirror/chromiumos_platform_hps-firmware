@@ -5,9 +5,13 @@
 #![no_main]
 #![no_std]
 
+use cortex_m::peripheral::SCB;
 use hal::prelude::*;
+use hal::rtc::Rtc;
 use hal::stm32;
 use hal::stm32::I2C1;
+use hal::stm32::PWR;
+use hal::stm32::RTC;
 use i2c_protocol::Event;
 use i2c_protocol::I2cProtocolHandler;
 use mcu_common::registers;
@@ -35,6 +39,9 @@ pub struct State {
     protocol_handler: I2cProtocolHandler<Stm32g0I2cPeripheral<I2C1>>,
     common_interface: CommonHostInterface,
     flash: stm32::FLASH,
+    rtc: Rtc,
+    pwr: PWR,
+    scb: SCB,
 }
 
 #[app(device = hal::stm32, peripherals = true)]
@@ -53,7 +60,7 @@ const APP: () = {
     fn init(ctx: init::Context) -> init::LateResources {
         let p = ctx.device;
 
-        let mut flash = p.FLASH;
+        let flash = p.FLASH;
 
         // The system bootloader leaves the flash in an unlocked state. We
         // expect it to be locked. If we try to unlock it when it's already
@@ -63,6 +70,16 @@ const APP: () = {
         // safe.
         flash.cr.modify(|_, w| w.lock().set_bit());
 
+        // Reset clock source to HSI. This is necessary because the bootloader
+        // (either stage0 or the STM32 system bootloader) will have left the
+        // clock source configured as the PLL.
+        p.RCC.cfgr.write(|w| w);
+
+        let mut rcc = p.RCC.freeze(hal::rcc::Config::default());
+        let mut rtc = p.RTC.constrain(&mut rcc);
+        let mut pwr = p.PWR;
+        let mut scb = ctx.core.SCB;
+
         // For some reason the rest of this program doesn't work if we've been
         // loaded from the system bootloader. We detect if that's the case by
         // checking if the reset vector (address 4) is pointing to somewhere in
@@ -70,19 +87,14 @@ const APP: () = {
         // cause us to reset into stage0 (which should have been written
         // already).
         if unsafe { core::ptr::read_volatile(0x4 as *const u32) } & 0x1fff0000 == 0x1fff0000 {
-            let _ = configure_option_bytes(&mut flash, OptionBytesConfigRequest::RELOAD);
+            reset_reloading_option_bytes(&mut rtc, &mut pwr, &mut scb);
         }
 
-        // Reset clock source to HSI. This is necessary because the bootloader
-        // (either stage0 or the STM32 system bootloader) will have left the
-        // clock source configured as the PLL.
-        p.RCC.cfgr.write(|w| w);
         // Configure our vector table. This is necessary when being loaded by a
         // bootloader. Neither stage0 nor the STM32 system bootloader will do
         // this for us.
-        unsafe { ctx.core.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+        unsafe { scb.vtor.write(&VECTOR_TABLE as *const _ as u32) };
 
-        let mut rcc = p.RCC.freeze(hal::rcc::Config::default());
         let gpiob = p.GPIOB.split(&mut rcc);
 
         let sda = gpiob.pb7.into_open_drain_output_high();
@@ -101,6 +113,9 @@ const APP: () = {
                 protocol_handler,
                 flash,
                 common_interface: CommonHostInterface::default(),
+                rtc,
+                pwr,
+                scb,
             },
         }
     }
@@ -131,6 +146,9 @@ impl State {
                     let request = OptionBytesConfigRequest::from_bits(event.value)
                         .ok_or(Error::HOST_I2C_BAD_REQUEST)?;
                     configure_option_bytes(&mut self.flash, request)?;
+                    if request.contains(OptionBytesConfigRequest::RELOAD) {
+                        reset_reloading_option_bytes(&mut self.rtc, &mut self.pwr, &mut self.scb);
+                    }
                 }
                 _ => return Err(Error::HOST_I2C_BAD_REQUEST),
             },
@@ -179,19 +197,82 @@ fn configure_option_bytes(
     flash.cr.modify(|_, w| w.optstrt().set_bit());
     while flash.sr.read().bsy().bit_is_set() {}
 
-    if request.contains(OptionBytesConfigRequest::RELOAD) {
-        // Apply new option bytes. This will reset the MCU.
-        flash.cr.modify(|_, w| w.obl_launch().set_bit());
-
-        // Wait for load to complete.
-        while flash.cr.read().obl_launch().bit_is_set() {}
-
-        // OBL_LAUNCH should have reset the MCU, so we shouldn't reach here. If we
-        // do, something has gone wrong. Relock the flash and return an error.
-        unlocked_flash.lock();
-        return Err(Error::MCU_FLASH_WRITE_ERROR);
-    }
-
     unlocked_flash.lock();
     Ok(())
+}
+
+/// Resets the MCU, reloading the option bytes in the process. We do this by
+/// putting the CPU to sleep, then waking it up using the RTC wakup timing. On
+/// exit from the sleep state, the CPU will reload the option bytes.
+fn reset_reloading_option_bytes(rtc: &mut Rtc, pwr: &mut PWR, scb: &mut SCB) -> ! {
+    // Newer versions of stm32g0xx-hal provide a nice interface for doing this,
+    // but we haven't upgraded to those newer versions yet, so we just poke the
+    // registers directly.
+    pwr.cr1.modify(|_, w| {
+        w.lpr().set_bit();
+        unsafe { w.lpms().bits(0b11) }; // Standby mode
+        w
+    });
+    loop {
+        let sr2 = pwr.sr2.read();
+        if sr2.reglps().bit_is_set() && sr2.reglpf().bit_is_set() {
+            break;
+        }
+    }
+
+    scb.set_sleepdeep();
+
+    write_rtc(rtc, |rtc| {
+        // Disable any existing wakeup timer. There shouldn't be one running,
+        // but RM0444 says to do this first, since the timer cannot be
+        // configured when active.
+        rtc.cr.modify(|_, w| w.wute().clear_bit());
+
+        // Wait until writing to WUT is allowed.
+        while rtc.icsr.read().wutwf().bit_is_clear() {}
+
+        // The RTC is clocked by the LSI which runs at 32KHz. By default, the
+        // wakeup clock (WUCKSEL) is 1/16th of the RTC clock, or 2KHz.
+        const WAKE_CLOCK: u32 = 2000;
+        const DELAY_MS: u32 = 100;
+        rtc.wutr
+            .write(|w| unsafe { w.bits(DELAY_MS * WAKE_CLOCK / 1000) });
+
+        rtc.cr.modify(|_, w| {
+            // Enable wakeup timer.
+            w.wute().set_bit();
+
+            // Enable wakeup interrupt. This is necessary in order to use the
+            // wakeup timer to wake from a lower power mode.
+            w.wutie().set_bit();
+            w
+        });
+    });
+
+    // Wait for interrupt. This is what will actually put the CPU into standby.
+    // When it comes out of standby, it will reset.
+    cortex_m::asm::wfi();
+    // We should never actually reach here.
+    loop {
+        cortex_m::asm::nop();
+    }
+}
+
+/// Unlocks the RTC registers then runs `callback` to give it the oportunity to
+/// write to those registers, then relocks them.
+fn write_rtc(_rtc: &mut Rtc, callback: impl FnOnce(&mut RTC)) {
+    // Safety: We hold an exclusive reference to the Rtc, which owns RTC, we
+    // just need direct register access in order to perform operations not yet
+    // supported by our HAL.
+    let mut rtc = unsafe { hal::stm32::Peripherals::steal() }.RTC;
+
+    // Unlock RTC registers. This is done by writing these two magic values in
+    // the right order.
+    rtc.wpr.write(|w| unsafe { w.bits(0xca) });
+    rtc.wpr.write(|w| unsafe { w.bits(0x53) });
+
+    (callback)(&mut rtc);
+
+    // Relock RTC registers by writing any value that isn't the unlock sequence.
+    rtc.wpr.write(|w| unsafe { w.bits(0) });
 }
