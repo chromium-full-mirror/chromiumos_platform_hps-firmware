@@ -26,18 +26,12 @@ pub enum Command {
     /// and application into it.
     EraseSpiFlash = 1 << 4,
 
-    /// Removes write protection from stage0 and erases stage0. This command
-    /// will fail if the write protect was made permanent (level 2).
-    #[cfg(feature = "dev")]
-    UnlockStage0 = 1 << 13,
-
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,
 
-    /// Erase the first page of stage0 so that the system bootloader is
-    /// activated on the next reboot. This command will fail if stage0 has been
-    /// locked as read-only. After this command completes, the MCU will be
-    /// reset, although that reset will likely result in a hard fault.
+    /// Erase at least the first page of stage0 and reset into the system
+    /// bootloader. Unlocks write protection, if necessary. Will fail if write
+    /// protection is permanent (RDP level 2).
     EraseStage0Start = 1 << 15,
 }

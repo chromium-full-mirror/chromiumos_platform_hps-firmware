@@ -12,7 +12,6 @@ use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
-use log::info;
 use mcu_common::commands::Command;
 use mcu_common::Status;
 
@@ -32,15 +31,7 @@ where
     if hps.status()?.contains(Status::STAGE0_PERM_LOCKED) {
         bail!("Stage0 is permanently write-protected and cannot be erased");
     }
-    // If stage0 is non-permanently locked, then unlocking it will cause the RDP
-    // level to be reset to 0, which will automatically trigger a full erase of
-    // the MCU flash. Otherwise, we erase.
-    if hps.status()?.contains(Status::STAGE0_LOCKED) {
-        info!("Stage0 is non-permanently locked. Unlocking.");
-        hps.perform_command(Command::UnlockStage0)?;
-    } else {
-        hps.perform_command(Command::EraseStage0Start)?;
-    }
-    println!("Stage0 erased. Please power-cycle the HPS to return to the system bootloader");
+    hps.perform_command(Command::EraseStage0Start)?;
+    println!("Stage0 erased");
     Ok(())
 }

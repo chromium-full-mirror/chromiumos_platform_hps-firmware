@@ -112,7 +112,7 @@ impl DebugResources {
         }
     }
 
-    pub(crate) fn remove_flash_lock(&mut self) -> Result<(), Error> {
+    fn remove_flash_lock(&mut self) -> Result<(), Error> {
         // The HAL has a really inconvenient API for locking the flash, which
         // transfers ownership of the flash, so we conjur ourselves a second
         // instance for it to take ownership of.
@@ -136,6 +136,8 @@ impl DebugResources {
             w
         });
 
+        self.flash.acr.modify(|_, w| w.empty().set_bit());
+
         unsafe { core::ptr::write_volatile(&self.flash.wrp1ar as *const _ as *mut u32, 0x3f) };
 
         while self.flash.sr.read().bsy().bit_is_set() {}
@@ -146,17 +148,27 @@ impl DebugResources {
         Ok(())
     }
 
-    pub(crate) fn erase_stage0(&mut self) -> Result<(), hal::flash::Error> {
-        // The HAL has a really inconvenient API for locking the flash, which
-        // transfers ownership of the flash, so we conjur ourselves a second
-        // instance for it to take ownership of.
-        let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
-            .FLASH
-            .unlock()
-            .map_err(|_| hal::flash::Error::Failure)?;
-        use hal::flash::WriteErase;
-        unlocked_flash.erase_page(hal::flash::FlashPage(0))?;
-        Ok(())
+    pub(crate) fn erase_stage0(&mut self) -> Result<(), Error> {
+        if self.flash.optr.read().rdp().bits() == 0xaa {
+            // The HAL has a really inconvenient API for locking the flash,
+            // which transfers ownership of the flash, so we conjur ourselves a
+            // second instance for it to take ownership of.
+            let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
+                .FLASH
+                .unlock()
+                .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+            use hal::flash::WriteErase;
+            unlocked_flash
+                .erase_page(hal::flash::FlashPage(0))
+                .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+            unlocked_flash.lock();
+        }
+
+        // We call remove_flash_lock even if we erased above, since we want to
+        // reload the option bytes.
+        self.remove_flash_lock()?;
+
+        cortex_m::peripheral::SCB::sys_reset();
     }
 }
 
