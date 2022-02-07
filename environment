@@ -29,11 +29,11 @@ else
 fi
 export HOSTPATH="${HPS_ROOT}/build/host"
 
-export RUST_VERSION=1.55.0
+export RUST_VERSION=1.58.1
 
 # Nightly is only used for running our tests with MIRI. None of our code
 # actually needs nightly.
-export RUST_NIGHTLY_VERSION=nightly-2021-10-10
+export RUST_NIGHTLY_VERSION=nightly-2022-01-20
 
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.

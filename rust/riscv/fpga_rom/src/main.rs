@@ -43,3 +43,10 @@ unsafe fn create_classifier() -> tflm_inference::TflmClassifier {
 unsafe fn create_classifier() -> fpga_app::FakeClassifier {
     fpga_app::FakeClassifier::default()
 }
+
+// Supply a dummy software implementation of __atomic_load_4 to work around a rustc bug:
+// https://github.com/rust-lang/rust/issues/92897
+#[no_mangle]
+pub extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) -> usize {
+    unsafe { *arg }
+}

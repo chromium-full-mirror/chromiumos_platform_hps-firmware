@@ -160,8 +160,8 @@ if ! which rustup >/dev/null; then
     fi
 fi
 
-rustup toolchain install "${RUST_VERSION}"
-rustup toolchain install "${RUST_NIGHTLY_VERSION}"
+rustup toolchain install "${RUST_VERSION}" --profile default
+rustup toolchain install "${RUST_NIGHTLY_VERSION}" --profile default
 
 rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
 rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
