@@ -47,9 +47,9 @@ class HpsSoC(LiteXSoC):
     rom_region = SoCRegion(rom_origin, spiflash_region.size - rom_offset,
                            cached=True, linker=True)
     sram_origin = 0x40000000
-    sram_region = SoCRegion(sram_origin, 64*KB, cached=True, linker=True)
+    sram_region = SoCRegion(sram_origin, 64 * KB, cached=True, linker=True)
     arena_origin = 0x60000000
-    arena_region = SoCRegion(arena_origin, 256*KB, cached=True, linker=True)
+    arena_region = SoCRegion(arena_origin, 256 * KB, cached=True, linker=True)
     vexriscv_region = SoCRegion(origin=0xf00f0000, size=0x100)
 
     # These variables are needed by builder.py. Normally they're defined by
