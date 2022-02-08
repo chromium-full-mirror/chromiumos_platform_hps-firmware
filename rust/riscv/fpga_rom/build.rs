@@ -119,6 +119,7 @@ fn build_tflm() -> Result<()> {
         bail!("Failed to build libtflite-micro.a with ninja");
     }
 
+    println!("cargo:rerun-if-changed=../../../build/riscv-gcc/libtflite-micro.a");
     // Make sure that build.rs gets rerun if any source files in TFLM get
     // changed.
     print_sources_files_in_dir(Path::new(TFLM_DIR))?;
