@@ -12,6 +12,7 @@ use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
+use log::info;
 use mcu_common::commands::Command;
 use mcu_common::Status;
 
@@ -21,6 +22,14 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config);
+
+    if let Ok(mut stm32) = i2c.open_bootloader() {
+        // If the system bootloader is already running, then most likely the
+        // flash is empty, but just to be sure, we erase it.
+        info!("Erasing flash using STM32 bootloader");
+        stm32.erase_flash()?;
+        return Ok(());
+    }
 
     // Erasing is done by stage1_app. Write an up-to-date dev version of
     // stage1_app so that we know it supports the required commands.
