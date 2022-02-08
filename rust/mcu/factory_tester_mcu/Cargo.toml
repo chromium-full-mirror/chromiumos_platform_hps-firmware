@@ -6,7 +6,7 @@ license = "BSD-3-Clause"
 resolver = "2"
 
 [dependencies]
-cortex-m = "0.7.1"
+cortex-m = "0.6.7"
 cortex-m-rt = "0.6.13"
 cortex-m-rtic = "0.5.5"
 debug_logger = { path = "../../debug_logger" }

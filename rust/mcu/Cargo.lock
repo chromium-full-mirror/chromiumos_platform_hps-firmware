@@ -233,7 +233,7 @@ dependencies = [
 name = "factory_tester_mcu"
 version = "0.1.0"
 dependencies = [
- "cortex-m 0.7.3",
+ "cortex-m 0.6.7",
  "cortex-m-rt",
  "cortex-m-rtic",
  "debug_logger",
@@ -419,7 +419,7 @@ dependencies = [
 name = "one_time_init"
 version = "0.1.0"
 dependencies = [
- "cortex-m 0.7.3",
+ "cortex-m 0.6.7",
  "cortex-m-rt",
  "cortex-m-rtic",
  "i2c_peripheral",
@@ -544,7 +544,7 @@ name = "stage0"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "cortex-m 0.7.3",
+ "cortex-m 0.6.7",
  "cortex-m-rt",
  "cortex-m-rtic",
  "ed25519-compact",
@@ -563,7 +563,7 @@ name = "stage1_app"
 version = "0.1.0"
 dependencies = [
  "application",
- "cortex-m 0.7.3",
+ "cortex-m 0.6.7",
  "cortex-m-rt",
  "cortex-m-rtic",
  "crc",
