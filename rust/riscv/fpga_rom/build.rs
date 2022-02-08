@@ -77,8 +77,7 @@ fn main() -> Result<()> {
 }
 
 fn find_builtin_lib(name: &str) -> Result<PathBuf> {
-    let mut gcc_output = Command::new("../../../scripts/env-run")
-        .arg("riscv64-unknown-elf-gcc")
+    let mut gcc_output = Command::new("riscv64-unknown-elf-gcc")
         .arg("-march=rv32im")
         .arg("-mabi=ilp32")
         .arg(format!("-print-file-name={}", name))
@@ -99,8 +98,7 @@ fn build_tflm() -> Result<()> {
     const TFLM_DIR: &str = "../../../third_party/tflm";
 
     // Regenerate ninja config
-    if !Command::new("../../../scripts/env-run")
-        .arg("gn")
+    if !Command::new("gn")
         .arg("gen")
         .arg("../../../build")
         .status()
@@ -110,8 +108,7 @@ fn build_tflm() -> Result<()> {
         bail!("Failed to run `gn gen build`");
     }
     // Run ninja
-    if !Command::new("../../../scripts/env-run")
-        .arg("ninja")
+    if !Command::new("ninja")
         .arg("-C")
         .arg("../../../build")
         .arg("riscv-gcc/libtflite-micro.a")
