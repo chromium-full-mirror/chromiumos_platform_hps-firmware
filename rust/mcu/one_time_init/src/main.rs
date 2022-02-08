@@ -37,20 +37,6 @@ pub struct State {
     flash: stm32::FLASH,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum OptionBytesConfig {
-    /// By default, when a software reset is performed, the STM32 pulls the reset
-    /// pin low and waits for it to actually go low. If something else is pulling
-    /// it high strongly enough, then we'll never reset. We reconfigure the IRHEN
-    /// option bit to 0 to change this behavior. It will still pulse the reset
-    /// pin when a software reset occurs, but it won't wait for it to go low.
-    ConfigureResetPin,
-
-    /// Don't change any configuration, just reload the option bytes (will
-    /// reset).
-    Reload,
-}
-
 #[app(device = hal::stm32, peripherals = true)]
 const APP: () = {
     struct Resources {
