@@ -1,0 +1,40 @@
+// Copyright 2022 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+use fpga_app::camera::NUM_PIXELS;
+use fpga_app::Classifier;
+use fpga_app::Error;
+use fpga_app::Result;
+use fpga_app::TfLiteInitStatus;
+
+#[link_section = ".arena"]
+static mut IMAGE_DATA: [u8; NUM_PIXELS] = [0u8; NUM_PIXELS];
+
+pub(crate) struct NonTflmClassifier {
+    data: &'static mut [u8],
+}
+
+impl NonTflmClassifier {
+    /// # Safety:
+    /// Only one instance may exist at a time.
+    pub(crate) unsafe fn sole_instance() -> Self {
+        Self {
+            data: &mut IMAGE_DATA,
+        }
+    }
+}
+
+impl Classifier for NonTflmClassifier {
+    fn input_data_mut(&mut self, _model_number: u32) -> &mut [u8] {
+        self.data
+    }
+
+    fn run_model(&mut self, _model_number: u32) -> Result<i8> {
+        Err(Error::TfLiteFailure)
+    }
+
+    fn init_status(&self) -> TfLiteInitStatus {
+        TfLiteInitStatus::InitOk
+    }
+}

@@ -39,17 +39,16 @@ fn main() -> Result<()> {
     }",
     );
 
-    if cfg!(feature = "tflm") {
-        // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
-        // is actually used from any reachable code, but linking fails if we don't
-        // define `end`.
-        //
-        // The arena is a 256KB section region containing the TfLM tensor arena.
-        // Since the standard link script does not know about the arena, We need to
-        // explicitly place arena sections in the arena region.
-        write_file(
-            &out_dir.join("tflm_inference.x"),
-            "
+    // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
+    // is actually used from any reachable code, but linking fails if we don't
+    // define `end`.
+    //
+    // The arena is a 256KB section region containing the TfLM tensor arena.
+    // Since the standard link script does not know about the arena, We need to
+    // explicitly place arena sections in the arena region.
+    write_file(
+        &out_dir.join("tflm_inference.x"),
+        "
         PROVIDE( end = . );
         SECTIONS {
             .arena (NOLOAD) :
@@ -60,9 +59,10 @@ fn main() -> Result<()> {
             } > arena
         }
         ",
-        );
-        println!("cargo:rustc-link-arg=-Ttflm_inference.x");
+    );
+    println!("cargo:rustc-link-arg=-Ttflm_inference.x");
 
+    if cfg!(feature = "tflm") {
         // For libc.a, libm.a and libstdc++.a.
         println!(
             "cargo:rustc-link-search={}",

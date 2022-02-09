@@ -5,6 +5,9 @@
 #![no_main]
 #![no_std]
 
+#[cfg(not(feature = "tflm_inference"))]
+mod non_tflm_classifier;
+
 use litex_pac;
 use panic_halt as _;
 use riscv_rt::entry;
@@ -40,8 +43,8 @@ unsafe fn create_classifier() -> tflm_inference::TflmClassifier {
 }
 
 #[cfg(not(feature = "tflm_inference"))]
-unsafe fn create_classifier() -> fpga_app::FakeClassifier {
-    fpga_app::FakeClassifier::default()
+unsafe fn create_classifier() -> non_tflm_classifier::NonTflmClassifier {
+    non_tflm_classifier::NonTflmClassifier::sole_instance()
 }
 
 // Supply a dummy software implementation of __atomic_load_4 to work around a rustc bug:
