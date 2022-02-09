@@ -48,5 +48,7 @@ where
         registers::CONFIGURE_OPTION_BYTES,
         (OptionBytesConfigRequest::ERASE | OptionBytesConfigRequest::RELOAD).bits(),
     )?;
+    i2c.open_bootloader()
+        .context("System bootloader didn't respond after erasing stage0")?;
     Ok(())
 }
