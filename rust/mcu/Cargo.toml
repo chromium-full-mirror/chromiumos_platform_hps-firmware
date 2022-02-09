@@ -4,6 +4,7 @@ resolver = "2"
 members = [
     "factory_tester_mcu",
     "one_time_init",
+    "one_time_init_loader",
     "stage0",
     "stage1_app",
     "stm32g0_i2c_peripheral",

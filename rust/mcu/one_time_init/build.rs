@@ -2,12 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use mcu_common::MCU_RAM_SIZE;
+use mcu_common::MCU_RAM_START;
+use mcu_common::PROGRAM_IN_RAM_OFFSET;
+
 fn main() {
     write_memory_x();
 }
 
 fn memory_x_contents() -> String {
-    mcu_common::build_utils::stage1_linker_script()
+    format!(
+        r#"MEMORY
+{{
+    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
+    RAM  (xrw) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
+}}
+"#,
+        MCU_RAM_START + PROGRAM_IN_RAM_OFFSET,
+        MCU_RAM_SIZE - PROGRAM_IN_RAM_OFFSET,
+        MCU_RAM_START,
+        PROGRAM_IN_RAM_OFFSET
+    )
 }
 
 fn write_memory_x() {

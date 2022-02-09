@@ -17,7 +17,7 @@ fn main() -> Result<()> {
     build_soc_rom()?;
     write_stage0_bin("stage0.bin", "insecure-dev-key")?;
     write_stage0_bin("stage0.sys.bin", "insecure-dev-key,sys_bootloader")?;
-    build_one_time_init()?;
+    build_one_time_init_loader()?;
     Ok(())
 }
 
@@ -101,17 +101,17 @@ fn write_release_application_bin() -> Result<()> {
     sign_stage1_binary(&bin_file)
 }
 
-fn build_one_time_init() -> Result<()> {
+fn build_one_time_init_loader() -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
-    let bin_file = out_dir.join("one_time_init.bin");
+    let bin_file = out_dir.join("one_time_init_loader.bin");
     Command::new("cargo")
-        .current_dir("../mcu/one_time_init")
+        .current_dir("../mcu/one_time_init_loader")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
         .arg("build")
         .run()?;
     convert_elf_to_bin(
-        out_dir.join("nested-build/thumbv6m-none-eabi/debug/one_time_init"),
+        out_dir.join("nested-build/thumbv6m-none-eabi/debug/one_time_init_loader"),
         &bin_file,
     )?;
     sign_stage1_binary(&bin_file)

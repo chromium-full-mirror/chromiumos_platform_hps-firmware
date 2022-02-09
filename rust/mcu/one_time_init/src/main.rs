@@ -19,7 +19,6 @@ use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
-use mcu_common::ImageHeader;
 use mcu_common::OptionBytesConfigRequest;
 use mcu_common::Status;
 use panic_halt as _;
@@ -27,11 +26,6 @@ use rtic::app;
 use stm32g0 as _;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 use stm32g0_utils::IntoOpenDrainOutputHigh;
-
-#[link_section = ".image_hdr"]
-#[no_mangle]
-#[used]
-pub static __IMAGE_HDR: ImageHeader = ImageHeader::empty();
 
 extern "C" {
     pub static VECTOR_TABLE: u32;

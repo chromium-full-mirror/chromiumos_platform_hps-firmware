@@ -56,6 +56,16 @@ pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 /// The address of the start of flash.
 pub const FLASH_START: u32 = 0x08000000;
 
+/// The start address of the MCU's RAM.
+pub const MCU_RAM_START: usize = 0x20000000;
+
+/// The size of the MCU's RAM.
+pub const MCU_RAM_SIZE: usize = 36 * 1024;
+
+/// Offset in RAM of a program loaded into RAM. Everything before this offset is
+/// usual as RAM, everything after is used for the program.
+pub const PROGRAM_IN_RAM_OFFSET: usize = 10 * 1024;
+
 /// The full size of the SPI flash.
 pub const SPI_FLASH_SIZE: u32 = 16 * 1024 * 1024;
 

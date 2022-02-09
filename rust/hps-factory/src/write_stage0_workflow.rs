@@ -27,7 +27,8 @@ use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
 
 const ROW_SIZE: usize = 256;
 
-const ONE_TIME_INIT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init.bin"));
+const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader.bin"));
 
 pub(crate) fn run<I, E>(
     i2c: &mut I,
@@ -101,7 +102,7 @@ where
     i2c.write(
         "one-time-init",
         APPLICATION_START_ADDRESS,
-        ONE_TIME_INIT_BYTES,
+        ONE_TIME_INIT_LOADER_BYTES,
     )?;
 
     // Launch the one-time-init program. It will detect that it was launched
