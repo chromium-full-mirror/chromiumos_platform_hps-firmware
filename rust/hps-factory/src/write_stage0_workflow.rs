@@ -6,6 +6,7 @@ use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::WriteStage0Config;
 use crate::STAGE0_BYTES;
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
@@ -140,6 +141,19 @@ where
     let stage = hps.stage()?;
     if stage != Stage::Stage0 {
         bail!("Expected to reset to Stage0, but found {:?}", stage);
+    }
+    i2c.execute_non_i2c_stage1()?;
+    let mut hps = i2c.open_hps()?;
+    let applied_options =
+        OptionBytesConfigRequest::from_bits(hps.read_register(registers::CONFIGURE_OPTION_BYTES)?)
+            .ok_or_else(|| anyhow!("Got invalid bits when reading applied options"))?;
+    options.remove(OptionBytesConfigRequest::RELOAD);
+    if applied_options != options {
+        bail!(
+            "Options didn't apply correctly. Expected [{:?}], got [{:?}]",
+            options,
+            applied_options
+        );
     }
 
     info!("Stage0 written and non-permanently locked");
