@@ -64,8 +64,10 @@ pub const CAMERA_CONFIG: u8 = 18;
 /// communication errors occur, the camera error bit will be set.
 pub const CAMERA_TEST_ITERATIONS: u8 = 19;
 
-/// WO: Encoded OptionBytesConfigRequest. Supported by the one_time_init binary.
+/// RW: Encoded OptionBytesConfigRequest. Supported by the one_time_init binary.
 /// Writing a request to this register initializes the flash option bytes.
+/// Reading this register, returns which configuration options have already been
+/// applied.
 pub const CONFIGURE_OPTION_BYTES: u8 = 20;
 
 #[cfg(feature = "dev")]

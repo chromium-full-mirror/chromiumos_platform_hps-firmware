@@ -137,6 +137,9 @@ impl State {
                     .unwrap_or(0);
                 let result = match event.register {
                     registers::SYSTEM_STATUS => common_value | Status::ONE_TIME_INIT.bits(),
+                    registers::CONFIGURE_OPTION_BYTES => {
+                        self.read_applied_option_byte_settings().bits()
+                    }
                     _ => common_value,
                 };
                 event.respond_u16(result, &mut self.protocol_handler);
@@ -156,6 +159,24 @@ impl State {
             Event::WriteMemory(_) => return Err(Error::HOST_I2C_BAD_REQUEST),
         }
         Ok(())
+    }
+
+    fn read_applied_option_byte_settings(&self) -> OptionBytesConfigRequest {
+        let mut settings = OptionBytesConfigRequest::empty();
+        let optr = self.flash.optr.read();
+        if optr.irhen().bit_is_clear() {
+            settings |= OptionBytesConfigRequest::RESET_PIN;
+        }
+        if optr.n_boot_sel().bit_is_set() {
+            settings |= OptionBytesConfigRequest::DISABLE_BOOT0_PIN;
+        }
+        if optr.rdp().bits() == 0xbb {
+            settings |= OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
+        }
+        if optr.rdp().bits() == 0xcc {
+            settings |= OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT;
+        }
+        settings
     }
 }
 
