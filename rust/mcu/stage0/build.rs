@@ -74,9 +74,9 @@ fn main() -> Result<()> {
         {
             "keys/dev.pub.pem"
         }
-        #[cfg(feature = "test-key")]
+        #[cfg(feature = "premp-key")]
         {
-            "keys/hps-test.pub.pem"
+            "keys/hps-accessory-premp.pub.pem"
         }
     };
     write_raw_public_key(pem_path)?;

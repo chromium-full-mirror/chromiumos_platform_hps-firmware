@@ -39,4 +39,4 @@ no-i2c-clock-stretching = []
 # Exactly one of these features must be enabled, to select
 # which key will be compiled into stage0.
 insecure-dev-key = []
-test-key = []
+premp-key = []
