@@ -22,6 +22,9 @@ fn main() -> Result<()> {
 
     let out_dir = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("OUT_DIR not set"));
 
+    // Also tell linker to search in out_dir, so it finds the linker scripts we generate below.
+    println!("cargo:rustc-link-search={}", out_dir.display());
+
     write_file(
         &out_dir.join("linker_discard.x"),
         "
@@ -36,42 +39,43 @@ fn main() -> Result<()> {
     }",
     );
 
-    // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
-    // is actually used from any reachable code, but linking fails if we don't
-    // define `end`.
-    //
-    // The arena is a 256KB section region containing the TfLM tensor arena.
-    // Since the standard link script does not know about the arena, We need to
-    // explicitly place arena sections in the arena region.
-    write_file(
-        &out_dir.join("tflm_inference.x"),
-        "
-    PROVIDE( end = . );
-    SECTIONS {
-        .arena (NOLOAD) :
-        {
-                _farena = .;
-                *(.arena)
-                _earena = .;
-        } > arena
-    }
-    ",
-    );
+    if cfg!(feature = "tflm") {
+        // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
+        // is actually used from any reachable code, but linking fails if we don't
+        // define `end`.
+        //
+        // The arena is a 256KB section region containing the TfLM tensor arena.
+        // Since the standard link script does not know about the arena, We need to
+        // explicitly place arena sections in the arena region.
+        write_file(
+            &out_dir.join("tflm_inference.x"),
+            "
+        PROVIDE( end = . );
+        SECTIONS {
+            .arena (NOLOAD) :
+            {
+                    _farena = .;
+                    *(.arena)
+                    _earena = .;
+            } > arena
+        }
+        ",
+        );
+        println!("cargo:rustc-link-arg=-Ttflm_inference.x");
 
-    // For tflm_inference.x.
-    println!("cargo:rustc-link-search={}", out_dir.display());
-    // For libc.a, libm.a and libstdc++.a.
-    println!(
-        "cargo:rustc-link-search={}",
-        find_builtin_lib("libc.a")?.display()
-    );
-    // For libgcc.a.
-    println!(
-        "cargo:rustc-link-search={}",
-        find_builtin_lib("libgcc.a")?.display()
-    );
-    // For libtensorflow-microlite.a.
-    println!("cargo:rustc-link-search=../../build/riscv-gcc");
+        // For libc.a, libm.a and libstdc++.a.
+        println!(
+            "cargo:rustc-link-search={}",
+            find_builtin_lib("libc.a")?.display()
+        );
+        // For libgcc.a.
+        println!(
+            "cargo:rustc-link-search={}",
+            find_builtin_lib("libgcc.a")?.display()
+        );
+        // For libtensorflow-microlite.a.
+        println!("cargo:rustc-link-search=../../build/riscv-gcc");
+    }
 
     Ok(())
 }

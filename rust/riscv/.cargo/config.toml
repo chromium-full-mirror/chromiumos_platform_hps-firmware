@@ -4,7 +4,6 @@ rustflags = [
   "-C", "link-arg=-Tlinker_discard.x",
   "-C", "link-arg=-Tmemory.x",
   "-C", "link-arg=-Tlink.x",
-  "-C", "link-arg=-Ttflm_inference.x",
 ]
 
 [build]
