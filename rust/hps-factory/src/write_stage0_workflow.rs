@@ -5,6 +5,7 @@
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::WriteStage0Config;
+use crate::ONE_TIME_INIT_LOADER_BYTES;
 use crate::STAGE0_BYTES;
 use anyhow::anyhow;
 use anyhow::bail;
@@ -26,9 +27,6 @@ use mcu_common::FLASH_START;
 use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
 
 const ROW_SIZE: usize = 256;
-
-const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader.bin"));
 
 pub(crate) fn run<I, E>(
     i2c: &mut I,

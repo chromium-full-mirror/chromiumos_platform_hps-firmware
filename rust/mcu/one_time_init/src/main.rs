@@ -186,6 +186,22 @@ fn configure_option_bytes(
 ) -> Result<(), Error> {
     use hal::flash::FlashExt;
 
+    // If we're erasing stage0 and RDP is not enabled, then just erase the first page.
+    if request.contains(OptionBytesConfigRequest::ERASE) && flash.optr.read().rdp().bits() == 0xaa {
+        // The HAL has a really inconvenient API for locking the flash, which
+        // transfers ownership of the flash, so we conjur ourselves a second
+        // instance for it to take ownership of.
+        let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
+            .FLASH
+            .unlock()
+            .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+        use hal::flash::WriteErase;
+        unlocked_flash
+            .erase_page(hal::flash::FlashPage(0))
+            .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+        unlocked_flash.lock();
+    }
+
     // Unlocking flash results in us losing direct access to the flash
     // registers. We steal the peripherals so that we can get a second
     // handle on the flash, allowing us to unlock it while still retaining
@@ -205,6 +221,10 @@ fn configure_option_bytes(
         // Write protect flash from page 0x00 to 0x1f inclusive. i.e. the first
         // 64KB of flash.
         unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x001f_0000) };
+    }
+    if request.contains(OptionBytesConfigRequest::ERASE) {
+        unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x3f) };
+        flash.acr.modify(|_, w| w.empty().set_bit());
     }
 
     flash.optr.modify(|_, w| {
@@ -231,6 +251,11 @@ fn configure_option_bytes(
         } else if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
             // Set RDP level 1.
             unsafe { w.rdp().bits(0xbb) };
+        } else if request.contains(OptionBytesConfigRequest::ERASE) {
+            unsafe { w.rdp().bits(0xaa) };
+            w.n_boot_sel().clear_bit();
+            w.n_boot0().clear_bit();
+            w.irhen().set_bit();
         }
 
         w

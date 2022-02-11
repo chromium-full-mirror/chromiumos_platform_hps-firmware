@@ -4,7 +4,7 @@
 
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
-use crate::APPLICATION_BYTES;
+use crate::ONE_TIME_INIT_LOADER_BYTES;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
@@ -13,8 +13,8 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
 use log::info;
-use mcu_common::commands::Command;
-use mcu_common::Status;
+use mcu_common::registers;
+use mcu_common::OptionBytesConfigRequest;
 
 pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<()>
 where
@@ -31,15 +31,22 @@ where
         return Ok(());
     }
 
-    // Erasing is done by stage1_app. Write an up-to-date dev version of
-    // stage1_app so that we know it supports the required commands.
-    i2c.write_stage1(APPLICATION_BYTES)?;
-    i2c.execute_stage1().context("Failed to execute stage1")?;
+    // Erasing is done by one_time_init. Write the loader that will put it into
+    // RAM and run it.
+    i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES)?;
+    i2c.execute_non_i2c_stage1()
+        .context("Failed to execute one_time_init")?;
 
     let mut hps = i2c.open_hps()?;
-    if hps.status()?.contains(Status::STAGE0_PERM_LOCKED) {
+    let current_options = OptionBytesConfigRequest::from_bits_truncate(
+        hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
+    );
+    if current_options.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT) {
         bail!("Stage0 is permanently write-protected and cannot be erased");
     }
-    hps.perform_command(Command::EraseStage0Start)?;
+    hps.write_register(
+        registers::CONFIGURE_OPTION_BYTES,
+        (OptionBytesConfigRequest::ERASE | OptionBytesConfigRequest::RELOAD).bits(),
+    )?;
     Ok(())
 }

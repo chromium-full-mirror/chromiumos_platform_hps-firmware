@@ -190,6 +190,10 @@ bitflags! {
 
         /// Whether to permanently write protect stage0 (RDP level 2).
         const PERMANENT_WRITE_PROTECT = 1 << 4;
+
+        /// Unprotect and erase stage0. Reset option bytes that we might have
+        /// changed back to their defaults.
+        const ERASE = 1 << 15;
     }
 }
 
