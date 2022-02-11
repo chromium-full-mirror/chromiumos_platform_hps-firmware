@@ -47,6 +47,7 @@ where
         tester.test_fpga_spi_flash_reads()?;
         tester.test_fpga_mcu_comms()?;
         tester.test_mcu_to_camera_i2c()?;
+        tester.test_camera_data_bus()?;
         info!("Post-install test passed");
         Ok(())
     }
@@ -213,6 +214,41 @@ where
             hps.check_errors()?;
             bar.set_position((self.config.camera_i2c_iterations - remaining) as u64);
             if remaining == 0 {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        bar.finish();
+        Ok(())
+    }
+
+    fn test_camera_data_bus(&mut self) -> Result<()> {
+        if self.config.camera_data_bus_iterations == 0 {
+            return Ok(());
+        }
+        self.i2c.reset_to_bootloader()?;
+        self.i2c
+            .execute_application()
+            .context("Failed to execute application")?;
+        let mut hps = self.i2c.open_hps()?;
+        info!("Checking camera<->FPGA data bus");
+        let bar = ProgressBar::new(self.config.camera_data_bus_iterations.into());
+        hps.write_register(
+            registers::ENABLED_FEATURES,
+            Features::CAMERA_DATA_TEST.bits(),
+        )?;
+        loop {
+            let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+            let error_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
+            if error_count > 0 {
+                bail!(
+                    "Got {} errors after {} iterations of camera data test",
+                    error_count,
+                    loop_count
+                );
+            }
+            bar.set_position(loop_count.into());
+            if loop_count >= self.config.camera_data_bus_iterations {
                 break;
             }
             std::thread::sleep(Duration::from_millis(100));

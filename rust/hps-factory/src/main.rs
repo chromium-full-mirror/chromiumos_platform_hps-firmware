@@ -126,6 +126,10 @@ struct PostInstallTestConfig {
     /// number of iterations of MCU<->camera I2C test to perform
     #[clap(long, default_value = "50")]
     camera_i2c_iterations: u16,
+
+    /// number of iterations of camera data bus test to perform
+    #[clap(long, default_value = "50")]
+    camera_data_bus_iterations: u16,
 }
 
 #[cfg(feature = "image-transfer")]
@@ -260,6 +264,7 @@ where
                     host_i2c_iterations: 5000,
                     fpga_mcu_iterations: 500,
                     camera_i2c_iterations: 500,
+                    camera_data_bus_iterations: 500,
                 },
                 &config,
             )?;

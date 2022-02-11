@@ -33,5 +33,11 @@ bitflags! {
         /// errors encountered will be reported in the person_status register.
         /// The number of iterations will be reported in the loop counter.
         const MCU_FPGA_COMM_TEST = 0x200;
+
+        /// Once enabled, the FPGA will continously read test pattern data from
+        /// the camera, checking that the data is valid. The number of errors
+        /// will be reported in the person_status register. The number of
+        /// iterations will be reported in the loop counter.
+        const CAMERA_DATA_TEST = 0x400;
     }
 }

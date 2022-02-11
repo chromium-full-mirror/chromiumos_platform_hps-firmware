@@ -5,6 +5,7 @@
 #![cfg_attr(not(test), no_std)]
 
 pub mod camera;
+mod camera_tester;
 mod classifier;
 mod debug_commands;
 mod entropy;
@@ -23,6 +24,7 @@ use core::fmt::Write;
 pub use debug_commands::DebugCommand;
 use embedded_hal::blocking::spi;
 pub use features::Features;
+use hm01b0::TestPattern;
 use mcu_interface::McuInterface;
 pub use timer::Instant;
 pub use timer::Timer;
@@ -145,6 +147,9 @@ where
         }
         if features.contains(Features::MCU_FPGA_COMM_TEST) {
             self.mcu_fpga_comm_test();
+        }
+        if features.contains(Features::CAMERA_DATA_TEST) {
+            self.camera_data_test();
         }
 
         if cfg!(feature = "debug-commands") {
@@ -415,6 +420,32 @@ where
                 bad
             );
         }
+    }
+
+    fn camera_data_test(&mut self) {
+        let mut bad = 0;
+        self.status.loop_count = 0;
+        loop {
+            self.status.loop_count += 1;
+            if self.capture_and_check_test_pattern().is_err() {
+                bad += 1;
+            }
+
+            self.status.person_status = bad;
+            let _ = self.mcu.report_status(&self.status);
+        }
+    }
+
+    fn capture_and_check_test_pattern(&mut self) -> Result<()> {
+        // We use the color-bar test pattern because it's more consistent than
+        // walking 1s. Some frames with walking-1s end up never having a 1 in
+        // some bit position, which means we can't reliably test all data lines.
+        self.mcu
+            .camera()
+            .set_test_pattern(Some(TestPattern::ColorBar))?;
+        self.capture_image(false)?;
+        camera_tester::check_test_pattern(self.classifier.input_data_mut(self.model_number))?;
+        Ok(())
     }
 
     /// Selects which model to use for the current loop iteration so that each

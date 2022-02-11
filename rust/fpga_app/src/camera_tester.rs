@@ -1,0 +1,53 @@
+// Copyright 2022 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+use crate::Error;
+
+/// Checks whether image_data looks like a valid test pattern. We expect the
+/// color bars test pattern, which has all bytes either 0x00 or 0xff. The input
+/// data is assumed to have been converted to signed values by subtracting 128.
+pub(crate) fn check_test_pattern(image_data: &[u8]) -> Result<(), Error> {
+    let mut got_zero = false;
+    let mut got_ff = false;
+    for byte in image_data.iter().cloned() {
+        // The camera gateware subtracts 128 from all bytes received from the
+        // camera.
+        match byte.wrapping_add(128) {
+            0 => got_zero = true,
+            0xff => got_ff = true,
+            _ => return Err(Error::SelfTestFailed),
+        }
+    }
+    if got_zero && got_ff {
+        Ok(())
+    } else {
+        Err(Error::SelfTestFailed)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const COLOR_BARS: &[u8] = include_bytes!("../test_data/color-bars.raw");
+
+    fn sign_convert_and_check(bytes: &[u8]) -> Result<(), Error> {
+        let sign_converted_data: Vec<u8> =
+            bytes.iter().map(|byte| byte.wrapping_sub(128)).collect();
+        check_test_pattern(&sign_converted_data)
+    }
+
+    #[test]
+    fn test_check_test_pattern() {
+        assert!(sign_convert_and_check(COLOR_BARS).is_ok());
+        assert!(sign_convert_and_check(&[0, 0, 0, 0xff, 0xff, 0, 0, 0]).is_ok());
+    }
+
+    #[test]
+    fn test_check_test_pattern_invalid() {
+        assert!(sign_convert_and_check(&[0xff, 0xff, 0xff]).is_err());
+        assert!(sign_convert_and_check(&[0, 0, 0, 0]).is_err());
+        assert!(sign_convert_and_check(&[0, 0, 0, 0x0e, 0xf0, 0, 0, 0]).is_err());
+    }
+}
