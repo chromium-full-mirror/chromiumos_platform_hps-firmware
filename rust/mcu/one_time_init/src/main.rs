@@ -5,6 +5,7 @@
 #![no_main]
 #![no_std]
 
+use core::convert::TryFrom;
 use cortex_m::peripheral::SCB;
 use hal::prelude::*;
 use hal::rtc::Rtc;
@@ -14,6 +15,7 @@ use hal::stm32::PWR;
 use hal::stm32::RTC;
 use i2c_protocol::Event;
 use i2c_protocol::I2cProtocolHandler;
+use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
@@ -153,6 +155,10 @@ impl State {
                         reset_reloading_option_bytes(&mut self.rtc, &mut self.pwr, &mut self.scb);
                     }
                 }
+                registers::COMMAND => match Command::try_from(event.value) {
+                    Ok(Command::Reset) => cortex_m::peripheral::SCB::sys_reset(),
+                    _ => return Err(Error::HOST_I2C_BAD_REQUEST),
+                },
                 _ => return Err(Error::HOST_I2C_BAD_REQUEST),
             },
             Event::None => {}
