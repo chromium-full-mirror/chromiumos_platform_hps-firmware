@@ -78,6 +78,10 @@ fn main() -> Result<()> {
         {
             "keys/hps-accessory-premp.pub.pem"
         }
+        #[cfg(feature = "mp-key")]
+        {
+            "keys/hps-accessory-mp.pub.pem"
+        }
     };
     write_raw_public_key(pem_path)?;
 

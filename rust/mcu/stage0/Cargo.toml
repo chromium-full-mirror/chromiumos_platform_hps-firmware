@@ -40,3 +40,4 @@ no-i2c-clock-stretching = []
 # which key will be compiled into stage0.
 insecure-dev-key = []
 premp-key = []
+mp-key = []
