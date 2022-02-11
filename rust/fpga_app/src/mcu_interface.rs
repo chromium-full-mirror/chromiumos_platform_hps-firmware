@@ -75,6 +75,16 @@ where
         self.exchange()
     }
 
+    pub fn report_error(&mut self, error: mcu_common::Error) {
+        self.clear_buffer();
+        self.buffer[0] = Action::ReportFpgaError.into();
+        let error_bytes = error.bits().to_le_bytes();
+        self.buffer[1..1 + error_bytes.len()].copy_from_slice(&error_bytes);
+        // There's not much we can do if we get an error while we're reporting
+        // an error, so we just ignore it.
+        let _ = self.exchange();
+    }
+
     pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
         self.clear_buffer();
         self.buffer[0] = Action::WriteCameraI2c.into();
@@ -252,6 +262,7 @@ mod tests {
     use super::*;
     use application::fpga::status;
     use embedded_hal_mock::spi;
+    use mcu_common::Error;
 
     fn command_response_interface(
         mut command: Vec<u8>,
@@ -368,6 +379,16 @@ mod tests {
         let mut status = Status::default();
         status.loop_count = 0x1234;
         mcu.report_status(&status).unwrap();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_report_error() {
+        let mut mcu = command_response_interface(
+            vec![Action::ReportFpgaError.into(), 0x00, 0x8],
+            vec![status::OK, Action::ReportFpgaError.into()],
+        );
+        mcu.report_error(Error::TFLITE_FAILURE);
         mcu.spi.done();
     }
 }

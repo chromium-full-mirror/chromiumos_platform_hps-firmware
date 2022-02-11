@@ -40,6 +40,15 @@ bitflags! {
 
         /// The SPI flash does not match the embedded hash, an update is required.
         const SPI_FLASH_NOT_VERIFIED = 1 << 10;
+
+        /// TFLITE Micro reported an error.
+        const TFLITE_FAILURE = 1 << 11;
+
+        /// A self test that was requested by the host has failed.
+        const SELF_TEST_FAILED = 1 << 12;
+
+        /// Communication between the FPGA and the MCU encountered an error.
+        const FPGA_MCU_COMM_ERROR = 1 << 13;
     }
 }
 

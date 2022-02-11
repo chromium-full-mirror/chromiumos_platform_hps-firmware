@@ -120,13 +120,18 @@ where
         mcu_println!(self, "Hello from the Rust FPGA");
         let status = self.classifier.init_status();
         mcu_println!(self, "Classifier status: {:?}", status);
+        if status != TfLiteInitStatus::InitOk {
+            self.mcu.report_error(mcu_common::Error::TFLITE_FAILURE);
+        }
         mcu_println!(self, "");
         if self.calibrate_camera(15).is_err() {
             mcu_println!(self, "Failed to calibrate camera");
+            self.mcu.report_error(mcu_common::Error::CAMERA);
         }
         loop {
             if let Err(error) = self.loop_body() {
                 mcu_println!(&mut self.mcu, "Error: {:?}", error);
+                self.mcu.report_error(fpga_to_mcu_error(error));
             }
         }
     }
@@ -485,6 +490,20 @@ where
         if self.model_number == 2 && !features.contains(Features::MODEL2) {
             self.model_number = 1;
         }
+    }
+}
+
+fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
+    // TODO: Get rid of our own Error enum and just use
+    // mcu_common::Error everywhere.
+    match error {
+        Error::Camera => mcu_common::Error::CAMERA,
+        Error::InvalidArg => mcu_common::Error::HOST_I2C_BAD_REQUEST,
+        Error::McuTimeout => mcu_common::Error::FPGA_MCU_COMM_ERROR,
+        Error::SelfTestFailed => mcu_common::Error::SELF_TEST_FAILED,
+        Error::SpiError => mcu_common::Error::FPGA_MCU_COMM_ERROR,
+        Error::TfLiteFailure => mcu_common::Error::TFLITE_FAILURE,
+        Error::UnknownFeature => mcu_common::Error::HOST_I2C_BAD_REQUEST,
     }
 }
 

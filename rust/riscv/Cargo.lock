@@ -261,6 +261,7 @@ dependencies = [
  "embedded-hal",
  "hm01b0",
  "image",
+ "mcu_common",
  "num_enum",
 ]
 

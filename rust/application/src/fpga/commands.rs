@@ -33,6 +33,9 @@ pub enum Action {
     /// SOC ROM version number.
     ReportFpgaBoot = 0x22,
 
+    /// Reports an error.
+    ReportFpgaError = 0x23,
+
     /// Sets the debug LED on or off based on whether the first byte of the
     /// payload is 1 or 0 respectively.
     SetDebugLed = 0x60,
