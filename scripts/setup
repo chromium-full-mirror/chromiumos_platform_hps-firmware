@@ -10,6 +10,20 @@ source "${PROJECT_ROOT}/environment"
 set -e
 git submodule update --init --recursive
 
+MCP_UDEV_RULES=/etc/udev/rules.d/71-mcp.rules
+if [ ! -f "${MCP_UDEV_RULES}" ]; then
+    echo -n "OK to create ${MCP_UDEV_RULES} [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        (
+            cat <<'EOF'
+# MCP2221A rules
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", GROUP="plugdev", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
+EOF
+        ) | sudo tee "${MCP_UDEV_RULES}"
+    fi
+fi
+
 # Verify dependencies that can be installed with apt (if available)
 missing=()
 
@@ -182,20 +196,6 @@ done
 
 if ! which svd2rust; then
     cargo install svd2rust
-fi
-
-MCP_UDEV_RULES=/etc/udev/rules.d/71-mcp.rules
-if [ ! -f "${MCP_UDEV_RULES}" ]; then
-    echo -n "OK to create ${MCP_UDEV_RULES} [y]/n? " >&2
-    read -r answer
-    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
-        (
-            cat <<'EOF'
-# MCP2221A rules
-SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", GROUP="plugdev", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
-EOF
-        ) | sudo tee "${MCP_UDEV_RULES}"
-    fi
 fi
 
 # Warn about different versions
