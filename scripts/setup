@@ -24,6 +24,22 @@ EOF
     fi
 fi
 
+MCP_MODPROBE_RULES=/etc/modprobe.d/mcp-hid.conf
+if [ ! -f "${MCP_MODPROBE_RULES}" ]; then
+    echo -n "OK to create ${MCP_MODPROBE_RULES} [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        (
+            cat <<'EOF'
+blacklist hid_mcp2221
+EOF
+        ) | sudo tee "${MCP_MODPROBE_RULES}"
+
+        # Remove the module as well to avoid the need to reboot.
+        sudo rmmod hid_mcp2221 2>/dev/null || true
+    fi
+fi
+
 # Verify dependencies that can be installed with apt (if available)
 missing=()
 
