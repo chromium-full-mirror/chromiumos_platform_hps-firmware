@@ -157,7 +157,8 @@ impl McpDevice {
             // after we reset the device.
             let bus_number = self.device.bus_number();
 
-            let handle = self.device.open()?;
+            let mut handle = self.device.open()?;
+            handle.claim_interface(MCP2221A_INTERFACE)?;
             let mut buffer = [0u8; MCP_TRANSFER_SIZE];
             buffer[..RESET_SEQUENCE.len()].copy_from_slice(&RESET_SEQUENCE);
             handle.write_interrupt(MCP_WRITE_ENDPOINT, &buffer, config.timeout)?;
