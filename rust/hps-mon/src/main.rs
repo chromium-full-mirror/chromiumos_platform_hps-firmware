@@ -380,6 +380,14 @@ fn execute_locally(
                 eprintln!("Cannot perform command without I2C connection");
             }
         }
+        LocalOperation::SetFeatureEnable => {
+            if let Some(hps) = &hps {
+                let mut hps = hps.lock().unwrap();
+                hps.set_feature_enable(c.arg)?;
+            } else {
+                eprintln!("Cannot perform command without I2C connection");
+            }
+        }
         LocalOperation::SleepMilliseconds => {
             std::thread::sleep(Duration::from_millis(c.arg as u64));
         }

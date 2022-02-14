@@ -32,6 +32,7 @@ enum CommandType {
     McuCommand(McuDebugCommand),
     McuCommandWithArg(McuDebugCommand),
     LocalOperation(LocalOperation),
+    LocalOperationWithArg(LocalOperation),
     ExitCommand,
 }
 
@@ -42,6 +43,7 @@ pub(crate) enum LocalOperation {
     WriteGateware,
     WriteSocRom,
     I2cCommand(mcu_common::commands::Command),
+    SetFeatureEnable,
     SleepMilliseconds,
 }
 
@@ -109,6 +111,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "rotate_image_clockwise_on",
         help_text: "Enable image rotation clockwise (for horizontal camera mount)",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOn),
+    },
+    AvailableDebugCommand {
+        keyword: "set_feature_enable",
+        help_text: "Set contents of feature enable register. 0=off, 1=presence, 2=SPD, 3=both",
+        command_type: CommandType::LocalOperationWithArg(LocalOperation::SetFeatureEnable),
     },
     AvailableDebugCommand {
         keyword: "launch_app",
@@ -383,6 +390,12 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
                             arg: 0,
                         })));
                     }
+                    CommandType::FpgaCommandWithArg(code) => {
+                        return Ok(Some(Command::Fpga(DebugCommand {
+                            code: code.into(),
+                            arg: get_arg(command, parts.next())?,
+                        })));
+                    }
                     CommandType::McuCommand(mcu_command) => {
                         return Ok(Some(Command::Mcu(DebugCommand {
                             code: mcu_command.into(),
@@ -395,16 +408,16 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
                             arg: get_arg(command, parts.next())?,
                         })));
                     }
-                    CommandType::FpgaCommandWithArg(code) => {
-                        return Ok(Some(Command::Fpga(DebugCommand {
-                            code: code.into(),
-                            arg: get_arg(command, parts.next())?,
-                        })));
-                    }
                     CommandType::LocalOperation(op) => {
                         return Ok(Some(Command::Local(LocalCommand {
                             operation: op,
                             arg: 0,
+                        })));
+                    }
+                    CommandType::LocalOperationWithArg(op) => {
+                        return Ok(Some(Command::Local(LocalCommand {
+                            operation: op,
+                            arg: get_arg(command, parts.next())?,
                         })));
                     }
                     CommandType::ExitCommand => return Ok(Some(Command::Exit)),

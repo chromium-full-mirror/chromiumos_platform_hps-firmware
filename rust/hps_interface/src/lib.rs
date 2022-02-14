@@ -74,6 +74,10 @@ pub trait Hps {
         self.write_register(registers::COMMAND, command.into())
     }
 
+    fn set_feature_enable(&mut self, value: u16) -> Result<()> {
+        self.write_register(registers::ENABLED_FEATURES, value)
+    }
+
     fn is_memory_bank_available(&mut self, memory_bank: u8) -> bool {
         if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
             if available & (1 << memory_bank) != 0 {
