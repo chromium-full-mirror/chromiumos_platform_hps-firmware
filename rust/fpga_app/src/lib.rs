@@ -20,7 +20,6 @@ pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
 pub use classifier::TfLiteInitStatus;
 use core::convert::TryFrom;
-use core::fmt::Write;
 pub use debug_commands::DebugCommand;
 use embedded_hal::blocking::spi;
 pub use features::Features;
@@ -47,7 +46,18 @@ macro_rules! mcu_println {
         }
         #[cfg(not(test))]
         {
-            let _ = writeln!($mcu.mcu_mut(), $($tts)*);
+            #[cfg(feature = "dev")]
+            {
+                use core::fmt::Write;
+                let _ = writeln!($mcu.mcu_mut(), $($tts)*);
+            }
+            // If printing of any kind is disabled, then pass our arguments to
+            // the formatter, but discard the result. This avoids warnings about
+            // unused variables.
+            #[cfg(not(feature = "dev"))]
+            {
+                let _ = format_args!($($tts)*);
+            }
         }
     };
 }
@@ -116,7 +126,7 @@ where
         }
         loop {
             if let Err(error) = self.loop_body() {
-                let _ = writeln!(&mut self.mcu, "Error: {:?}", error);
+                mcu_println!(&mut self.mcu, "Error: {:?}", error);
             }
         }
     }
