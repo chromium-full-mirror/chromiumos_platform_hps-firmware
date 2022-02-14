@@ -152,7 +152,7 @@ where
             self.camera_data_test();
         }
 
-        if cfg!(feature = "debug-commands") {
+        if cfg!(feature = "dev") {
             self.process_debug_commands();
         }
 
