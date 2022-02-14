@@ -21,5 +21,5 @@ anyhow = "1.0.38"
 
 [features]
 image-transfer = [ "application/image-transfer" ]
-dev = []
+dev = [ "application/dev" ]
 self-test = []

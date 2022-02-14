@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::DebugCommand;
 use crate::Error;
 use crate::Result;
 use application::fpga::commands;
 use application::fpga::BUFFER_SIZE;
 use application::Configuration;
 use application::Status;
-use core::convert::TryFrom;
 use embedded_hal::blocking::spi;
 
 // Number of times the controller will poll the MCU for a response before giving
@@ -133,12 +131,14 @@ where
 
     /// Returns the next pending debug command (if any) together with an
     /// argument for that command.
-    pub fn next_debug_command(&mut self) -> Option<(DebugCommand, u16)> {
+    #[cfg(feature = "dev")]
+    pub fn next_debug_command(&mut self) -> Option<(crate::DebugCommand, u16)> {
+        use core::convert::TryFrom;
         self.clear_buffer();
         self.buffer[0] = commands::GET_DEBUG_COMMAND;
         self.exchange().ok()?;
         Some((
-            DebugCommand::try_from(self.buffer[2]).ok()?,
+            crate::DebugCommand::try_from(self.buffer[2]).ok()?,
             u16::from_le_bytes([self.buffer[3], self.buffer[4]]),
         ))
     }
@@ -192,12 +192,15 @@ impl<S, E> core::fmt::Write for McuInterface<S>
 where
     S: spi::Transfer<u8, Error = E>,
 {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        for chunk in s.as_bytes().chunks(BUFFER_SIZE - 1) {
-            self.clear_buffer();
-            self.buffer[0] = commands::DEBUG_LOG;
-            self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
-            self.exchange().map_err(|_| core::fmt::Error)?;
+    fn write_str(&mut self, _s: &str) -> core::fmt::Result {
+        #[cfg(feature = "dev")]
+        {
+            for chunk in _s.as_bytes().chunks(BUFFER_SIZE - 1) {
+                self.clear_buffer();
+                self.buffer[0] = commands::DEBUG_LOG;
+                self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
+                self.exchange().map_err(|_| core::fmt::Error)?;
+            }
         }
         Ok(())
     }
@@ -291,6 +294,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "dev")]
     fn test_println() {
         use core::fmt::Write;
         let mut command = vec![commands::DEBUG_LOG];
@@ -338,18 +342,19 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "dev")]
     fn test_next_debug_command() {
         let command = vec![commands::GET_DEBUG_COMMAND];
         let response = vec![
             status::OK,
             commands::GET_DEBUG_COMMAND,
-            DebugCommand::ClassificationOn.into(),
+            crate::DebugCommand::ClassificationOn.into(),
             0x34,
             0x12,
         ];
         let mut mcu = command_response_interface(command, response);
         let value = mcu.next_debug_command();
-        assert_eq!(value, Some((DebugCommand::ClassificationOn, 0x1234)));
+        assert_eq!(value, Some((crate::DebugCommand::ClassificationOn, 0x1234)));
         mcu.spi.done();
     }
 

@@ -162,7 +162,8 @@ where
             self.camera_data_test();
         }
 
-        if cfg!(feature = "dev") {
+        #[cfg(feature = "dev")]
+        {
             self.process_debug_commands();
         }
 
@@ -274,6 +275,7 @@ where
         Ok(())
     }
 
+    #[cfg(feature = "dev")]
     fn process_debug_commands(&mut self) {
         while let Some((command, arg)) = self.mcu.next_debug_command() {
             // If all features are enabled then we exhaustively match, however
@@ -331,6 +333,7 @@ where
         }
     }
 
+    #[cfg(feature = "dev")]
     fn self_test(&mut self) -> Result<()> {
         if !cfg!(feature = "self-test") {
             mcu_println!(self, "Self-test feature not enabled");
@@ -347,6 +350,7 @@ where
         Ok(())
     }
 
+    #[cfg(feature = "dev")]
     fn check_score(
         &mut self,
         model_number: u32,
