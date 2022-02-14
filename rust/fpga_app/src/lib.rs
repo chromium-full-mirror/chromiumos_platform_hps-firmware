@@ -493,6 +493,7 @@ mod tests {
     use crate::camera::testing::FakeImageDataReceiver;
     use crate::timer::testing::FakeTimer;
     use application::fpga;
+    use application::fpga::commands::Action;
     use application::Configuration;
 
     use super::*;
@@ -530,7 +531,7 @@ mod tests {
 
         fn expect_get_config(self, config: &Configuration) -> Self {
             self.expect(
-                vec![fpga::commands::READ_CONFIG_REGISTERS],
+                vec![Action::ReadConfigRegisters.into()],
                 config.to_bytes().to_vec(),
             )
         }
@@ -539,7 +540,7 @@ mod tests {
             let register_bytes = register.to_be_bytes();
             self.expect(
                 vec![
-                    fpga::commands::READ_CAMERA_I2C,
+                    Action::ReadCameraI2c.into(),
                     1,
                     register_bytes[0],
                     register_bytes[1],
@@ -552,7 +553,7 @@ mod tests {
             let register_bytes = register.to_be_bytes();
             self.expect(
                 vec![
-                    fpga::commands::WRITE_CAMERA_I2C,
+                    Action::WriteCameraI2c.into(),
                     1,
                     register_bytes[0],
                     register_bytes[1],
@@ -564,7 +565,7 @@ mod tests {
 
         fn expect_report_status(self, status: &Status) -> Self {
             let mut request = status.to_bytes().to_vec();
-            request.insert(0, fpga::commands::WRITE_STATUS_REGISTERS);
+            request.insert(0, Action::WriteStatusRegisters.into());
             self.expect(request, vec![])
         }
 

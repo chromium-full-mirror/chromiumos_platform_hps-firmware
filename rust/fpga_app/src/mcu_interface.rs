@@ -4,7 +4,7 @@
 
 use crate::Error;
 use crate::Result;
-use application::fpga::commands;
+use application::fpga::commands::Action;
 use application::fpga::BUFFER_SIZE;
 use application::Configuration;
 use application::Status;
@@ -49,14 +49,14 @@ where
 
     pub fn report_boot(&mut self, version: u8) -> Result<()> {
         self.clear_buffer();
-        self.buffer[0] = commands::REPORT_FPGA_BOOT;
+        self.buffer[0] = Action::ReportFpgaBoot.into();
         self.buffer[1] = version;
         self.exchange()
     }
 
     pub fn read_config(&mut self) -> Result<Configuration> {
         self.clear_buffer();
-        self.buffer[0] = commands::READ_CONFIG_REGISTERS;
+        self.buffer[0] = Action::ReadConfigRegisters.into();
         self.exchange()?;
         // safety: The transfer succeeded, so the MCU will have put a valid
         // Configuration into the returned buffer. We use the same definition of
@@ -70,14 +70,14 @@ where
     pub fn report_status(&mut self, status: &Status) -> Result<()> {
         self.clear_buffer();
         let status_bytes = status.to_bytes();
-        self.buffer[0] = commands::WRITE_STATUS_REGISTERS;
+        self.buffer[0] = Action::WriteStatusRegisters.into();
         self.buffer[1..1 + status_bytes.len()].copy_from_slice(&status_bytes);
         self.exchange()
     }
 
     pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
         self.clear_buffer();
-        self.buffer[0] = commands::WRITE_CAMERA_I2C;
+        self.buffer[0] = Action::WriteCameraI2c.into();
         self.buffer[1] = 1;
         self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
         self.buffer[4] = value;
@@ -87,7 +87,7 @@ where
     pub fn read_camera_reg(&mut self, register: u16) -> u8 {
         loop {
             self.clear_buffer();
-            self.buffer[0] = commands::READ_CAMERA_I2C;
+            self.buffer[0] = Action::ReadCameraI2c.into();
             self.buffer[1] = 1;
             self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
             if self.exchange().is_ok() {
@@ -98,7 +98,7 @@ where
 
     /// Sends an echo request to the MCU then checks that we get back the same data.
     pub fn echo_test(&mut self) -> Result<()> {
-        self.buffer[0] = commands::ECHO;
+        self.buffer[0] = Action::Echo.into();
         for (index, byte) in self.buffer[2..].iter_mut().enumerate() {
             *byte = index as u8;
         }
@@ -135,7 +135,7 @@ where
     pub fn next_debug_command(&mut self) -> Option<(crate::DebugCommand, u16)> {
         use core::convert::TryFrom;
         self.clear_buffer();
-        self.buffer[0] = commands::GET_DEBUG_COMMAND;
+        self.buffer[0] = Action::GetDebugCommand.into();
         self.exchange().ok()?;
         Some((
             crate::DebugCommand::try_from(self.buffer[2]).ok()?,
@@ -152,7 +152,7 @@ where
             .peekable();
         while to_send.peek().is_some() {
             self.clear_buffer();
-            self.buffer[0] = commands::DEBUG_IMAGE;
+            self.buffer[0] = Action::DebugImage.into();
             for i in 1..BUFFER_SIZE {
                 match to_send.next() {
                     Some(byte) => self.buffer[i] = *byte,
@@ -197,7 +197,7 @@ where
         {
             for chunk in _s.as_bytes().chunks(BUFFER_SIZE - 1) {
                 self.clear_buffer();
-                self.buffer[0] = commands::DEBUG_LOG;
+                self.buffer[0] = Action::DebugLog.into();
                 self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
                 self.exchange().map_err(|_| core::fmt::Error)?;
             }
@@ -250,7 +250,6 @@ impl From<hm01b0::Error> for Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use application::fpga::commands;
     use application::fpga::status;
     use embedded_hal_mock::spi;
 
@@ -277,8 +276,10 @@ mod tests {
 
     #[test]
     fn test_resync() {
-        let mut mcu =
-            command_response_interface(vec![commands::POLL], vec![status::READY, commands::POLL]);
+        let mut mcu = command_response_interface(
+            vec![Action::Poll.into()],
+            vec![status::READY, Action::Poll.into()],
+        );
         mcu.resync();
         mcu.spi.done();
     }
@@ -286,8 +287,8 @@ mod tests {
     #[test]
     fn test_report_boot() {
         let mut mcu = command_response_interface(
-            vec![commands::REPORT_FPGA_BOOT, 42],
-            vec![status::OK, commands::REPORT_FPGA_BOOT],
+            vec![Action::ReportFpgaBoot.into(), 42],
+            vec![status::OK, Action::ReportFpgaBoot.into()],
         );
         mcu.report_boot(42).unwrap();
         mcu.spi.done();
@@ -297,10 +298,10 @@ mod tests {
     #[cfg(feature = "dev")]
     fn test_println() {
         use core::fmt::Write;
-        let mut command = vec![commands::DEBUG_LOG];
+        let mut command = vec![Action::DebugLog.into()];
         command.extend_from_slice(b"Hello, world");
 
-        let response = vec![status::OK, commands::DEBUG_LOG];
+        let response = vec![status::OK, Action::DebugLog.into()];
 
         let mut mcu = command_response_interface(command, response);
 
@@ -310,9 +311,9 @@ mod tests {
 
     #[test]
     fn test_read_config() {
-        let command = vec![commands::READ_CONFIG_REGISTERS];
+        let command = vec![Action::ReadConfigRegisters.into()];
 
-        let mut response = vec![status::OK, commands::READ_CONFIG_REGISTERS];
+        let mut response = vec![status::OK, Action::ReadConfigRegisters.into()];
         response.extend_from_slice(&0x1234_u16.to_le_bytes());
 
         let mut mcu = command_response_interface(command, response);
@@ -324,8 +325,8 @@ mod tests {
 
     #[test]
     fn test_write_camera_reg() {
-        let command = vec![commands::WRITE_CAMERA_I2C, 1, 0x12, 0x34, 0x56];
-        let response = vec![status::OK, commands::WRITE_CAMERA_I2C];
+        let command = vec![Action::WriteCameraI2c.into(), 1, 0x12, 0x34, 0x56];
+        let response = vec![status::OK, Action::WriteCameraI2c.into()];
         let mut mcu = command_response_interface(command, response);
         mcu.write_camera_reg(0x1234, 0x56).unwrap();
         mcu.spi.done();
@@ -333,8 +334,8 @@ mod tests {
 
     #[test]
     fn test_read_camera_reg() {
-        let command = vec![commands::READ_CAMERA_I2C, 1, 0x12, 0x34];
-        let response = vec![status::OK, commands::READ_CAMERA_I2C, 0x42];
+        let command = vec![Action::ReadCameraI2c.into(), 1, 0x12, 0x34];
+        let response = vec![status::OK, Action::ReadCameraI2c.into(), 0x42];
         let mut mcu = command_response_interface(command, response);
         let value = mcu.read_camera_reg(0x1234);
         assert_eq!(value, 0x42);
@@ -344,10 +345,10 @@ mod tests {
     #[test]
     #[cfg(feature = "dev")]
     fn test_next_debug_command() {
-        let command = vec![commands::GET_DEBUG_COMMAND];
+        let command = vec![Action::GetDebugCommand.into()];
         let response = vec![
             status::OK,
-            commands::GET_DEBUG_COMMAND,
+            Action::GetDebugCommand.into(),
             crate::DebugCommand::ClassificationOn.into(),
             0x34,
             0x12,
@@ -361,8 +362,8 @@ mod tests {
     #[test]
     fn test_report_status() {
         let mut mcu = command_response_interface(
-            vec![commands::WRITE_STATUS_REGISTERS, 0, 0, 0, 0, 0x34, 0x12],
-            vec![status::OK, commands::WRITE_STATUS_REGISTERS],
+            vec![Action::WriteStatusRegisters.into(), 0, 0, 0, 0, 0x34, 0x12],
+            vec![status::OK, Action::WriteStatusRegisters.into()],
         );
         let mut status = Status::default();
         status.loop_count = 0x1234;

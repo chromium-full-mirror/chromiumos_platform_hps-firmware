@@ -250,11 +250,12 @@ const APP: () = {
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
-            fpga::Action::SetDebugLed(true) => {
-                ctx.resources.debug_led.set_high().unwrap();
-            }
-            fpga::Action::SetDebugLed(false) => {
-                ctx.resources.debug_led.set_low().unwrap();
+            fpga::Action::SetDebugLed => {
+                if buffer[1] == 0 {
+                    ctx.resources.debug_led.set_low().unwrap();
+                } else {
+                    ctx.resources.debug_led.set_high().unwrap();
+                }
             }
             fpga::Action::ReadConfigRegisters => ctx
                 .resources
@@ -319,7 +320,8 @@ const APP: () = {
                     &mut buffer[2..(num_addresses * 3 + 3)],
                 );
             }
-            fpga::Action::None => {}
+            fpga::Action::Poll => {}
+            fpga::Action::Echo => {}
         }
         request.prepare_to_send(&mut buffer);
         ctx.resources.spi.lock(|spi| spi.send(buffer));

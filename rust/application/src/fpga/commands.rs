@@ -2,44 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/// Sent by the FPGA when it's awaiting a reply to a previous command or when
-/// it's out-of-sync.
-pub const POLL: u8 = 0;
+use core::convert::From;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 
-/// MCU responds with values in camera's register.
-pub const READ_CAMERA_I2C: u8 = 0x10;
+#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u8)]
+pub enum Action {
+    /// Sent by the FPGA when it's awaiting a reply to a previous command or
+    /// when it's out-of-sync.
+    Poll = 0,
 
-/// MCU writes requested values to camera's register.
-pub const WRITE_CAMERA_I2C: u8 = 0x11;
+    /// MCU responds with values in camera's register.
+    ReadCameraI2c = 0x10,
 
-/// MCU responds with the bytes of a configuration struct that is agreed upon by
-/// both sides.
-pub const READ_CONFIG_REGISTERS: u8 = 0x20;
+    /// MCU writes requested values to camera's register.
+    WriteCameraI2c = 0x11,
 
-/// Writes a struct agreed upon by both sides that containing status registers.
-/// These status registers are then available to the host individually over i2c.
-pub const WRITE_STATUS_REGISTERS: u8 = 0x21;
+    /// MCU responds with the bytes of a configuration struct that is agreed
+    /// upon by both sides.
+    ReadConfigRegisters = 0x20,
 
-/// Report that the FPGA has booted. We'll update the register that reports how
-/// many times the FPGA has booted. Takes a 1 byte argument that is a SOC ROM
-/// version number.
-pub const REPORT_FPGA_BOOT: u8 = 0x22;
+    /// Writes a struct agreed upon by both sides that containing status
+    /// registers. These status registers are then available to the host
+    /// individually over i2c.
+    WriteStatusRegisters = 0x21,
 
-/// Sets the debug LED on or off based on whether the first byte of the payload
-/// is 1 or 0 respectively.
-pub const SET_DEBUG_LED: u8 = 0x60;
+    /// Report that the FPGA has booted. We'll update the register that reports
+    /// how many times the FPGA has booted. Takes a 1 byte argument that is a
+    /// SOC ROM version number.
+    ReportFpgaBoot = 0x22,
 
-/// Logs the payload up to the first null character. Payload must be UTF-8.
-pub const DEBUG_LOG: u8 = 0x61;
+    /// Sets the debug LED on or off based on whether the first byte of the
+    /// payload is 1 or 0 respectively.
+    SetDebugLed = 0x60,
 
-/// Payload contains bytes of image data to send to the host.
-#[cfg(feature = "image-transfer")]
-pub const DEBUG_IMAGE: u8 = 0x62;
+    /// Logs the payload up to the first null character. Payload must be UTF-8.
+    #[cfg(feature = "dev")]
+    DebugLog = 0x61,
 
-/// Returns the next debug command sent over RTT if any.
-pub const GET_DEBUG_COMMAND: u8 = 0x63;
+    /// Payload contains bytes of image data to send to the host.
+    #[cfg(feature = "image-transfer")]
+    DebugImage = 0x62,
 
-/// MCU will respond with the same data that was sent by the FPGA. This is used
-/// for testing the reliability of FPGA<->MCU communication. Note, the first
-/// byte sent by the FPGA actually gets overwritten by the command.
-pub const ECHO: u8 = 0x64;
+    /// Returns the next debug command sent over RTT if any.
+    #[cfg(feature = "dev")]
+    GetDebugCommand = 0x63,
+
+    /// MCU will respond with the same data that was sent by the FPGA. This is
+    /// used for testing the reliability of FPGA<->MCU communication. Note, the
+    /// first byte sent by the FPGA actually gets overwritten by the command.
+    Echo = 0x64,
+}

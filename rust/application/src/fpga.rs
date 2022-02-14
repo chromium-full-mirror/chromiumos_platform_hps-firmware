@@ -8,7 +8,10 @@ pub mod status;
 use crate::application_state::Configuration;
 use crate::application_state::Status;
 use crate::ApplicationState;
+use core::convert::TryFrom;
 use mcu_common::MemBlock;
+
+pub use self::commands::Action;
 
 /// Size of buffer used for SPI communcation between the FPGA and the MCU.
 pub const BUFFER_SIZE: usize = 64;
@@ -21,70 +24,21 @@ pub struct Request {
     response_code: u8,
 }
 
-#[derive(Eq, PartialEq, Debug)]
-pub enum Action {
-    None,
-    SetDebugLed(bool),
-    ReadConfigRegisters,
-    WriteStatusRegisters,
-    #[cfg(feature = "dev")]
-    DebugLog,
-    #[cfg(feature = "image-transfer")]
-    DebugImage,
-    #[cfg(feature = "dev")]
-    GetDebugCommand,
-    ReadCameraI2c,
-    WriteCameraI2c,
-    ReportFpgaBoot,
-}
-
 impl Request {
     pub fn from_received_packet(buffer: &MemBlock) -> Self {
         let command_code = buffer[0];
-        let mut action = Action::None;
         let mut response_code = status::OK;
-        match command_code {
-            crate::fpga::commands::POLL => {
+        let action = match Action::try_from(command_code) {
+            Ok(Action::Poll) => {
                 response_code = status::READY;
+                Action::Poll
             }
-            crate::fpga::commands::READ_CONFIG_REGISTERS => {
-                action = Action::ReadConfigRegisters;
-            }
-            crate::fpga::commands::WRITE_STATUS_REGISTERS => {
-                action = Action::WriteStatusRegisters;
-            }
-            crate::fpga::commands::SET_DEBUG_LED => {
-                action = Action::SetDebugLed(buffer[1] != 0);
-            }
-            #[cfg(feature = "dev")]
-            crate::fpga::commands::DEBUG_LOG => {
-                action = Action::DebugLog;
-            }
-            #[cfg(feature = "image-transfer")]
-            crate::fpga::commands::DEBUG_IMAGE => {
-                action = Action::DebugImage;
-            }
-            #[cfg(feature = "dev")]
-            crate::fpga::commands::GET_DEBUG_COMMAND => {
-                action = Action::GetDebugCommand;
-            }
-            crate::fpga::commands::READ_CAMERA_I2C => {
-                action = Action::ReadCameraI2c;
-            }
-            crate::fpga::commands::WRITE_CAMERA_I2C => {
-                action = Action::WriteCameraI2c;
-            }
-            crate::fpga::commands::REPORT_FPGA_BOOT => {
-                action = Action::ReportFpgaBoot;
-            }
-            crate::fpga::commands::ECHO => {
-                // No action needs to be performed. We just leave the data as it
-                // is in the buffer and it will be returned as-is.
-            }
-            _ => {
+            Ok(command) => command,
+            Err(_) => {
                 response_code = status::ERROR;
+                Action::Poll
             }
-        }
+        };
         Request {
             action,
             response_code,
@@ -155,14 +109,14 @@ mod tests {
         let mut state = ApplicationState::default();
         state.configuration.enabled_features = 0x1234;
         let mut buffer = MemBlock::with_capacity(64);
-        buffer[0] = crate::fpga::commands::READ_CONFIG_REGISTERS;
+        buffer[0] = Action::ReadConfigRegisters.into();
         let request = Request::from_received_packet(&buffer);
         assert_eq!(request.action, Action::ReadConfigRegisters);
 
         read_config_registers(&mut buffer, &state);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::OK);
-        assert_eq!(buffer[1], crate::fpga::commands::READ_CONFIG_REGISTERS);
+        assert_eq!(buffer[1], Action::ReadConfigRegisters.into());
         assert_eq!(buffer[2], 0x34);
         assert_eq!(buffer[3], 0x12);
         assert_eq!(buffer[4], 0);
@@ -172,7 +126,7 @@ mod tests {
     fn test_write_status() {
         let mut state = ApplicationState::default();
         let mut buffer = MemBlock::with_capacity(64);
-        buffer[0] = crate::fpga::commands::WRITE_STATUS_REGISTERS;
+        buffer[0] = Action::WriteStatusRegisters.into();
         buffer[1] = 0x12;
         buffer[2] = 0xab;
         let request = Request::from_received_packet(&buffer);
@@ -181,7 +135,7 @@ mod tests {
         write_status_registers(&buffer, &mut state);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::OK);
-        assert_eq!(buffer[1], crate::fpga::commands::WRITE_STATUS_REGISTERS);
+        assert_eq!(buffer[1], Action::WriteStatusRegisters.into());
         assert_eq!(state.status.person_status, 0xab12);
     }
 
@@ -189,7 +143,7 @@ mod tests {
     fn test_poll_command() {
         let mut buffer = MemBlock::with_capacity(64);
         let request = Request::from_received_packet(&buffer);
-        assert_eq!(request.action, Action::None);
+        assert_eq!(request.action, Action::Poll);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::READY);
         assert_eq!(buffer[1], 0);
@@ -200,7 +154,7 @@ mod tests {
         let mut buffer = MemBlock::with_capacity(64);
         buffer[0] = 0xff;
         let request = Request::from_received_packet(&buffer);
-        assert_eq!(request.action, Action::None);
+        assert_eq!(request.action, Action::Poll);
         request.prepare_to_send(&mut buffer);
         assert_eq!(buffer[0], status::ERROR);
         assert_eq!(buffer[1], 0xff);
