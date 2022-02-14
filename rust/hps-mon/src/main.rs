@@ -31,6 +31,7 @@ use std::time::Duration;
 use text_channel::TextChannel;
 
 use crate::debug_commands::Command;
+use crate::debug_commands::LocalCommand;
 use crate::debug_commands::LocalOperation;
 
 const SOC_ROM_OFFSET: usize = 2 * 1024 * 1024;
@@ -209,10 +210,10 @@ fn main() -> Result<()> {
         let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
         let mut to_device = rtt.to_device.drain(..);
         run_loop(
+            console,
             channels,
             to_device.next(),
             to_device.next(),
-            console,
             cmd_response_channel,
             &flags,
             &mut *device,
@@ -273,10 +274,10 @@ fn create_channels(
 }
 
 fn run_loop(
+    console: Console,
     mut channels: Vec<Channel>,
     mut mcu_command_channel: Option<Box<dyn DataSink>>,
     mut fpga_command_channel: Option<Box<dyn DataSink>>,
-    console: Console,
     mut cmd_response_channel: Option<Box<dyn DataSource>>,
     flags: &Flags,
     device: &mut dyn Device,
@@ -300,60 +301,15 @@ fn run_loop(
             match command_kind {
                 Command::Fpga(c) => send_command_to_device(&c, &mut fpga_command_channel)?,
                 Command::Mcu(c) => send_command_to_device(&c, &mut mcu_command_channel)?,
-                Command::Local(LocalOperation::PrintHelp) => {
-                    debug_commands::print_help_text();
-                }
-                Command::Local(LocalOperation::Exit) => {
-                    return Ok(());
-                }
-                Command::Local(LocalOperation::ResetMcu) => {
-                    device.reset()?;
-                }
-                Command::Local(LocalOperation::WriteGateware) => {
-                    if let Some(file) = &flags.gateware {
-                        if let Err(error) = write_spi_flash::write_spi_flash(
-                            &mut mcu_command_channel,
-                            &mut cmd_response_channel,
-                            hps.clone(),
-                            0,
-                            file,
-                        ) {
-                            eprintln!("{}", error);
-                        }
-                    } else {
-                        eprintln!("--gateware must be specified on startup");
-                    }
-                }
-                Command::Local(LocalOperation::WriteSocRom) => {
-                    if let Some(file) = &flags.soc_rom {
-                        if let Err(error) = write_spi_flash::write_spi_flash(
-                            &mut mcu_command_channel,
-                            &mut cmd_response_channel,
-                            hps.clone(),
-                            SOC_ROM_OFFSET,
-                            file,
-                        ) {
-                            eprintln!("{}", error);
-                        }
-                    } else {
-                        eprintln!("--soc-rom must be specified on startup");
-                    }
-                }
-                Command::Local(LocalOperation::I2cCommand(command)) => {
-                    if let Some(hps) = &hps {
-                        let mut hps = hps.lock().unwrap();
-                        hps.perform_command(command)?;
-                        println!("Command {:?} running", command);
-                        while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
-                        hps.check_errors()?;
-                        println!("Command {:?} complete", command);
-                    } else {
-                        eprintln!("Cannot perform command without I2C connection");
-                    }
-                }
-                Command::Local(LocalOperation::SleepMilliseconds(ms)) => {
-                    std::thread::sleep(Duration::from_millis(ms));
-                }
+                Command::Local(c) => execute_locally(
+                    &c,
+                    &mut mcu_command_channel,
+                    &mut cmd_response_channel,
+                    flags,
+                    device,
+                    &hps,
+                )?,
+                Command::Exit => return Ok(()),
             };
         }
         // If we don't get any data from the device, we sleep, increasing how
@@ -367,6 +323,68 @@ fn run_loop(
             std::thread::sleep(Duration::from_millis(backoff_ms));
         }
     }
+}
+
+// Executes the given local command
+fn execute_locally(
+    c: &LocalCommand,
+    mut mcu_command_channel: &mut Option<Box<dyn DataSink>>,
+    mut cmd_response_channel: &mut Option<Box<dyn DataSource>>,
+    flags: &Flags,
+    device: &mut dyn Device,
+    hps: &Option<Arc<Mutex<dyn Hps + Send>>>,
+) -> Result<()> {
+    match c.operation {
+        LocalOperation::PrintHelp => debug_commands::print_help_text(),
+        LocalOperation::ResetMcu => device.reset()?,
+        LocalOperation::WriteGateware => {
+            if let Some(file) = &flags.gateware {
+                if let Err(error) = write_spi_flash::write_spi_flash(
+                    &mut mcu_command_channel,
+                    &mut cmd_response_channel,
+                    hps.clone(),
+                    0,
+                    file,
+                ) {
+                    eprintln!("{}", error);
+                }
+            } else {
+                eprintln!("--gateware must be specified on startup");
+            }
+        }
+        LocalOperation::WriteSocRom => {
+            if let Some(file) = &flags.soc_rom {
+                if let Err(error) = write_spi_flash::write_spi_flash(
+                    &mut mcu_command_channel,
+                    &mut cmd_response_channel,
+                    hps.clone(),
+                    SOC_ROM_OFFSET,
+                    file,
+                ) {
+                    eprintln!("{}", error);
+                }
+            } else {
+                eprintln!("--soc-rom must be specified on startup");
+            }
+        }
+
+        LocalOperation::I2cCommand(command) => {
+            if let Some(hps) = &hps {
+                let mut hps = hps.lock().unwrap();
+                hps.perform_command(command)?;
+                println!("Command {:?} running", command);
+                while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
+                hps.check_errors()?;
+                println!("Command {:?} complete", command);
+            } else {
+                eprintln!("Cannot perform command without I2C connection");
+            }
+        }
+        LocalOperation::SleepMilliseconds => {
+            std::thread::sleep(Duration::from_millis(c.arg as u64));
+        }
+    }
+    return Ok(());
 }
 
 fn send_command_to_device(

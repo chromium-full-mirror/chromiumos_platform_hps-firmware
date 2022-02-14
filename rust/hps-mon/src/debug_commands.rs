@@ -32,23 +32,30 @@ enum CommandType {
     McuCommand(McuDebugCommand),
     McuCommandWithArg(McuDebugCommand),
     LocalOperation(LocalOperation),
+    ExitCommand,
 }
 
 #[derive(Clone, Copy)]
 pub(crate) enum LocalOperation {
     PrintHelp,
-    Exit,
     ResetMcu,
     WriteGateware,
     WriteSocRom,
     I2cCommand(mcu_common::commands::Command),
-    SleepMilliseconds(u64),
+    SleepMilliseconds,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct LocalCommand {
+    pub(crate) operation: LocalOperation,
+    pub(crate) arg: u16,
 }
 
 pub(crate) enum Command {
     Fpga(DebugCommand),
     Mcu(DebugCommand),
-    Local(LocalOperation),
+    Local(LocalCommand),
+    Exit,
 }
 
 struct CommandEditor {
@@ -140,7 +147,7 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "exit",
         help_text: "Exit from hps-mon",
-        command_type: CommandType::LocalOperation(LocalOperation::Exit),
+        command_type: CommandType::ExitCommand,
     },
     AvailableDebugCommand {
         keyword: "reset_fpga",
@@ -190,7 +197,7 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "sleep_second",
         help_text: "Sleep for a second",
-        command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds(1000)),
+        command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds),
     },
     AvailableDebugCommand {
         keyword: "ping_mcu",
@@ -261,7 +268,7 @@ pub(crate) fn create_command_source(
     let (tx, rx) = mpsc::channel();
     if let Ok(commands) = parse_commands(initial_commands) {
         for command in commands {
-            let is_exit = matches!(command, Command::Local(LocalOperation::Exit));
+            let is_exit = matches!(command, Command::Exit);
             if tx.send(command).is_err() || is_exit {
                 return Ok(rx);
             }
@@ -274,7 +281,7 @@ pub(crate) fn create_command_source(
             let mut commands = vec![];
             console.pause_output_while(|| commands = editor.get_commands());
             for command in commands {
-                let is_exit = matches!(command, Command::Local(LocalOperation::Exit));
+                let is_exit = matches!(command, Command::Exit);
                 if tx.send(command).is_err() {
                     // Other end of channel has closed.
                     return;
@@ -305,7 +312,7 @@ impl DebugCommand {
 impl CommandEditor {
     fn get_commands(&mut self) -> Vec<Command> {
         if self.should_exit {
-            return vec![Command::Local(LocalOperation::Exit)];
+            return vec![Command::Exit];
         }
         while let Some(line) = self.readline(">> ") {
             if line.is_empty() {
@@ -395,8 +402,12 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
                         })));
                     }
                     CommandType::LocalOperation(op) => {
-                        return Ok(Some(Command::Local(op)));
+                        return Ok(Some(Command::Local(LocalCommand {
+                            operation: op,
+                            arg: 0,
+                        })));
                     }
+                    CommandType::ExitCommand => return Ok(Some(Command::Exit)),
                 }
             }
         }
