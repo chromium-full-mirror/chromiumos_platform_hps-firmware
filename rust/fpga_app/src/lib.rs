@@ -10,6 +10,7 @@ mod classifier;
 mod debug_commands;
 mod entropy;
 mod features;
+mod histogram;
 mod image_rotation;
 mod mcu_interface;
 mod timer;
@@ -179,8 +180,9 @@ where
             self.debug_rotate_image
                 .unwrap_or_else(|| rotation == Rotation::Clockwise),
         )?;
-        let entropy =
-            crate::entropy::calculate_entropy(self.classifier.input_data_mut(self.model_number));
+        let image_data = self.classifier.input_data(self.model_number);
+        let entropy = crate::entropy::calculate_entropy(image_data);
+        mcu_println!(self.mcu, "{}", histogram::Histogram::new(image_data));
 
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).

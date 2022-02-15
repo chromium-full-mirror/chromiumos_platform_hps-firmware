@@ -30,6 +30,10 @@ impl Classifier for NonTflmClassifier {
         self.data
     }
 
+    fn input_data(&self, _model_number: u32) -> &[u8] {
+        self.data
+    }
+
     fn run_model(&mut self, _model_number: u32) -> Result<i8> {
         Err(Error::TfLiteFailure)
     }

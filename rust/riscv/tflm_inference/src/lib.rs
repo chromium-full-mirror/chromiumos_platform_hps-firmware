@@ -44,12 +44,25 @@ impl TflmClassifier {
 
 impl fpga_app::Classifier for TflmClassifier {
     fn input_data_mut(&mut self, model_number: u32) -> &mut [u8] {
-        // safety: TflmClassifier::sole_instance requries that only a single
+        // safety: TflmClassifier::sole_instance requires that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
         // large enough to store NUM_PIXELS.
         unsafe {
             core::slice::from_raw_parts_mut(
+                tflite_get_input(model_number),
+                fpga_app::camera::NUM_PIXELS,
+            )
+        }
+    }
+
+    fn input_data(&self, model_number: u32) -> &[u8] {
+        // safety: TflmClassifier::sole_instance requires that only a single
+        // instance of TflmClassifier exists, so we can guarantee that our
+        // return value won't alias. The C++ code allocates an arena that is
+        // large enough to store NUM_PIXELS.
+        unsafe {
+            core::slice::from_raw_parts(
                 tflite_get_input(model_number),
                 fpga_app::camera::NUM_PIXELS,
             )

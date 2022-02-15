@@ -21,6 +21,9 @@ pub trait Classifier {
     /// Returns a mutable reference into which the input data can be written.
     fn input_data_mut(&mut self, model_number: u32) -> &mut [u8];
 
+    /// Returns a non-mutable reference to the data already written.
+    fn input_data(&self, model_number: u32) -> &[u8];
+
     /// Run a model.
     fn run_model(&mut self, model_number: u32) -> Result<i8>;
 
@@ -39,6 +42,10 @@ pub struct FakeClassifier {
 impl Classifier for FakeClassifier {
     fn input_data_mut(&mut self, _model_number: u32) -> &mut [u8] {
         self.input_data.as_mut()
+    }
+
+    fn input_data(&self, _model_number: u32) -> &[u8] {
+        &self.input_data
     }
 
     fn run_model(&mut self, model_number: u32) -> Result<i8> {
