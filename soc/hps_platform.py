@@ -104,6 +104,7 @@ class _CRG(Module):
 
 # Usual template for the bitstream build script.
 _standard_build_template = [
+    'set -o pipefail',
     '{{',
     'yosys -l {build_name}.rpt {build_name}.ys',
     ('nextpnr-nexus '
@@ -124,6 +125,7 @@ _standard_build_template = [
 
 # Parallel build template for use when searching for a seed
 _parallel_nextpnr_template = [
+    'set -o pipefail',
     '{{',
     'yosys -l {build_name}.rpt {build_name}.ys',
     ('parallel-nextpnr-nexus {build_name}.json {build_name}.pdc '
