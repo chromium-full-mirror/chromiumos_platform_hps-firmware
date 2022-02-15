@@ -260,7 +260,7 @@ where
             image_workflow::capture_images(i2c, capture_images_config, &config)
         }
         Command::WriteStage0(write_stage0_config) => {
-            write_stage0_workflow::run(i2c, &config, write_stage0_config)
+            write_stage0_workflow::Stage0Writer::run(i2c, &config, write_stage0_config)
         }
         Command::Test(test_config) => test_workflow::run(i2c, test_config, &config),
         Command::Factory(factory_config) => {
@@ -271,7 +271,7 @@ where
                 },
                 &config,
             )?;
-            write_stage0_workflow::run(
+            write_stage0_workflow::Stage0Writer::run(
                 i2c,
                 &config,
                 &WriteStage0Config {
