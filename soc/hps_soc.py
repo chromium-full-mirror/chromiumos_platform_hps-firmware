@@ -154,7 +154,8 @@ class HpsSoC(LiteXSoC):
         self.submodules.spiflash_mmap = LiteSPI(
             phy=self.spiflash_phy,
             mmap_endianness=self.cpu.endianness,
-            with_master=False)
+            with_master=False,
+            with_csr=False)
         self.csr.add('spiflash_mmap')
         self.csr.add('spiflash_phy')
         self.bus.add_slave(
