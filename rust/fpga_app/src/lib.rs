@@ -270,7 +270,6 @@ where
             core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
             core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
         }
-        let start = self.timer.now();
         let mcu = &mut self.mcu;
         mcu.wait_for_camera_standby();
         let buffer = self.classifier.input_data_mut(self.model_number);
@@ -279,7 +278,6 @@ where
         if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
-        mcu_println!(mcu, "Image captured in {}ms", self.timer.elapsed_ms(start));
         Ok(())
     }
 
