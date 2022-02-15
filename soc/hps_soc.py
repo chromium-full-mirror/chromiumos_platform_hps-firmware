@@ -74,7 +74,6 @@ class HpsSoC(LiteXSoC):
 
         # Clock, Controller, CPU
         self.submodules.crg = platform.create_crg()
-        self.add_controller('ctrl')
         self.add_cpu(self.cpu_type,
                      variant=variant,
                      reset_address=self.rom_origin,
@@ -201,7 +200,7 @@ class HpsSoC(LiteXSoC):
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     parser.add_argument('--nextpnr-seed', metavar='NUMBER',
-                        default=1, type=int,
+                        default=9, type=int,
                         help='Use random seed NUMBER for nextpnr')
 
 
