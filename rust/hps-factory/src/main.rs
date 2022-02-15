@@ -183,14 +183,6 @@ struct TestConfig {
 
 #[derive(Debug, Clap, Clone)]
 struct WriteStage0Config {
-    /// don't report stage0 already present as an error
-    #[clap(long)]
-    existing_stage0_ok: bool,
-
-    /// whether to erase existing stage0 if present
-    #[clap(long)]
-    update: bool,
-
     /// whether to disable the boot0 pin
     #[clap(long)]
     disable_boot0: bool,
@@ -275,8 +267,6 @@ where
                 i2c,
                 &config,
                 &WriteStage0Config {
-                    existing_stage0_ok: true,
-                    update: false,
                     disable_boot0: false,
                     permanent_lock: factory_config.permanent_lock,
                 },

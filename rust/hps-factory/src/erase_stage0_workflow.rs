@@ -5,7 +5,6 @@
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::ONE_TIME_INIT_LOADER_BYTES;
-use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
@@ -15,8 +14,15 @@ use hps_interface::Hps;
 use log::info;
 use mcu_common::registers;
 use mcu_common::OptionBytesConfigRequest;
+use std::fmt::Display;
 
-pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<()>
+#[derive(Debug)]
+pub(crate) enum EraseError {
+    PermanentlyLocked,
+    Other(anyhow::Error),
+}
+
+pub(crate) fn run<I, E>(i2c: &mut I, config: Config) -> Result<(), EraseError>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
@@ -27,7 +33,9 @@ where
         // If the system bootloader is already running, then most likely the
         // flash is empty, but just to be sure, we erase it.
         info!("Erasing flash using STM32 bootloader");
-        stm32.erase_flash()?;
+        stm32
+            .erase_flash()
+            .map_err(|e| -> anyhow::Error { e.into() })?;
         return Ok(());
     }
 
@@ -42,7 +50,8 @@ where
         hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
     );
     if current_options.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT) {
-        bail!("Stage0 is permanently write-protected and cannot be erased");
+        info!("Stage0 is permanently locked and cannot be erased.");
+        return Err(EraseError::PermanentlyLocked);
     }
     hps.write_register(
         registers::CONFIGURE_OPTION_BYTES,
@@ -51,4 +60,26 @@ where
     i2c.open_bootloader()
         .context("System bootloader didn't respond after erasing stage0")?;
     Ok(())
+}
+
+impl From<anyhow::Error> for EraseError {
+    fn from(other: anyhow::Error) -> Self {
+        EraseError::Other(other)
+    }
+}
+
+impl std::error::Error for EraseError {}
+
+impl Display for EraseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EraseError::PermanentlyLocked => {
+                write!(
+                    f,
+                    "Stage0 is permanently write-protected and cannot be erased"
+                )
+            }
+            EraseError::Other(other) => write!(f, "{}", other),
+        }
+    }
 }

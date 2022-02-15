@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::erase_stage0_workflow::EraseError;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::WriteStage0Config;
@@ -34,6 +35,11 @@ pub(crate) struct Stage0Writer<'a, I> {
     write_stage0_config: WriteStage0Config,
 }
 
+enum WriteKind {
+    Stage0Written,
+    PermanentlyLocked,
+}
+
 impl<'a, I, E> Stage0Writer<'a, I>
 where
     I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
@@ -49,34 +55,32 @@ where
             config: config.clone(),
             write_stage0_config: write_stage0_config.clone(),
         };
-        let stage0_written = stage0_writer.write_stage0()?;
-        stage0_writer.write_one_time_init()?;
-        // TODO: If stage0 was already present, we probably still want to
-        // protect stage0 and verify that protection. For now, we preserve the
-        // behavior of the code that used to be here.
-        if stage0_written {
-            stage0_writer.reset_to_stage0()?;
-            stage0_writer.protect_stage0()?;
-            stage0_writer.verify_protection()?;
+        if matches!(stage0_writer.write_stage0()?, WriteKind::PermanentlyLocked) {
+            return Ok(());
         }
+        stage0_writer.write_one_time_init()?;
+        stage0_writer.reset_to_stage0()?;
+        stage0_writer.protect_stage0()?;
+        stage0_writer.verify_protection()?;
         Ok(())
     }
 
-    fn write_stage0(&mut self) -> Result<bool> {
+    fn write_stage0(&mut self) -> Result<WriteKind> {
         let i2c = &mut self.i2c;
         if let Ok(mut hps) = i2c.open_hps() {
             hps.perform_command(Command::Reset)?;
             if let Ok(mut hps) = i2c.open_hps() {
                 match hps.stage()? {
                     Stage::Stage0 => {
-                        if self.write_stage0_config.existing_stage0_ok {
-                            info!("Stage0 already present on device");
-                            return Ok(false);
-                        } else if self.write_stage0_config.update {
-                            info!("Stage0 already present on device, erasing.");
-                            crate::erase_stage0_workflow::run(i2c.i2c, self.config.clone())?;
-                        } else {
-                            bail!("Stage0 already present and needs to be erased before update");
+                        info!("Stage0 already present on device, erasing.");
+                        match crate::erase_stage0_workflow::run(i2c.i2c, self.config.clone()) {
+                            Ok(_) => {}
+                            Err(EraseError::PermanentlyLocked) => {
+                                // We always consider a permanently locked stage0 to be a success.
+                                info!("Stage0 already permanently locked. Nothing more to do.");
+                                return Ok(WriteKind::PermanentlyLocked);
+                            }
+                            Err(EraseError::Other(other)) => return Err(other),
                         }
                     }
                     other => bail!("HPS firmware is present, but found {:?} not stage0", other),
@@ -122,7 +126,7 @@ where
         }
         bar.finish();
         info!("Stage0 written and verified");
-        Ok(true)
+        Ok(WriteKind::Stage0Written)
     }
 
     fn write_one_time_init(&mut self) -> Result<()> {
