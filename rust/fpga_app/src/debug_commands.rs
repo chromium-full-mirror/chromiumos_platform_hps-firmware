@@ -21,4 +21,5 @@ pub enum DebugCommand {
     SelfTest = 18,
     TestSpiFlashReads = 19,
     TestFpgaMcuComms = 20,
+    TransferCount = 21,
 }

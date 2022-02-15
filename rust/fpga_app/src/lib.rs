@@ -80,7 +80,7 @@ pub struct App<S, I, C, T> {
     image_data_receiver: I,
     classifier: C,
     #[cfg(feature = "image-transfer")]
-    image_transfer_enabled: bool,
+    image_transfer_count: u32,
     classification_enabled: bool,
     debug_rotate_image: Option<bool>,
     calibration_bad_frames: u8,
@@ -103,7 +103,7 @@ where
             image_data_receiver,
             classifier,
             #[cfg(feature = "image-transfer")]
-            image_transfer_enabled: false,
+            image_transfer_count: 0,
             classification_enabled: false,
             debug_rotate_image: None,
             calibration_bad_frames: 0,
@@ -186,9 +186,12 @@ where
         // I2C) or via a hps-mon debug command (transfer over RTT).
         #[cfg(feature = "image-transfer")]
         {
-            if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_enabled {
+            if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_count != 0 {
                 self.mcu
                     .send_image_data(self.classifier.input_data_mut(self.model_number))?;
+            }
+            if self.image_transfer_count != 0 && self.image_transfer_count != u32::MAX {
+                self.image_transfer_count -= 1;
             }
         }
 
@@ -305,13 +308,18 @@ where
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOn => {
-                    self.image_transfer_enabled = true;
-                    mcu_println!(self, "Image transfer enabled");
+                    self.image_transfer_count = u32::MAX;
+                    mcu_println!(self, "Image transfer enabled (continuous)");
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferOff => {
-                    self.image_transfer_enabled = false;
+                    self.image_transfer_count = 0;
                     mcu_println!(self, "Image transfer disabled");
+                }
+                #[cfg(feature = "image-transfer")]
+                DebugCommand::TransferCount => {
+                    self.image_transfer_count = arg as u32;
+                    mcu_println!(self, "Image transfer enabled ({} images)", arg);
                 }
                 DebugCommand::ExposureCalibration => {
                     if self.calibrate_camera(5).is_err() {

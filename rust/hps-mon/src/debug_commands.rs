@@ -26,8 +26,6 @@ struct AvailableDebugCommand {
 
 enum CommandType {
     FpgaCommand(fpga_app::DebugCommand),
-    // TODO: Remove this if we don't end up using it soon.
-    #[allow(dead_code)]
     FpgaCommandWithArg(fpga_app::DebugCommand),
     McuCommand(McuDebugCommand),
     McuCommandWithArg(McuDebugCommand),
@@ -91,6 +89,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "transfer_on",
         help_text: "Enable image transfer",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferOn),
+    },
+    AvailableDebugCommand {
+        keyword: "transfer_count",
+        help_text: "Transfer a given number of images",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::TransferCount),
     },
     AvailableDebugCommand {
         keyword: "exposure_calibration",
