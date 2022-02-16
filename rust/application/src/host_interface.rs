@@ -11,6 +11,7 @@ use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
 use mcu_common::CommonHostInterface;
+use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_common::Status;
 
@@ -163,6 +164,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 if let Ok(command) = Command::try_from(value) {
                     self.command_triggered();
                     return Some(Event::Command(command));
+                } else {
+                    self.report_error(Error::HOST_I2C_BAD_REQUEST);
                 }
             }
             registers::ENABLED_FEATURES => {
@@ -175,7 +178,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 state.camera_test_iterations = value;
                 return Some(Event::TestCameraI2c);
             }
-            _ => (),
+            _ => self.report_error(Error::HOST_I2C_BAD_REQUEST),
         }
         None
     }
