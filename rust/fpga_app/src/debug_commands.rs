@@ -19,4 +19,5 @@ pub enum DebugCommand {
     TestSpiFlashReads = 19,
     TestFpgaMcuComms = 20,
     TransferCount = 21,
+    Histogram = 22,
 }

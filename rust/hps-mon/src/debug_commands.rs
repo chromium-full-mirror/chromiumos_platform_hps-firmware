@@ -86,6 +86,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::TransferCount),
     },
     AvailableDebugCommand {
+        keyword: "histogram",
+        help_text: "Show histogram of image values. 1=on, 0=off",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Histogram),
+    },
+    AvailableDebugCommand {
         keyword: "exposure_calibration",
         help_text: "Run exposure calibration",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ExposureCalibration),

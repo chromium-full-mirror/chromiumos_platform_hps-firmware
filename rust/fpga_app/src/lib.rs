@@ -82,6 +82,7 @@ pub struct App<S, I, C, T> {
     classifier: C,
     #[cfg(feature = "image-transfer")]
     image_transfer_count: u32,
+    histogram_enabled: bool,
     classification_enabled: bool,
     debug_rotate_image: Option<bool>,
     calibration_bad_frames: u8,
@@ -105,6 +106,7 @@ where
             classifier,
             #[cfg(feature = "image-transfer")]
             image_transfer_count: 0,
+            histogram_enabled: false,
             classification_enabled: false,
             debug_rotate_image: None,
             calibration_bad_frames: 0,
@@ -182,7 +184,9 @@ where
         )?;
         let image_data = self.classifier.input_data(self.model_number);
         let entropy = crate::entropy::calculate_entropy(image_data);
-        mcu_println!(self.mcu, "{}", histogram::Histogram::new(image_data));
+        if self.histogram_enabled {
+            mcu_println!(self.mcu, "{}", histogram::Histogram::new(image_data));
+        }
 
         // Image transfer can be enabled either via a feature (transfer over
         // I2C) or via a hps-mon debug command (transfer over RTT).
@@ -291,37 +295,26 @@ where
             #[allow(unreachable_patterns)]
             match command {
                 DebugCommand::Classification => {
-                    let enable = arg != 0;
-                    self.classification_enabled = enable;
-                    mcu_println!(
-                        self,
-                        "Classification enabled {}",
-                        if enable { "enabled" } else { "disabled" }
-                    );
+                    self.classification_enabled = arg != 0;
+                    mcu_println!(self, "Classification: {}", arg != 0);
                 }
                 DebugCommand::RotateImageClockwise => {
-                    let enable = arg != 0;
-                    self.debug_rotate_image = Some(enable);
-                    mcu_println!(
-                        self,
-                        "Rotation enabled {}",
-                        if enable { "enabled" } else { "disabled" }
-                    );
+                    self.debug_rotate_image = Some(arg != 0);
+                    mcu_println!(self, "Rotation: {}", arg != 0);
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::Transfer => {
-                    let enable = arg != 0;
-                    self.image_transfer_count = if enable { 0 } else { u32::MAX };
-                    mcu_println!(
-                        self,
-                        "Image transfer: {}",
-                        if enable { "enabled" } else { "disabled" }
-                    );
+                    self.image_transfer_count = if arg != 0 { u32::MAX } else { 0 };
+                    mcu_println!(self, "Image transfer: {}", arg != 0);
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferCount => {
                     self.image_transfer_count = arg as u32;
                     mcu_println!(self, "Image transfer enabled ({} images)", arg);
+                }
+                DebugCommand::Histogram => {
+                    self.histogram_enabled = arg != 0;
+                    mcu_println!(self, "Histogram: {}", arg != 0);
                 }
                 DebugCommand::ExposureCalibration => {
                     if self.calibrate_camera(5).is_err() {
