@@ -71,24 +71,14 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     // commands with an argument. That would require changing the FPGA side as
     // well, so isn't done initially.
     AvailableDebugCommand {
-        keyword: "classification_off",
-        help_text: "Disable image classification",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ClassificationOff),
+        keyword: "classification",
+        help_text: "Force enable image classification. 1=on, 0=off.",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Classification),
     },
     AvailableDebugCommand {
-        keyword: "classification_on",
-        help_text: "Enable image classification",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::ClassificationOn),
-    },
-    AvailableDebugCommand {
-        keyword: "transfer_off",
-        help_text: "Disable image transfer",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferOff),
-    },
-    AvailableDebugCommand {
-        keyword: "transfer_on",
-        help_text: "Enable image transfer",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferOn),
+        keyword: "transfer",
+        help_text: "Enable image transfer. 1=on, 0=off",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Transfer),
     },
     AvailableDebugCommand {
         keyword: "transfer_count",
@@ -106,14 +96,9 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SelfTest),
     },
     AvailableDebugCommand {
-        keyword: "rotate_image_clockwise_off",
-        help_text: "Disable image rotation clockwise (for vertical camera mount)",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOff),
-    },
-    AvailableDebugCommand {
-        keyword: "rotate_image_clockwise_on",
-        help_text: "Enable image rotation clockwise (for horizontal camera mount)",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::RotateImageClockwiseOn),
+        keyword: "rotate_image_clockwise",
+        help_text: "Force clockwise image rotation for horizontal camera mount. 1=on, 0=off",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::RotateImageClockwise),
     },
     AvailableDebugCommand {
         keyword: "set_feature_enable",

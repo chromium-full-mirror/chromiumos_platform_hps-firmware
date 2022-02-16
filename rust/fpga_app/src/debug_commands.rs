@@ -11,13 +11,10 @@ use num_enum::TryFromPrimitive;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum DebugCommand {
-    ClassificationOff = 1,
-    ClassificationOn = 2,
-    TransferOff = 3,
-    TransferOn = 4,
+    Classification = 1,
+    Transfer = 3,
     ExposureCalibration = 5,
-    RotateImageClockwiseOff = 16,
-    RotateImageClockwiseOn = 17,
+    RotateImageClockwise = 16,
     SelfTest = 18,
     TestSpiFlashReads = 19,
     TestFpgaMcuComms = 20,

@@ -290,31 +290,33 @@ where
             // if some features are disabled then we need a catch-all.
             #[allow(unreachable_patterns)]
             match command {
-                DebugCommand::ClassificationOn => {
-                    self.classification_enabled = true;
-                    mcu_println!(self, "Classification enabled");
+                DebugCommand::Classification => {
+                    let enable = arg != 0;
+                    self.classification_enabled = enable;
+                    mcu_println!(
+                        self,
+                        "Classification enabled {}",
+                        if enable { "enabled" } else { "disabled" }
+                    );
                 }
-                DebugCommand::ClassificationOff => {
-                    self.classification_enabled = false;
-                    mcu_println!(self, "Classification disabled");
-                }
-                DebugCommand::RotateImageClockwiseOn => {
-                    self.debug_rotate_image = Some(true);
-                    mcu_println!(self, "Rotation enabled");
-                }
-                DebugCommand::RotateImageClockwiseOff => {
-                    self.debug_rotate_image = Some(false);
-                    mcu_println!(self, "Rotation disabled");
-                }
-                #[cfg(feature = "image-transfer")]
-                DebugCommand::TransferOn => {
-                    self.image_transfer_count = u32::MAX;
-                    mcu_println!(self, "Image transfer enabled (continuous)");
+                DebugCommand::RotateImageClockwise => {
+                    let enable = arg != 0;
+                    self.debug_rotate_image = Some(enable);
+                    mcu_println!(
+                        self,
+                        "Rotation enabled {}",
+                        if enable { "enabled" } else { "disabled" }
+                    );
                 }
                 #[cfg(feature = "image-transfer")]
-                DebugCommand::TransferOff => {
-                    self.image_transfer_count = 0;
-                    mcu_println!(self, "Image transfer disabled");
+                DebugCommand::Transfer => {
+                    let enable = arg != 0;
+                    self.image_transfer_count = if enable { 0 } else { u32::MAX };
+                    mcu_println!(
+                        self,
+                        "Image transfer: {}",
+                        if enable { "enabled" } else { "disabled" }
+                    );
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferCount => {
