@@ -61,6 +61,7 @@ const APP: () = {
         stopwatch: Stopwatch<hal::stm32::TIM2>,
         tick_count: u32,
         rcc: Rcc,
+        interrupt_pin: board::InterruptPin,
     }
 
     #[init]
@@ -86,7 +87,7 @@ const APP: () = {
 
     #[task(binds = I2C1, resources = [host_interface, state],
         spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data,
-            test_camera_i2c, erase_stage0], priority = 3)]
+            test_camera_i2c, erase_stage0, signal_interrupt], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
@@ -102,6 +103,10 @@ const APP: () = {
             }
             Some(application::Event::Command(Command::WriteSpiFlashTestData)) => {
                 let _ = ctx.spawn.write_spi_flash_test_data();
+            }
+            #[cfg(feature = "dev")]
+            Some(application::Event::Command(Command::MlbInterrupt)) => {
+                let _ = ctx.spawn.signal_interrupt();
             }
             #[cfg(feature = "dev")]
             Some(application::Event::Command(Command::EraseStage0Start)) => {
@@ -372,6 +377,20 @@ const APP: () = {
         host_interface.lock(|h| h.command_completed());
     }
 
+    #[task(resources = [interrupt_pin, host_interface])]
+    fn signal_interrupt(mut ctx: signal_interrupt::Context) {
+        let _ = ctx.resources.interrupt_pin.set_low();
+        // TODO: If we use signal_interrupt for something other than testing and
+        // debugging purposes, we should use a timer rather than a delay so that
+        // other tasks at this priory can run concurrently. Also, basing the
+        // delay on cycles means that changes in our CPU speed will affect the
+        // duration. But this is good enough for testing purposes. If the CPU is
+        // running at 60MHz, then 500_000 cycles should be about 8ms.
+        cortex_m::asm::delay(500_000);
+        let _ = ctx.resources.interrupt_pin.set_high();
+        ctx.resources.host_interface.lock(|h| h.command_completed());
+    }
+
     // Interrupts that we're not using that can be used by RTIC for spawning
     // software tasks.
     extern "C" {
@@ -609,6 +628,7 @@ fn init_peripherals(
         stopwatch,
         tick_count: 0,
         rcc,
+        interrupt_pin: board.interrupt_pin,
     }
 }
 

@@ -30,6 +30,7 @@ pub const FPGA_CS_EVENT: hal::exti::Event = hal::exti::Event::GPIO8;
 
 pub type HostBus = Stm32g0I2cPeripheral<I2C1>;
 
+pub type InterruptPin = gpio::gpiob::PB8<Output<OpenDrain>>;
 pub type DebugLed = gpio::gpioa::PA1<Output<PushPull>>;
 pub type FpgaProgramn = gpio::gpioc::PC15<Output<PushPull>>;
 pub type FpgaPowerGate = gpio::gpiob::PB5<Output<PushPull>>;
@@ -59,6 +60,7 @@ pub struct Board {
 
     pub host_bus: HostBus,
 
+    pub interrupt_pin: InterruptPin,
     pub debug_led: DebugLed,
     pub fpga_programn: FpgaProgramn,
     pub fpga_power_gate: FpgaPowerGate,
@@ -123,6 +125,7 @@ impl Board {
 
             host_bus,
 
+            interrupt_pin: b.pb8.into_open_drain_output_high(),
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn,
             fpga_power_gate,

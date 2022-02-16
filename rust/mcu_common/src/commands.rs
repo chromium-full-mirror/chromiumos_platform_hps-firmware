@@ -26,6 +26,11 @@ pub enum Command {
     /// and application into it.
     EraseSpiFlash = 1 << 4,
 
+    /// Signal an interrupt to the MLB. This is used for testing that the
+    /// interrupt pin works.
+    #[cfg(feature = "dev")]
+    MlbInterrupt = 1 << 5,
+
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,

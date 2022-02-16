@@ -51,3 +51,4 @@ open_drain_pin!(hal::gpio::gpioa::PA12);
 open_drain_pin!(hal::gpio::gpiob::PB0);
 open_drain_pin!(hal::gpio::gpiob::PB6);
 open_drain_pin!(hal::gpio::gpiob::PB7);
+open_drain_pin!(hal::gpio::gpiob::PB8);
