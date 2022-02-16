@@ -10,11 +10,10 @@ use clap::Clap;
 use clap::Subcommand;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_util::print_status;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use std::path::PathBuf;
-
-use hps_util::query_status;
 
 #[derive(Clap)]
 /// Communicates with the HPS.
@@ -239,18 +238,6 @@ fn main() -> Result<()> {
             hps.write_memory(config.bank, config.address, &config.values)
         }
         SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
-        SubCommand::Status(_) => {
-            println!("Status register: {:?}", hps.status()?);
-            println!("{}", query_status(&mut *hps)?);
-            println!(
-                "FPGA boot count: {}",
-                hps.read_register(registers::FPGA_BOOT_COUNT)?
-            );
-            println!(
-                "FPGA loop count: {}",
-                hps.read_register(registers::FPGA_LOOP_COUNT)?
-            );
-            Ok(())
-        }
+        SubCommand::Status(_) => print_status(&mut *hps),
     }
 }
