@@ -276,17 +276,10 @@ fn reset_reloading_option_bytes(rtc: &mut Rtc, pwr: &mut PWR, scb: &mut SCB) -> 
     // Newer versions of stm32g0xx-hal provide a nice interface for doing this,
     // but we haven't upgraded to those newer versions yet, so we just poke the
     // registers directly.
-    pwr.cr1.modify(|_, w| {
-        w.lpr().set_bit();
-        unsafe { w.lpms().bits(0b11) }; // Standby mode
-        w
-    });
-    loop {
-        let sr2 = pwr.sr2.read();
-        if sr2.reglps().bit_is_set() && sr2.reglpf().bit_is_set() {
-            break;
-        }
-    }
+
+    const STANDBY_MODE: u8 = 0b011;
+    pwr.cr1
+        .modify(|_, w| unsafe { w.lpms().bits(STANDBY_MODE) });
 
     scb.set_sleepdeep();
 
