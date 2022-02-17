@@ -7,6 +7,7 @@ mod send_i2c;
 
 use anyhow::Result;
 pub use fake_hps::FakeHps;
+use fpga_app::Features;
 use hps_interface::Hps;
 use mcu_common::registers;
 use mcu_common::OptionBytesConfigRequest;
@@ -43,6 +44,10 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
                 "FPGA loop count: {}",
                 hps.read_register(registers::FPGA_LOOP_COUNT)?
             );
+            println!(
+                "Enabled features: {:?}",
+                Features::from_bits_truncate(hps.read_register(registers::ENABLED_FEATURES)?)
+            );
             print_model_score(hps, registers::USER_PRESENT_STATUS, "Presence status")?;
             print_model_score(hps, registers::USER_PRESENT_STATUS, "SPA status")?;
         }
@@ -66,6 +71,6 @@ fn print_model_score(hps: &mut dyn Hps, register: u8, description: &str) -> Resu
     } else {
         print!("{}", (raw_value & 0xff) as i8);
     }
-    print!(")");
+    println!(")");
     Ok(())
 }

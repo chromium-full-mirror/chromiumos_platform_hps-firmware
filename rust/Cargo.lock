@@ -714,6 +714,7 @@ dependencies = [
  "anyhow",
  "clap",
  "embedded-hal",
+ "fpga_app",
  "hps_interface",
  "linux-embedded-hal",
  "mcp2221",
