@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-mod boot_loop;
 mod boot_workflow;
 mod erase_stage0_workflow;
 mod firmware;
@@ -77,10 +76,6 @@ enum Command {
     /// becomes active again after a power-cycle.
     #[clap(name = "erase-stage0")]
     EraseStage0,
-
-    /// runs the boot sequence in a loop
-    #[clap(name = "boot-loop")]
-    BootLoop(BootLoopConfig),
 
     /// capture images from the device and write them to the filesystem.
     #[cfg(feature = "image-transfer")]
@@ -207,13 +202,6 @@ struct FactoryConfig {
     permanent_lock: bool,
 }
 
-#[derive(Debug, Clap, Clone)]
-struct BootLoopConfig {
-    /// assume that all firmware has already been written
-    #[clap(long)]
-    skip_firmware_writes: bool,
-}
-
 fn main() -> Result<()> {
     let config = Config::parse();
     if config.verbose {
@@ -247,7 +235,6 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     match &config.command {
-        Command::BootLoop(boot_loop_config) => boot_loop::run(i2c, &config, boot_loop_config),
         Command::EraseStage0 => {
             erase_stage0_workflow::run(i2c, config)?;
             println!("Stage0 erased");

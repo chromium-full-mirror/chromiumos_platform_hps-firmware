@@ -17,7 +17,6 @@ fn main() -> Result<()> {
     build_fpga_bitstream()?;
     build_fpga_rom()?;
     write_stage0_bin("stage0.bin", "insecure-dev-key")?;
-    write_stage0_bin("stage0.sys.bin", "insecure-dev-key,sys_bootloader")?;
     build_one_time_init_loader()?;
     Ok(())
 }

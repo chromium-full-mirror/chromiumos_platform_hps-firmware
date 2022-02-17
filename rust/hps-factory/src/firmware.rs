@@ -11,12 +11,6 @@ use std::path::PathBuf;
 /// The stage0 bootloader.
 pub(crate) const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 
-/// A version of stage0 that is intended to be loaded directly from the system
-/// bootloader and is located not at the start of flash so that the system
-/// bootloader remains active.
-pub(crate) const STAGE0_SYS_BYTES: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
-
 /// Non-release version of the MCU application. Supports features that should
 /// never be in release builds such as image transfer and skipping the SPI hash
 /// check.
