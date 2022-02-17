@@ -17,7 +17,7 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
-    i2c.write_stage1(crate::APPLICATION_RELEASE_BYTES)?;
+    i2c.write_stage1(crate::firmware::APPLICATION_RELEASE_BYTES)?;
     i2c.execute_stage1().context("Execute application")?;
     if !boot_config.skip_bitstream_write {
         i2c.write_gateware().context("Write gateware")?;

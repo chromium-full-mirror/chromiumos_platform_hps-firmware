@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::firmware::PRE_INSTALL_TESTER_MCU_CODE;
+use crate::firmware::PRE_INSTALL_TESTER_MCU_CODE_STAGE1;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::TestConfig;
@@ -25,10 +27,6 @@ use mcu_common::registers;
 use mcu_common::Status;
 use std::convert::TryFrom;
 use std::time::Duration;
-
-const MCU_CODE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
-const MCU_CODE_STAGE1: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu_stage1.bin"));
 
 /// How long we'll wait for the MCU to finish testing. Worst-cast scenario is
 /// when there's already something on the SPI flash, but it's not what we want
@@ -55,7 +53,7 @@ where
             bail!("HPS is running firmware, but it's not stage0 - cannot perform test");
         }
         info!("Writing test program using stage0");
-        hps.write_firmware(MCU_CODE_STAGE1)
+        hps.write_firmware(PRE_INSTALL_TESTER_MCU_CODE_STAGE1)
             .context("Failed to write test program via stage0")?;
         hps.check_errors()
             .context("Failed to read status after writing test program")?;
@@ -91,8 +89,12 @@ where
 
         // Flash the MCU test program.
         info!("Sending MCU test program");
-        i2c.write("test firmware", MCU_LOAD_ADDRESS, MCU_CODE)
-            .context("Failed to write test firmware")?;
+        i2c.write(
+            "test firmware",
+            MCU_LOAD_ADDRESS,
+            PRE_INSTALL_TESTER_MCU_CODE,
+        )
+        .context("Failed to write test firmware")?;
 
         let mut stm32 = i2c.open_bootloader()?;
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::firmware::APPLICATION_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::CaptureImagesConfig;
 use crate::Config;
-use crate::APPLICATION_BYTES;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;

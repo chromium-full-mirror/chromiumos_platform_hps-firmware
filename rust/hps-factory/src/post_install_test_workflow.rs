@@ -5,9 +5,9 @@
 use std::time::Duration;
 use std::time::Instant;
 
+use crate::firmware::APPLICATION_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
-use crate::APPLICATION_BYTES;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;

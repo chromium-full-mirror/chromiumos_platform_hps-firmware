@@ -5,6 +5,7 @@
 mod boot_loop;
 mod boot_workflow;
 mod erase_stage0_workflow;
+mod firmware;
 mod hps_i2c;
 #[cfg(feature = "image-transfer")]
 mod image_workflow;
@@ -20,14 +21,6 @@ use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use std::path::PathBuf;
-
-const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
-const STAGE0_SYS_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.sys.bin"));
-const APPLICATION_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
-const APPLICATION_RELEASE_BYTES: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/application.release.bin"));
-const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader.bin"));
 
 /// Runs HPS post-install factory workflow
 #[derive(Clap, Debug, Clone)]

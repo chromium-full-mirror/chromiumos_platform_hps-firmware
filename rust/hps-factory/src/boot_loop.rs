@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::firmware::APPLICATION_BYTES;
+use crate::firmware::STAGE0_SYS_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::BootLoopConfig;
 use crate::Config;
-use crate::APPLICATION_BYTES;
-use crate::STAGE0_SYS_BYTES;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
 use hps_interface::Hps;

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 use crate::erase_stage0_workflow::EraseError;
+use crate::firmware::ONE_TIME_INIT_LOADER_BYTES;
+use crate::firmware::STAGE0_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::WriteStage0Config;
-use crate::ONE_TIME_INIT_LOADER_BYTES;
-use crate::STAGE0_BYTES;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;

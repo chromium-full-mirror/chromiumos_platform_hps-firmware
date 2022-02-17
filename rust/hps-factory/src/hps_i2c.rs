@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::firmware::FPGA_BITSTREAM;
+use crate::firmware::FPGA_ROM_BYTES;
 use crate::Config;
 use anyhow::bail;
 use anyhow::Context;
@@ -31,13 +33,7 @@ use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
 
-mod fpga_firmware {
-    pub(super) const GATEWARE_BITSTREAM: &[u8] =
-        include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
-    pub(super) const SOC_ROM_BYTES: &[u8] =
-        include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
-    pub(super) const SOC_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
-}
+const FPGA_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
 
 /// How long we'll wait for the system bootloader or HPS stage0/stage1 to become
 /// responsive to I2C requests.
@@ -162,7 +158,7 @@ where
             "gateware bitstream",
             memory_banks::SPI_FLASH,
             0,
-            fpga_firmware::GATEWARE_BITSTREAM,
+            FPGA_BITSTREAM,
         )
     }
 
@@ -174,8 +170,8 @@ where
             &mut hps,
             "SOC ROM",
             memory_banks::SPI_FLASH,
-            fpga_firmware::SOC_ROM_START_ADDRESS,
-            fpga_firmware::SOC_ROM_BYTES,
+            FPGA_ROM_START_ADDRESS,
+            FPGA_ROM_BYTES,
         )
     }
 

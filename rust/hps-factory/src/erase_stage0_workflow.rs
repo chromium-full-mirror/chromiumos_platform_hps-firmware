@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::firmware::ONE_TIME_INIT_LOADER_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
-use crate::ONE_TIME_INIT_LOADER_BYTES;
 use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
