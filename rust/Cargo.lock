@@ -678,6 +678,7 @@ dependencies = [
  "host_dev_common",
  "hps_interface",
  "indicatif",
+ "libstage0",
  "linux-embedded-hal",
  "log",
  "mcp2221",

@@ -16,9 +16,6 @@ use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_common::Status;
 
-const HARDWARE_VERSION: u16 = 1;
-const RO_VERSION: u16 = 1;
-
 pub(crate) struct StageZContext {
     /// Information about stage1 or None if stage1 is absent, not validated etc.
     valid_stage1: Option<ValidStage1>,
@@ -115,7 +112,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                         _ => common_value,
                     })
                     .unwrap_or_else(|| match event.register {
-                        registers::HARDWARE_VERSION => (HARDWARE_VERSION << 8) | RO_VERSION,
+                        registers::HARDWARE_VERSION => libstage0::COMBINED_VERSION,
                         registers::FIRMWARE_VERSION_HIGH => self
                             .stage0_ctx
                             .get_firmware_version(registers::FIRMWARE_VERSION_HIGH),

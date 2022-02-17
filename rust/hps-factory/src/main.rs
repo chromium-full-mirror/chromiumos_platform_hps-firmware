@@ -191,6 +191,11 @@ struct WriteStage0Config {
     /// undone.
     #[clap(long)]
     permanent_lock: bool,
+
+    /// whether to skip writing if there's an existing stage0 with the same
+    /// reported version number as what we would write
+    #[clap(long)]
+    check_version: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -269,6 +274,7 @@ where
                 &WriteStage0Config {
                     disable_boot0: false,
                     permanent_lock: factory_config.permanent_lock,
+                    check_version: false,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(

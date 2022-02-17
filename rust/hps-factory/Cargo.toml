@@ -14,6 +14,7 @@ factory_tester_common = { path = "../factory_tester_common" }
 fpga_app = { path = "../fpga_app" }
 host_dev_common = { path = "../host_dev_common" }
 hps_interface = { path = "../hps_interface" }
+libstage0 = { path = "../libstage0" }
 linux-embedded-hal = "0.3.1"
 log = "0.4.14"
 # mcp2221 support is optional, since we only currently support statically

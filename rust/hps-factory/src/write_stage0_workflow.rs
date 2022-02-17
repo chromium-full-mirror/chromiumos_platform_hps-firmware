@@ -38,6 +38,7 @@ pub(crate) struct Stage0Writer<'a, I> {
 enum WriteKind {
     Stage0Written,
     PermanentlyLocked,
+    ExistingVersionMatched,
 }
 
 impl<'a, I, E> Stage0Writer<'a, I>
@@ -55,7 +56,10 @@ where
             config: config.clone(),
             write_stage0_config: write_stage0_config.clone(),
         };
-        if matches!(stage0_writer.write_stage0()?, WriteKind::PermanentlyLocked) {
+        if matches!(
+            stage0_writer.write_stage0()?,
+            WriteKind::PermanentlyLocked | WriteKind::ExistingVersionMatched
+        ) {
             return Ok(());
         }
         stage0_writer.write_one_time_init()?;
@@ -67,11 +71,25 @@ where
 
     fn write_stage0(&mut self) -> Result<WriteKind> {
         let i2c = &mut self.i2c;
+        // --check-version is an optimization to avoid repeatedly rewriting
+        // stage0 on devices that are not permanently locked. It doesn't make
+        // sense to skip rewriting stage0 if we're going to permanently lock the
+        // device.
+        if self.write_stage0_config.check_version && self.write_stage0_config.permanent_lock {
+            bail!("When using --permanent-lock, --check-version is not permitted.");
+        }
         if let Ok(mut hps) = i2c.open_hps() {
             hps.perform_command(Command::Reset)?;
             if let Ok(mut hps) = i2c.open_hps() {
                 match hps.stage()? {
                     Stage::Stage0 => {
+                        let version = hps.read_register(registers::HARDWARE_VERSION)?;
+                        if self.write_stage0_config.check_version
+                            && version == libstage0::COMBINED_VERSION
+                        {
+                            info!("Stage0 already has correct version: 0x{:x}", version);
+                            return Ok(WriteKind::ExistingVersionMatched);
+                        }
                         info!("Stage0 already present on device, erasing.");
                         match crate::erase_stage0_workflow::run(i2c.i2c, self.config.clone()) {
                             Ok(_) => {}
