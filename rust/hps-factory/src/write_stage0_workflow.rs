@@ -108,8 +108,14 @@ where
     i2c.open_bootloader()?
         .go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
 
-    // Tell stage0 to launch one-time-init again.
-    i2c.execute_non_i2c_stage1()?;
+    // Tell stage0 to launch one-time-init again. Note, we don't use
+    // execute_non_i2c_stage1 because it will reset stage0, which won't work on
+    // proto2 dev boards where OptionBytesConfigRequest::RESET_PIN is not yet
+    // applied. We don't need a reset because one_time_init will already have
+    // reset via standby, which is not affected by the reset pin not already
+    // having been configured.
+    let mut hps = i2c.open_hps()?;
+    hps.perform_command(Command::Launch1)?;
     let mut hps = i2c.open_hps()?;
     let stage = hps.stage()?;
     if stage != Stage::OneTimeInit {
