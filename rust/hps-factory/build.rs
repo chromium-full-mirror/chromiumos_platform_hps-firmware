@@ -14,7 +14,8 @@ fn main() -> Result<()> {
     build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
     write_application_bin()?;
     write_release_application_bin()?;
-    build_soc_rom()?;
+    build_fpga_bitstream()?;
+    build_fpga_rom()?;
     write_stage0_bin("stage0.bin", "insecure-dev-key")?;
     write_stage0_bin("stage0.sys.bin", "insecure-dev-key,sys_bootloader")?;
     build_one_time_init_loader()?;
@@ -117,31 +118,45 @@ fn build_one_time_init_loader() -> Result<()> {
     sign_stage1_binary(&bin_file)
 }
 
-fn build_soc_rom() -> Result<()> {
+fn build_fpga_bitstream() -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
-    let bitstream = Path::new("../../build/hps_platform/gateware/hps_platform.bit");
-    // Due to how slow it is to build the gateware, we only build if the output
-    // files don't exist. i.e. rebuilding is left to the user.
-    if !bitstream.exists() {
-        Command::new("../../scripts/build-fpga-bitstream").run()?;
+    let bitstream_dest = out_dir.join("hps_platform.bit");
+    if cfg!(feature = "built-in-fpga-bitstream") {
+        let bitstream = Path::new("../../build/hps_platform/gateware/hps_platform.bit");
+        // Due to how slow it is to build the gateware, we only build if the output
+        // files don't exist. i.e. rebuilding is left to the user.
+        if !bitstream.exists() {
+            Command::new("../../scripts/build-fpga-bitstream").run()?;
+        }
+        copy_or_die(bitstream, bitstream_dest);
+    } else {
+        std::fs::write(bitstream_dest, &[])?;
     }
-    copy_or_die(bitstream, out_dir.join("hps_platform.bit"));
+    Ok(())
+}
 
+fn build_fpga_rom() -> Result<()> {
+    let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let fpga_rom = out_dir.join("soc_rom.bin");
-    Command::new("cargo")
-        .current_dir("../riscv/fpga_rom")
-        .env_remove("CARGO_ENCODED_RUSTFLAGS")
-        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
-        .arg("build")
-        .arg("--release")
-        .arg("--no-default-features")
-        .arg("--features")
-        .arg("image-transfer")
-        .run()?;
-    convert_elf_to_bin(
-        out_dir.join("nested-build/riscv32i-unknown-none-elf/release/fpga_rom"),
-        &fpga_rom,
-    )
+    if cfg!(feature = "built-in-fpga-rom") {
+        Command::new("cargo")
+            .current_dir("../riscv/fpga_rom")
+            .env_remove("CARGO_ENCODED_RUSTFLAGS")
+            .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
+            .arg("build")
+            .arg("--release")
+            .arg("--no-default-features")
+            .arg("--features")
+            .arg("image-transfer")
+            .run()?;
+        convert_elf_to_bin(
+            out_dir.join("nested-build/riscv32i-unknown-none-elf/release/fpga_rom"),
+            &fpga_rom,
+        )
+    } else {
+        std::fs::write(fpga_rom, &[])?;
+        Ok(())
+    }
 }
 
 fn copy_or_die(from: impl AsRef<Path>, to: impl AsRef<Path>) {

@@ -23,7 +23,7 @@ RUSTFLAGS='-C link-arg=-s' \
     --target x86_64-unknown-linux-musl \
     -p hps-factory \
     --no-default-features \
-    --features image-transfer
+    --features image-transfer,all-embedded-firmware
 
 echo "Succesfully built statically linked hps-factory:"
 ls -lh "${PROJECT_ROOT}/rust/target/x86_64-unknown-linux-musl/release/hps-factory"

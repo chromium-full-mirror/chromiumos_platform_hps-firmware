@@ -49,6 +49,14 @@ struct Config {
 
     #[clap(subcommand)]
     command: Command,
+
+    /// path FPGA bitstream. Overrides built-in bitstream
+    #[clap(long)]
+    fpga_bitstream: Option<PathBuf>,
+
+    /// path FPGA ROM. Overrides built-in ROM
+    #[clap(long)]
+    fpga_rom: Option<PathBuf>,
 }
 
 #[derive(Debug, Subcommand, Clone)]

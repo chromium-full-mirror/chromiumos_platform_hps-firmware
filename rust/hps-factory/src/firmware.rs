@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::bail;
+use anyhow::Context;
+use anyhow::Result;
+use std::borrow::Cow;
+use std::path::PathBuf;
+
 /// The stage0 bootloader.
 pub(crate) const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 
@@ -36,9 +42,46 @@ pub(crate) const PRE_INSTALL_TESTER_MCU_CODE: &[u8] =
 pub(crate) const PRE_INSTALL_TESTER_MCU_CODE_STAGE1: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu_stage1.bin"));
 
-/// The FPGA bitstream.
-pub(crate) const FPGA_BITSTREAM: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit"));
+impl crate::Config {
+    pub(crate) fn fpga_bitstream(&self) -> Result<Cow<'static, [u8]>> {
+        read_file_or_default(
+            "--fpga-bitstream",
+            &self.fpga_bitstream,
+            include_bytes!(concat!(env!("OUT_DIR"), "/hps_platform.bit")),
+        )
+    }
 
-/// The FPGA ROM. Supports non-production features such as image transfer.
-pub(crate) const FPGA_ROM_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin"));
+    pub(crate) fn fpga_rom(&self) -> Result<Cow<'static, [u8]>> {
+        read_file_or_default(
+            "--fpga-rom",
+            &self.fpga_rom,
+            include_bytes!(concat!(env!("OUT_DIR"), "/soc_rom.bin")),
+        )
+    }
+}
+
+/// Returns the contents of `path` if specified, or `default` if no path is
+/// supplied. If `default` is empty, then an error is reported that `flag` must
+/// be supplied.
+fn read_file_or_default(
+    flag: &str,
+    opt_path: &Option<PathBuf>,
+    default: &'static [u8],
+) -> Result<Cow<'static, [u8]>> {
+    if let Some(path) = opt_path {
+        return Ok(Cow::Owned(std::fs::read(path).with_context(|| {
+            format!(
+                "Failed to open '{}' that was specified by the flag {}",
+                path.display(),
+                flag
+            )
+        })?));
+    }
+    if default.is_empty() {
+        bail!(
+            "{} must be supplied since it is not built-in to the binary.",
+            flag
+        );
+    }
+    Ok(Cow::Borrowed(default))
+}

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::firmware::FPGA_BITSTREAM;
-use crate::firmware::FPGA_ROM_BYTES;
 use crate::Config;
 use anyhow::bail;
 use anyhow::Context;
@@ -149,6 +147,7 @@ where
     }
 
     pub(crate) fn write_gateware(&mut self) -> Result<()> {
+        let fpga_bitstream = self.config.fpga_bitstream()?;
         let mut hps = self.open_hps()?;
         info!("Erasing SPI flash");
         hps.perform_command(Command::EraseSpiFlash)?;
@@ -158,11 +157,12 @@ where
             "gateware bitstream",
             memory_banks::SPI_FLASH,
             0,
-            FPGA_BITSTREAM,
+            &fpga_bitstream,
         )
     }
 
     pub(crate) fn write_soc_rom(&mut self) -> Result<()> {
+        let fpga_rom = self.config.fpga_rom()?;
         let mut hps = self.open_hps()?;
         // TODO(dcallagh): this only works without erasing SPI flash
         // because we are still also erasing each individual block on write.
@@ -171,7 +171,7 @@ where
             "SOC ROM",
             memory_banks::SPI_FLASH,
             FPGA_ROM_START_ADDRESS,
-            FPGA_ROM_BYTES,
+            &fpga_rom,
         )
     }
 
