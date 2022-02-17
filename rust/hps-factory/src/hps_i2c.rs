@@ -189,7 +189,10 @@ where
     /// Executes a stage1, but doesn't attempt to check that it's running. Can
     /// be used for stage1 binaries that don't support I2C.
     pub(crate) fn execute_non_i2c_stage1(&mut self) -> Result<()> {
-        self.reset_to_bootloader()?;
+        let mut hps = self.open_hps()?;
+        if hps.status()?.contains(Status::ANONVER) || hps.stage()? != Stage::Stage0 {
+            self.reset_to_bootloader()?;
+        }
         if let Ok(mut stm32) = self.open_bootloader() {
             stm32.go(APPLICATION_VECTOR_TABLE_ADDRESS)?;
             return Ok(());
