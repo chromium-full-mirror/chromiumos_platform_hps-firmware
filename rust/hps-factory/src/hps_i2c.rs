@@ -51,6 +51,7 @@ const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
 pub(crate) struct HpsI2c<'a, I> {
     pub(crate) i2c: &'a mut I,
     config: Config,
+    pub(crate) erase_stage1_allowed: bool,
 }
 
 impl<'a, I, E> HpsI2c<'a, I>
@@ -59,7 +60,11 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn new(i2c: &'a mut I, config: Config) -> Self {
-        let hps_i2c = Self { i2c, config };
+        let hps_i2c = Self {
+            i2c,
+            config,
+            erase_stage1_allowed: true,
+        };
         // Since the HPS kernel driver takes exclusive ownership of the HPS I2C
         // address, we must unbind the driver while this tool is running. The
         // driver is bound again after the interface is closed -- see `drop`
@@ -71,6 +76,7 @@ where
     /// Writes `program_bytes` into the stage1 slot using either the STM32
     /// bootloader if active, or stage0 if that's active.
     pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
+        let erase_stage1_allowed = self.erase_stage1_allowed;
         // We need to be running some kind of bootloader in order to write stage1.
         self.reset_to_bootloader()?;
         if self.open_bootloader().is_ok() {
@@ -84,8 +90,13 @@ where
                 stage
             );
         }
-        info!("Erasing RW region");
-        hps.perform_command(Command::EraseStage1)?;
+        // Old versions of stage0 don't support the EraseStage1 command. In that
+        // case, we don't need to use the command, since the MCU flash will get
+        // automatically erased as we write.
+        if erase_stage1_allowed {
+            info!("Erasing RW region");
+            hps.perform_command(Command::EraseStage1)?;
+        }
         hps.wait_memory_bank_available(memory_banks::MCU_RW)?;
         Self::write_memory_bank(&mut hps, "stage1", memory_banks::MCU_RW, 0, program_bytes)
     }

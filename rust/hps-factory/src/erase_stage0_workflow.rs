@@ -41,7 +41,24 @@ where
 
     // Erasing is done by one_time_init. Write the loader that will put it into
     // RAM and run it.
-    i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES)?;
+    if let Err(error) = i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES) {
+        // We got an error writing stage1. This might be because we're running
+        // an old version of stage0 that doesn't support the EraseStage1
+        // command.
+        if i2c
+            .open_hps()?
+            .errors()?
+            .contains(mcu_common::Error::HOST_I2C_BAD_REQUEST)
+        {
+            info!("Stage0 reported a bad request. Retrying without EraseStage1");
+            i2c.reset_to_bootloader()?;
+            // Try again, without using the erase command.
+            i2c.erase_stage1_allowed = false;
+            i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES)?;
+        } else {
+            return Err(error.into());
+        }
+    }
     i2c.execute_non_i2c_stage1()
         .context("Failed to execute one_time_init")?;
 
