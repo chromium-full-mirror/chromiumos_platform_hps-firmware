@@ -42,27 +42,29 @@ follows the command (write operation). All writes are 16 bits. All documented
 reads are 16 bits. Registers larger than 16 bits are supported but are currently
 only used for development and debugging purposes.
 
-| Register | Access | Stage  | Description            |
-|:---------|:-------|:-------|:-----------------------|
-| 0        | RO     | All    | Magic Number           |
-| 1        | RO     | All    | Hardware Version       |
-| 2        | RO     | All    | Common System Status   |
-| 3        | WO     | All    | Common System Commands |
-| 4        | RO     | All    | Application Version    |
-| 5        | RO     | All    | Memory Bank Status     |
-| 6        | RO     | All    | Common Error Status    |
-| 7        | RW     | Appl   | Feature Enable         |
-| 8        | RO     | Appl   | Feature 0 Status Bits  |
-| 9        | RO     | Appl   | Feature 1 Status Bits  |
-| 10       | RO     | Stage0 | Firmware Version HIGH  |
-| 11       | RO     | Stage0 | Firmware Version LOW   |
-| 12       | RO     | Appl   | FPGA boot count        |
-| 13       | RO     | Appl   | FPGA loop count        |
-| 14       | RO     | Appl   | FPGA ROM version       |
-| 15       | RO     | Appl   | SPI flash status bits  |
-| 16       | RO     | Appl   | Debug idx reg          |
-| 17       | RO     | Appl   | Debug val reg          |
-| 18       | RO     | Appl   | Camera config          |
+| Register | Access | Stage       | Description            |
+|:---------|:-------|:------------|:-----------------------|
+| 0        | RO     | All         | Magic Number           |
+| 1        | RO     | All         | Hardware Version       |
+| 2        | RO     | All         | Common System Status   |
+| 3        | WO     | All         | Common System Commands |
+| 4        | RO     | All         | Application Version    |
+| 5        | RO     | All         | Memory Bank Status     |
+| 6        | RO     | All         | Common Error Status    |
+| 7        | RW     | Appl        | Feature Enable         |
+| 8        | RO     | Appl        | Feature 0 Status Bits  |
+| 9        | RO     | Appl        | Feature 1 Status Bits  |
+| 10       | RO     | Stage0      | Firmware Version HIGH  |
+| 11       | RO     | Stage0      | Firmware Version LOW   |
+| 12       | RO     | Appl        | FPGA boot count        |
+| 13       | RO     | Appl        | FPGA loop count        |
+| 14       | RO     | Appl        | FPGA ROM version       |
+| 15       | RO     | Appl        | SPI flash status bits  |
+| 16       | RO     | Appl        | Debug idx reg          |
+| 17       | RO     | Appl        | Debug val reg          |
+| 18       | RO     | Appl        | Camera config          |
+| 19       | WO     | Appl        | Start camera test      |
+| 20       | RW     | OneTimeInit | Option byte config     |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.
@@ -100,7 +102,7 @@ and are not documented here.
 
 | BIT | NAME            | DESCRIPTION                                      |
 |:----|:----------------|:-------------------------------------------------|
-| 15  | ERASE_STAGE0    | Erase first page of MCU flash (stage0)           |
+| 15  | ERASE_STAGE0    | Erase stage0 (one_time_init)                     |
 | 14  | WRITE_TEST_DATA | Write SPI flash test data                        |
 | 13  |                 |                                                  |
 | 12  |                 |                                                  |
