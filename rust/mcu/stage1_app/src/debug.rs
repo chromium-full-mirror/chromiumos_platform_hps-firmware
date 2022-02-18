@@ -4,17 +4,14 @@
 
 use core::convert::TryFrom;
 use crc::Crc;
-use hal::flash::FlashExt;
 use hal::prelude::OutputPin;
 use hal::rcc::Rcc;
-use hal::stm32::FLASH;
 use hal::timer::stopwatch::Stopwatch;
 use i2c_protocol::Buffer;
 use i2c_protocol::WriteMemoryEvent;
 use log::error;
 use log::info;
 use mcu_common::memory_banks;
-use mcu_common::Error;
 use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
@@ -38,7 +35,6 @@ pub struct DebugResources {
     pub(crate) mcu_cmd_response_channel: UpChannel,
     pub(crate) fpga_debug_handler: DebugCommandHandler,
     pub(crate) mcu_debug_handler: DebugCommandHandler,
-    flash: FLASH,
 }
 
 pub struct DebugCommandHandler {
@@ -59,7 +55,7 @@ pub(crate) struct McuDebugCommandInfo {
 impl DebugResources {
     /// # Safety
     /// Must only be called once. Must be called while interrupts are disabled.
-    pub unsafe fn init(flash: FLASH) -> DebugResources {
+    pub unsafe fn init() -> DebugResources {
         let channels = rtt_init!(
             up: {
                 0: {
@@ -108,67 +104,7 @@ impl DebugResources {
             mcu_cmd_response_channel: channels.up.3,
             mcu_debug_handler: DebugCommandHandler::new(channels.down.0),
             fpga_debug_handler: DebugCommandHandler::new(channels.down.1),
-            flash,
         }
-    }
-
-    fn remove_flash_lock(&mut self) -> Result<(), Error> {
-        // The HAL has a really inconvenient API for locking the flash, which
-        // transfers ownership of the flash, so we conjur ourselves a second
-        // instance for it to take ownership of.
-        let unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
-            .FLASH
-            .unlock()
-            .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
-        // Now that the flash is unlocked, we need to also unlock the option bytes.
-        self.flash.optkeyr.write(|w| unsafe { w.bits(0x08192A3B) });
-        self.flash.optkeyr.write(|w| unsafe { w.bits(0x4C5D6E7F) });
-        if self.flash.cr.read().optlock().bit_is_set() {
-            unlocked_flash.lock();
-            return Err(Error::MCU_FLASH_WRITE_ERROR);
-        }
-
-        self.flash.optr.modify(|_, w| {
-            w.n_boot_sel().clear_bit();
-            w.n_boot0().clear_bit();
-            // Set RDP level 0.
-            unsafe { w.rdp().bits(0xaa) };
-            w
-        });
-
-        self.flash.acr.modify(|_, w| w.empty().set_bit());
-
-        unsafe { core::ptr::write_volatile(&self.flash.wrp1ar as *const _ as *mut u32, 0x3f) };
-
-        while self.flash.sr.read().bsy().bit_is_set() {}
-        self.flash.cr.modify(|_, w| w.optstrt().set_bit());
-        while self.flash.sr.read().bsy().bit_is_set() {}
-        self.flash.cr.modify(|_, w| w.obl_launch().set_bit());
-        unlocked_flash.lock();
-        Ok(())
-    }
-
-    pub(crate) fn erase_stage0(&mut self) -> Result<(), Error> {
-        if self.flash.optr.read().rdp().bits() == 0xaa {
-            // The HAL has a really inconvenient API for locking the flash,
-            // which transfers ownership of the flash, so we conjur ourselves a
-            // second instance for it to take ownership of.
-            let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
-                .FLASH
-                .unlock()
-                .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
-            use hal::flash::WriteErase;
-            unlocked_flash
-                .erase_page(hal::flash::FlashPage(0))
-                .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
-            unlocked_flash.lock();
-        }
-
-        // We call remove_flash_lock even if we erased above, since we want to
-        // reload the option bytes.
-        self.remove_flash_lock()?;
-
-        cortex_m::peripheral::SCB::sys_reset();
     }
 }
 

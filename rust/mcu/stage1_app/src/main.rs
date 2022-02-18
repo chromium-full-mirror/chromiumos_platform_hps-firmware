@@ -87,7 +87,7 @@ const APP: () = {
 
     #[task(binds = I2C1, resources = [host_interface, state],
         spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data,
-            test_camera_i2c, erase_stage0, signal_interrupt], priority = 3)]
+            test_camera_i2c, signal_interrupt], priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let host_interface = ctx.resources.host_interface;
         match host_interface.handle_interrupt(ctx.resources.state) {
@@ -107,10 +107,6 @@ const APP: () = {
             #[cfg(feature = "dev")]
             Some(application::Event::Command(Command::MlbInterrupt)) => {
                 let _ = ctx.spawn.signal_interrupt();
-            }
-            #[cfg(feature = "dev")]
-            Some(application::Event::Command(Command::EraseStage0Start)) => {
-                let _ = ctx.spawn.erase_stage0();
             }
             Some(application::Event::Command(Command::LaunchApp)) => {
                 // We can safely ignore failed attempts to swap this task
@@ -211,22 +207,6 @@ const APP: () = {
             }) {
                 break;
             }
-        }
-    }
-
-    #[task(resources = [debug_resources, host_interface])]
-    fn erase_stage0(_ctx: erase_stage0::Context) {
-        #[cfg(feature = "dev")]
-        {
-            let mut ctx = _ctx;
-            if ctx.resources.debug_resources.erase_stage0().is_err() {
-                ctx.resources.host_interface.lock(|host_interface| {
-                    host_interface.report_error(mcu_common::Error::MCU_FLASH_WRITE_ERROR)
-                });
-            }
-            ctx.resources
-                .host_interface
-                .lock(|host_interface| host_interface.command_completed());
         }
     }
 
@@ -430,7 +410,7 @@ fn init_peripherals(
     // safety: We're calling this during initialization when interrupts are
     // disabled as required.
     #[allow(unused_variables)]
-    let debug_resources = unsafe { debug::DebugResources::init(p.FLASH) };
+    let debug_resources = unsafe { debug::DebugResources::init() };
 
     // Reset clock source to HSI. This is necessary because the bootloader
     // (either stage0 or the STM32 system bootloader) will have left the clock
@@ -644,6 +624,6 @@ mod debug {
     pub struct DebugResources;
 
     impl DebugResources {
-        pub unsafe fn init(_flash: hal::stm32::FLASH) {}
+        pub unsafe fn init() {}
     }
 }
