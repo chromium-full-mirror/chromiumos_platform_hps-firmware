@@ -70,6 +70,9 @@ pub const CAMERA_TEST_ITERATIONS: u8 = 19;
 /// applied.
 pub const CONFIGURE_OPTION_BYTES: u8 = 20;
 
+/// RO: Part IDs. This register contains the context of the PartIds struct.
+pub const PART_IDS: u8 = 21;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

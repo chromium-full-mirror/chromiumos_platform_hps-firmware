@@ -35,7 +35,7 @@ bitflags! {
         /// possibly because it was already in use.
         const BUFFER_NOT_AVAILABLE = 1 << 8;
 
-        /// An attempt was made to write beyond the end of a buffer.
+        /// An attempt was made to read or write beyond the end of a buffer.
         const BUFFER_OVERRUN = 1 << 9;
 
         /// The SPI flash does not match the embedded hash, an update is required.
@@ -59,6 +59,17 @@ impl TryFrom<u16> for Error {
         Error::from_bits(value).ok_or(())
     }
 }
+
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        // The Debug implementation for bitfields is good enough for displaying
+        // our errors.
+        write!(f, "{:?}", self)
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Error {}
 
 #[cfg(test)]
 mod tests {

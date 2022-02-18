@@ -65,6 +65,7 @@ only used for development and debugging purposes.
 | 18       | RO     | Appl        | Camera config          |
 | 19       | WO     | Appl        | Start camera test      |
 | 20       | RW     | OneTimeInit | Option byte config     |
+| 21       | RO     | Appl        | Part IDs               |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.
@@ -118,6 +119,18 @@ and are not documented here.
 | 2   | LAUNCHAPP       | Launch application (from stage1)                 |
 | 1   | LAUNCH1         | Launch stage1 (from stage0)                      |
 | 0   | RESET           | Reset module to stage0                           |
+
+## Part IDs
+
+The Part IDs register consists of multiple 32 bit words as follows:
+
+| BYTE_OFFSET | NAME         | DESCRIPTION                                  |
+|:------------|:-------------|:---------------------------------------------|
+| 0           | MCU_ID       | See See RM04444 section 40.10.1              |
+| 4           | FPGA_ID      | Not yet implemented. Reserved for future use |
+| 8           | CAMERA_ID    | Camera part ID                               |
+| 12          | SPI_FLASH_MN | SPI flash manufacturer                       |
+| 16          | SPI_FLASH_PI | SPI flash part ID                            |
 
 ## Application Version
 

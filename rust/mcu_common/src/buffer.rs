@@ -29,16 +29,28 @@ impl Buffer {
         }
     }
 
-    /// Appends `value` to the end of the buffer or returns an error if the
-    /// buffer is already full.
-    pub fn push(&mut self, value: u8) -> Result<(), Error> {
-        if self.size < self.mem_block.len() {
-            self.mem_block[self.size] = value;
-            self.size += 1;
+    /// Appends `bytes` to the end of the buffer or returns an error if there is
+    /// insufficient space.
+    pub fn push_bytes(&mut self, bytes: &[u8]) -> Result<(), Error> {
+        if self.size + bytes.len() <= self.mem_block.len() {
+            self.mem_block[self.size..self.size + bytes.len()].copy_from_slice(bytes);
+            self.size += bytes.len();
             Ok(())
         } else {
             Err(Error::BUFFER_OVERRUN)
         }
+    }
+
+    /// Appends `value` to the end of the buffer or returns an error if the
+    /// buffer is already full.
+    pub fn push(&mut self, value: u8) -> Result<(), Error> {
+        self.push_bytes(&[value])
+    }
+
+    /// Appends `value` to the end of the buffer, in a big endian encoding or
+    /// returns an error if there is insufficient space.
+    pub fn push_u32_be(&mut self, value: u32) -> Result<(), Error> {
+        self.push_bytes(&value.to_be_bytes())
     }
 
     /// Resize to `new_size`. Must be <= Buffer::CAPACITY. Buffer contents after

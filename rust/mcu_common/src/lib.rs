@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![deny(unaligned_references)]
 
 #[cfg(feature = "std")]
 pub mod build_utils;
@@ -17,6 +18,7 @@ mod common_host_interface;
 mod errors;
 mod mcu_debug_commands;
 mod mem_block;
+mod part_ids;
 
 pub use buffer::Buffer;
 pub use common_host_interface::CommonHostInterface;
@@ -24,6 +26,7 @@ pub use errors::Error;
 pub use hmac_sha256::Hash;
 pub use mcu_debug_commands::McuDebugCommand;
 pub use mem_block::MemBlock;
+pub use part_ids::PartIds;
 
 /// The length of the stage1 slot. This constant is used by stage0, so shouldn't
 /// be changed once stage0 is locked.

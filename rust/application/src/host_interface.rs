@@ -10,9 +10,11 @@ use i2c_protocol::WriteMemoryEvent;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::Buffer;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
 use mcu_common::MemBlock;
+use mcu_common::PartIds;
 use mcu_common::Status;
 
 use crate::application_state::ApplicationState;
@@ -30,6 +32,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     active_command_count: u8,
     spi_flash_erasing: bool,
     pub init_status: Status,
+    pub part_ids: PartIds,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -52,6 +55,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             active_command_count: 0,
             spi_flash_erasing: false,
             init_status: Status::empty(),
+            part_ids: PartIds::default(),
         }
     }
 
@@ -129,6 +133,18 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::FPGA_LOOP_COUNT => state.status.loop_count,
             registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
             registers::SPI_FLASH_STATUS => self.spi_flash_status,
+            registers::PART_IDS => {
+                if let Some(mem_block) = self.protocol_handler.take_mem_block() {
+                    let mut buffer = Buffer::new(mem_block);
+                    if self.part_ids.write_to_buffer(&mut buffer).is_ok() {
+                        event.respond(buffer, &mut self.protocol_handler);
+                        return;
+                    }
+                }
+                // If the memory block is unavailable, say because there's a SPI
+                // flash write in progress, then we return 0.
+                0
+            }
             registers::DEBUG_IDX_REG => self.trace.get_idx(),
             registers::DEBUG_VAL_REG => self.trace.get_val(),
             #[cfg(feature = "image-transfer")]

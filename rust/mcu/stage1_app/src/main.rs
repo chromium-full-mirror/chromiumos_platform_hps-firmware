@@ -30,6 +30,7 @@ use log::error;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::MemBlock;
+use mcu_common::PartIds;
 use mcu_common::Status;
 #[cfg(not(feature = "dev"))]
 use panic_halt as _;
@@ -526,9 +527,15 @@ fn init_peripherals(
     let flash_spi = f.spi;
     let flash_spi_cs = f.cs;
 
+    let mut part_ids = PartIds::default();
+
+    part_ids.mcu_id = p.DBG.idcode.read().bits();
+
     match Flash::init(flash_spi, flash_spi_cs) {
         Ok(mut flash) => match flash.read_jedec_id() {
             Ok(id) => {
+                part_ids.spi_flash_manufacturer_id = id.mfr_code() as u32;
+                part_ids.set_spi_flash_device_id(id.device_id());
                 if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
                     && id.device_id() == board::SPI_FLASH_DEVICE_ID
                 {
@@ -571,10 +578,12 @@ fn init_peripherals(
             host_interface.report_error(mcu_common::Error::CAMERA);
             info!("Failed to read camera ID");
         }
-        Ok(CAMERA_ID) => {}
         Ok(id) => {
-            host_interface.report_error(mcu_common::Error::CAMERA);
-            info!("Camera reported unexpected ID: {}", id);
+            part_ids.camera_id = id as u32;
+            if id != CAMERA_ID {
+                host_interface.report_error(mcu_common::Error::CAMERA);
+                info!("Camera reported unexpected ID: {}", id);
+            }
         }
     }
     match camera.run_init_script() {
@@ -586,6 +595,8 @@ fn init_peripherals(
         "MCU application started. CPU is running at {}MHz",
         rcc.clocks.sys_clk.0 / 1000000
     );
+
+    host_interface.part_ids = part_ids;
 
     let fpga_device = FpgaDevice::new(board.fpga_programn, board.fpga_power_gate, spi_flash);
 

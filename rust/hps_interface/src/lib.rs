@@ -13,6 +13,7 @@ use embedded_hal::blocking::i2c;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::PartIds;
 use mcu_common::Status;
 use mcu_common::HPS_ADDRESS;
 use std::convert::TryFrom;
@@ -85,6 +86,12 @@ pub trait Hps {
             }
         }
         false
+    }
+
+    fn read_part_ids(&mut self) -> Result<PartIds> {
+        let bytes =
+            self.read_register_bytes(registers::PART_IDS, core::mem::size_of::<PartIds>())?;
+        Ok(PartIds::from_bytes(&bytes)?)
     }
 
     fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
