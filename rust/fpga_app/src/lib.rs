@@ -524,7 +524,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_feature_toggle() -> Result<()> {
+    fn test_feature_toggle_nomiri() -> Result<()> {
         let mut app = App::new(
             FakeMcu::default(),
             FakeImageDataReceiver,

@@ -39,7 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn test_check_test_pattern() {
+    fn test_check_test_pattern_nomiri() {
         assert!(sign_convert_and_check(COLOR_BARS).is_ok());
         assert!(sign_convert_and_check(&[0, 0, 0, 0xff, 0xff, 0, 0, 0]).is_ok());
     }
