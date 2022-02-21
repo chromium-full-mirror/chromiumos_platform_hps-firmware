@@ -4,6 +4,7 @@
 
 use crate::Buffer;
 use crate::Error;
+use core::fmt::Display;
 
 /// Part IDs register. For all IDs, a value of 0 indicates unknown.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
@@ -52,6 +53,19 @@ impl PartIds {
         let len = id.len().min(bytes.len());
         bytes[4 - len..].copy_from_slice(&id[..len]);
         self.spi_flash_device_id = u32::from_be_bytes(bytes);
+    }
+}
+
+impl Display for PartIds {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        writeln!(f, "MCU ID: 0x{:x}", self.mcu_id)?;
+        writeln!(f, "Camera ID: 0x{:x}", self.camera_id)?;
+        writeln!(
+            f,
+            "SPI flash: 0x{:x}:0x{:x}",
+            self.spi_flash_manufacturer_id, self.spi_flash_device_id
+        )?;
+        Ok(())
     }
 }
 

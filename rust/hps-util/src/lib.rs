@@ -34,7 +34,9 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
                     | hps.read_register(registers::FIRMWARE_VERSION_LOW)? as u32
             );
         }
-        hps_interface::Stage::Stage1 => {}
+        hps_interface::Stage::Stage1 => {
+            println!("{}", hps.read_part_ids()?);
+        }
         hps_interface::Stage::Application => {
             println!(
                 "FPGA boot count: {}",
