@@ -15,6 +15,7 @@ pub struct Camera<'a, I: i2c::Write + i2c::WriteRead> {
     i2c: &'a mut I,
 }
 
+#[derive(Debug)]
 pub enum Error {
     I2cError,
     InvalidValues,

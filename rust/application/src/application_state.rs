@@ -12,8 +12,8 @@ use num_enum::TryFromPrimitive;
 
 #[derive(Default)]
 pub struct ApplicationState {
-    pub(crate) configuration: Configuration,
-    pub(crate) status: Status,
+    pub configuration: Configuration,
+    pub status: Status,
     /// The number of times the FPGA has started. This is not part of `status`
     /// because `status` is only ever written by the FPGA, never read and we
     /// want a persistent count.

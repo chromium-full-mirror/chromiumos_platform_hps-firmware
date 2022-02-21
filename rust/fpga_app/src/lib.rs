@@ -15,6 +15,9 @@ mod image_rotation;
 mod mcu_interface;
 mod timer;
 
+#[cfg(test)]
+mod fake_mcu;
+
 use application::Rotation;
 use application::Status;
 pub use classifier::Classifier;
@@ -513,178 +516,71 @@ fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
 #[cfg(test)]
 mod tests {
     use crate::camera::testing::FakeImageDataReceiver;
+    use crate::fake_mcu::FakeMcu;
     use crate::timer::testing::FakeTimer;
-    use application::fpga;
-    use application::fpga::commands::Action;
     use application::Configuration;
+    use hm01b0::Camera;
 
     use super::*;
 
-    #[derive(Default)]
-    struct SpiExpectationsBuilder {
-        expectations: Vec<embedded_hal_mock::spi::Transaction>,
-    }
-
-    fn empty() -> Vec<u8> {
-        vec![0u8; fpga::BUFFER_SIZE]
-    }
-
-    impl SpiExpectationsBuilder {
-        fn expect(mut self, mut request: Vec<u8>, mut response: Vec<u8>) -> Self {
-            assert!(!request.is_empty());
-            response.insert(0, fpga::status::OK);
-            response.insert(1, request[0]);
-            assert!(request.len() <= fpga::BUFFER_SIZE);
-            assert!(response.len() <= fpga::BUFFER_SIZE);
-            request.resize(fpga::BUFFER_SIZE, 0);
-            response.resize(fpga::BUFFER_SIZE, 0);
-            self.expectations
-                .push(embedded_hal_mock::spi::Transaction::transfer(
-                    request,
-                    empty(),
-                ));
-            self.expectations
-                .push(embedded_hal_mock::spi::Transaction::transfer(
-                    empty(),
-                    response,
-                ));
-            self
-        }
-
-        fn expect_get_config(self, config: &Configuration) -> Self {
-            self.expect(
-                vec![Action::ReadConfigRegisters.into()],
-                config.to_bytes().to_vec(),
-            )
-        }
-
-        fn expect_read_camera_reg(self, register: u16, value: u8) -> Self {
-            let register_bytes = register.to_be_bytes();
-            self.expect(
-                vec![
-                    Action::ReadCameraI2c.into(),
-                    1,
-                    register_bytes[0],
-                    register_bytes[1],
-                ],
-                vec![value],
-            )
-        }
-
-        fn expect_write_camera_reg(self, register: u16, value: u8) -> Self {
-            let register_bytes = register.to_be_bytes();
-            self.expect(
-                vec![
-                    Action::WriteCameraI2c.into(),
-                    1,
-                    register_bytes[0],
-                    register_bytes[1],
-                    value,
-                ],
-                vec![],
-            )
-        }
-
-        fn expect_report_status(self, status: &Status) -> Self {
-            let mut request = status.to_bytes().to_vec();
-            request.insert(0, Action::WriteStatusRegisters.into());
-            self.expect(request, vec![])
-        }
-
-        fn build(self) -> embedded_hal_mock::spi::Mock {
-            embedded_hal_mock::spi::Mock::new(&self.expectations)
-        }
-    }
-
     #[test]
-    fn test_feature_toggle() {
-        let mut classifier = FakeClassifier::default();
-        classifier.model_outputs[0] = 0x42;
-        let config = Configuration {
+    fn test_feature_toggle() -> Result<()> {
+        let mut app = App::new(
+            FakeMcu::default(),
+            FakeImageDataReceiver,
+            FakeClassifier::default(),
+            FakeTimer,
+        );
+
+        // Iteration 1: Both models enabled - second person model runs.
+        app.classifier.model_outputs[0] = 0x42;
+        app.mcu.spi.state.configuration = Configuration {
             enabled_features: (Features::MODEL1 | Features::MODEL2).bits(),
             camera_config: Rotation::Clockwise.into(),
         };
+        assert_eq!(app.loop_body(), Ok(()));
         let status1 = Status {
             loop_count: 1,
             person_status: 0,
             second_person_status: 0x8042,
-            enabled_features: config.enabled_features,
+            enabled_features: app.mcu.spi.state.configuration.enabled_features,
         };
+        assert_eq!(app.mcu.spi.state.status, status1);
+        assert_eq!(app.classifier.models_executed, 2);
+        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
+
+        // Iteration 2: Both models enabled - presence detection runs.
+        app.classifier.model_outputs[0] = 0x73;
+        app.classifier.models_executed = 0;
+        assert_eq!(app.loop_body(), Ok(()));
         let status2 = Status {
-            person_status: 0x8042,
+            person_status: 0x8073,
             loop_count: 2,
             ..status1
         };
-        let config_disabled = Configuration {
+        assert_eq!(app.mcu.spi.state.status, status2);
+        assert_eq!(app.classifier.models_executed, 1);
+        assert_eq!(app.status.person_status, 0x8073);
+        assert_eq!(app.status.second_person_status, 0x8042);
+        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
+
+        // Iteration 3: Both models disabled.
+        app.classifier.models_executed = 0;
+        app.mcu.spi.state.configuration = Configuration {
             enabled_features: Features::DISABLED.bits(),
             camera_config: Rotation::Clockwise.into(),
         };
+        assert_eq!(app.loop_body(), Ok(()));
         let status3 = Status {
             loop_count: 3,
             person_status: 0,
             second_person_status: 0,
-            enabled_features: config_disabled.enabled_features,
+            enabled_features: app.mcu.spi.state.configuration.enabled_features,
         };
-        let status4 = Status {
-            person_status: 0,
-            loop_count: 4,
-            ..status3
-        };
-        let spi = SpiExpectationsBuilder::default()
-            .expect_get_config(&config)
-            // Get AE mean.
-            .expect_read_camera_reg(0x2020, 100)
-            // Wait camera standby.
-            .expect_read_camera_reg(0x0100, 0)
-            // Configure number of frames.
-            .expect_write_camera_reg(0x3020, 1)
-            // Stream N frames.
-            .expect_write_camera_reg(0x0100, 3)
-            .expect_report_status(&status1)
-            .expect_get_config(&config)
-            // Get AE mean.
-            .expect_read_camera_reg(0x2020, 100)
-            // Wait camera standby.
-            .expect_read_camera_reg(0x0100, 0)
-            // Configure number of frames.
-            .expect_write_camera_reg(0x3020, 1)
-            // Stream N frames.
-            .expect_write_camera_reg(0x0100, 3)
-            .expect_report_status(&status2)
-            .expect_get_config(&config_disabled)
-            // Get AE mean.
-            .expect_read_camera_reg(0x2020, 100)
-            // Wait camera standby.
-            .expect_read_camera_reg(0x0100, 0)
-            // Configure number of frames.
-            .expect_write_camera_reg(0x3020, 1)
-            // Stream N frames.
-            .expect_write_camera_reg(0x0100, 3)
-            .expect_report_status(&status3)
-            .expect_get_config(&config_disabled)
-            // Get AE mean.
-            .expect_read_camera_reg(0x2020, 100)
-            // Wait camera standby.
-            .expect_read_camera_reg(0x0100, 0)
-            // Configure number of frames.
-            .expect_write_camera_reg(0x3020, 1)
-            // Stream N frames.
-            .expect_write_camera_reg(0x0100, 3)
-            .expect_report_status(&status4)
-            .build();
-        let mut app = App::new(spi, FakeImageDataReceiver, classifier, FakeTimer);
+        assert_eq!(app.mcu.spi.state.status, status3);
+        assert_eq!(app.classifier.models_executed, 0);
+        Camera::new(&mut app.mcu.spi.camera).set_mode(hm01b0::Mode::Standby)?;
 
-        assert_eq!(app.loop_body(), Ok(()));
-        assert_eq!(app.loop_body(), Ok(()));
-        assert_eq!(app.classifier.models_executed, 1 | 2);
-        assert_eq!(app.status.person_status, 0x8042);
-        assert_eq!(app.status.second_person_status, 0x8042);
-        assert_eq!(app.loop_body(), Ok(()));
-        assert_eq!(app.loop_body(), Ok(()));
-        assert_eq!(app.status.person_status, 0);
-        assert_eq!(app.status.second_person_status, 0);
-        assert_eq!(app.classifier.models_executed, 1 | 2);
-
-        app.mcu.spi.done();
+        Ok(())
     }
 }
