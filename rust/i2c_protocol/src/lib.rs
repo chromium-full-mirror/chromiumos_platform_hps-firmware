@@ -4,13 +4,10 @@
 
 #![cfg_attr(not(test), no_std)]
 
-mod buffer;
-
-pub use buffer::Buffer;
-
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::Buffer;
 use mcu_common::Error;
 use mcu_common::MemBlock;
 

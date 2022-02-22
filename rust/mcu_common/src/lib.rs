@@ -12,11 +12,13 @@ pub mod memory_banks;
 pub mod registers;
 
 use bitflags::bitflags;
+mod buffer;
 mod common_host_interface;
 mod errors;
 mod mcu_debug_commands;
 mod mem_block;
 
+pub use buffer::Buffer;
 pub use common_host_interface::CommonHostInterface;
 pub use errors::Error;
 pub use hmac_sha256::Hash;

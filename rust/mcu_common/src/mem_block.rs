@@ -14,7 +14,7 @@ pub struct MemBlock {
     /// is critical when we reconstruct the Vec to free it, that we do so with
     /// the same capacity as the original Vec. Will be None if `data` didn't
     /// originate from the heap.
-    #[cfg(feature = "std")]
+    #[cfg(any(feature = "std", test))]
     on_heap_capacity: Option<usize>,
 }
 
@@ -26,13 +26,13 @@ impl MemBlock {
     pub fn new(data: &'static mut [u8]) -> Self {
         Self {
             data,
-            #[cfg(feature = "std")]
+            #[cfg(any(feature = "std", test))]
             on_heap_capacity: None,
         }
     }
 
     /// Constructs a new instance on the heap with the requested capacity.
-    #[cfg(feature = "std")]
+    #[cfg(any(feature = "std", test))]
     pub fn with_capacity(capacity: usize) -> Self {
         let v = vec![0; capacity];
         let on_heap_capacity = Some(v.capacity());
@@ -57,7 +57,7 @@ impl DerefMut for MemBlock {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", test))]
 impl Drop for MemBlock {
     fn drop(&mut self) {
         if let Some(capacity) = self.on_heap_capacity {

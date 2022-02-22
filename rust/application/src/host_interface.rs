@@ -25,7 +25,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     pub spi_flash_status: u16,
     trace: Trace,
     #[cfg(feature = "image-transfer")]
-    outgoing_image_data: Option<i2c_protocol::Buffer>,
+    outgoing_image_data: Option<mcu_common::Buffer>,
     application_running: bool,
     active_command_count: u8,
     spi_flash_erasing: bool,
@@ -218,7 +218,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
     #[cfg(feature = "image-transfer")]
     pub fn queue_image_data_for_i2c(&mut self, data: &[u8]) -> bool {
         if let Some(i2c_buffer) = self.protocol_handler.take_mem_block() {
-            self.outgoing_image_data = Some(i2c_protocol::Buffer::copied_from(i2c_buffer, data));
+            self.outgoing_image_data = Some(mcu_common::Buffer::copied_from(i2c_buffer, data));
             true
         } else {
             false

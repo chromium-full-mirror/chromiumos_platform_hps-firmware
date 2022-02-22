@@ -4,13 +4,13 @@
 
 use core::convert::TryFrom;
 use i2c_peripheral::I2cPeripheral;
-use i2c_protocol::Buffer;
 use i2c_protocol::I2cProtocolHandler;
 use libstage0::verification::ValidStage1;
 use libstage0::WriteProtectState;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
+use mcu_common::Buffer;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
 use mcu_common::MemBlock;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::MemBlock;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::ops::Deref;
 use core::ops::DerefMut;
-use mcu_common::MemBlock;
 
-/// A fixed-sized buffer used for receiving i2c data.
+/// A fixed-sized buffer used for sendign and receiving data.
 #[non_exhaustive]
 pub struct Buffer {
     mem_block: MemBlock,
@@ -98,7 +98,7 @@ impl Eq for Buffer {}
 #[cfg(test)]
 mod tests {
     use super::Buffer;
-    use mcu_common::MemBlock;
+    use crate::MemBlock;
 
     #[test]
     fn test_buffer() {
