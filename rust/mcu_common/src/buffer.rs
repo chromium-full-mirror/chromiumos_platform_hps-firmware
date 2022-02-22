@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::Error;
 use crate::MemBlock;
 use core::fmt::Debug;
 use core::fmt::Formatter;
@@ -30,13 +31,13 @@ impl Buffer {
 
     /// Appends `value` to the end of the buffer or returns an error if the
     /// buffer is already full.
-    pub fn push(&mut self, value: u8) -> Result<(), ()> {
+    pub fn push(&mut self, value: u8) -> Result<(), Error> {
         if self.size < self.mem_block.len() {
             self.mem_block[self.size] = value;
             self.size += 1;
             Ok(())
         } else {
-            Err(())
+            Err(Error::BUFFER_OVERRUN)
         }
     }
 
