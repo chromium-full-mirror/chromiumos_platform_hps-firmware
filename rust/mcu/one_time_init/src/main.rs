@@ -217,7 +217,9 @@ fn configure_option_bytes(
         return Err(Error::MCU_FLASH_WRITE_ERROR);
     }
 
-    if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
+    if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT)
+        || request.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT)
+    {
         // Write protect flash from page 0x00 to 0x1f inclusive. i.e. the first
         // 64KB of flash.
         unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x001f_0000) };
