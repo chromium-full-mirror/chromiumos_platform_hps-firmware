@@ -66,7 +66,7 @@ where
     let current_options = OptionBytesConfigRequest::from_bits_truncate(
         hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
     );
-    if current_options.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT) {
+    if current_options.contains(OptionBytesConfigRequest::RDP2) {
         info!("Stage0 is permanently locked and cannot be erased.");
         return Err(EraseError::PermanentlyLocked);
     }

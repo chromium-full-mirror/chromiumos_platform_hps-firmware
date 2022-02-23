@@ -201,11 +201,16 @@ bitflags! {
         /// Whether to disable boot0 pin, forcing boot from flash.
         const DISABLE_BOOT0_PIN = 1 << 2;
 
-        /// Whether to non-permanently write protect stage0 (RDP level 1).
-        const NON_PERMANENT_WRITE_PROTECT = 1 << 3;
+        /// Whether to non-permanently lock the MCU (RDP level 1).
+        const RDP1 = 1 << 3;
 
-        /// Whether to permanently write protect stage0 (RDP level 2).
-        const PERMANENT_WRITE_PROTECT = 1 << 4;
+        /// Whether to permanently lock the MCU (RDP level 2). Once this is
+        /// done, any write protection will be permanent and option bytes can no
+        /// longer be changed.
+        const RDP2 = 1 << 4;
+
+        /// Whether to apply write protection to stage0.
+        const WRITE_PROTECT = 1 << 5;
 
         /// Unprotect and erase stage0. Reset option bytes that we might have
         /// changed back to their defaults.

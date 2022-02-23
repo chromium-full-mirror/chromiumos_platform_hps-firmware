@@ -192,6 +192,7 @@ where
         }
         Ok(())
     }
+
     fn verify_protection(&mut self) -> Result<()> {
         self.i2c.execute_non_i2c_stage1()?;
         let mut hps = self.i2c.open_hps()?;
@@ -208,7 +209,7 @@ where
             );
         }
 
-        info!("Stage0 written and non-permanently locked");
+        info!("Stage0 written with options: {:?}", applied_options);
 
         Ok(())
     }
@@ -216,14 +217,15 @@ where
 
 impl WriteStage0Config {
     fn options(&self) -> OptionBytesConfigRequest {
-        let mut options = OptionBytesConfigRequest::RESET_PIN;
+        let mut options =
+            OptionBytesConfigRequest::RESET_PIN | OptionBytesConfigRequest::WRITE_PROTECT;
         if self.disable_boot0 {
             options |= OptionBytesConfigRequest::DISABLE_BOOT0_PIN;
         }
         if self.permanent_lock {
-            options |= OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT;
+            options |= OptionBytesConfigRequest::RDP2;
         } else {
-            options |= OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
+            options |= OptionBytesConfigRequest::RDP1;
         }
         options
     }

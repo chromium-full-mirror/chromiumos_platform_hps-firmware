@@ -171,10 +171,16 @@ impl State {
             settings |= OptionBytesConfigRequest::DISABLE_BOOT0_PIN;
         }
         if optr.rdp().bits() == 0xbb {
-            settings |= OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT;
+            settings |= OptionBytesConfigRequest::RDP1;
         }
         if optr.rdp().bits() == 0xcc {
-            settings |= OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT;
+            settings |= OptionBytesConfigRequest::RDP2;
+        }
+        let wrp1ar = self.flash.wrp1ar.read();
+        if wrp1ar.wrp1a_strt().bits() == 0
+            && wrp1ar.wrp1a_end().bits() == (mcu_common::STAGE0_NUM_PAGES - 1) as u8
+        {
+            settings |= OptionBytesConfigRequest::WRITE_PROTECT;
         }
         settings
     }
@@ -217,12 +223,10 @@ fn configure_option_bytes(
         return Err(Error::MCU_FLASH_WRITE_ERROR);
     }
 
-    if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT)
-        || request.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT)
-    {
-        // We write protect from page 0 to page STAGE0_NUM_PAGES - 1. Note,
-        // write protection is inclusive of the end-page.
-        const WRITE_PROTECT_BITS: u32 = (mcu_common::STAGE0_NUM_PAGES - 1) << 16;
+    // We write protect from page 0 to page STAGE0_NUM_PAGES - 1. Note,
+    // write protection is inclusive of the end-page.
+    const WRITE_PROTECT_BITS: u32 = (mcu_common::STAGE0_NUM_PAGES - 1) << 16;
+    if request.contains(OptionBytesConfigRequest::WRITE_PROTECT) {
         unsafe {
             core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, WRITE_PROTECT_BITS)
         };
@@ -250,10 +254,10 @@ fn configure_option_bytes(
             w.n_boot0().set_bit();
         }
 
-        if request.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT) {
+        if request.contains(OptionBytesConfigRequest::RDP2) {
             // Set RDP level 2. Once done, this can never be undone.
             unsafe { w.rdp().bits(0xcc) };
-        } else if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT) {
+        } else if request.contains(OptionBytesConfigRequest::RDP1) {
             // Set RDP level 1.
             unsafe { w.rdp().bits(0xbb) };
         } else if request.contains(OptionBytesConfigRequest::ERASE) {
