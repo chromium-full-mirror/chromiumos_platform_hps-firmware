@@ -65,10 +65,7 @@ fn write_application_bin() -> Result<()> {
         std::fs::write(bin_file, "")?;
         return Ok(());
     }
-    // TODO: Remove no-hash-check. Need to first embed the correct binary hashes
-    // in stage1 and make the hash check pass when SPI flash test data is
-    // present.
-    let mut features = "proto2,no-hash-check".to_owned();
+    let mut features = "proto2".to_owned();
     if cfg!(feature = "image-transfer") {
         // The dev feature is required for image-transfer.
         features.push_str(",dev,image-transfer");
