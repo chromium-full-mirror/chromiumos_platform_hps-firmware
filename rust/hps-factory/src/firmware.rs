@@ -11,15 +11,9 @@ use std::path::PathBuf;
 /// The stage0 bootloader.
 pub(crate) const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
 
-/// Non-release version of the MCU application. Supports features that should
-/// never be in release builds such as image transfer and skipping the SPI hash
-/// check.
+/// The MCU application binary.
 pub(crate) const APPLICATION_BYTES: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/application.bin"));
-
-/// Release version of the MCU application.
-pub(crate) const APPLICATION_RELEASE_BYTES: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/application.release.bin"));
 
 /// Initializes MCU option bytes including write protecting stage0. Also
 /// supports removing temporary write protection from stage0 and erasing stage0.

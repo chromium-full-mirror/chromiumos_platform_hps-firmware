@@ -13,7 +13,6 @@ fn main() -> Result<()> {
     build_mcu_test_program("factory_tester_mcu.bin", "")?;
     build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
     write_application_bin()?;
-    write_release_application_bin()?;
     build_fpga_bitstream()?;
     build_fpga_rom()?;
     write_stage0_bin("stage0.bin", "insecure-dev-key")?;
@@ -62,6 +61,14 @@ fn write_stage0_bin(bin_name: &str, features: &str) -> Result<()> {
 fn write_application_bin() -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join("application.bin");
+    // TODO: Remove no-hash-check. Need to first embed the correct binary hashes
+    // in stage1 and make the hash check pass when SPI flash test data is
+    // present.
+    let mut features = "proto2,no-hash-check".to_owned();
+    if cfg!(feature = "image-transfer") {
+        // The dev feature is required for image-transfer.
+        features.push_str(",dev,image-transfer");
+    }
     Command::new("cargo")
         .current_dir("../mcu/stage1_app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
@@ -70,29 +77,7 @@ fn write_application_bin() -> Result<()> {
         .arg("--release")
         .arg("--no-default-features")
         .arg("--features")
-        .arg("proto2,dev,image-transfer,no-hash-check")
-        .run()?;
-    convert_elf_to_bin(
-        out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
-        &bin_file,
-    )?;
-    sign_stage1_binary(&bin_file)
-}
-
-fn write_release_application_bin() -> Result<()> {
-    let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
-    let bin_file = out_dir.join("application.release.bin");
-    Command::new("cargo")
-        .current_dir("../mcu/stage1_app")
-        .env_remove("CARGO_ENCODED_RUSTFLAGS")
-        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
-        .arg("build")
-        .arg("--release")
-        .arg("--no-default-features")
-        .arg("--features")
-        // TODO: Remove no-hash-check once stage1 embeds the hash of the Rust
-        // fpga_rom rather than the old C soc_rom.
-        .arg("proto2,no-hash-check")
+        .arg(&features)
         .run()?;
     convert_elf_to_bin(
         out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
