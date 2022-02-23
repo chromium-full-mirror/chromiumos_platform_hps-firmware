@@ -220,9 +220,12 @@ fn configure_option_bytes(
     if request.contains(OptionBytesConfigRequest::NON_PERMANENT_WRITE_PROTECT)
         || request.contains(OptionBytesConfigRequest::PERMANENT_WRITE_PROTECT)
     {
-        // Write protect flash from page 0x00 to 0x1f inclusive. i.e. the first
-        // 64KB of flash.
-        unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x001f_0000) };
+        // We write protect from page 0 to page STAGE0_NUM_PAGES - 1. Note,
+        // write protection is inclusive of the end-page.
+        const WRITE_PROTECT_BITS: u32 = (mcu_common::STAGE0_NUM_PAGES - 1) << 16;
+        unsafe {
+            core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, WRITE_PROTECT_BITS)
+        };
     }
     if request.contains(OptionBytesConfigRequest::ERASE) {
         unsafe { core::ptr::write_volatile(&flash.wrp1ar as *const _ as *mut u32, 0x3f) };

@@ -29,7 +29,7 @@ pub use mem_block::MemBlock;
 pub use part_ids::PartIds;
 
 /// The length of the stage1 slot. This constant is used by stage0, so shouldn't
-/// be changed once stage0 is locked.
+/// be changed once stage0 is locked. This must be a multiple of FLASH_PAGE_SZ.
 pub const STAGE1_SLOT_LENGTH: usize = 64 * 1024;
 
 /// STM32G0x1, RM0444 (Reference manual)
@@ -61,6 +61,17 @@ pub const SOC_ROM_OFFSET: u32 = 2 * 1024 * 1024;
 /// The address of the start of flash.
 pub const FLASH_START: u32 = 0x08000000;
 
+/// The size of the MCU flash.
+pub const FLASH_SIZE: u32 = 128 * 1024;
+
+/// The non-inclusive end of flash.
+pub const FLASH_END_ADDRESS: u32 = FLASH_START + FLASH_SIZE;
+
+/// The number of pages allocated to stage0. This many pages at the start of
+/// flash will be write-protected.
+pub const STAGE0_NUM_PAGES: u32 =
+    (FLASH_SIZE - (STAGE1_SLOT_LENGTH as u32)) / (FLASH_PAGE_SZ as u32);
+
 /// The start address of the MCU's RAM.
 pub const MCU_RAM_START: usize = 0x20000000;
 
@@ -80,7 +91,7 @@ pub const SPI_TEST_DATA_OFFSET: u32 = 15 * 1024 * 1024;
 /// The address at which the application is written. The stage1 header will be
 /// at this address. This constant is used by stage0, so shouldn't be changed
 /// once stage0 is locked.
-pub const APPLICATION_START_ADDRESS: u32 = 0x08010000;
+pub const APPLICATION_START_ADDRESS: u32 = FLASH_START + FLASH_SIZE - (STAGE1_SLOT_LENGTH as u32);
 
 /// The offset of vector table within the application. This constant is used by
 /// stage0, so shouldn't be changed once stage0 is locked.
@@ -237,7 +248,6 @@ mod test {
     fn test_stage1_within_flash() {
         // Ensure that the "FLASH" section doesn't extend beyond the end of the
         // actual flash.
-        const FLASH_END_ADDRESS: u32 = 0x08020000;
         assert!(APPLICATION_START_ADDRESS + STAGE1_SLOT_LENGTH as u32 <= FLASH_END_ADDRESS);
     }
 
@@ -248,6 +258,17 @@ mod test {
         assert!(
             APPLICATION_START_ADDRESS + APPLICATION_VECTOR_TABLE_OFFSET
                 <= APPLICATION_VECTOR_TABLE_ADDRESS
+        );
+    }
+
+    #[test]
+    fn test_stage0_write_protection_range() {
+        // Everything up to but not including APPLICATION_START_ADDRESS should
+        // be write protected. This can fail if STAGE1_SLOT_LENGTH isn't an
+        // exact multiple of FLASH_PAGE_SIZE.
+        assert_eq!(
+            FLASH_START + STAGE0_NUM_PAGES * (FLASH_PAGE_SZ as u32),
+            APPLICATION_START_ADDRESS
         );
     }
 }
