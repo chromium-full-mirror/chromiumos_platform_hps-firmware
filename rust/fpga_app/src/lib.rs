@@ -8,7 +8,6 @@ pub mod camera;
 mod camera_tester;
 mod classifier;
 mod debug_commands;
-mod entropy;
 mod features;
 mod histogram;
 mod image_rotation;
@@ -188,9 +187,9 @@ where
                 .unwrap_or_else(|| rotation == Rotation::Clockwise),
         )?;
         let image_data = self.classifier.input_data(self.model_number);
-        let entropy = crate::entropy::calculate_entropy(image_data);
+        let histogram = histogram::Histogram::new(image_data);
         if self.histogram_enabled {
-            mcu_println!(self.mcu, "{}", histogram::Histogram::new(image_data));
+            mcu_println!(self.mcu, "{}", histogram);
         }
 
         // Image transfer can be enabled either via a feature (transfer over
@@ -210,7 +209,7 @@ where
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
         let model_status;
-        if entropy < crate::entropy::ENTROPY_THRESHOLD
+        if histogram.is_usable()
             && (features.contains(Features::MODEL1)
                 || features.contains(Features::MODEL2)
                 || self.classification_enabled)
