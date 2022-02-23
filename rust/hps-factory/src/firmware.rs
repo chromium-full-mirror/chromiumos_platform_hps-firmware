@@ -16,6 +16,11 @@ pub(crate) const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "
 pub(crate) const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader.bin"));
 
+/// As above, but for use with version 0x0101 of stage0, which loads stage1 at
+/// address 0x08010000.
+pub(crate) const ONE_TIME_INIT_LOADER_LEGACY_BYTES: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader_legacy.bin"));
+
 /// Pre-install tester MCU program. This version is used when the system
 /// bootloader is active and is loaded into RAM.
 pub(crate) const PRE_INSTALL_TESTER_MCU_CODE: &[u8] =

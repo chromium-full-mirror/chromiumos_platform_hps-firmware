@@ -15,3 +15,8 @@ stm32g0 = "0.13.0"
 [build-dependencies]
 anyhow = "1.0.38"
 mcu_common = { path = "../../mcu_common", features = [ "std" ] }
+
+[features]
+# Builds such that we can be loaded at the 64KB offset in flash as used by old
+# versions of stage0.
+legacy-stage0 = []

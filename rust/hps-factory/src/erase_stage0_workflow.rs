@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::firmware::ONE_TIME_INIT_LOADER_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use anyhow::Context;
@@ -39,9 +38,17 @@ where
         return Ok(());
     }
 
+    let stage0_version = i2c.open_hps()?.read_register(registers::HARDWARE_VERSION)?;
+    let one_time_init_bytes = if stage0_version == 0x0101 {
+        info!("Old version of stage0. Loading legacy one_time_init_loader.");
+        crate::firmware::ONE_TIME_INIT_LOADER_LEGACY_BYTES
+    } else {
+        crate::firmware::ONE_TIME_INIT_LOADER_BYTES
+    };
+
     // Erasing is done by one_time_init. Write the loader that will put it into
     // RAM and run it.
-    if let Err(error) = i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES) {
+    if let Err(error) = i2c.write_stage1(one_time_init_bytes) {
         // We got an error writing stage1. This might be because we're running
         // an old version of stage0 that doesn't support the EraseStage1
         // command.
@@ -54,7 +61,7 @@ where
             i2c.reset_to_bootloader()?;
             // Try again, without using the erase command.
             i2c.erase_stage1_allowed = false;
-            i2c.write_stage1(ONE_TIME_INIT_LOADER_BYTES)?;
+            i2c.write_stage1(one_time_init_bytes)?;
         } else {
             return Err(error.into());
         }

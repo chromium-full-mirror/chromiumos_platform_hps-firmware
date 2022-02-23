@@ -34,14 +34,26 @@ SECTIONS
 
 PROGRAM_RAM_TARGET_AREA = 0x{:x};
 "#,
-        mcu_common::APPLICATION_START_ADDRESS,
+        load_address(),
         mcu_common::APPLICATION_VECTOR_TABLE_OFFSET,
-        mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS,
-        mcu_common::STAGE1_SLOT_LENGTH,
+        load_address() + mcu_common::APPLICATION_VECTOR_TABLE_OFFSET,
+        stage1_max_size(),
         mcu_common::MCU_RAM_START,
         mcu_common::PROGRAM_IN_RAM_OFFSET,
         mcu_common::MCU_RAM_START + mcu_common::PROGRAM_IN_RAM_OFFSET,
     )
+}
+
+fn load_address() -> u32 {
+    if cfg!(feature = "legacy-stage0") {
+        0x08010000
+    } else {
+        mcu_common::APPLICATION_START_ADDRESS
+    }
+}
+
+fn stage1_max_size() -> u32 {
+    mcu_common::FLASH_END_ADDRESS - load_address()
 }
 
 fn write_memory_x() -> Result<()> {
