@@ -12,9 +12,9 @@ use std::process::Command;
 fn main() -> Result<()> {
     build_mcu_test_program("factory_tester_mcu.bin", "")?;
     build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
-    write_application_bin()?;
     build_fpga_bitstream()?;
     build_fpga_rom()?;
+    write_application_bin()?;
     write_stage0_bin("stage0.bin", "insecure-dev-key")?;
     build_one_time_init_loader()?;
     Ok(())
@@ -77,6 +77,7 @@ fn write_application_bin() -> Result<()> {
         .current_dir("../mcu/stage1_app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
+        .env("HPS_SPI_BIN", out_dir.join("soc_rom.bin"))
         .arg("build")
         .arg("--release")
         .arg("--no-default-features")
