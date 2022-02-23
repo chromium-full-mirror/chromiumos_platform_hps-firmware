@@ -146,7 +146,10 @@ pub(crate) fn hash(
                         return Err(Error::SPI_FLASH_NOT_VERIFIED);
                     }
                 }
-                if empty_page != buf {
+                // We consider a page to be empty for the purposes of hashing if
+                // either it is truly empty (all 0xff) or it contains our test
+                // pattern, which we sometimes write into the last 1MB of flash.
+                if empty_page != buf && crate::testing::TEST_PATTERN != buf {
                     error!("Expected SPI flash register to be empty");
                     return Err(Error::SPI_FLASH_NOT_VERIFIED);
                 }
