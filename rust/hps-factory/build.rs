@@ -61,6 +61,10 @@ fn write_stage0_bin(bin_name: &str, features: &str) -> Result<()> {
 fn write_application_bin() -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join("application.bin");
+    if !cfg!(feature = "built-in-mcu-rom") {
+        std::fs::write(bin_file, "")?;
+        return Ok(());
+    }
     // TODO: Remove no-hash-check. Need to first embed the correct binary hashes
     // in stage1 and make the hash check pass when SPI flash test data is
     // present.

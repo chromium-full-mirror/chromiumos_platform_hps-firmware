@@ -56,6 +56,10 @@ struct Config {
     /// path FPGA ROM. Overrides built-in ROM
     #[clap(long)]
     fpga_rom: Option<PathBuf>,
+
+    /// path MCU ROM. Overrides built-in ROM
+    #[clap(long)]
+    mcu_rom: Option<PathBuf>,
 }
 
 #[derive(Debug, Subcommand, Clone)]

@@ -5,7 +5,6 @@
 use std::time::Duration;
 use std::time::Instant;
 
-use crate::firmware::APPLICATION_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use anyhow::bail;
@@ -58,7 +57,7 @@ where
                 .execute_stage1()
                 .context("Failed to execute stage1")?;
         } else {
-            self.i2c.write_stage1(APPLICATION_BYTES)?;
+            self.i2c.write_stage1(&self.i2c.config.mcu_rom()?)?;
             self.i2c
                 .execute_stage1()
                 .context("Failed to execute stage1")?;

@@ -41,6 +41,8 @@ image-transfer = [ "mcu_common/image-transfer", "fpga_app/image-transfer" ]
 all-embedded-firmware = [
     "built-in-fpga-bitstream",
     "built-in-fpga-rom",
+    "built-in-mcu-rom"
 ]
 built-in-fpga-bitstream = []
 built-in-fpga-rom = []
+built-in-mcu-rom = []

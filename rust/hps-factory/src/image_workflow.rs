@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::firmware::APPLICATION_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::CaptureImagesConfig;
 use crate::Config;
@@ -32,7 +31,7 @@ where
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());
     if !capture_images_config.skip_firmware_writes {
-        i2c.write_stage1(APPLICATION_BYTES)?;
+        i2c.write_stage1(&config.mcu_rom()?)?;
         i2c.execute_stage1().context("Execute application")?;
         if !capture_images_config.skip_bitstream_write {
             i2c.write_gateware().context("Write gateware")?;

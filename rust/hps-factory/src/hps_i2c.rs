@@ -50,7 +50,7 @@ const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
 /// HPS functionality.
 pub(crate) struct HpsI2c<'a, I> {
     pub(crate) i2c: &'a mut I,
-    config: Config,
+    pub(crate) config: Config,
     pub(crate) erase_stage1_allowed: bool,
 }
 
