@@ -49,7 +49,7 @@ fn div240(x: usize) -> (usize, usize) {
 
 // Rotate anticlockwise with precomputed starting points for 320x240
 // (or 240x320) matrix, using follow the cycle algorithm.
-fn transpose_320_240(arr: &mut [u8]) {
+fn transpose_320_240(arr: &mut [i8]) {
     for start in STARTING_POINTS.iter().copied() {
         let mut index = start;
         let mut hold_value = arr[start];
@@ -68,7 +68,7 @@ fn transpose_320_240(arr: &mut [u8]) {
 /// be mirror-imaged, so it's recommended that input image be flipped vertically
 /// in hardware prior to passing to this function so that the output ends up the
 /// right way around.
-pub fn rotate_240_320_clockwise(arr: &mut [u8]) {
+pub fn rotate_240_320_clockwise(arr: &mut [i8]) {
     transpose_320_240(arr);
 }
 
@@ -84,7 +84,7 @@ mod tests {
     const NOT_PERSON: &[u8] = include_bytes!("../test_data/not-person-320x240.png");
 
     // Reverses the elements in each matrix row, regardless of MxN size.
-    fn reverse_rows(arr: &mut [u8], cols: usize, rows: usize) {
+    fn reverse_rows(arr: &mut [i8], cols: usize, rows: usize) {
         let mut tmp;
         for r in 0..rows {
             let mut end = cols - 1;

@@ -16,14 +16,14 @@ pub struct Histogram {
 }
 
 impl Histogram {
-    pub fn new(image_data: &[u8]) -> Histogram {
+    pub fn new(image_data: &[i8]) -> Histogram {
         let mut result = Histogram {
             count: 0,
             bins: [0; 8],
         };
 
-        for val in image_data {
-            result.add(*val as i8);
+        for &val in image_data {
+            result.add(val);
         }
 
         result

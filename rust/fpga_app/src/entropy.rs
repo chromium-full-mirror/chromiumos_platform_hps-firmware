@@ -29,10 +29,10 @@ fn fixed_log2(x: u64) -> u64 {
 // This function calculates if the most recently taken image is usable.
 // Images which contain most of the pixels in a small number of buckets
 // will have much greater entropy value.
-pub fn calculate_entropy(image_data: &[u8]) -> u32 {
+pub fn calculate_entropy(image_data: &[i8]) -> u32 {
     let mut histogram: [u32; 256] = [0; 256];
     for i in image_data.iter() {
-        histogram[*i as usize] += 1;
+        histogram[((*i as i16) + 128) as usize] += 1;
     }
     // This method of calculating entropy is very custom and it has been
     // achieved and tested using Rust adequate.

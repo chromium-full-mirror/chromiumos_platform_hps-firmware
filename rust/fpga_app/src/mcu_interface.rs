@@ -154,18 +154,19 @@ where
     }
 
     #[cfg(feature = "image-transfer")]
-    pub fn send_image_data(&mut self, image_data: &[u8]) -> Result<()> {
+    pub fn send_image_data(&mut self, image_data: &[i8]) -> Result<()> {
         let mut to_send = crate::camera::START_IMAGE_MARKER
             .iter()
-            .chain(image_data)
-            .chain(crate::camera::END_IMAGE_MARKER.iter())
+            .cloned()
+            .chain(image_data.iter().map(|&b| b as u8))
+            .chain(crate::camera::END_IMAGE_MARKER.iter().cloned())
             .peekable();
         while to_send.peek().is_some() {
             self.clear_buffer();
             self.buffer[0] = Action::DebugImage.into();
             for i in 1..BUFFER_SIZE {
                 match to_send.next() {
-                    Some(byte) => self.buffer[i] = *byte,
+                    Some(byte) => self.buffer[i] = byte,
                     None => break,
                 }
             }

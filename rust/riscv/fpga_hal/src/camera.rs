@@ -14,7 +14,7 @@ pub struct DmaImageDataReceiver {
 impl ImageDataReceiver for DmaImageDataReceiver {
     fn receive_image_data(
         &mut self,
-        buffer: &mut [u8],
+        buffer: &mut [i8],
         image_dimensions: &ImageDimensions,
         trigger_callback: impl FnOnce() -> Result<()>,
     ) -> Result<()> {

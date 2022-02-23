@@ -9,10 +9,10 @@ use fpga_app::Result;
 use fpga_app::TfLiteInitStatus;
 
 #[link_section = ".arena"]
-static mut IMAGE_DATA: [u8; NUM_PIXELS] = [0u8; NUM_PIXELS];
+static mut IMAGE_DATA: [i8; NUM_PIXELS] = [0i8; NUM_PIXELS];
 
 pub(crate) struct NonTflmClassifier {
-    data: &'static mut [u8],
+    data: &'static mut [i8],
 }
 
 impl NonTflmClassifier {
@@ -26,11 +26,11 @@ impl NonTflmClassifier {
 }
 
 impl Classifier for NonTflmClassifier {
-    fn input_data_mut(&mut self, _model_number: u32) -> &mut [u8] {
+    fn input_data_mut(&mut self, _model_number: u32) -> &mut [i8] {
         self.data
     }
 
-    fn input_data(&self, _model_number: u32) -> &[u8] {
+    fn input_data(&self, _model_number: u32) -> &[i8] {
         self.data
     }
 

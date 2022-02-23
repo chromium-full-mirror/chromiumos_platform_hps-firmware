@@ -26,7 +26,7 @@ pub trait ImageDataReceiver {
     /// returns an error, then DMA is cancelled and the error is returned.
     fn receive_image_data(
         &mut self,
-        buffer: &mut [u8],
+        buffer: &mut [i8],
         image_dimensions: &ImageDimensions,
         trigger_callback: impl FnOnce() -> Result<()>,
     ) -> Result<()>;
@@ -48,13 +48,13 @@ pub(crate) mod testing {
     impl ImageDataReceiver for FakeImageDataReceiver {
         fn receive_image_data(
             &mut self,
-            buffer: &mut [u8],
+            buffer: &mut [i8],
             _image_dimensions: &ImageDimensions,
             trigger_callback: impl FnOnce() -> Result<()>,
         ) -> Result<()> {
             // Inserts fake image data to pass entropy calculations.
             for (i, v) in buffer.iter_mut().enumerate() {
-                *v = i as u8 / 2;
+                *v = ((i & 0xff) as i16 - 128) as i8;
             }
             (trigger_callback)()
         }

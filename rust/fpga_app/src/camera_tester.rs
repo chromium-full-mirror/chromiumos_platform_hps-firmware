@@ -7,15 +7,15 @@ use crate::Error;
 /// Checks whether image_data looks like a valid test pattern. We expect the
 /// color bars test pattern, which has all bytes either 0x00 or 0xff. The input
 /// data is assumed to have been converted to signed values by subtracting 128.
-pub(crate) fn check_test_pattern(image_data: &[u8]) -> Result<(), Error> {
+pub(crate) fn check_test_pattern(image_data: &[i8]) -> Result<(), Error> {
     let mut got_zero = false;
     let mut got_ff = false;
     for byte in image_data.iter().cloned() {
         // The camera gateware subtracts 128 from all bytes received from the
-        // camera.
-        match byte.wrapping_add(128) {
-            0 => got_zero = true,
-            0xff => got_ff = true,
+        // camera, encoding 0 as -0x80, and 0xff as 0x7f
+        match byte {
+            -0x80 => got_zero = true,
+            0x7f => got_ff = true,
             _ => {
                 // On some devices we see 0xfe and 0x01 as well, so we don't
                 // treat other values as errors.
@@ -36,8 +36,10 @@ mod tests {
     const COLOR_BARS: &[u8] = include_bytes!("../test_data/color-bars.raw");
 
     fn sign_convert_and_check(bytes: &[u8]) -> Result<(), Error> {
-        let sign_converted_data: Vec<u8> =
-            bytes.iter().map(|byte| byte.wrapping_sub(128)).collect();
+        let sign_converted_data: Vec<i8> = bytes
+            .iter()
+            .map(|byte| byte.wrapping_sub(128) as i8)
+            .collect();
         check_test_pattern(&sign_converted_data)
     }
 

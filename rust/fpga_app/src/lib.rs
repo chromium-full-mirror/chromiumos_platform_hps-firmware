@@ -373,7 +373,7 @@ where
     ) -> Result<()> {
         let buffer = self.classifier.input_data_mut(model_number);
         for i in 0..buffer.len() {
-            buffer[i] = (i16::from(input_data[i]) - 128) as u8;
+            buffer[i] = (i16::from(input_data[i]) - 128) as i8;
         }
         let start = self.timer.now();
         let score = self.classifier.run_model(model_number)?;

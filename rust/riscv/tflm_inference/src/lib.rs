@@ -18,7 +18,7 @@ use core::convert::TryFrom;
 #[link(name = "stdc++")]
 extern "C" {
     fn tflite_init() -> i32;
-    fn tflite_get_input(model_number: u32) -> *mut u8;
+    fn tflite_get_input(model_number: u32) -> *mut i8;
     fn tflite_classify(model_number: u32, score_out: *mut i8) -> bool;
 }
 
@@ -43,7 +43,7 @@ impl TflmClassifier {
 }
 
 impl fpga_app::Classifier for TflmClassifier {
-    fn input_data_mut(&mut self, model_number: u32) -> &mut [u8] {
+    fn input_data_mut(&mut self, model_number: u32) -> &mut [i8] {
         // safety: TflmClassifier::sole_instance requires that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
@@ -56,7 +56,7 @@ impl fpga_app::Classifier for TflmClassifier {
         }
     }
 
-    fn input_data(&self, model_number: u32) -> &[u8] {
+    fn input_data(&self, model_number: u32) -> &[i8] {
         // safety: TflmClassifier::sole_instance requires that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
