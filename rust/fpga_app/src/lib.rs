@@ -17,6 +17,8 @@ mod timer;
 
 #[cfg(test)]
 mod fake_mcu;
+#[cfg(test)]
+mod test_helpers;
 
 use application::Rotation;
 use application::Status;

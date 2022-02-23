@@ -51,20 +51,10 @@ pub fn calculate_entropy(image_data: &[u8]) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const LONG_EDGE: usize = 320;
-    const SHORT_EDGE: usize = 240;
-    const NUM_PIXELS: usize = SHORT_EDGE * LONG_EDGE;
+    use crate::test_helpers::png_pixels;
 
     const NOT_USABLE: &[u8] = include_bytes!("../test_data/unusable-320x240.png");
     const USABLE: &[u8] = include_bytes!("../test_data/not-person-320x240.png");
-
-    fn png_pixels(png_bytes: &[u8]) -> image::ImageResult<Vec<u8>> {
-        use image::ImageDecoder;
-        let mut pixels = vec![0; NUM_PIXELS];
-        image::codecs::png::PngDecoder::new(png_bytes)?.read_image(&mut pixels)?;
-        Ok(pixels)
-    }
 
     #[test]
     fn test_calculate_entropy_nomiri() {
