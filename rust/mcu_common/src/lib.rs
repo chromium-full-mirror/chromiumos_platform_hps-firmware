@@ -30,7 +30,7 @@ pub use part_ids::PartIds;
 
 /// The length of the stage1 slot. This constant is used by stage0, so shouldn't
 /// be changed once stage0 is locked. This must be a multiple of FLASH_PAGE_SZ.
-pub const STAGE1_SLOT_LENGTH: usize = 64 * 1024;
+pub const STAGE1_SLOT_LENGTH: usize = 88 * 1024;
 
 pub const LEGACY_STAGE1_SLOT_LENGTH: usize = 64 * 1024;
 
