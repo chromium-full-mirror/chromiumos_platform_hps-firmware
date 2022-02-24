@@ -10,6 +10,7 @@ use clap::Subcommand;
 use host_dev_common::kernel_driver;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_util::monitor;
 use hps_util::print_status;
 use mcu_common::commands::Command;
 use mcu_common::registers;
@@ -56,6 +57,7 @@ enum SubCommand {
     Status(Status),
     Unbind,
     Bind,
+    Monitor,
 }
 
 #[derive(Clap, PartialEq, Debug)]
@@ -253,5 +255,6 @@ fn main() -> Result<()> {
         SubCommand::Status(_) => print_status(&mut *hps),
         SubCommand::Unbind => unreachable!(),
         SubCommand::Bind => unreachable!(),
+        SubCommand::Monitor => monitor::run(&mut *hps),
     }
 }

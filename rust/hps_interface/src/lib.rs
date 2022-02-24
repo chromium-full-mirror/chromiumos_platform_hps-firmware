@@ -24,6 +24,9 @@ use std::time::Instant;
 /// How long we'll wait for the HPS to respond on I2C when starting up.
 const I2C_START_TIMEOUT: Duration = Duration::from_secs(1);
 
+/// How long we'll wait for the soft CPU to start.
+const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Stage {
     Unknown,
@@ -103,6 +106,30 @@ pub trait Hps {
 
     fn perform_command(&mut self, command: Command) -> Result<()> {
         self.write_register(registers::COMMAND, command.into())
+    }
+
+    fn launch_app(&mut self) -> Result<()> {
+        while self.stage()? == Stage::Stage0 {
+            self.perform_command(Command::Launch1)?;
+        }
+        self.perform_command(Command::LaunchApp)?;
+        while self.stage()? != Stage::Application {
+            self.check_errors()?;
+        }
+        let start = Instant::now();
+        loop {
+            if self.read_register(registers::FPGA_BOOT_COUNT)? > 0 {
+                break;
+            }
+            if start.elapsed() > FPGA_START_TIMEOUT {
+                bail!(
+                    "FPGA soft CPU failed to start within {}s",
+                    FPGA_START_TIMEOUT.as_secs()
+                );
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        Ok(())
     }
 
     fn set_feature_enable(&mut self, value: u16) -> Result<()> {

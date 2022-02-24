@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 mod fake_hps;
+pub mod monitor;
 mod send_i2c;
 
 use anyhow::Result;
