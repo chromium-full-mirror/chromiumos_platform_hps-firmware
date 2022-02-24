@@ -128,8 +128,10 @@ where
         if status != TfLiteInitStatus::InitOk {
             self.mcu.report_error(mcu_common::Error::TFLITE_FAILURE);
         }
-        mcu_println!(self, "");
-        self.camera_setup();
+        if let Err(error) = self.camera_setup() {
+            mcu_println!(self, "Camera error: {:?}", error);
+            self.mcu.report_error(fpga_to_mcu_error(error));
+        }
         loop {
             if let Err(error) = self.loop_body() {
                 mcu_println!(&mut self.mcu, "Error: {:?}", error);
@@ -234,18 +236,16 @@ where
         Ok(())
     }
 
-    fn camera_setup(&mut self) {
-        if self.mcu.camera().set_mode(hm01b0::Mode::Streaming).is_err() {
-            mcu_println!(self, "Failed to start camera streaming");
+    fn camera_setup(&mut self) -> Result<()> {
+        let mut camera = self.mcu.camera();
+        fn check(r: core::result::Result<(), hm01b0::Error>) -> Result<()> {
+            match r {
+                Err(_) => Err(Error::Camera),
+                Ok(_) => Ok(()),
+            }
         }
-        if self
-            .mcu
-            .camera()
-            .set_ae_target(camera::AE_TARGET.into())
-            .is_err()
-        {
-            mcu_println!(self, "Failed to set AE target");
-        }
+        check(camera.set_mode(hm01b0::Mode::Streaming))?;
+        Ok(())
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
