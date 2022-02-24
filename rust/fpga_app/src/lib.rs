@@ -198,7 +198,7 @@ where
         {
             if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_count != 0 {
                 self.mcu
-                    .send_image_data(self.classifier.input_data_mut(self.model_number))?;
+                    .send_image_data(self.classifier.input_data(self.model_number))?;
             }
             if self.image_transfer_count != 0 && self.image_transfer_count != u32::MAX {
                 self.image_transfer_count -= 1;
