@@ -52,11 +52,7 @@ where
     }
 
     fn write_firmware(&mut self) -> Result<()> {
-        if self.config.skip_firmware_writes {
-            self.i2c
-                .execute_stage1()
-                .context("Failed to execute stage1")?;
-        } else {
+        if !self.config.skip_firmware_writes {
             self.i2c.write_stage1(&self.i2c.config.mcu_rom()?)?;
             self.i2c
                 .execute_stage1()
@@ -77,8 +73,9 @@ where
         if self.config.host_i2c_iterations == 0 {
             return Ok(());
         }
-        let mut hps = self.i2c.open_hps()?;
         info!("Checking host I2C bus");
+        self.i2c.reset_to_bootloader()?;
+        let mut hps = self.i2c.open_hps()?;
         let bar = ProgressBar::new(self.config.host_i2c_iterations);
         for i in 0..self.config.host_i2c_iterations {
             hps.check_magic()?;
@@ -92,12 +89,12 @@ where
         if self.config.fpga_mcu_iterations == 0 {
             return Ok(());
         }
+        info!("Checking FPGA<->MCU comms");
         self.i2c.reset_to_bootloader()?;
         self.i2c
             .execute_application()
             .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
-        info!("Checking FPGA<->MCU comms");
         let bar = ProgressBar::new(self.config.fpga_mcu_iterations.into());
         hps.write_register(
             registers::ENABLED_FEATURES,
@@ -201,8 +198,15 @@ where
     }
 
     fn test_mcu_to_camera_i2c(&mut self) -> Result<()> {
-        let mut hps = self.i2c.open_hps()?;
+        if self.config.camera_i2c_iterations == 0 {
+            return Ok(());
+        }
         info!("Testing MCU<->camera I2C communication");
+        self.i2c.reset_to_bootloader()?;
+        self.i2c
+            .execute_stage1()
+            .context("Failed to execute stage1")?;
+        let mut hps = self.i2c.open_hps()?;
         hps.write_register(
             registers::CAMERA_TEST_ITERATIONS,
             self.config.camera_i2c_iterations,
@@ -225,12 +229,12 @@ where
         if self.config.camera_data_bus_iterations == 0 {
             return Ok(());
         }
+        info!("Checking camera<->FPGA data bus");
         self.i2c.reset_to_bootloader()?;
         self.i2c
             .execute_application()
             .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
-        info!("Checking camera<->FPGA data bus");
         let bar = ProgressBar::new(self.config.camera_data_bus_iterations.into());
         hps.write_register(
             registers::ENABLED_FEATURES,
