@@ -119,7 +119,8 @@ pub struct ImageHeader {
     pub magic: u32,
     pub version: u16,
     pub _reserved3: u16,
-    pub _reserved0: u32,
+    /// The number of bytes allocated to the stage1 slot.
+    pub slot_length: u32,
     pub _reserved1: u32,
     pub _reserved2: u32,
     pub sig: Signature,
@@ -156,7 +157,7 @@ impl ImageHeader {
             magic: STAGE1_MAGIC,
             version: 1,
             _reserved3: 0,
-            _reserved0: 0,
+            slot_length: STAGE1_SLOT_LENGTH as u32,
             _reserved1: 0,
             _reserved2: 0,
             sig: Signature::empty(),
@@ -233,7 +234,7 @@ mod test {
             magic: 0,
             version: 0,
             _reserved3: 0,
-            _reserved0: 0,
+            slot_length: 0,
             _reserved1: 0,
             _reserved2: 0,
             sig: Signature {
