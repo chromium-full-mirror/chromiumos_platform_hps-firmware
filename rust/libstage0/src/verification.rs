@@ -138,6 +138,13 @@ mod tests {
         // memory range should be blank.
         let payload_bytes = &mut memory_bytes[..1600];
 
+        // Insert header.
+        let header = ImageHeader::empty();
+        const HEADER_LEN: usize = core::mem::size_of::<ImageHeader>();
+        payload_bytes[..HEADER_LEN].copy_from_slice(unsafe {
+            core::slice::from_raw_parts(&header as *const ImageHeader as *const u8, HEADER_LEN)
+        });
+
         // Write some arbitrary data somewhere, so that it's not all blank.
         for i in 0..255_u8 {
             payload_bytes[1024 + i as usize] = i;

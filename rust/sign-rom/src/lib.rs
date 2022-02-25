@@ -81,7 +81,7 @@ pub fn sign_hash(hash: &[u8], private_key: &ed25519_compact::SecretKey) -> Signa
 
 #[cfg(test)]
 mod test {
-    use mcu_common::Signature;
+    use mcu_common::{ImageHeader, Signature};
 
     #[test]
     fn test_signing() {
@@ -112,18 +112,22 @@ mod test {
         // Ensure data size isn't an exact multiple of the flash write size (8) so that
         // padding is tested.
         const OFFSET: usize = 32 + 1;
-        let image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
-        let ext_len: usize = 4096;
+        let mut image: [u8; super::FLASH_PAGE_SZ + OFFSET] = [0xCC; super::FLASH_PAGE_SZ + OFFSET];
+        let mut header = ImageHeader::empty();
+        header.slot_length = 4096;
+        const HEADER_LEN: usize = core::mem::size_of::<ImageHeader>();
+        image[..HEADER_LEN].copy_from_slice(unsafe {
+            core::slice::from_raw_parts(&header as *const ImageHeader as *const u8, HEADER_LEN)
+        });
 
-        let ext_img_digest = super::hash_image_bytes(&image, ext_len).unwrap();
+        let ext_img_digest = super::hash_image_bytes(&image, header.slot_length as usize).unwrap();
         assert_eq!(ext_img_digest.len(), 32);
         // Confirm hash of sample data is invariant.
         assert_eq!(
             ext_img_digest,
             [
-                0xB1, 0x9D, 0xFA, 0xD3, 0x83, 0xB7, 0x57, 0xC3, 0xB7, 0x54, 0xEE, 0x78, 0x50, 0x35,
-                0x23, 0xED, 0x67, 0x55, 0x6E, 0xEB, 0xE5, 0x54, 0x30, 0x12, 0xFA, 0x4A, 0xDE, 0xD5,
-                0x1, 0x88, 0x96, 0xCE,
+                143, 14, 216, 170, 204, 167, 53, 181, 32, 31, 217, 206, 98, 156, 202, 4, 240, 217,
+                29, 192, 69, 12, 77, 49, 196, 10, 197, 224, 170, 93, 44, 51
             ]
         );
     }
