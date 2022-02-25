@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 use anyhow::anyhow;
-use anyhow::bail;
 use anyhow::Result;
 use clap::Clap;
 use mcu_common::Signature;
@@ -18,10 +17,6 @@ struct Config {
     /// input filename
     #[clap(short, long)]
     input: PathBuf,
-
-    /// input filename region length
-    #[clap(short, long, default_value = "65536")]
-    region_length: usize,
 
     /// input signature
     #[clap(short, long)]
@@ -44,10 +39,6 @@ fn main() -> Result<()> {
     let config = Config::parse();
 
     let mut file_bytes = std::fs::read(&config.input)?;
-    if config.region_length < file_bytes.len() {
-        bail!("Input file is too big to fit into specified region length");
-    }
-    println!("Using region length = 0x{:04X}", config.region_length);
 
     // Replace any existing signature with zeroes before computing the digest.
     // This ensures the operation is idempotent, and that we can re-sign an image
@@ -57,7 +48,7 @@ fn main() -> Result<()> {
     // Computes the signature of the non-header portion of `file_bytes` then stores
     // that signature into the appropriate location in the header at the start of
     // `file_bytes`
-    let hash = sign_rom::hash_image_bytes(&file_bytes, config.region_length)?;
+    let hash = sign_rom::hash_image_bytes(&file_bytes)?;
     println!("Calculated image digest = {:02X?}", hash);
 
     // If a path to output file is provided, write out image with modified

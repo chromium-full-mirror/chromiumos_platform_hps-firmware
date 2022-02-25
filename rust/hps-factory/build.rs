@@ -179,7 +179,7 @@ fn sign_stage1_binary(bin_file: &Path) -> Result<()> {
     let mut file_bytes = std::fs::read(bin_file)
         .with_context(|| format!("Failed to open {} for signing", bin_file.display()))?;
     sign_rom::zero_signature(&mut file_bytes)?;
-    let hash = sign_rom::hash_image_bytes(&file_bytes, mcu_common::STAGE1_SLOT_LENGTH)?;
+    let hash = sign_rom::hash_image_bytes(&file_bytes)?;
     let signature = sign_rom::sign_hash(&hash, &sign_rom::development_only_secret_key());
     sign_rom::write_signature(&mut file_bytes, &signature)?;
     std::fs::write(bin_file, file_bytes)?;

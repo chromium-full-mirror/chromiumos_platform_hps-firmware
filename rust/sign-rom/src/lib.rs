@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use ed25519_compact::SecretKey;
 use mcu_common::Hash;
+use mcu_common::ImageHeader;
 use mcu_common::Signature;
 use mcu_common::FLASH_PAGE_SZ;
 use mcu_common::SIGNATURE_LENGTH;
@@ -45,8 +47,24 @@ pub fn zero_signature(file_bytes: &mut [u8]) -> Result<()> {
 
 /// Compute the digest of the payload image with the required length
 /// extention for later signing.
-pub fn hash_image_bytes(payload: &[u8], region_length: usize) -> Result<[u8; 32]> {
-    let v = extend_image(payload, region_length);
+pub fn hash_image_bytes(payload: &[u8]) -> Result<[u8; 32]> {
+    let header = ImageHeader::from_bytes(payload)
+        .ok_or_else(|| anyhow!("Input file is too small to contain a header"))?;
+    let mut slot_length = header.slot_length as usize;
+    // Old stage1 binaries didn't include the slot length in their header, they
+    // had a reserved field with a value of 0. We shouldn't encounter them, but
+    // if we do, assume a 64KB slot length as was used at that time.
+    if slot_length == 0 {
+        slot_length = 64 * 1024;
+    }
+    if payload.len() > slot_length {
+        bail!(
+            "Input file is too large to fit in stage1 slot. {} > {}",
+            payload.len(),
+            slot_length
+        );
+    }
+    let v = extend_image(payload, slot_length);
 
     let mut hasher = Hash::new();
     for block in v.chunks(FLASH_PAGE_SZ) {
@@ -120,7 +138,7 @@ mod test {
             core::slice::from_raw_parts(&header as *const ImageHeader as *const u8, HEADER_LEN)
         });
 
-        let ext_img_digest = super::hash_image_bytes(&image, header.slot_length as usize).unwrap();
+        let ext_img_digest = super::hash_image_bytes(&image).unwrap();
         assert_eq!(ext_img_digest.len(), 32);
         // Confirm hash of sample data is invariant.
         assert_eq!(

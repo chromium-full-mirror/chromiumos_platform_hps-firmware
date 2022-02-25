@@ -115,6 +115,7 @@ pub const STAGE1_MAGIC: u32 = 0xC03FEFE;
 /// otherwise 64 bit signing hosts binaries will be built different sized field
 /// to the 32 bit target target binaries, resulting in miss-aligned stage 1 HDR's.
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ImageHeader {
     pub magic: u32,
     pub version: u16,
@@ -127,6 +128,7 @@ pub struct ImageHeader {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Signature {
     pub raw_bytes: [u8; SIGNATURE_LENGTH],
 }
@@ -163,6 +165,35 @@ impl ImageHeader {
             sig: Signature::empty(),
         }
     }
+
+    /// Returns bytes deserialized as an ImageHeader.
+    pub fn from_bytes(bytes: &[u8]) -> Option<ImageHeader> {
+        if bytes.len() < core::mem::size_of::<ImageHeader>() {
+            return None;
+        }
+        let mut header = ImageHeader {
+            magic: u32_from_le_bytes(&bytes[0..]),
+            version: u16_from_le_bytes(&bytes[4..]),
+            _reserved3: u16_from_le_bytes(&bytes[6..]),
+            slot_length: u32_from_le_bytes(&bytes[8..]),
+            _reserved1: u32_from_le_bytes(&bytes[12..]),
+            _reserved2: u32_from_le_bytes(&bytes[16..]),
+            sig: Signature::empty(),
+        };
+        header
+            .sig
+            .raw_bytes
+            .copy_from_slice(&bytes[20..20 + SIGNATURE_LENGTH]);
+        Some(header)
+    }
+}
+
+fn u32_from_le_bytes(bytes: &[u8]) -> u32 {
+    u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
+}
+
+fn u16_from_le_bytes(bytes: &[u8]) -> u16 {
+    u16::from_le_bytes([bytes[0], bytes[1]])
 }
 
 /// Returns a magic number that a functioning HPS will always return from
@@ -279,5 +310,19 @@ mod test {
             FLASH_START + STAGE0_NUM_PAGES * (FLASH_PAGE_SZ as u32),
             APPLICATION_START_ADDRESS
         );
+    }
+
+    #[test]
+    fn test_image_header_from_bytes() {
+        let mut header = ImageHeader::empty();
+        header.sig.raw_bytes[..6].copy_from_slice(&[1, 2, 3, 4, 5, 6]);
+        header.slot_length = 1234;
+        let bytes = unsafe {
+            core::slice::from_raw_parts(
+                &header as *const ImageHeader as *const u8,
+                core::mem::size_of::<ImageHeader>(),
+            )
+        };
+        assert_eq!(ImageHeader::from_bytes(bytes), Some(header));
     }
 }

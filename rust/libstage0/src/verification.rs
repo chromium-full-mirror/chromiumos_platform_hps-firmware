@@ -138,7 +138,7 @@ mod tests {
         // memory range should be blank.
         let payload_bytes = &mut memory_bytes[..1600];
 
-        // Insert header.
+        // Insert header. This is required by hash_image_bytes.
         let header = ImageHeader::empty();
         const HEADER_LEN: usize = core::mem::size_of::<ImageHeader>();
         payload_bytes[..HEADER_LEN].copy_from_slice(unsafe {
@@ -152,8 +152,7 @@ mod tests {
 
         // Sign our "file".
         sign_rom::zero_signature(payload_bytes).unwrap();
-        let hash =
-            sign_rom::hash_image_bytes(payload_bytes, mcu_common::STAGE1_SLOT_LENGTH).unwrap();
+        let hash = sign_rom::hash_image_bytes(payload_bytes).unwrap();
         let signature = sign_rom::sign_hash(&hash, &sign_rom::development_only_secret_key());
         sign_rom::write_signature(payload_bytes, &signature).unwrap();
 
