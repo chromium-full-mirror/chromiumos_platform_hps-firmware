@@ -118,6 +118,7 @@ pub const STAGE1_MAGIC: u32 = 0xC03FEFE;
 pub struct ImageHeader {
     pub magic: u32,
     pub version: u16,
+    pub _reserved3: u16,
     pub _reserved0: u32,
     pub _reserved1: u32,
     pub _reserved2: u32,
@@ -154,6 +155,7 @@ impl ImageHeader {
         Self {
             magic: STAGE1_MAGIC,
             version: 1,
+            _reserved3: 0,
             _reserved0: 0,
             _reserved1: 0,
             _reserved2: 0,
@@ -230,6 +232,7 @@ mod test {
         let header = ImageHeader {
             magic: 0,
             version: 0,
+            _reserved3: 0,
             _reserved0: 0,
             _reserved1: 0,
             _reserved2: 0,
