@@ -19,6 +19,7 @@ use clap::Subcommand;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
+use host_dev_common::KernelDriverUnbinder;
 use std::path::PathBuf;
 
 /// Runs HPS post-install factory workflow
@@ -228,6 +229,10 @@ fn main() -> Result<()> {
         i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
+    // Since the HPS kernel driver takes exclusive ownership of the HPS I2C
+    // address, we must unbind the driver while this tool is running. The driver
+    // is bound again when _unbinder goes out of scope.
+    let _unbinder = KernelDriverUnbinder::unbind()?;
     let mut i2c = linux_embedded_hal::I2cdev::new(&config.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", config.dev.display()))?;
     run_workflow(&mut i2c, config)

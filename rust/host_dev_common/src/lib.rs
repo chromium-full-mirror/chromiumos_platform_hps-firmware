@@ -3,3 +3,6 @@
 // found in the LICENSE file.
 
 pub mod images;
+mod kernel_driver_unbinder;
+
+pub use kernel_driver_unbinder::KernelDriverUnbinder;

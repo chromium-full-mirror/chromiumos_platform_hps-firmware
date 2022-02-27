@@ -25,8 +25,6 @@ use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::HPS_ADDRESS;
-use std::fs;
-use std::path::Path;
 use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
@@ -39,12 +37,6 @@ const STARTUP_TIMOUT: Duration = Duration::from_millis(1000);
 
 /// How long we'll wait for the soft CPU to start.
 const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
-
-/// Path to the sysfs node of the HPS kernel driver.
-const HPS_I2C_SYSFS_PATH: &str = "/sys/bus/i2c/drivers/cros-hps";
-
-// The i2c device id for HPS.
-const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
 
 /// An I2C interface to the HPS. Allows access to both the system bootloader and
 /// HPS functionality.
@@ -60,17 +52,11 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn new(i2c: &'a mut I, config: Config) -> Self {
-        let hps_i2c = Self {
+        Self {
             i2c,
             config,
             erase_stage1_allowed: true,
-        };
-        // Since the HPS kernel driver takes exclusive ownership of the HPS I2C
-        // address, we must unbind the driver while this tool is running. The
-        // driver is bound again after the interface is closed -- see `drop`
-        // below.
-        hps_i2c.bind_kernel_driver(false).unwrap();
-        hps_i2c
+        }
     }
 
     /// Writes `program_bytes` into the stage1 slot using either the STM32
@@ -377,28 +363,5 @@ where
             bail!("gpioset returned non-zero value");
         }
         Ok(())
-    }
-}
-
-impl<'a, I> HpsI2c<'a, I> {
-    fn bind_kernel_driver(&self, bind: bool) -> Result<()> {
-        #[cfg(feature = "mcp2221")]
-        if self.config.mcp {
-            return Ok(());
-        }
-        let driver_path = Path::new(HPS_I2C_SYSFS_PATH);
-        if !driver_path.exists() {
-            return Ok(());
-        }
-        let op = if bind { "bind" } else { "unbind" };
-        fs::write(driver_path.join(op), HPS_I2C_DEVICE_ID)?;
-        Ok(())
-    }
-}
-
-impl<'a, I> Drop for HpsI2c<'a, I> {
-    fn drop(&mut self) {
-        // Let the kernel take ownership of HPS again.
-        self.bind_kernel_driver(true).unwrap();
     }
 }
