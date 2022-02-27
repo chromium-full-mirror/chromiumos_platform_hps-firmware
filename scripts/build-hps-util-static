@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Compiles hps-util as a static binary
+
+set -e
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+source "${PROJECT_ROOT}/environment"
+
+cd "${PROJECT_ROOT}/rust"
+
+RUSTFLAGS='-C link-arg=-s' \
+    cargo build \
+    --release \
+    --target x86_64-unknown-linux-musl \
+    -p hps-util \
+    --no-default-features
+
+echo "Succesfully built statically linked hps-util:"
+ls -lh "${PROJECT_ROOT}/rust/target/x86_64-unknown-linux-musl/release/hps-util"
