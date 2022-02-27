@@ -13,28 +13,31 @@ const HPS_I2C_SYSFS_PATH: &str = "/sys/bus/i2c/drivers/cros-hps";
 const HPS_I2C_DEVICE_ID: &str = "i2c-GOOG0020:00";
 
 #[non_exhaustive]
-pub struct KernelDriverUnbinder {}
+pub struct KernelDriverUnbinder {
+    was_unbound: bool,
+}
 
 impl KernelDriverUnbinder {
     pub fn unbind() -> Result<Self> {
-        bind_kernel_driver(false)?;
-        Ok(Self {})
+        let mut was_unbound = false;
+        let driver_path = Path::new(HPS_I2C_SYSFS_PATH);
+        if driver_path.join(HPS_I2C_DEVICE_ID).exists() {
+            fs::write(driver_path.join("unbind"), HPS_I2C_DEVICE_ID)?;
+            was_unbound = true;
+        }
+        Ok(Self { was_unbound })
     }
 }
 
 impl Drop for KernelDriverUnbinder {
     fn drop(&mut self) {
         // Let the kernel take ownership of HPS again.
-        bind_kernel_driver(true).unwrap();
+        if self.was_unbound {
+            fs::write(
+                Path::new(HPS_I2C_SYSFS_PATH).join("bind"),
+                HPS_I2C_DEVICE_ID,
+            )
+            .unwrap();
+        }
     }
-}
-
-fn bind_kernel_driver(bind: bool) -> Result<()> {
-    let driver_path = Path::new(HPS_I2C_SYSFS_PATH);
-    if !driver_path.exists() {
-        return Ok(());
-    }
-    let op = if bind { "bind" } else { "unbind" };
-    fs::write(driver_path.join(op), HPS_I2C_DEVICE_ID)?;
-    Ok(())
 }
