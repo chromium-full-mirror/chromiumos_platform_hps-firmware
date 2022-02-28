@@ -162,14 +162,11 @@ pub trait Hps {
     }
 }
 
-pub struct HpsAdapter<I, E>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
-{
+pub struct HpsAdapter<I> {
     sink: I,
 }
 
-impl<I, E> HpsAdapter<I, E>
+impl<I, E> HpsAdapter<I>
 where
     I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
@@ -180,7 +177,7 @@ where
         Ok(hps)
     }
 
-    pub fn from_ref(sink: &mut I) -> Result<HpsAdapter<BorrowedI2c<I, E>, E>> {
+    pub fn from_ref(sink: &mut I) -> Result<HpsAdapter<BorrowedI2c<I>>> {
         HpsAdapter::new(BorrowedI2c { i2c: sink })
     }
 
@@ -189,7 +186,7 @@ where
     }
 }
 
-impl<I, E> Hps for HpsAdapter<I, E>
+impl<I, E> Hps for HpsAdapter<I>
 where
     I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
@@ -233,17 +230,13 @@ where
 /// implements the I2C traits. This won't be necessary once we're using
 /// embedded-hal 1.0 (not yet released), since it has blanket implementations of
 /// the I2C traits for references.
-pub struct BorrowedI2c<'a, I, E>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
+pub struct BorrowedI2c<'a, I> {
     i2c: &'a mut I,
 }
 
-impl<'a, I, E> i2c::WriteRead for BorrowedI2c<'a, I, E>
+impl<'a, I, E> i2c::WriteRead for BorrowedI2c<'a, I>
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    I: i2c::WriteRead<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     type Error = E;
@@ -258,9 +251,9 @@ where
     }
 }
 
-impl<'a, I, E> i2c::Write for BorrowedI2c<'a, I, E>
+impl<'a, I, E> i2c::Write for BorrowedI2c<'a, I>
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    I: i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     type Error = E;

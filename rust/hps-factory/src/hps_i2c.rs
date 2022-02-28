@@ -119,7 +119,7 @@ where
     }
 
     pub(crate) fn write_memory_bank(
-        hps: &mut HpsAdapter<BorrowedI2c<I, E>, E>,
+        hps: &mut HpsAdapter<BorrowedI2c<I>>,
         section_name: &str,
         bank: u8,
         start_address: u32,
@@ -259,7 +259,7 @@ where
         Ok(stm32)
     }
 
-    pub(crate) fn open_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I, E>, E>> {
+    pub(crate) fn open_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
         self.wait_i2c_ready(HPS_ADDRESS, "HPS I2C")?;
         HpsAdapter::from_ref(self.i2c)
     }
