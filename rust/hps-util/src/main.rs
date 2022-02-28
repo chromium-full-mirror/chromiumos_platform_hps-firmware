@@ -7,6 +7,7 @@ use anyhow::Context;
 use anyhow::Result;
 use clap::Clap;
 use clap::Subcommand;
+use host_dev_common::kernel_driver;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_util::print_status;
@@ -53,6 +54,8 @@ enum SubCommand {
     WriteMemoryBank(WriteMemoryBank),
     StressTest(StressTest),
     Status(Status),
+    Unbind,
+    Bind,
 }
 
 #[derive(Clap, PartialEq, Debug)]
@@ -199,13 +202,21 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
 
         return Ok(Box::new(HpsAdapter::new(dev)?));
     }
+    if kernel_driver::power_state() == kernel_driver::PowerState::Suspended {
+        bail!("Device currently suspended by kernel driver. Try unbind command first.");
+    }
     let i2c = linux_embedded_hal::I2cdev::new(&flags.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", flags.dev.display()))?;
-    return Ok(Box::new(HpsAdapter::new(i2c)?));
+    Ok(Box::new(HpsAdapter::new(i2c)?))
 }
 
 fn main() -> Result<()> {
     let flags: Flags = Flags::parse();
+    match flags.sub_command {
+        SubCommand::Unbind => return kernel_driver::unbind(),
+        SubCommand::Bind => return kernel_driver::bind(),
+        _ => {}
+    }
     let mut hps = open_device(&flags)?;
     println!("HPS detected");
     match flags.sub_command {
@@ -240,5 +251,7 @@ fn main() -> Result<()> {
         }
         SubCommand::StressTest(config) => stress_test(&mut *hps, &config),
         SubCommand::Status(_) => print_status(&mut *hps),
+        SubCommand::Unbind => unreachable!(),
+        SubCommand::Bind => unreachable!(),
     }
 }
