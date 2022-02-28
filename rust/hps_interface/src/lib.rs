@@ -8,6 +8,7 @@
 
 use anyhow::anyhow;
 use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c;
 use mcu_common::commands::Command;
@@ -19,6 +20,9 @@ use mcu_common::HPS_ADDRESS;
 use std::convert::TryFrom;
 use std::time::Duration;
 use std::time::Instant;
+
+/// How long we'll wait for the HPS to respond on I2C when starting up.
+const I2C_START_TIMEOUT: Duration = Duration::from_secs(1);
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Stage {
@@ -39,7 +43,9 @@ pub trait Hps {
     /// the device is a HPS. Returns an error on communication failure or if the
     /// returned value isn't what's expected.
     fn check_magic(&mut self) -> Result<()> {
-        let magic = self.read_register(registers::MAGIC)?;
+        let magic = self
+            .read_register(registers::MAGIC)
+            .context("Failed to read magic register")?;
         let expected = mcu_common::hps_magic_code();
         if magic != expected {
             bail!(
@@ -168,11 +174,12 @@ pub struct HpsAdapter<I> {
 
 impl<I, E> HpsAdapter<I>
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + i2c::Read<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub fn new(sink: I) -> Result<Self> {
         let mut hps = Self::without_magic_check(sink);
+        hps.wait_ready()?;
         hps.check_magic()?;
         Ok(hps)
     }
@@ -183,6 +190,28 @@ where
 
     pub fn without_magic_check(sink: I) -> Self {
         Self { sink }
+    }
+
+    /// Tries reading from the HPS until either we get several successful reads
+    /// in a row, or we hit a timeout. This helps ensure that the HPS is up and
+    /// running before we try talking to it.
+    pub fn wait_ready(&mut self) -> Result<()> {
+        let mut buf = [0u8];
+        let start = Instant::now();
+        let mut success = 0;
+        while start.elapsed() < I2C_START_TIMEOUT {
+            if self.sink.read(HPS_ADDRESS, &mut buf).is_ok() {
+                success += 1;
+                if success == 10 {
+                    return Ok(());
+                }
+            } else {
+                success = 0;
+            }
+        }
+        self.sink
+            .read(HPS_ADDRESS, &mut buf)
+            .context("Timeout waiting for HPS to respond on I2C")
     }
 }
 
@@ -260,6 +289,18 @@ where
 
     fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
         (*self.i2c).write(address, bytes)
+    }
+}
+
+impl<'a, I, E> i2c::Read for BorrowedI2c<'a, I>
+where
+    I: i2c::Read<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    type Error = E;
+
+    fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
+        (*self.i2c).read(address, buffer)
     }
 }
 

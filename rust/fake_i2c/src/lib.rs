@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use i2c_peripheral::I2cError;
@@ -106,6 +107,14 @@ impl Write for FakeI2cController {
 
     fn write(&mut self, address: u8, bytes_to_write: &[u8]) -> Result<(), Error> {
         self.write_read(address, bytes_to_write, &mut [])
+    }
+}
+
+impl Read for FakeI2cController {
+    type Error = Error;
+
+    fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Error> {
+        self.write_read(address, &[], buffer)
     }
 }
 
