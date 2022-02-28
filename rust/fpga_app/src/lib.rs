@@ -244,6 +244,18 @@ where
                 Ok(_) => Ok(()),
             }
         }
+
+        // Disable AE while changing parameters
+        check(camera.set_ae(false))?;
+        // Set frame rate to ~21Hz by doubling frame length
+        check(camera.set_frame_length(2 * 0x158))?;
+        // Allow integration to use the full 1/21th of a second
+        check(camera.set_ae_min_integration(2))?;
+        check(camera.set_ae_max_integration(2 * 0x158))?;
+
+        // Reenable AE and set a target
+        check(camera.set_ae_target(60))?;
+
         check(camera.set_mode(hm01b0::Mode::Streaming))?;
         Ok(())
     }

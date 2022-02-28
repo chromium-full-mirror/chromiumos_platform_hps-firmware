@@ -144,6 +144,15 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         }
     }
 
+    pub fn set_ae_max_integration(&mut self, value: u16) -> Result<()> {
+        self.write_reg(0x2105, high_byte(value))?;
+        self.write_reg(0x2106, low_byte(value))
+    }
+
+    pub fn set_ae_min_integration(&mut self, value: u8) -> Result<()> {
+        self.write_reg(0x2107, value)
+    }
+
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
     }
