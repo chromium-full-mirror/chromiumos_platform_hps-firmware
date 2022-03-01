@@ -51,7 +51,7 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
                 Features::from_bits_truncate(hps.read_register(registers::ENABLED_FEATURES)?)
             );
             print_model_score(hps, registers::USER_PRESENT_STATUS, "Presence status")?;
-            print_model_score(hps, registers::USER_PRESENT_STATUS, "SPA status")?;
+            print_model_score(hps, registers::SECOND_PERSON_STATUS, "SPA status")?;
         }
         hps_interface::Stage::OneTimeInit => {
             println!(
