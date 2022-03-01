@@ -16,7 +16,10 @@ pub(crate) fn check_test_pattern(image_data: &[u8]) -> Result<(), Error> {
         match byte.wrapping_add(128) {
             0 => got_zero = true,
             0xff => got_ff = true,
-            _ => return Err(Error::SelfTestFailed),
+            _ => {
+                // On some devices we see 0xfe and 0x01 as well, so we don't
+                // treat other values as errors.
+            }
         }
     }
     if got_zero && got_ff {
@@ -41,7 +44,7 @@ mod tests {
     #[test]
     fn test_check_test_pattern_nomiri() {
         assert!(sign_convert_and_check(COLOR_BARS).is_ok());
-        assert!(sign_convert_and_check(&[0, 0, 0, 0xff, 0xff, 0, 0, 0]).is_ok());
+        assert!(sign_convert_and_check(&[0, 0, 0, 0xff, 0xff, 1, 0xfe, 0]).is_ok());
     }
 
     #[test]
