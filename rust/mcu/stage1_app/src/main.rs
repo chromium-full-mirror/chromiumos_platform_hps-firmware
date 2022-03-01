@@ -22,6 +22,7 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
+use delayed_i2c::DelayedI2c;
 use hal::delay::Delay;
 use hal::prelude::*;
 use hal::rcc::Rcc;
@@ -478,8 +479,6 @@ fn init_peripherals(
 
     let stopwatch = p.TIM2.stopwatch(&mut rcc);
 
-    let mut camera_i2c = board.camera_i2c;
-
     let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
     let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
     pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
@@ -570,6 +569,15 @@ fn init_peripherals(
             host_interface.report_error(mcu_common::Error::SPI_FLASH);
             info!("Failed to initialize SPI flash: {:?}", e);
         }
+    };
+
+    // We insert a small delay between I2C requests. If we don't do this, then
+    // if the camera is not present, we end up blocking indefinitely. If
+    // removing this delay, be sure to test with camera disconnected.
+    let mut camera_i2c = DelayedI2c {
+        i2c: board.camera_i2c,
+        delay,
+        duration_us: 10,
     };
 
     let mut camera = hm01b0::Camera::new(&mut camera_i2c);

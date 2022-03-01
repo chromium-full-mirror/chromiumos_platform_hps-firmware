@@ -5,6 +5,9 @@
 //! Configuration for running on the HPS proto2 board.
 
 use crate::spi_dma_controller;
+use cortex_m::peripheral::SYST;
+use delayed_i2c::DelayedI2c;
+use hal::delay::Delay;
 use hal::dmamux::DmaMuxIndex;
 use hal::gpio;
 use hal::gpio::Analog;
@@ -39,8 +42,9 @@ pub type FpgaSpi = hal::stm32::SPI2;
 pub type FlashSpi = hal::stm32::SPI1;
 pub type FlashSpiControl = spi_dma_controller::SpiDmaController;
 pub type FlashSpiCs = gpio::gpiob::PB0<Output<OpenDrain>>;
-pub type CameraI2c =
+pub type RawCameraI2c =
     hal::i2c::I2c<I2C2, gpio::gpioa::PA12<Output<OpenDrain>>, gpio::gpioa::PA11<Output<OpenDrain>>>;
+pub type CameraI2c = DelayedI2c<RawCameraI2c, Delay<SYST>>;
 
 /// GigaDevice
 pub const SPI_FLASH_MANUFACTURER_ID: u8 = 0xC8;
@@ -69,7 +73,7 @@ pub struct Board {
 
     pub flash_spi: FlashSpi,
     pub flash_spi_cs: FlashSpiCs,
-    pub camera_i2c: CameraI2c,
+    pub camera_i2c: RawCameraI2c,
     pub camera_mclk: gpio::gpiob::PB1<Analog>,
     // TODO: Change to TIM1 once stm32g0xx-hal is updated beyond 2021-03-18. PB1
     // can use TIM1, but only as an inverted pin. Support for inverted pins was

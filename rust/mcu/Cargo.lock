@@ -580,6 +580,7 @@ dependencies = [
  "cortex-m-rtic",
  "crc",
  "debug_logger",
+ "delayed_i2c",
  "embedded-hal",
  "hm01b0",
  "hmac-sha256",
