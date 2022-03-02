@@ -47,6 +47,17 @@ pub struct BlackLevelConfig {
     pub blc2_target: u8,
 }
 
+// Attributes related to the camera's exposure
+#[derive(Debug, PartialEq)]
+pub struct Exposure {
+    // Valid values are from 2 to frame length
+    pub integration: u16,
+    // Valid values are from 0x0000 to 0x3fc0 (2 LSBs are '0')
+    pub digital_gain: u16,
+    // Valid values are 0x00, 0x10, 0x20, 0x30
+    pub analog_gain: u16,
+}
+
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
@@ -129,8 +140,17 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
     }
 
     pub fn set_integration(&mut self, value: u16) -> Result<()> {
-        self.write_reg(0x0202, high_byte(value))?;
-        self.write_reg(0x0203, low_byte(value))
+        // Minimum integration allowed is 2
+        let val = u16::max(2, value);
+        self.write_reg(0x0202, high_byte(val))?;
+        self.write_reg(0x0203, low_byte(val))
+    }
+
+    pub fn set_exposure(&mut self, exposure: &Exposure) -> Result<()> {
+        self.set_integration(exposure.integration)?;
+        self.set_digital_gain(exposure.digital_gain)?;
+        self.set_analog_gain(exposure.analog_gain)?;
+        self.set_group_param_hold()
     }
 
     pub fn set_ae_target(&mut self, value: u16) -> Result<()> {
@@ -155,6 +175,12 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
 
     pub fn reset(&mut self) -> Result<()> {
         self.write_reg(0x0103, 0)
+    }
+
+    /// Writing the group param hold register causes exposure settings to be
+    /// applied in frame N+2
+    pub fn set_group_param_hold(&mut self) -> Result<()> {
+        self.write_reg(0x0104, 1)
     }
 
     pub fn set_test_pattern(&mut self, pattern: Option<TestPattern>) -> Result<()> {

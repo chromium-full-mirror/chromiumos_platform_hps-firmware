@@ -488,6 +488,13 @@ where
             self.model_number = 1;
         }
     }
+
+    pub fn set_exposure(&mut self, exposure: &hm01b0::Exposure) -> Result<()> {
+        self.mcu
+            .camera()
+            .set_exposure(exposure)
+            .map_err(|_| Error::Camera)
+    }
 }
 
 fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
