@@ -151,9 +151,6 @@ where
     fn loop_body(&mut self) -> Result<()> {
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
-        let rotation =
-            Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?;
-
         if !features.contains(Features::MODEL1) {
             self.status.person_status = 0;
         }
@@ -178,10 +175,8 @@ where
 
         self.select_model(&features);
 
-        self.capture_image(
-            self.debug_rotate_image
-                .unwrap_or_else(|| rotation == Rotation::Clockwise),
-        )?;
+        let is_rotated = self.determine_rotation(&config)?;
+        self.capture_image(is_rotated)?;
         let image_data = self.classifier.input_data(self.model_number);
         let histogram = histogram::Histogram::new(image_data);
         if self.histogram_enabled {
@@ -258,6 +253,17 @@ where
 
         check(camera.set_mode(hm01b0::Mode::Streaming))?;
         Ok(())
+    }
+
+    // Determine what the rotation setting is
+    fn determine_rotation(&mut self, config: &application::Configuration) -> Result<bool> {
+        let configured = Rotation::try_from(config.camera_config & 3)
+            .map_err(|_| Error::InvalidArg)?
+            == Rotation::Clockwise;
+        match self.debug_rotate_image {
+            Some(value) => Ok(value),
+            None => Ok(configured),
+        }
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
