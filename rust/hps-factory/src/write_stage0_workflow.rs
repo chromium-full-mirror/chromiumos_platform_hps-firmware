@@ -62,6 +62,9 @@ where
         ) {
             return Ok(());
         }
+        if write_stage0_config.skip_one_time_init {
+            return Ok(());
+        }
         stage0_writer.write_one_time_init()?;
         stage0_writer.reset_to_stage0()?;
         stage0_writer.protect_stage0()?;

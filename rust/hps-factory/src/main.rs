@@ -197,6 +197,10 @@ struct WriteStage0Config {
     /// reported version number as what we would write
     #[clap(long)]
     check_version: bool,
+
+    /// skip all post-write initialization of option bytes
+    #[clap(long, conflicts_with = "permanent-lock")]
+    skip_one_time_init: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -272,6 +276,7 @@ where
                     disable_boot0: false,
                     permanent_lock: factory_config.permanent_lock,
                     check_version: false,
+                    skip_one_time_init: false,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(
