@@ -106,6 +106,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::LocalOperationWithArg(LocalOperation::SetFeatureEnable),
     },
     AvailableDebugCommand {
+        keyword: "set_fpga_exposure",
+        help_text: "Sets camera exposure from FPGA. 0=minimum 0x1fff=maximum",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::SetExposure),
+    },
+    AvailableDebugCommand {
         keyword: "launch_app",
         help_text: "Launch application (start FPGA)",
         command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(

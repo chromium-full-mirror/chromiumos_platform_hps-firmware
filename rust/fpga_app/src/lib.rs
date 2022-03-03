@@ -93,6 +93,7 @@ pub struct App<S, I, C, T> {
     status: Status,
     model_number: u32,
     spi_test_data: Option<&'static [u8]>,
+    exposure: Option<i32>,
 }
 
 impl<S, I, C, T> App<S, I, C, T>
@@ -116,6 +117,7 @@ where
             status: Status::default(),
             model_number: 1,
             spi_test_data: None,
+            exposure: None,
         }
     }
 
@@ -172,6 +174,8 @@ where
         {
             self.process_debug_commands();
         }
+
+        self.write_exposure()?; // Takes effect after two frames
 
         self.select_model(&features);
 
@@ -327,6 +331,14 @@ where
                 DebugCommand::TestFpgaMcuComms => {
                     mcu_println!(self, "Performing FPGA<->MCU communication test...");
                     self.mcu_fpga_comm_test();
+                }
+                DebugCommand::SetExposure => {
+                    if arg >= 0xffff {
+                        self.exposure = None;
+                    } else {
+                        mcu_println!(self, "Exposure: {}", arg);
+                        self.exposure = Some(arg as i32);
+                    };
                 }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
@@ -489,11 +501,18 @@ where
         }
     }
 
-    pub fn set_exposure(&mut self, exposure: &hm01b0::Exposure) -> Result<()> {
-        self.mcu
-            .camera()
-            .set_exposure(exposure)
-            .map_err(|_| Error::Camera)
+    /// Writes exposure settings to the camera, assuming they are set
+    pub fn write_exposure(&mut self) -> Result<()> {
+        match self.exposure {
+            Some(value) => {
+                let e = camera::calculate_exposure(value);
+                self.mcu
+                    .camera()
+                    .set_exposure(&e)
+                    .map_err(|_| Error::Camera)
+            }
+            None => Ok(()),
+        }
     }
 }
 

@@ -19,4 +19,5 @@ pub enum DebugCommand {
     TestFpgaMcuComms = 20,
     TransferCount = 21,
     Histogram = 22,
+    SetExposure = 23,
 }
