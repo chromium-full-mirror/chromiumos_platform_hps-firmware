@@ -21,6 +21,7 @@ use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use host_dev_common::KernelDriverUnbinder;
+use log::LevelFilter;
 use std::path::PathBuf;
 
 /// Runs HPS post-install factory workflow
@@ -43,6 +44,10 @@ struct Config {
 
     #[clap(long)]
     verbose: bool,
+
+    /// Disable logging
+    #[clap(long)]
+    quiet: bool,
 
     /// whether to verify writes
     #[clap(long)]
@@ -212,11 +217,23 @@ struct FactoryConfig {
     permanent_lock: bool,
 }
 
+impl Config {
+    fn log_level(&self) -> LevelFilter {
+        if self.quiet {
+            return LevelFilter::Error;
+        }
+        if self.verbose {
+            return LevelFilter::Debug;
+        }
+        LevelFilter::Info
+    }
+}
+
 fn main() -> Result<()> {
     let config = Config::parse();
-    if config.verbose {
-        simple_logger::SimpleLogger::new().init()?;
-    }
+    simple_logger::SimpleLogger::new()
+        .with_level(config.log_level())
+        .init()?;
     #[cfg(feature = "mcp2221")]
     if config.mcp {
         let mut config = config;
