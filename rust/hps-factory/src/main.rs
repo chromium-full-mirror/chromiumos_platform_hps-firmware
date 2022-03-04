@@ -12,6 +12,7 @@ mod post_install_test_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
+use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
 use clap::Clap;
@@ -233,6 +234,9 @@ fn main() -> Result<()> {
         i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
+    if is_hpsd_running().unwrap_or(false) {
+        bail!("HPSD seems to be running. Please run `stop hpsd` before using hps-factory.");
+    }
     // Since the HPS kernel driver takes exclusive ownership of the HPS I2C
     // address, we must unbind the driver while this tool is running. The driver
     // is bound again when _unbinder goes out of scope.
@@ -240,6 +244,15 @@ fn main() -> Result<()> {
     let mut i2c = linux_embedded_hal::I2cdev::new(&config.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", config.dev.display()))?;
     run_workflow(&mut i2c, config)
+}
+
+/// Returns whether HPSD is running.
+fn is_hpsd_running() -> Result<bool> {
+    Ok(std::process::Command::new("pidof")
+        .arg("hpsd")
+        .output()?
+        .status
+        .success())
 }
 
 pub(crate) fn run_workflow<E, I>(i2c: &mut I, config: Config) -> Result<()>
