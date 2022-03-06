@@ -118,7 +118,7 @@ where
             Ok(_) => break,
             Err(error) => {
                 if start.elapsed() > TIMEOUT {
-                    anyhow!("Failed to read test result from MCU: {:?}", error);
+                    bail!("Failed to read test result from MCU: {:?}", error);
                 }
             }
         }
