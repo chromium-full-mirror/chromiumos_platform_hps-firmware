@@ -111,6 +111,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::SetExposure),
     },
     AvailableDebugCommand {
+        keyword: "set_fpga_median_target",
+        help_text: "Sets camera exposure from from FPGA. Range -127 to 128. Large value = off",
+        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::SetMedianTarget),
+    },
+    AvailableDebugCommand {
         keyword: "launch_app",
         help_text: "Launch application (start FPGA)",
         command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(

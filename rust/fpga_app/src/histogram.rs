@@ -52,7 +52,7 @@ impl Histogram {
     }
 
     /// Median pixel value, ignoring extreme pixel values
-    fn median(&self) -> i8 {
+    pub fn median(&self) -> i8 {
         let mut running_total = 0;
         let target = self.count / 2;
         for bin in self.bin_iter() {

@@ -20,4 +20,5 @@ pub enum DebugCommand {
     TransferCount = 21,
     Histogram = 22,
     SetExposure = 23,
+    SetMedianTarget = 24,
 }

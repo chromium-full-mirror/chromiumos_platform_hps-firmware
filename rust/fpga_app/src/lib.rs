@@ -93,7 +93,8 @@ pub struct App<S, I, C, T> {
     status: Status,
     model_number: u32,
     spi_test_data: Option<&'static [u8]>,
-    exposure: Option<i32>,
+    exposure_median_target: Option<i8>,
+    exposure: i32,
 }
 
 impl<S, I, C, T> App<S, I, C, T>
@@ -117,7 +118,8 @@ where
             status: Status::default(),
             model_number: 1,
             spi_test_data: None,
-            exposure: None,
+            exposure_median_target: Some(-64),
+            exposure: 0x100,
         }
     }
 
@@ -159,7 +161,6 @@ where
         if !features.contains(Features::MODEL2) {
             self.status.second_person_status = 0;
         }
-
         if features.contains(Features::SPI_FLASH_READ_TEST) {
             self.spi_flash_read_test();
         }
@@ -175,16 +176,15 @@ where
             self.process_debug_commands();
         }
 
-        self.write_exposure()?; // Takes effect after two frames
-
         self.select_model(&features);
 
         let is_rotated = self.determine_rotation(&config)?;
-        self.capture_image(is_rotated)?;
+        self.capture_well_exposed_image(is_rotated)?;
         let image_data = self.classifier.input_data(self.model_number);
         let histogram = histogram::Histogram::new(image_data);
         if self.histogram_enabled {
-            mcu_println!(self.mcu, "{}", histogram);
+            let e = self.exposure;
+            mcu_println!(self.mcu, "{} exp: {:#06x}", histogram, e);
         }
 
         // Image transfer can be enabled either via a feature (transfer over
@@ -244,18 +244,16 @@ where
             }
         }
 
-        // Disable AE while changing parameters
+        // Disable AE. We'll control exposure programatically instead.
         check(camera.set_ae(false))?;
         // Set frame rate to ~21Hz by doubling frame length
         check(camera.set_frame_length(2 * 0x158))?;
-        // Allow integration to use the full 1/21th of a second
-        check(camera.set_ae_min_integration(2))?;
-        check(camera.set_ae_max_integration(2 * 0x158))?;
-
-        // Reenable AE and set a target
-        check(camera.set_ae_target(60))?;
-
+        // Set camera to stream
         check(camera.set_mode(hm01b0::Mode::Streaming))?;
+
+        // Writes the initial exposure configuration
+        self.write_exposure()?;
+
         Ok(())
     }
 
@@ -268,6 +266,66 @@ where
             Some(value) => Ok(value),
             None => Ok(configured),
         }
+    }
+
+    fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<()> {
+        // Capture a first image
+        self.capture_image(rotate_clockwise)?;
+
+        // If we don't have a target, then probably the exposure is being
+        // manually controlled for debug purposes, so just write the set
+        // value.
+        if self.exposure_median_target == None {
+            return self.write_exposure();
+        }
+
+        // Algorithm will attempt to converge median on this value
+        let target = self.exposure_median_target.unwrap() as i32;
+
+        const BEGIN_THRESHOLD: i32 = 20;
+        const END_THRESHOLD: i32 = 5;
+        const MAX_STEPS: usize = 15;
+        let mut median = self.get_image_median() as i32;
+        let mut diff = median - target;
+        if diff.abs() > BEGIN_THRESHOLD {
+            let done_down = &|median| median - target < END_THRESHOLD;
+            let done_up = &|median| median - target > -END_THRESHOLD;
+            let done: &dyn Fn(i32) -> bool = if diff > 0 { done_down } else { done_up };
+            let mut steps = 0;
+            while !done(median) && steps < MAX_STEPS {
+                self.step_exposure(if diff < 0 { 64 } else { -64 })?;
+                self.capture_image(false)?;
+                self.capture_image(rotate_clockwise)?;
+                median = self.get_image_median() as i32;
+                diff = median - target;
+                steps += 1;
+            }
+        }
+
+        // Always take a small step toward the median anyway
+        self.step_exposure(if diff < 0 { 16 } else { -16 })?;
+        Ok(())
+    }
+
+    // Move exposure by one step, up or down
+    fn step_exposure(&mut self, size: i32) -> Result<()> {
+        // Make delta dependent on current value
+        let val = self.exposure;
+        let delta =
+            i32::max(1, i32::min(0x100, 0x100 * val * size.abs() / 0x10000)) * size.signum();
+        // Clamp result to allowed range
+        self.exposure = i32::max(
+            camera::MIN_EXPOSURE,
+            i32::min(camera::MAX_EXPOSURE, val + delta),
+        );
+        self.write_exposure()?;
+        Ok(())
+    }
+
+    // Calculate median of current image buffer
+    fn get_image_median(&self) -> i8 {
+        let image_data = self.classifier.input_data(self.model_number);
+        histogram::Histogram::new(image_data).median()
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
@@ -333,12 +391,18 @@ where
                     self.mcu_fpga_comm_test();
                 }
                 DebugCommand::SetExposure => {
-                    if arg >= 0xffff {
-                        self.exposure = None;
+                    mcu_println!(self, "Exposure: {}", arg);
+                    self.exposure = arg as i32;
+                }
+                DebugCommand::SetMedianTarget => {
+                    // if target out of range, turn auto exposure off
+                    if (arg as i8 as i16) == arg as i16 {
+                        self.exposure_median_target = Some(arg as i8);
                     } else {
-                        mcu_println!(self, "Exposure: {}", arg);
-                        self.exposure = Some(arg as i32);
-                    };
+                        self.exposure_median_target = None;
+                    }
+                    let t = self.exposure_median_target;
+                    mcu_println!(self, "Exposure Median Target: {:?}", t);
                 }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
@@ -503,16 +567,11 @@ where
 
     /// Writes exposure settings to the camera, assuming they are set
     pub fn write_exposure(&mut self) -> Result<()> {
-        match self.exposure {
-            Some(value) => {
-                let e = camera::calculate_exposure(value);
-                self.mcu
-                    .camera()
-                    .set_exposure(&e)
-                    .map_err(|_| Error::Camera)
-            }
-            None => Ok(()),
-        }
+        let e = camera::calculate_exposure(self.exposure);
+        self.mcu
+            .camera()
+            .set_exposure(&e)
+            .map_err(|_| Error::Camera)
     }
 }
 
@@ -547,6 +606,9 @@ mod tests {
             FakeClassifier::default(),
             FakeTimer,
         );
+
+        // Turn exposure control off to avoid trying to change exposure of camera fakes.
+        app.exposure_median_target = None;
 
         // Iteration 1: Both models enabled - second person model runs.
         app.classifier.model_outputs[0] = 0x42;
