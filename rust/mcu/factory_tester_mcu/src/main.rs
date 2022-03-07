@@ -34,6 +34,7 @@ use hal::gpio::OpenDrain;
 use hal::gpio::Output;
 use hal::gpio::PullUp;
 use hal::gpio::PushPull;
+use hal::gpio::Speed;
 use hal::i2c::I2c;
 use hal::prelude::*;
 use hal::rcc::Rcc;
@@ -325,9 +326,9 @@ fn init_peripherals(
     fwwp.set_low().unwrap();
 
     let flash_spi_cs = Some(gpiob.pb0.into_open_drain_output());
-    let flash_spi_clk = gpioa.pa5;
-    let flash_spi_copi = gpioa.pa7;
-    let flash_spi_cipo = gpioa.pa6;
+    let flash_spi_clk = gpioa.pa5.set_speed(Speed::VeryHigh);
+    let flash_spi_copi = gpioa.pa7.set_speed(Speed::VeryHigh);
+    let flash_spi_cipo = gpioa.pa6.set_speed(Speed::VeryHigh);
     let flash_spi = Some(p.SPI1.spi(
         (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
         hal::spi::MODE_0,
