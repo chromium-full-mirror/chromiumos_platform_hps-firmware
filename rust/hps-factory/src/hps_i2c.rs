@@ -61,24 +61,21 @@ where
     }
 
     pub(crate) fn write_firmware(&mut self) -> Result<()> {
-        if self.config.skip_firmware_writes {
-            return Ok(());
-        }
         self.write_stage1(&self.config.mcu_rom()?)?;
-        self.execute_stage1().context("Failed to execute stage1")?;
-        // Optimisitically try executing the application. If the SPI flash
-        // firmware doesn't match the expected hash, then this will fail.
-        // However if it succeeds, then that means that the firmware is already
-        // what we wanted, so there's no need to write it.
-        if self.execute_application().is_ok() {
-            info!("Application started, SPI flash firmware already up-to-date");
-            return Ok(());
+        if !self.config.force_firmware_update {
+            self.execute_stage1().context("Failed to execute stage1")?;
+            // Optimisitically try executing the application. If the SPI flash
+            // firmware doesn't match the expected hash, then this will fail.
+            // However if it succeeds, then that means that the firmware is
+            // already what we wanted, so there's no need to write it.
+            if self.execute_application().is_ok() {
+                info!("Application started, SPI flash firmware already up-to-date");
+                return Ok(());
+            }
         }
 
         self.execute_stage1().context("Failed to execute stage1")?;
-        if !self.config.skip_bitstream_write {
-            self.write_gateware().context("Failed to write gateware")?;
-        }
+        self.write_gateware().context("Failed to write gateware")?;
         self.write_soc_rom().context("Failed to write FPGA ROM")?;
         Ok(())
     }
@@ -86,6 +83,7 @@ where
     /// Writes `program_bytes` into the stage1 slot using either the STM32
     /// bootloader if active, or stage0 if that's active.
     pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
+        let force_firmware_update = self.config.force_firmware_update;
         let erase_stage1_allowed = self.erase_stage1_allowed;
         // We need to be running some kind of bootloader in order to write stage1.
         self.reset_to_bootloader()?;
@@ -100,7 +98,9 @@ where
                 stage
             );
         }
-        if hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4] {
+        if !force_firmware_update
+            && hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4]
+        {
             info!("Stage1 is already the expected version, skipping write");
             return Ok(());
         }

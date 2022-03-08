@@ -68,13 +68,9 @@ struct Config {
     #[clap(long)]
     mcu_rom: Option<PathBuf>,
 
-    /// whether to skip writing MCU and SPI firmware
+    /// whether to force writing firmware, even if it appears to be up-to-date
     #[clap(long)]
-    skip_firmware_writes: bool,
-
-    /// assume that the FPGA bitstream is already up-to-date
-    #[clap(long)]
-    skip_bitstream_write: bool,
+    force_firmware_update: bool,
 }
 
 #[derive(Debug, Subcommand, Clone)]
