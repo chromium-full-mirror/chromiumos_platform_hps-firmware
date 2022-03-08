@@ -66,6 +66,16 @@ where
         }
         self.write_stage1(&self.config.mcu_rom()?)?;
         self.execute_stage1().context("Failed to execute stage1")?;
+        // Optimisitically try executing the application. If the SPI flash
+        // firmware doesn't match the expected hash, then this will fail.
+        // However if it succeeds, then that means that the firmware is already
+        // what we wanted, so there's no need to write it.
+        if self.execute_application().is_ok() {
+            info!("Application started, SPI flash firmware already up-to-date");
+            return Ok(());
+        }
+
+        self.execute_stage1().context("Failed to execute stage1")?;
         if !self.config.skip_bitstream_write {
             self.write_gateware().context("Failed to write gateware")?;
         }
