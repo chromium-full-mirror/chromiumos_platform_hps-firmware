@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 use crate::Result;
-use core::cmp::Ordering;
 
 pub const IMAGE_WIDTH: u32 = 320;
 pub const IMAGE_HEIGHT: u32 = 240;
