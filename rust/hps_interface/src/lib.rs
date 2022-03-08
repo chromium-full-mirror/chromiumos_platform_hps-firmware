@@ -77,6 +77,16 @@ pub trait Hps {
         }
     }
 
+    fn firmware_version(&mut self) -> Result<[u8; 4]> {
+        let low = self
+            .read_register(registers::FIRMWARE_VERSION_LOW)?
+            .to_be_bytes();
+        let high = self
+            .read_register(registers::FIRMWARE_VERSION_HIGH)?
+            .to_be_bytes();
+        Ok([high[0], high[1], low[0], low[1]])
+    }
+
     fn perform_command(&mut self, command: Command) -> Result<()> {
         self.write_register(registers::COMMAND, command.into())
     }

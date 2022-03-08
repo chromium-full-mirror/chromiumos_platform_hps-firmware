@@ -25,6 +25,7 @@ use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::HPS_ADDRESS;
+use mcu_common::SIGNATURE_OFFSET;
 use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
@@ -88,6 +89,10 @@ where
                 "Need either stage0 or the system bootloader, but got: {:?}",
                 stage
             );
+        }
+        if hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4] {
+            info!("Stage1 is already the expected version, skipping write");
+            return Ok(());
         }
         // Old versions of stage0 don't support the EraseStage1 command. In that
         // case, we don't need to use the command, since the MCU flash will get
