@@ -67,6 +67,14 @@ struct Config {
     /// path MCU ROM. Overrides built-in ROM
     #[clap(long)]
     mcu_rom: Option<PathBuf>,
+
+    /// whether to skip writing MCU and SPI firmware
+    #[clap(long)]
+    skip_firmware_writes: bool,
+
+    /// assume that the FPGA bitstream is already up-to-date
+    #[clap(long)]
+    skip_bitstream_write: bool,
 }
 
 #[derive(Debug, Subcommand, Clone)]
@@ -112,14 +120,6 @@ struct BootConfig {
 
 #[derive(Debug, Clap, Clone)]
 struct PostInstallTestConfig {
-    /// whether to skip writing MCU and SPI firmware
-    #[clap(long)]
-    skip_firmware_writes: bool,
-
-    /// assume that the FPGA bitstream is already up-to-date
-    #[clap(long)]
-    skip_bitstream_write: bool,
-
     /// number of iterations of FPGA SPI flash read test to perform
     #[clap(long, default_value = "50")]
     fpga_spi_read_iterations: u16,
@@ -147,14 +147,6 @@ struct CaptureImagesConfig {
     /// directory into which to write captured images
     #[clap(long)]
     out_dir: PathBuf,
-
-    /// assume that all firmware has already been written
-    #[clap(long)]
-    skip_firmware_writes: bool,
-
-    /// assume that the FPGA bitstream is already up-to-date
-    #[clap(long)]
-    skip_bitstream_write: bool,
 
     /// whether to write raw files in addition to PNGs
     #[clap(long)]
@@ -316,8 +308,6 @@ where
                 // assume this is running non-interactively, so it's OK to take
                 // a little bit longer.
                 &PostInstallTestConfig {
-                    skip_firmware_writes: false,
-                    skip_bitstream_write: false,
                     fpga_spi_read_iterations: 500,
                     host_i2c_iterations: 5000,
                     fpga_mcu_iterations: 500,

@@ -36,36 +36,18 @@ where
         test_config: &crate::PostInstallTestConfig,
         global_config: &Config,
     ) -> Result<()> {
-        let i2c = HpsI2c::new(i2c, global_config.clone());
+        let mut i2c = HpsI2c::new(i2c, global_config.clone());
+        i2c.write_firmware()?;
         let mut tester = PostInstallTester {
             i2c,
             config: test_config.clone(),
         };
-        tester.write_firmware()?;
         tester.test_i2c_integrity()?;
         tester.test_fpga_spi_flash_reads()?;
         tester.test_fpga_mcu_comms()?;
         tester.test_mcu_to_camera_i2c()?;
         tester.test_camera_data_bus()?;
         info!("Post-install test passed");
-        Ok(())
-    }
-
-    fn write_firmware(&mut self) -> Result<()> {
-        if !self.config.skip_firmware_writes {
-            self.i2c.write_stage1(&self.i2c.config.mcu_rom()?)?;
-            self.i2c
-                .execute_stage1()
-                .context("Failed to execute stage1")?;
-            if !self.config.skip_bitstream_write {
-                self.i2c
-                    .write_gateware()
-                    .context("Failed to write gateware")?;
-            }
-            self.i2c
-                .write_soc_rom()
-                .context("Failed to write FPGA ROM")?;
-        }
         Ok(())
     }
 

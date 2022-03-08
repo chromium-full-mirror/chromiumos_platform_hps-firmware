@@ -59,6 +59,19 @@ where
         }
     }
 
+    pub(crate) fn write_firmware(&mut self) -> Result<()> {
+        if self.config.skip_firmware_writes {
+            return Ok(());
+        }
+        self.write_stage1(&self.config.mcu_rom()?)?;
+        self.execute_stage1().context("Failed to execute stage1")?;
+        if !self.config.skip_bitstream_write {
+            self.write_gateware().context("Failed to write gateware")?;
+        }
+        self.write_soc_rom().context("Failed to write FPGA ROM")?;
+        Ok(())
+    }
+
     /// Writes `program_bytes` into the stage1 slot using either the STM32
     /// bootloader if active, or stage0 if that's active.
     pub(crate) fn write_stage1(&mut self, program_bytes: &[u8]) -> Result<()> {
