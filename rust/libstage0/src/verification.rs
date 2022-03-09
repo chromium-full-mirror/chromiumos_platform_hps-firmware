@@ -7,6 +7,7 @@ use crate::WriteProtectState;
 use mcu_common::Hash;
 use mcu_common::ImageHeader;
 use mcu_common::SIGNATURE_LENGTH;
+use mcu_common::STAGE1_SLOT_LENGTH;
 
 const PAGE_SIZE: usize = 2 * 1024;
 pub const PUBLIC_KEY_LENGTH: usize = ed25519_compact::PublicKey::BYTES;
@@ -15,6 +16,7 @@ pub const PUBLIC_KEY_LENGTH: usize = ed25519_compact::PublicKey::BYTES;
 pub enum Stage1Error {
     Missing,
     InvalidSignature,
+    InvalidArgument,
 }
 
 /// A struct that indicates that stage1 is considered valid - either it has
@@ -30,6 +32,8 @@ impl ValidStage1 {
 }
 
 fn stage1_header(slot: &[u8]) -> &'static ImageHeader {
+    assert!(slot.len() >= core::mem::size_of::<ImageHeader>());
+    assert!((slot.as_ptr() as usize % core::mem::align_of::<ImageHeader>()) == 0);
     unsafe { &*(slot.as_ptr() as *const ImageHeader) }
 }
 
@@ -50,6 +54,11 @@ pub fn detect_and_validate_stage1(
     public_key: &[u8; PUBLIC_KEY_LENGTH],
     wp_state: WriteProtectState,
 ) -> Result<ValidStage1, Stage1Error> {
+    if slot.len() != STAGE1_SLOT_LENGTH
+        || (slot.as_ptr() as usize % core::mem::align_of::<ImageHeader>()) != 0
+    {
+        return Err(Stage1Error::InvalidArgument);
+    }
     detect_stage1(slot)?;
 
     // If write-protect is asserted, then check that signature is valid.
@@ -197,6 +206,13 @@ mod tests {
             WriteProtectState::Deasserted
         )
         .is_err());
+    }
+
+    #[test]
+    fn test_detect_and_validate_stage1_invalid_slot_length() {
+        assert!(
+            detect_and_validate_stage1(&[], &DEV_PUBLIC_KEY, WriteProtectState::Asserted).is_err()
+        );
     }
 
     #[test]
