@@ -95,11 +95,15 @@ pub struct App<S, I, C, T> {
     exposure: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum ExposureAlgorithm {
     /// Exposure will be adjusted to try and get the median brightness near to
     /// the specified value.
     MedianTarget(i8),
+
+    /// Let the camera do automatic exposure with the specified target.
+    #[cfg(feature = "dev")]
+    HardwareAe(u16),
 
     /// All exposure settings will be set based on the specified exposure value
     /// (no auto adjustment).
@@ -249,15 +253,31 @@ where
     fn camera_setup(&mut self) -> Result<()> {
         let mut camera = self.mcu.camera();
 
-        // Disable AE. We'll control exposure programatically instead.
-        camera.set_ae(false)?;
         // Set frame rate to ~21Hz by doubling frame length
         camera.set_frame_length(2 * 0x158)?;
         // Set camera to stream
         camera.set_mode(hm01b0::Mode::Streaming)?;
 
-        // Writes the initial exposure configuration
-        self.write_exposure()?;
+        match self.exposure_algorithm {
+            ExposureAlgorithm::MedianTarget(_) => {
+                // Disable AE. We'll control exposure programatically instead.
+                camera.set_ae(false)?;
+                // Writes the initial exposure configuration
+                self.write_exposure()?;
+            }
+            #[cfg(feature = "dev")]
+            ExposureAlgorithm::HardwareAe(target) => {
+                camera.set_ae_target(target)?;
+            }
+            #[cfg(feature = "dev")]
+            ExposureAlgorithm::ManualExposure(_) => {
+                camera.set_ae(false)?;
+            }
+            #[cfg(any(feature = "dev", test))]
+            ExposureAlgorithm::FullyManual => {
+                camera.set_ae(false)?;
+            }
+        }
 
         Ok(())
     }
@@ -283,6 +303,8 @@ where
             }
             #[cfg(any(feature = "dev", test))]
             ExposureAlgorithm::FullyManual => self.capture_image(rotate_clockwise),
+            #[cfg(feature = "dev")]
+            ExposureAlgorithm::HardwareAe(_) => self.capture_image(rotate_clockwise),
         }
     }
 
@@ -393,6 +415,9 @@ where
                 }
                 DebugCommand::SetMedianTarget => {
                     self.set_exposure_algorithm(ExposureAlgorithm::MedianTarget(arg as i8));
+                }
+                DebugCommand::HardwareAe => {
+                    self.set_exposure_algorithm(ExposureAlgorithm::HardwareAe(arg));
                 }
                 DebugCommand::DisableAutomaticExposure => {
                     self.set_exposure_algorithm(ExposureAlgorithm::FullyManual);
@@ -563,6 +588,9 @@ where
     fn set_exposure_algorithm(&mut self, exposure_algorithm: ExposureAlgorithm) {
         mcu_println!(self, "Exposure algorithm: {:?}", exposure_algorithm);
         self.exposure_algorithm = exposure_algorithm;
+        if let Err(error) = self.camera_setup() {
+            mcu_println!(self, "Camera setup error: {:?}", error);
+        }
     }
 }
 

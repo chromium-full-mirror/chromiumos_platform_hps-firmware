@@ -150,6 +150,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: I8_ARG,
     },
     AvailableDebugCommand {
+        keyword: "set_hardware_ae",
+        help_text: "Enables hardware automatic exposure with the specified target",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::HardwareAe),
+        arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
         keyword: "disable_automatic_exposure",
         help_text: "Disables all auto-exposure so that camera settings can be set manually",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::DisableAutomaticExposure),

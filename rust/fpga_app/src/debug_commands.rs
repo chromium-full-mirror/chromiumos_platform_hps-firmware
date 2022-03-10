@@ -20,4 +20,5 @@ pub enum DebugCommand {
     SetExposure = 23,
     SetMedianTarget = 24,
     DisableAutomaticExposure = 25,
+    HardwareAe = 26,
 }
