@@ -91,8 +91,25 @@ pub struct App<S, I, C, T> {
     status: Status,
     model_number: u32,
     spi_test_data: Option<&'static [u8]>,
-    exposure_median_target: Option<i8>,
+    exposure_algorithm: ExposureAlgorithm,
     exposure: i32,
+}
+
+#[derive(Debug)]
+enum ExposureAlgorithm {
+    /// Exposure will be adjusted to try and get the median brightness near to
+    /// the specified value.
+    MedianTarget(i8),
+
+    /// All exposure settings will be set based on the specified exposure value
+    /// (no auto adjustment).
+    #[cfg(feature = "dev")]
+    ManualExposure(i32),
+
+    /// No changes will be made to exposure settings except for via debug
+    /// commands. This mode is used in dev mode, and also by tests.
+    #[cfg(any(feature = "dev", test))]
+    FullyManual,
 }
 
 impl<S, I, C, T> App<S, I, C, T>
@@ -114,7 +131,7 @@ where
             status: Status::default(),
             model_number: 1,
             spi_test_data: None,
-            exposure_median_target: Some(-64),
+            exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
             exposure: 0x100,
         }
     }
@@ -254,19 +271,25 @@ where
     }
 
     fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<()> {
-        // If we don't have a target, then probably the exposure is being
-        // manually controlled for debug purposes, so just write the set
-        // value.
-        if self.exposure_median_target == None {
-            self.write_exposure()?;
-            return self.capture_image(rotate_clockwise);
+        match self.exposure_algorithm {
+            ExposureAlgorithm::MedianTarget(target) => {
+                self.adjust_exposure_and_capture(target as i32, rotate_clockwise)
+            }
+            #[cfg(feature = "dev")]
+            ExposureAlgorithm::ManualExposure(exposure) => {
+                self.exposure = exposure;
+                self.write_exposure()?;
+                self.capture_image(rotate_clockwise)
+            }
+            #[cfg(any(feature = "dev", test))]
+            ExposureAlgorithm::FullyManual => self.capture_image(rotate_clockwise),
         }
+    }
 
+    /// Attempts to converge median to `target` and captures an image.
+    fn adjust_exposure_and_capture(&mut self, target: i32, rotate_clockwise: bool) -> Result<()> {
         // Capture a first image
         self.capture_image(rotate_clockwise)?;
-
-        // Algorithm will attempt to converge median on this value
-        let target = self.exposure_median_target.unwrap() as i32;
 
         const BEGIN_THRESHOLD: i32 = 20;
         const END_THRESHOLD: i32 = 5;
@@ -366,17 +389,13 @@ where
                     self.mcu_fpga_comm_test();
                 }
                 DebugCommand::SetExposure => {
-                    mcu_println!(self, "Exposure: {}", arg);
-                    self.exposure = arg as i32;
+                    self.set_exposure_algorithm(ExposureAlgorithm::ManualExposure(arg as i32));
                 }
                 DebugCommand::SetMedianTarget => {
-                    self.exposure_median_target = Some(arg as i8);
-                    let t = self.exposure_median_target;
-                    mcu_println!(self, "Exposure Median Target: {:?}", t);
+                    self.set_exposure_algorithm(ExposureAlgorithm::MedianTarget(arg as i8));
                 }
-                DebugCommand::DisableMedianExposure => {
-                    self.exposure_median_target = None;
-                    mcu_println!(self, "Exposure Median Target disabled");
+                DebugCommand::DisableAutomaticExposure => {
+                    self.set_exposure_algorithm(ExposureAlgorithm::FullyManual);
                 }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
@@ -539,6 +558,12 @@ where
         let e = camera::calculate_exposure(self.exposure);
         Ok(self.mcu.camera().set_exposure(&e)?)
     }
+
+    #[cfg(feature = "dev")]
+    fn set_exposure_algorithm(&mut self, exposure_algorithm: ExposureAlgorithm) {
+        mcu_println!(self, "Exposure algorithm: {:?}", exposure_algorithm);
+        self.exposure_algorithm = exposure_algorithm;
+    }
 }
 
 fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
@@ -574,7 +599,7 @@ mod tests {
         );
 
         // Turn exposure control off to avoid trying to change exposure of camera fakes.
-        app.exposure_median_target = None;
+        app.exposure_algorithm = ExposureAlgorithm::FullyManual;
 
         // Iteration 1: Both models enabled - second person model runs.
         app.classifier.model_outputs[0] = 0x42;

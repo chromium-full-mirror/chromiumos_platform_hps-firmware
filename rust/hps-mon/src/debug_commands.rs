@@ -150,9 +150,9 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: I8_ARG,
     },
     AvailableDebugCommand {
-        keyword: "disable_exposure_median",
-        help_text: "Disables median-based auto-exposure. To reenable, set target.",
-        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::DisableMedianExposure),
+        keyword: "disable_automatic_exposure",
+        help_text: "Disables all auto-exposure so that camera settings can be set manually",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::DisableAutomaticExposure),
         arg_parser: NO_ARG,
     },
     AvailableDebugCommand {

@@ -19,5 +19,5 @@ pub enum DebugCommand {
     Histogram = 22,
     SetExposure = 23,
     SetMedianTarget = 24,
-    DisableMedianExposure = 25,
+    DisableAutomaticExposure = 25,
 }
