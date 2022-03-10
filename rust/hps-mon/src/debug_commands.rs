@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use mcu_common::commands;
@@ -23,15 +24,39 @@ struct AvailableDebugCommand {
     keyword: &'static str,
     help_text: &'static str,
     command_type: CommandType,
+    arg_parser: &'static dyn ArgumentParser,
 }
+
+trait ArgumentParser {
+    /// Converts the input string into a u16 to be sent to the device.
+    fn as_u16(&self, _string: &str) -> Result<u16> {
+        Ok(0)
+    }
+
+    fn as_u16_for_command(
+        &self,
+        command: &AvailableDebugCommand,
+        arg: Option<&str>,
+    ) -> Result<u16> {
+        if let Some(arg_string) = arg {
+            return self.as_u16(arg_string);
+        }
+        bail!("The command {} requires an argument", command.keyword);
+    }
+
+    fn help_text(&self) -> &'static str;
+}
+
+struct U16Argument {}
+struct NoArgument {}
+
+const U16_ARG: &dyn ArgumentParser = &U16Argument {};
+const NO_ARG: &dyn ArgumentParser = &NoArgument {};
 
 enum CommandType {
     FpgaCommand(fpga_app::DebugCommand),
-    FpgaCommandWithArg(fpga_app::DebugCommand),
     McuCommand(McuDebugCommand),
-    McuCommandWithArg(McuDebugCommand),
     LocalOperation(LocalOperation),
-    LocalOperationWithArg(LocalOperation),
     ExitCommand,
 }
 
@@ -75,44 +100,52 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     AvailableDebugCommand {
         keyword: "transfer",
         help_text: "Enable image transfer. 1=on, 0=off",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Transfer),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::Transfer),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "transfer_count",
         help_text: "Transfer a given number of images",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::TransferCount),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TransferCount),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "histogram",
         help_text: "Show histogram of image values. 1=on, 0=off",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Histogram),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::Histogram),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "fpga_self_test",
         help_text: "Run FPGA self test",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SelfTest),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_camera_config",
         help_text: "Set the camera configuration bits. e.g. 0=no rotation, 1=rotate clockwise",
-        command_type: CommandType::LocalOperationWithArg(LocalOperation::SetI2cRegister(
+        command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(
             registers::CAMERA_CONFIG,
         )),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_feature_enable",
         help_text: "Set contents of feature enable register. 0=off, 1=presence, 2=SPD, 3=both",
-        command_type: CommandType::LocalOperationWithArg(LocalOperation::SetFeatureEnable),
+        command_type: CommandType::LocalOperation(LocalOperation::SetFeatureEnable),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_fpga_exposure",
         help_text: "Sets camera exposure from FPGA. 0=minimum 0x1fff=maximum",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::SetExposure),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SetExposure),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_fpga_median_target",
         help_text: "Sets camera exposure from from FPGA. Range -127 to 128. Large value = off",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::SetMedianTarget),
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SetMedianTarget),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "launch_app",
@@ -120,11 +153,13 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
             commands::Command::LaunchApp,
         )),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "launch_app_without_i2c",
         help_text: "Launch application (start FPGA) - without using I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::TryStartFpga),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "write_spi_flash_test_data",
@@ -132,126 +167,151 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
             commands::Command::WriteSpiFlashTestData,
         )),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "test_fpga_spi_flash_reads",
         help_text: "Read last 1MB of SPI flash, checking for expected data",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TestSpiFlashReads),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "test_fpga_mcu_communication",
         help_text: "Check communication between the FPGA and the MCU",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::TestFpgaMcuComms),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "help",
         help_text: "Print command help",
         command_type: CommandType::LocalOperation(LocalOperation::PrintHelp),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "exit",
         help_text: "Exit from hps-mon",
         command_type: CommandType::ExitCommand,
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "reset_fpga",
         help_text: "Reset the FPGA",
         command_type: CommandType::McuCommand(McuDebugCommand::ResetFpga),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "read_camera_register",
         help_text: "Reads camera register over I2C",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::ReadCameraRegister),
+        command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraRegister),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "read_camera_id",
         help_text: "Reads camera ID over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraId),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "read_camera_config",
         help_text: "Reads camera config over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadCameraConfig),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_camera_digital_gain",
         help_text: "Sets camera digital gain over I2C",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraDigitalGain),
+        command_type: CommandType::McuCommand(McuDebugCommand::SetCameraDigitalGain),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_camera_analog_gain",
         help_text: "Sets camera analog gain over I2C",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraAnalogGain),
+        command_type: CommandType::McuCommand(McuDebugCommand::SetCameraAnalogGain),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_camera_integration",
         help_text: "Sets camera integration over I2C",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraIntegration),
+        command_type: CommandType::McuCommand(McuDebugCommand::SetCameraIntegration),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "set_camera_ae_target",
         help_text: "Sets camera AE target over I2C",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::SetCameraAeTarget),
+        command_type: CommandType::McuCommand(McuDebugCommand::SetCameraAeTarget),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "reset_mcu",
         help_text: "Reset the MCU",
         command_type: CommandType::LocalOperation(LocalOperation::ResetMcu),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "sleep_second",
         help_text: "Sleep for a second",
         command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "ping_mcu",
         help_text: "Ask the MCU to print something",
         command_type: CommandType::McuCommand(McuDebugCommand::Ping),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "read_spi_flash",
         help_text: "Ask the MCU to read part of the spi flash and print it",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::ReadSpiFlash),
+        command_type: CommandType::McuCommand(McuDebugCommand::ReadSpiFlash),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "write_gateware",
         help_text: "Write gateware to SPI flash",
         command_type: CommandType::LocalOperation(LocalOperation::WriteGateware),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "write_soc_rom",
         help_text: "Write soft CPU binary to SPI flash",
         command_type: CommandType::LocalOperation(LocalOperation::WriteSocRom),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "erase_spi_flash",
         help_text: "Erase entire SPI flash",
         command_type: CommandType::McuCommand(McuDebugCommand::EraseSpiFlash),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "hash_spi_flash",
         help_text: "Hash part of the SPI flash",
-        command_type: CommandType::McuCommandWithArg(McuDebugCommand::HashSpiFlash),
+        command_type: CommandType::McuCommand(McuDebugCommand::HashSpiFlash),
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "spi_flash_read_speed",
         help_text: "Read 1MB of SPI flash and report speed",
         command_type: CommandType::McuCommand(McuDebugCommand::SpiFlashReadSpeed),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "spi_flash_write_speed",
         help_text: "Write 1MB of SPI flash and report speed",
         command_type: CommandType::McuCommand(McuDebugCommand::SpiFlashWriteSpeed),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "fpga_power_off",
         help_text: "Power off the FPGA and SPI flash",
         command_type: CommandType::McuCommand(McuDebugCommand::FpgaPowerOff),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "fpga_power_on",
         help_text: "Power on the FPGA and SPI flash",
         command_type: CommandType::McuCommand(McuDebugCommand::FpgaPowerOn),
+        arg_parser: NO_ARG,
     },
 ];
 
@@ -380,42 +440,24 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
     if let Some(keyword) = parts.next() {
         for command in COMMANDS {
             if command.keyword == keyword {
+                let arg = command
+                    .arg_parser
+                    .as_u16_for_command(command, parts.next())?;
                 match command.command_type {
                     CommandType::FpgaCommand(code) => {
                         return Ok(Some(Command::Fpga(DebugCommand {
                             code: code.into(),
-                            arg: 0,
-                        })));
-                    }
-                    CommandType::FpgaCommandWithArg(code) => {
-                        return Ok(Some(Command::Fpga(DebugCommand {
-                            code: code.into(),
-                            arg: get_arg(command, parts.next())?,
+                            arg,
                         })));
                     }
                     CommandType::McuCommand(mcu_command) => {
                         return Ok(Some(Command::Mcu(DebugCommand {
                             code: mcu_command.into(),
-                            arg: 0,
-                        })));
-                    }
-                    CommandType::McuCommandWithArg(mcu_command) => {
-                        return Ok(Some(Command::Mcu(DebugCommand {
-                            code: mcu_command.into(),
-                            arg: get_arg(command, parts.next())?,
+                            arg,
                         })));
                     }
                     CommandType::LocalOperation(op) => {
-                        return Ok(Some(Command::Local(LocalCommand {
-                            operation: op,
-                            arg: 0,
-                        })));
-                    }
-                    CommandType::LocalOperationWithArg(op) => {
-                        return Ok(Some(Command::Local(LocalCommand {
-                            operation: op,
-                            arg: get_arg(command, parts.next())?,
-                        })));
+                        return Ok(Some(Command::Local(LocalCommand { operation: op, arg })));
                     }
                     CommandType::ExitCommand => return Ok(Some(Command::Exit)),
                 }
@@ -429,30 +471,43 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
     Ok(None)
 }
 
-fn get_arg(command: &AvailableDebugCommand, next_arg: Option<&str>) -> Result<u16> {
-    if let Some(arg_string) = next_arg {
-        if let Some(arg) = parse_value(arg_string) {
-            return Ok(arg);
-        } else {
-            bail!(
+impl ArgumentParser for U16Argument {
+    fn as_u16(&self, string: &str) -> Result<u16> {
+        parse_value(string).ok_or_else(|| {
+            anyhow!(
                 "The argument '{}' couldn't be parsed as a decimal or hex u16",
-                arg_string
-            );
-        }
+                string
+            )
+        })
     }
-    bail!("The command {} requires an argument", command.keyword);
+
+    fn help_text(&self) -> &'static str {
+        "{u16}"
+    }
+}
+
+impl ArgumentParser for NoArgument {
+    fn as_u16_for_command(
+        &self,
+        command: &AvailableDebugCommand,
+        arg: Option<&str>,
+    ) -> Result<u16> {
+        if arg.is_some() {
+            bail!("The command {} doesn't take an argument", command.keyword);
+        }
+        Ok(0)
+    }
+
+    fn help_text(&self) -> &'static str {
+        ""
+    }
 }
 
 pub(crate) fn print_help_text() {
     for command in COMMANDS {
-        let arg = if matches!(command.command_type, CommandType::FpgaCommandWithArg(..)) {
-            "{arg}"
-        } else {
-            ""
-        };
         println!(
             "{:30} {}",
-            format!("{} {}", command.keyword, arg),
+            format!("{} {}", command.keyword, command.arg_parser.help_text()),
             command.help_text
         );
     }
