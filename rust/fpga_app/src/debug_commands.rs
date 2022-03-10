@@ -12,7 +12,6 @@ use num_enum::TryFromPrimitive;
 #[repr(u8)]
 pub enum DebugCommand {
     Transfer = 3,
-    RotateImageClockwise = 16,
     SelfTest = 18,
     TestSpiFlashReads = 19,
     TestFpgaMcuComms = 20,

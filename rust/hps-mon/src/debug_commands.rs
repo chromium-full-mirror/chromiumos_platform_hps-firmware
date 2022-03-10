@@ -5,6 +5,7 @@
 use anyhow::bail;
 use anyhow::Result;
 use mcu_common::commands;
+use mcu_common::registers;
 use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
@@ -43,6 +44,7 @@ pub(crate) enum LocalOperation {
     I2cCommand(mcu_common::commands::Command),
     SetFeatureEnable,
     SleepMilliseconds,
+    SetI2cRegister(u8),
 }
 
 #[derive(Clone, Copy)]
@@ -91,9 +93,11 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SelfTest),
     },
     AvailableDebugCommand {
-        keyword: "rotate_image_clockwise",
-        help_text: "Force clockwise image rotation for horizontal camera mount. 1=on, 0=off",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::RotateImageClockwise),
+        keyword: "set_camera_config",
+        help_text: "Set the camera configuration bits. e.g. 0=no rotation, 1=rotate clockwise",
+        command_type: CommandType::LocalOperationWithArg(LocalOperation::SetI2cRegister(
+            registers::CAMERA_CONFIG,
+        )),
     },
     AvailableDebugCommand {
         keyword: "set_feature_enable",

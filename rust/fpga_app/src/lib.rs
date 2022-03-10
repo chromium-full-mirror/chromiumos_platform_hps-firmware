@@ -87,7 +87,6 @@ pub struct App<S, I, C, T> {
     #[cfg(feature = "image-transfer")]
     image_transfer_count: u32,
     histogram_enabled: bool,
-    debug_rotate_image: Option<bool>,
     timer: T,
     status: Status,
     model_number: u32,
@@ -111,7 +110,6 @@ where
             #[cfg(feature = "image-transfer")]
             image_transfer_count: 0,
             histogram_enabled: false,
-            debug_rotate_image: None,
             timer,
             status: Status::default(),
             model_number: 1,
@@ -255,13 +253,10 @@ where
 
     // Determine what the rotation setting is
     fn determine_rotation(&mut self, config: &application::Configuration) -> Result<bool> {
-        let configured = Rotation::try_from(config.camera_config & 3)
-            .map_err(|_| Error::InvalidArg)?
-            == Rotation::Clockwise;
-        match self.debug_rotate_image {
-            Some(value) => Ok(value),
-            None => Ok(configured),
-        }
+        Ok(
+            Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?
+                == Rotation::Clockwise,
+        )
     }
 
     fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<()> {
@@ -351,10 +346,6 @@ where
             // if some features are disabled then we need a catch-all.
             #[allow(unreachable_patterns)]
             match command {
-                DebugCommand::RotateImageClockwise => {
-                    self.debug_rotate_image = Some(arg != 0);
-                    mcu_println!(self, "Rotation: {}", arg != 0);
-                }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::Transfer => {
                     self.image_transfer_count = if arg != 0 { u32::MAX } else { 0 };
