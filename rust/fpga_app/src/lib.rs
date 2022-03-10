@@ -254,15 +254,16 @@ where
     }
 
     fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<()> {
-        // Capture a first image
-        self.capture_image(rotate_clockwise)?;
-
         // If we don't have a target, then probably the exposure is being
         // manually controlled for debug purposes, so just write the set
         // value.
         if self.exposure_median_target == None {
-            return self.write_exposure();
+            self.write_exposure()?;
+            return self.capture_image(rotate_clockwise);
         }
+
+        // Capture a first image
+        self.capture_image(rotate_clockwise)?;
 
         // Algorithm will attempt to converge median on this value
         let target = self.exposure_median_target.unwrap() as i32;
