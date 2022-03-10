@@ -299,10 +299,7 @@ where
         let delta =
             i32::max(1, i32::min(0x100, 0x100 * val * size.abs() / 0x10000)) * size.signum();
         // Clamp result to allowed range
-        self.exposure = i32::max(
-            camera::MIN_EXPOSURE,
-            i32::min(camera::MAX_EXPOSURE, val + delta),
-        );
+        self.exposure = (val + delta).clamp(camera::MIN_EXPOSURE, camera::MAX_EXPOSURE);
         self.write_exposure()?;
         Ok(())
     }
