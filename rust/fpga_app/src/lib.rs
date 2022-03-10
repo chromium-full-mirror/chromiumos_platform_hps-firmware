@@ -231,19 +231,13 @@ where
 
     fn camera_setup(&mut self) -> Result<()> {
         let mut camera = self.mcu.camera();
-        fn check(r: core::result::Result<(), hm01b0::Error>) -> Result<()> {
-            match r {
-                Err(_) => Err(Error::Camera),
-                Ok(_) => Ok(()),
-            }
-        }
 
         // Disable AE. We'll control exposure programatically instead.
-        check(camera.set_ae(false))?;
+        camera.set_ae(false)?;
         // Set frame rate to ~21Hz by doubling frame length
-        check(camera.set_frame_length(2 * 0x158))?;
+        camera.set_frame_length(2 * 0x158)?;
         // Set camera to stream
-        check(camera.set_mode(hm01b0::Mode::Streaming))?;
+        camera.set_mode(hm01b0::Mode::Streaming)?;
 
         // Writes the initial exposure configuration
         self.write_exposure()?;
@@ -546,10 +540,7 @@ where
     /// Writes exposure settings to the camera, assuming they are set
     pub fn write_exposure(&mut self) -> Result<()> {
         let e = camera::calculate_exposure(self.exposure);
-        self.mcu
-            .camera()
-            .set_exposure(&e)
-            .map_err(|_| Error::Camera)
+        Ok(self.mcu.camera().set_exposure(&e)?)
     }
 }
 
