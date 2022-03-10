@@ -370,14 +370,13 @@ where
                     self.exposure = arg as i32;
                 }
                 DebugCommand::SetMedianTarget => {
-                    // if target out of range, turn auto exposure off
-                    if (arg as i8 as i16) == arg as i16 {
-                        self.exposure_median_target = Some(arg as i8);
-                    } else {
-                        self.exposure_median_target = None;
-                    }
+                    self.exposure_median_target = Some(arg as i8);
                     let t = self.exposure_median_target;
                     mcu_println!(self, "Exposure Median Target: {:?}", t);
+                }
+                DebugCommand::DisableMedianExposure => {
+                    self.exposure_median_target = None;
+                    mcu_println!(self, "Exposure Median Target disabled");
                 }
                 _ => {
                     mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);

@@ -48,9 +48,11 @@ trait ArgumentParser {
 }
 
 struct U16Argument {}
+struct I8Argument {}
 struct NoArgument {}
 
 const U16_ARG: &dyn ArgumentParser = &U16Argument {};
+const I8_ARG: &dyn ArgumentParser = &I8Argument {};
 const NO_ARG: &dyn ArgumentParser = &NoArgument {};
 
 enum CommandType {
@@ -142,10 +144,16 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
-        keyword: "set_fpga_median_target",
-        help_text: "Sets camera exposure from from FPGA. Range -127 to 128. Large value = off",
+        keyword: "set_exposure_median_target",
+        help_text: "Sets camera exposure from from FPGA. Range -127 to 128",
         command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::SetMedianTarget),
-        arg_parser: U16_ARG,
+        arg_parser: I8_ARG,
+    },
+    AvailableDebugCommand {
+        keyword: "disable_exposure_median",
+        help_text: "Disables median-based auto-exposure. To reenable, set target.",
+        command_type: CommandType::FpgaCommand(fpga_app::DebugCommand::DisableMedianExposure),
+        arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
         keyword: "launch_app",
@@ -479,6 +487,19 @@ impl ArgumentParser for U16Argument {
                 string
             )
         })
+    }
+
+    fn help_text(&self) -> &'static str {
+        "{u16}"
+    }
+}
+
+impl ArgumentParser for I8Argument {
+    fn as_u16(&self, string: &str) -> Result<u16> {
+        string
+            .parse::<i8>()
+            .map(|i8_value| i8_value as u16)
+            .map_err(|_| anyhow!("The argument '{}' couldn't be parsed as an i8", string))
     }
 
     fn help_text(&self) -> &'static str {
