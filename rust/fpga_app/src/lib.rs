@@ -87,7 +87,6 @@ pub struct App<S, I, C, T> {
     #[cfg(feature = "image-transfer")]
     image_transfer_count: u32,
     histogram_enabled: bool,
-    classification_enabled: bool,
     debug_rotate_image: Option<bool>,
     timer: T,
     status: Status,
@@ -112,7 +111,6 @@ where
             #[cfg(feature = "image-transfer")]
             image_transfer_count: 0,
             histogram_enabled: false,
-            classification_enabled: false,
             debug_rotate_image: None,
             timer,
             status: Status::default(),
@@ -205,9 +203,7 @@ where
         // other data.
         let model_status;
         if histogram.is_usable()
-            && (features.contains(Features::MODEL1)
-                || features.contains(Features::MODEL2)
-                || self.classification_enabled)
+            && (features.contains(Features::MODEL1) || features.contains(Features::MODEL2))
         {
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number)?;
@@ -355,10 +351,6 @@ where
             // if some features are disabled then we need a catch-all.
             #[allow(unreachable_patterns)]
             match command {
-                DebugCommand::Classification => {
-                    self.classification_enabled = arg != 0;
-                    mcu_println!(self, "Classification: {}", arg != 0);
-                }
                 DebugCommand::RotateImageClockwise => {
                     self.debug_rotate_image = Some(arg != 0);
                     mcu_println!(self, "Rotation: {}", arg != 0);
@@ -546,11 +538,6 @@ where
     fn select_model(&mut self, features: &Features) {
         // Advance to next model number out of 1 and 2.
         self.model_number = (self.model_number % 2) + 1;
-
-        // If debug classification enabled, run both models
-        if self.classification_enabled {
-            return;
-        }
 
         // If we're on model 1, but that's not active, advance to model 2.
         if self.model_number == 1 && !features.contains(Features::MODEL1) {

@@ -71,11 +71,6 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     // commands with an argument. That would require changing the FPGA side as
     // well, so isn't done initially.
     AvailableDebugCommand {
-        keyword: "classification",
-        help_text: "Force enable image classification. 1=on, 0=off.",
-        command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Classification),
-    },
-    AvailableDebugCommand {
         keyword: "transfer",
         help_text: "Enable image transfer. 1=on, 0=off",
         command_type: CommandType::FpgaCommandWithArg(fpga_app::DebugCommand::Transfer),

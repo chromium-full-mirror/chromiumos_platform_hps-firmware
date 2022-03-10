@@ -11,7 +11,6 @@ use num_enum::TryFromPrimitive;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u8)]
 pub enum DebugCommand {
-    Classification = 1,
     Transfer = 3,
     RotateImageClockwise = 16,
     SelfTest = 18,
