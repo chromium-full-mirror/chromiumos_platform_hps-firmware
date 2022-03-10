@@ -328,8 +328,8 @@ fn run_loop(
 // Executes the given local command
 fn execute_locally(
     c: &LocalCommand,
-    mut mcu_command_channel: &mut Option<Box<dyn DataSink>>,
-    mut cmd_response_channel: &mut Option<Box<dyn DataSource>>,
+    mcu_command_channel: &mut Option<Box<dyn DataSink>>,
+    cmd_response_channel: &mut Option<Box<dyn DataSource>>,
     flags: &Flags,
     device: &mut dyn Device,
     hps: &Option<Arc<Mutex<dyn Hps + Send>>>,
@@ -340,8 +340,8 @@ fn execute_locally(
         LocalOperation::WriteGateware => {
             if let Some(file) = &flags.gateware {
                 if let Err(error) = write_spi_flash::write_spi_flash(
-                    &mut mcu_command_channel,
-                    &mut cmd_response_channel,
+                    mcu_command_channel,
+                    cmd_response_channel,
                     hps.clone(),
                     0,
                     file,
@@ -355,8 +355,8 @@ fn execute_locally(
         LocalOperation::WriteSocRom => {
             if let Some(file) = &flags.soc_rom {
                 if let Err(error) = write_spi_flash::write_spi_flash(
-                    &mut mcu_command_channel,
-                    &mut cmd_response_channel,
+                    mcu_command_channel,
+                    cmd_response_channel,
                     hps.clone(),
                     SOC_ROM_OFFSET,
                     file,
@@ -400,7 +400,7 @@ fn execute_locally(
             std::thread::sleep(Duration::from_millis(c.arg as u64));
         }
     }
-    return Ok(());
+    Ok(())
 }
 
 fn send_command_to_device(
