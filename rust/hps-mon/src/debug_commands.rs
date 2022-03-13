@@ -29,20 +29,8 @@ struct AvailableDebugCommand {
 
 trait ArgumentParser {
     /// Converts the input string into a u16 to be sent to the device.
-    fn as_u16(&self, _string: &str) -> Result<u16> {
-        Ok(0)
-    }
-
-    fn as_u16_for_command(
-        &self,
-        command: &AvailableDebugCommand,
-        arg: Option<&str>,
-    ) -> Result<u16> {
-        if let Some(arg_string) = arg {
-            return self.as_u16(arg_string);
-        }
-        bail!("The command {} requires an argument", command.keyword);
-    }
+    fn as_u16_for_command(&self, command: &AvailableDebugCommand, arg: Option<&str>)
+        -> Result<u16>;
 
     fn help_text(&self) -> &'static str;
 }
@@ -486,7 +474,13 @@ fn parse_command(command_str: &str) -> Result<Option<Command>> {
 }
 
 impl ArgumentParser for U16Argument {
-    fn as_u16(&self, string: &str) -> Result<u16> {
+    fn as_u16_for_command(
+        &self,
+        command: &AvailableDebugCommand,
+        arg: Option<&str>,
+    ) -> Result<u16> {
+        let string =
+            arg.ok_or_else(|| anyhow!("The command {} requires an argument", command.keyword))?;
         parse_value(string).ok_or_else(|| {
             anyhow!(
                 "The argument '{}' couldn't be parsed as a decimal or hex u16",
@@ -501,7 +495,13 @@ impl ArgumentParser for U16Argument {
 }
 
 impl ArgumentParser for I8Argument {
-    fn as_u16(&self, string: &str) -> Result<u16> {
+    fn as_u16_for_command(
+        &self,
+        command: &AvailableDebugCommand,
+        arg: Option<&str>,
+    ) -> Result<u16> {
+        let string =
+            arg.ok_or_else(|| anyhow!("The command {} requires an argument", command.keyword))?;
         string
             .parse::<i8>()
             .map(|i8_value| i8_value as u16)
