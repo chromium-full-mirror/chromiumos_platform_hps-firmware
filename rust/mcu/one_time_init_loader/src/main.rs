@@ -15,7 +15,7 @@ use stm32g0 as _;
 #[link_section = ".image_hdr"]
 #[no_mangle]
 #[used]
-pub static __IMAGE_HDR: ImageHeader = ImageHeader::empty();
+pub static __IMAGE_HDR: ImageHeader = create_image_header();
 
 const ONE_TIME_INIT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init.bin"));
 
@@ -32,4 +32,12 @@ fn main() -> ! {
     unsafe {
         cortex_m::asm::bootload(target as *const u8 as *const u32);
     }
+}
+
+const fn create_image_header() -> ImageHeader {
+    let mut header = ImageHeader::empty();
+    if cfg!(feature = "legacy-stage0") {
+        header.slot_length = 64 * 1024;
+    }
+    header
 }
