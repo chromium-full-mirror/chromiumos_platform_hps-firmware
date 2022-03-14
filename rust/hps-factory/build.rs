@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     build_fpga_bitstream()?;
     build_fpga_rom()?;
     write_application_bin()?;
-    write_stage0_bin("stage0.bin", "insecure-dev-key")?;
+    write_stage0_bin("stage0.bin", "mp-key")?;
     build_one_time_init_loader("one_time_init_loader.bin", "")?;
     build_one_time_init_loader("one_time_init_loader_legacy.bin", "legacy-stage0")?;
     Ok(())
