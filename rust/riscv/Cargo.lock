@@ -284,7 +284,6 @@ dependencies = [
  "fpga_app",
  "fpga_hal",
  "litex_pac",
- "panic-halt",
  "riscv 0.7.0",
  "riscv-rt",
  "tflm_inference",
@@ -522,12 +521,6 @@ dependencies = [
  "quote 1.0.9",
  "syn 1.0.72",
 ]
-
-[[package]]
-name = "panic-halt"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de96540e0ebde571dc55c73d60ef407c653844e6f9a1e2fdbd40c07b9252d812"
 
 [[package]]
 name = "peeking_take_while"

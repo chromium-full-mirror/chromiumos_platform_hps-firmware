@@ -9,7 +9,6 @@
 mod non_tflm_classifier;
 
 use litex_pac;
-use panic_halt as _;
 use riscv_rt::entry;
 
 #[entry]
@@ -52,4 +51,15 @@ unsafe fn create_classifier() -> non_tflm_classifier::NonTflmClassifier {
 #[no_mangle]
 pub extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) -> usize {
     unsafe { *arg }
+}
+
+#[inline(never)]
+#[panic_handler]
+fn panic(_info: &core::panic::PanicInfo) -> ! {
+    let p = unsafe { litex_pac::Peripherals::steal() };
+    let spi = fpga_hal::McuSpi::new(p.MCU_SPI);
+    fpga_app::report_panic(spi);
+    loop {
+        unsafe { riscv::asm::wfi() };
+    }
 }

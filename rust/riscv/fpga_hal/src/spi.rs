@@ -12,6 +12,10 @@ pub struct McuSpi {
 
 impl McuSpi {
     pub fn new(mcu_spi: MCU_SPI) -> Self {
+        // Make sure SPI is disabled. It generally already will be, but just in
+        // case we were called from a fault handler, it could be in an unknown
+        // state.
+        mcu_spi.cr.modify(|_, w| w.cs().clear_bit());
         Self { mcu_spi }
     }
 }

@@ -20,6 +20,9 @@ pub enum Error {
     /// A panic occurred.
     Panic = 0x0004,
 
+    /// Code running on the FPGA panicked.
+    FpgaPanic = 0x0005,
+
     /// An I2C bus error occurred.
     HostI2cBusError = 0x0008,
 
