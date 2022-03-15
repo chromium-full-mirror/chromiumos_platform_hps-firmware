@@ -267,6 +267,13 @@ pub(crate) fn read_camera_integration(camera_i2c: &mut CameraI2c) {
     }
 }
 
+pub(crate) fn set_group_param_hold(camera_i2c: &mut CameraI2c) {
+    let mut camera = hm01b0::Camera::new(camera_i2c);
+    if let Err(_) = camera.set_group_param_hold() {
+        info!("Failed to set group param hold");
+    }
+}
+
 #[cfg(feature = "image-transfer")]
 pub(crate) fn transfer_image(
     buffer: &MemBlock,
@@ -378,6 +385,7 @@ pub(crate) fn handle_mcu_debug_command(
                 Ok(_) => read_camera_gains(resources.camera_i2c),
                 Err(_) => info!("Failed to write digital gain"),
             }
+            set_group_param_hold(resources.camera_i2c)
         }
         McuDebugCommand::SetCameraAnalogGain => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
@@ -385,6 +393,7 @@ pub(crate) fn handle_mcu_debug_command(
                 Ok(_) => read_camera_gains(resources.camera_i2c),
                 Err(_) => info!("Failed to write analog gain"),
             }
+            set_group_param_hold(resources.camera_i2c)
         }
         McuDebugCommand::SetCameraIntegration => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
@@ -393,6 +402,7 @@ pub(crate) fn handle_mcu_debug_command(
                 Ok(_) => read_camera_integration(resources.camera_i2c),
                 Err(_) => info!("Failed to write integration"),
             }
+            set_group_param_hold(resources.camera_i2c)
         }
         McuDebugCommand::SetCameraAeTarget => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
