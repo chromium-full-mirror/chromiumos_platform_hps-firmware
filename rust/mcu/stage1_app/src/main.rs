@@ -58,7 +58,7 @@ const APP: () = {
         #[cfg(feature = "dev")]
         debug_resources: crate::debug::DebugResources,
         #[cfg(feature = "dev")]
-        timer: hal::timer::Timer<hal::stm32::TIM16>,
+        debug_timer: hal::timer::Timer<hal::stm32::TIM16>,
         camera_i2c: board::CameraI2c,
         stopwatch: Stopwatch<hal::stm32::TIM2>,
         tick_count: u32,
@@ -155,16 +155,16 @@ const APP: () = {
     // Presumably it's trying to include the function in the interrupt table
     // when it doesn't exist.
     #[task(binds = TIM16,
-        resources = [debug_resources, fpga_device, timer, camera_i2c, stopwatch,
+        resources = [debug_resources, fpga_device, debug_timer, camera_i2c, stopwatch,
             debug_led, tick_count, host_interface],
         spawn = [try_start_fpga])]
-    fn timer_tick(mut ctx: timer_tick::Context) {
+    fn debug_timer_tick(mut ctx: debug_timer_tick::Context) {
         // Make "use" of ctx to prevent unused variable warning when dev feature
         // is off.
         let _ = &mut ctx;
         #[cfg(feature = "dev")]
         {
-            ctx.resources.timer.clear_irq();
+            ctx.resources.debug_timer.clear_irq();
             let led = &mut ctx.resources.debug_led;
             *ctx.resources.tick_count = (*ctx.resources.tick_count).wrapping_add(1);
             if *ctx.resources.tick_count & 16 == 0 {
@@ -622,7 +622,7 @@ fn init_peripherals(
         #[cfg(feature = "dev")]
         debug_resources,
         #[cfg(feature = "dev")]
-        timer: debug::init_debug_timer(p.TIM16, &mut rcc),
+        debug_timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
         stopwatch,
         tick_count: 0,

@@ -288,8 +288,8 @@ pub(crate) fn transfer_image(
 
 pub(crate) fn handle_mcu_debug_command(
     command: McuDebugCommandInfo,
-    resources: &mut crate::timer_tick::Resources,
-    spawn: &mut crate::timer_tick::Spawn,
+    resources: &mut crate::debug_timer_tick::Resources,
+    spawn: &mut crate::debug_timer_tick::Spawn,
 ) {
     match command.kind {
         McuDebugCommand::ReadSpiFlash => debug_read(
