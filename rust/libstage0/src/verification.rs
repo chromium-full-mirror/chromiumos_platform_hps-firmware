@@ -6,7 +6,6 @@
 use crate::WriteProtectState;
 use mcu_common::Hash;
 use mcu_common::ImageHeader;
-use mcu_common::LEGACY_STAGE1_SLOT_LENGTH;
 use mcu_common::SIGNATURE_LENGTH;
 use mcu_common::STAGE1_SLOT_LENGTH;
 
@@ -64,11 +63,7 @@ pub fn detect_and_validate_stage1(
 
     // If write-protect is asserted, then check that signature is valid.
     if wp_state == WriteProtectState::Asserted {
-        let mut result = validate_stage1(slot, public_key);
-        if result.is_err() {
-            result = validate_legacy_signed_stage1(slot, public_key);
-        }
-        result.map_err(|_| Stage1Error::InvalidSignature)?
+        validate_stage1(slot, public_key).map_err(|_| Stage1Error::InvalidSignature)?;
     }
 
     Ok(ValidStage1 {
@@ -104,24 +99,6 @@ fn stage1_digest(slot: &[u8]) -> [u8; 32] {
         hasher.update(&page);
     }
     hasher.finalize()
-}
-
-/// Verifies a stage1 signature that was signed using a 64KB slot length. We
-/// first check that everything after that 64KB is empty, then check that the
-/// signature for the 64KB passes.
-fn validate_legacy_signed_stage1(
-    slot: &[u8],
-    public_key: &[u8; PUBLIC_KEY_LENGTH],
-) -> Result<(), ed25519_compact::Error> {
-    // Make sure everything after the legacy slot is empty. If it's not, fail
-    // the signature check.
-    for byte in &slot[LEGACY_STAGE1_SLOT_LENGTH..] {
-        if *byte != 0xff {
-            return Err(ed25519_compact::Error::InvalidSignature);
-        }
-    }
-    // Now do a signature check just on the legacy slot.
-    validate_stage1(&slot[..LEGACY_STAGE1_SLOT_LENGTH], public_key)
 }
 
 fn validate_stage1(

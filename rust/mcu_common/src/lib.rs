@@ -32,8 +32,6 @@ pub use part_ids::PartIds;
 /// be changed once stage0 is locked. This must be a multiple of FLASH_PAGE_SZ.
 pub const STAGE1_SLOT_LENGTH: usize = 88 * 1024;
 
-pub const LEGACY_STAGE1_SLOT_LENGTH: usize = 64 * 1024;
-
 /// STM32G0x1, RM0444 (Reference manual)
 /// p.76 - 3.3.8 FLASH Main memory programming sequences
 /// It is only possible to program a double word (2 x 32-bit data).
