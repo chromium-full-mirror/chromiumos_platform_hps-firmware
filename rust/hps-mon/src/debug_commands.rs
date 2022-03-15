@@ -220,6 +220,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
+        keyword: "set_camera_blc_target",
+        help_text: "Sets camera black level control targets",
+        command_type: CommandType::McuCommand(McuDebugCommand::SetCameraBlcTarget),
+        arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
         keyword: "set_camera_digital_gain",
         help_text: "Sets camera digital gain over I2C",
         command_type: CommandType::McuCommand(McuDebugCommand::SetCameraDigitalGain),

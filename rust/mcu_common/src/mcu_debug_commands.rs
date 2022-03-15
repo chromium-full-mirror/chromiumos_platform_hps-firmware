@@ -28,4 +28,5 @@ pub enum McuDebugCommand {
     ReadCameraRegister = 19,
     SetCameraAeTarget = 20,
     TryStartFpga = 21,
+    SetCameraBlcTarget = 22,
 }

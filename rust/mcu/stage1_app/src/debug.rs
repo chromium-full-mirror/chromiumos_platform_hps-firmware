@@ -379,6 +379,24 @@ pub(crate) fn handle_mcu_debug_command(
             read_camera_gains(resources.camera_i2c);
             read_camera_integration(resources.camera_i2c);
         }
+        McuDebugCommand::SetCameraBlcTarget => {
+            let mut c = hm01b0::Camera::new(resources.camera_i2c);
+            match command.arg {
+                0..=255 => {
+                    let config = hm01b0::BlackLevelConfig {
+                        blc_enabled: true,
+                        blc_target: command.arg as u8,
+                        blc2_enabled: true,
+                        blc2_target: command.arg as u8,
+                    };
+                    match c.set_blc_config(config) {
+                        Ok(_) => info!("Set black level config target"),
+                        Err(_) => info!("Failed to set black level config target"),
+                    }
+                }
+                _ => info!("Black level out of range"),
+            }
+        }
         McuDebugCommand::SetCameraDigitalGain => {
             let mut c = hm01b0::Camera::new(resources.camera_i2c);
             match c.set_digital_gain(command.arg) {
