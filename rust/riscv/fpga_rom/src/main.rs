@@ -58,7 +58,17 @@ pub extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) -> usize 
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     let p = unsafe { litex_pac::Peripherals::steal() };
     let spi = fpga_hal::McuSpi::new(p.MCU_SPI);
-    fpga_app::report_panic(spi);
+    fpga_app::report_fatal_error(spi, mcu_common::Error::FpgaPanic);
+    loop {
+        unsafe { riscv::asm::wfi() };
+    }
+}
+
+#[export_name = "ExceptionHandler"]
+fn custom_exception_handler(_trap_frame: &riscv_rt::TrapFrame) -> ! {
+    let p = unsafe { litex_pac::Peripherals::steal() };
+    let spi = fpga_hal::McuSpi::new(p.MCU_SPI);
+    fpga_app::report_fatal_error(spi, mcu_common::Error::FpgaException);
     loop {
         unsafe { riscv::asm::wfi() };
     }

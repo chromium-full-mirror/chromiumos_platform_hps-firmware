@@ -23,6 +23,9 @@ pub enum Error {
     /// Code running on the FPGA panicked.
     FpgaPanic = 0x0005,
 
+    /// Code running on the FPGA caused an exception.
+    FpgaException = 0x0006,
+
     /// An I2C bus error occurred.
     HostI2cBusError = 0x0008,
 

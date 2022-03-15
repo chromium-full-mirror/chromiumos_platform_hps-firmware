@@ -608,10 +608,10 @@ fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
     }
 }
 
-pub fn report_panic(spi: impl spi::Transfer<u8>) {
+pub fn report_fatal_error(spi: impl spi::Transfer<u8>, error: mcu_common::Error) {
     let mut mcu = McuInterface::new(spi);
     mcu.resync();
-    mcu.report_error(mcu_common::Error::FpgaPanic);
+    mcu.report_error(error);
 }
 
 #[cfg(test)]

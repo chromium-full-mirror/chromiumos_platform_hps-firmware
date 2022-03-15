@@ -284,6 +284,7 @@ dependencies = [
  "fpga_app",
  "fpga_hal",
  "litex_pac",
+ "mcu_common",
  "riscv 0.7.0",
  "riscv-rt",
  "tflm_inference",
