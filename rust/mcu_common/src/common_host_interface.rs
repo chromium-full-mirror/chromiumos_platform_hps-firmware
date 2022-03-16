@@ -29,7 +29,11 @@ impl CommonHostInterface {
     }
 
     pub fn report_error(&mut self, error: Error) {
-        self.errors |= error;
+        // We only report the first error that occurs. This is to allow us to
+        // switch from a bitfield to an enum in future.
+        if self.errors.is_empty() {
+            self.errors = error;
+        }
     }
 
     #[cfg(feature = "dev")]
@@ -84,10 +88,12 @@ mod tests {
             interface.read_register(registers::ERRORS),
             Some(Error::HOST_I2C_OVERRUN.bits())
         );
+        // Reporting a second error has no effect, since only the first error
+        // reported is known.
         interface.report_error(Error::HOST_I2C_UNDERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HOST_I2C_OVERRUN.bits() | Error::HOST_I2C_UNDERRUN.bits())
+            Some(Error::HOST_I2C_OVERRUN.bits())
         );
     }
 
