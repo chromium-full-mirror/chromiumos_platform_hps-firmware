@@ -22,6 +22,46 @@ struct Bin {
     count: u32,
 }
 
+const FRAME_CROPPING: u32 = 40;
+
+/// Custom CroppingIterator is used for Histogram median calculation.
+struct CroppingIterator<'a> {
+    x: u32,
+    y: u32,
+    bytes: &'a [i8],
+}
+
+impl Iterator for CroppingIterator<'_> {
+    type Item = i8;
+
+    // Instead of computing a median for a 320x240 frame, it uses the sub-square
+    // of 240x240. Left and right padding (40 pixel wide) are omitted.
+    fn next(&mut self) -> Option<i8> {
+        use crate::camera;
+        if self.x < FRAME_CROPPING {
+            self.x = FRAME_CROPPING;
+        }
+        if self.x >= camera::IMAGE_WIDTH - FRAME_CROPPING {
+            self.x = FRAME_CROPPING;
+            self.y += 1;
+        }
+        if self.y >= camera::IMAGE_HEIGHT {
+            return None;
+        }
+        let position = self.y * camera::IMAGE_WIDTH + self.x;
+        self.x += 1;
+        Some(self.bytes[position as usize])
+    }
+}
+
+fn cropping_iterator(image_data: &[i8]) -> CroppingIterator {
+    CroppingIterator {
+        x: 0,
+        y: 0,
+        bytes: image_data,
+    }
+}
+
 impl Histogram {
     pub fn new(image_data: &[i8]) -> Histogram {
         let mut result = Histogram {
@@ -32,7 +72,18 @@ impl Histogram {
         for &val in image_data {
             result.add(val);
         }
+        result
+    }
 
+    pub fn new_cropped(image_data: &[i8]) -> Histogram {
+        let mut result = Histogram {
+            count: 0,
+            bins: [0; 256],
+        };
+
+        for val in cropping_iterator(image_data) {
+            result.add(val);
+        }
         result
     }
 
@@ -188,6 +239,17 @@ mod tests {
     fn test_calculate_median() {
         let h = Histogram::new(TEST_DATA);
         assert_eq!(3, h.median());
+
+        // The median of cropped image should not be same as full frame.
+        assert_ne!(
+            Histogram::new(&png_pixels(USABLE).unwrap()).median(),
+            Histogram::new_cropped(&png_pixels(USABLE).unwrap()).median()
+        );
+        // The median of entire white image should be the same.
+        assert_eq!(
+            Histogram::new(&png_pixels(NOT_USABLE).unwrap()).median(),
+            Histogram::new_cropped(&png_pixels(NOT_USABLE).unwrap()).median()
+        );
     }
 
     #[test]

@@ -353,7 +353,7 @@ where
     // Calculate median of current image buffer
     fn get_image_median(&self) -> i8 {
         let image_data = self.classifier.input_data(self.model_number);
-        histogram::Histogram::new(image_data).median()
+        histogram::Histogram::new_cropped(image_data).median()
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
