@@ -162,6 +162,7 @@ pub trait Hps {
         Ok(())
     }
 
+    // TODO: Rename to just error.
     fn errors(&mut self) -> Result<mcu_common::Error> {
         mcu_common::Error::try_from(self.read_register(registers::ERRORS)?)
             .map_err(|_| anyhow!("Errors register contained unknown error(s)"))

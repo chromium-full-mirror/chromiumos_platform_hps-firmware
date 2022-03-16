@@ -10,7 +10,7 @@ use crate::Error;
 use crate::Status;
 
 pub struct CommonHostInterface {
-    errors: Error,
+    error: Error,
 }
 
 impl CommonHostInterface {
@@ -21,25 +21,26 @@ impl CommonHostInterface {
     pub fn read_register(&self, register: u8) -> Option<u16> {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
-            registers::ERRORS => self.errors.bits(),
-            registers::SYSTEM_STATUS if !self.errors.is_empty() => Status::FAULT.bits(),
+            registers::ERRORS => self.error.into(),
+            registers::SYSTEM_STATUS if self.error != Error::None => Status::FAULT.bits(),
             registers::SYSTEM_STATUS => Status::OK.bits(),
             _ => return self.read_dev_register(register),
         })
     }
 
     pub fn report_error(&mut self, error: Error) {
-        // We only report the first error that occurs. This is to allow us to
-        // switch from a bitfield to an enum in future.
-        if self.errors.is_empty() {
-            self.errors = error;
+        // We only keep track of the first error reported. This is quite likely
+        // to be the cause of any subsequent errors, so is the most important
+        // one to track.
+        if self.error == Error::None {
+            self.error = error;
         }
     }
 
     #[cfg(feature = "dev")]
     fn read_dev_register(&self, register: u8) -> Option<u16> {
         Some(match register {
-            registers::dev::SLOW_READ => dev::fib(self.errors.bits().count_ones() as u16 + 20),
+            registers::dev::SLOW_READ => dev::fib(u16::from(self.error).count_ones() as u16 + 20),
             _ => return None,
         })
     }
@@ -52,9 +53,7 @@ impl CommonHostInterface {
 
 impl Default for CommonHostInterface {
     fn default() -> Self {
-        Self {
-            errors: Error::empty(),
-        }
+        Self { error: Error::None }
     }
 }
 
@@ -86,14 +85,14 @@ mod tests {
         interface.report_error(Error::HOST_I2C_OVERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HOST_I2C_OVERRUN.bits())
+            Some(u16::from(Error::HOST_I2C_OVERRUN))
         );
         // Reporting a second error has no effect, since only the first error
         // reported is known.
         interface.report_error(Error::HOST_I2C_UNDERRUN);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(Error::HOST_I2C_OVERRUN.bits())
+            Some(u16::from(Error::HOST_I2C_OVERRUN))
         );
     }
 

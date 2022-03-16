@@ -22,6 +22,7 @@ use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
+use core::convert::TryFrom;
 use delayed_i2c::DelayedI2c;
 use hal::delay::Delay;
 use hal::prelude::*;
@@ -316,9 +317,8 @@ const APP: () = {
             }
             fpga::Action::ReportFpgaError => {
                 let error_bits = u16::from_le_bytes([buffer[1], buffer[2]]);
-                let error = mcu_common::Error::from_bits_truncate(error_bits);
-                info!("FPGA reports error(s): {:?}", error);
-                if !error.is_empty() {
+                if let Ok(error) = mcu_common::Error::try_from(error_bits) {
+                    info!("FPGA reports error: {:?}", error);
                     ctx.resources.host_interface.lock(|h| h.report_error(error));
                 }
             }

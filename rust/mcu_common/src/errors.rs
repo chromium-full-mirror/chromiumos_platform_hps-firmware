@@ -2,65 +2,62 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use bitflags::bitflags;
-use core::convert::TryFrom;
+use core::convert::From;
+use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 
-bitflags! {
-    pub struct Error: u16 {
-        /// An I2C underrun occurred.
-        const HOST_I2C_UNDERRUN = 1 << 0;
+#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[repr(u16)]
+// TODO: Fix naming of enum variants.
+#[allow(non_camel_case_types)]
+pub enum Error {
+    None = 0,
 
-        /// An error occurred writing to MCU flash.
-        const MCU_FLASH_WRITE_ERROR = 1 << 1;
+    /// An I2C underrun occurred.
+    HOST_I2C_UNDERRUN = 0x0001,
 
-        /// A panic occurred.
-        const PANIC = 1 << 2;
+    /// An error occurred writing to MCU flash.
+    MCU_FLASH_WRITE_ERROR = 0x0002,
 
-        /// An I2C bus error occurred.
-        const HOST_I2C_BUS_ERROR = 1 << 3;
+    /// A panic occurred.
+    PANIC = 0x0004,
 
-        /// An I2C overrun occurred.
-        const HOST_I2C_OVERRUN = 1 << 4;
+    /// An I2C bus error occurred.
+    HOST_I2C_BUS_ERROR = 0x0008,
 
-        /// Something is wrong with the camera.
-        const CAMERA = 1 << 5;
+    /// An I2C overrun occurred.
+    HOST_I2C_OVERRUN = 0x0010,
 
-        /// Something is wrong with the SPI flash.
-        const SPI_FLASH = 1 << 6;
+    /// Something is wrong with the camera.
+    CAMERA = 0x0020,
 
-        /// Something was wrong with a request from the host.
-        const HOST_I2C_BAD_REQUEST = 1 << 7;
+    /// Something is wrong with the SPI flash.
+    SPI_FLASH = 0x0040,
 
-        /// An attempt was made to use a buffer, but the buffer was not available,
-        /// possibly because it was already in use.
-        const BUFFER_NOT_AVAILABLE = 1 << 8;
+    /// Something was wrong with a request from the host.
+    HOST_I2C_BAD_REQUEST = 0x0080,
 
-        /// An attempt was made to read or write beyond the end of a buffer.
-        const BUFFER_OVERRUN = 1 << 9;
+    /// An attempt was made to use a buffer, but the buffer was not available,
+    /// possibly because it was already in use.
+    BUFFER_NOT_AVAILABLE = 0x0100,
 
-        /// The SPI flash does not match the embedded hash, an update is required.
-        const SPI_FLASH_NOT_VERIFIED = 1 << 10;
+    /// An attempt was made to read or write beyond the end of a buffer.
+    BUFFER_OVERRUN = 0x0200,
 
-        /// TFLITE Micro reported an error.
-        const TFLITE_FAILURE = 1 << 11;
+    /// The SPI flash does not match the embedded hash, an update is required.
+    SPI_FLASH_NOT_VERIFIED = 0x0400,
 
-        /// A self test that was requested by the host has failed.
-        const SELF_TEST_FAILED = 1 << 12;
+    /// TFLITE Micro reported an error.
+    TFLITE_FAILURE = 0x0800,
 
-        /// Communication between the FPGA and the MCU encountered an error.
-        const FPGA_MCU_COMM_ERROR = 1 << 13;
+    /// A self test that was requested by the host has failed.
+    SELF_TEST_FAILED = 0x1000,
 
-        /// The FPGA application did not send an update within the expected time.
-        const FPGA_TIMEOUT = 1 << 14;
-    }
-}
+    /// Communication between the FPGA and the MCU encountered an error.
+    FPGA_MCU_COMM_ERROR = 0x2000,
 
-impl TryFrom<u16> for Error {
-    type Error = ();
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        Error::from_bits(value).ok_or(())
-    }
+    /// The FPGA application did not send an update within the expected time.
+    FPGA_TIMEOUT = 0x4000,
 }
 
 impl core::fmt::Display for Error {
@@ -86,6 +83,6 @@ mod tests {
 
     #[test]
     fn test_to_int() {
-        assert_eq!(Error::HOST_I2C_BUS_ERROR.bits(), 8u16);
+        assert_eq!(u16::from(Error::HOST_I2C_BUS_ERROR), 8u16);
     }
 }

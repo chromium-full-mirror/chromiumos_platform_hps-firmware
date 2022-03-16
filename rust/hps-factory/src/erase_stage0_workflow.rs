@@ -52,11 +52,7 @@ where
         // We got an error writing stage1. This might be because we're running
         // an old version of stage0 that doesn't support the EraseStage1
         // command.
-        if i2c
-            .open_hps()?
-            .errors()?
-            .contains(mcu_common::Error::HOST_I2C_BAD_REQUEST)
-        {
+        if i2c.open_hps()?.errors()? == mcu_common::Error::HOST_I2C_BAD_REQUEST {
             info!("Stage0 reported a bad request. Retrying without EraseStage1");
             i2c.reset_to_bootloader()?;
             // Try again, without using the erase command.

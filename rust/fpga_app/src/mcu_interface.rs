@@ -78,7 +78,7 @@ where
     pub fn report_error(&mut self, error: mcu_common::Error) {
         self.clear_buffer();
         self.buffer[0] = Action::ReportFpgaError.into();
-        let error_bytes = error.bits().to_le_bytes();
+        let error_bytes = u16::from(error).to_le_bytes();
         self.buffer[1..1 + error_bytes.len()].copy_from_slice(&error_bytes);
         // There's not much we can do if we get an error while we're reporting
         // an error, so we just ignore it.
