@@ -176,7 +176,7 @@ The host should poll this register before issuing a Memory Write command.
 | BIT | NAME      | DESCRIPTION                  |
 |:----|:----------|:-----------------------------|
 | 15  |           |                              |
-| 14  |           |                              |
+| 14  | FPGATIME  | FPGA timeout                 |
 | 13  | FPGACOMM  | FPGA↔MCU communication error |
 | 12  | SELFTEST  | Self-test failed             |
 | 11  | TFLITE    | TFLite reported an error     |

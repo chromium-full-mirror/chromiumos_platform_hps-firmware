@@ -49,6 +49,9 @@ bitflags! {
 
         /// Communication between the FPGA and the MCU encountered an error.
         const FPGA_MCU_COMM_ERROR = 1 << 13;
+
+        /// The FPGA application did not send an update within the expected time.
+        const FPGA_TIMEOUT = 1 << 14;
     }
 }
 

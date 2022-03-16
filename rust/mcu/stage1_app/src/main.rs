@@ -26,6 +26,7 @@ use delayed_i2c::DelayedI2c;
 use hal::delay::Delay;
 use hal::prelude::*;
 use hal::rcc::Rcc;
+use hal::time::MicroSecond;
 use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
@@ -55,6 +56,7 @@ const APP: () = {
         exti: hal::stm32::EXTI,
         debug_led: board::DebugLed,
         fpga_device: FpgaDevice,
+        fpga_timer: hal::timer::Timer<hal::stm32::TIM15>,
         #[cfg(feature = "dev")]
         debug_resources: crate::debug::DebugResources,
         #[cfg(feature = "dev")]
@@ -139,15 +141,30 @@ const APP: () = {
 
     /// Interrupt handler for EXTI channels 4 through 15. Currently only used
     /// for FPGA SPI CS changes.
-    #[task(binds = EXTI4_15, resources = [spi, exti], spawn = [handle_spi_packet],
-        priority = 2)]
+    #[task(binds = EXTI4_15, resources = [spi, exti, fpga_timer],
+        spawn = [handle_spi_packet], priority = 2)]
     fn exti4_15_event(ctx: exti4_15_event::Context) {
         if let Some(buffer) = ctx.resources.spi.cs_changed() {
+            ctx.resources.fpga_timer.reset();
             // This should never fail since there's only one buffer and we have
             // it, so the `handle_spi_packet` task's queue can't have it.
             let _ = ctx.spawn.handle_spi_packet(buffer);
         }
         ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
+    }
+
+    #[task(binds = TIM15, resources = [fpga_timer, host_interface])]
+    fn fpga_timer_tick(mut ctx: fpga_timer_tick::Context) {
+        ctx.resources.fpga_timer.lock(|fpga_timer| {
+            fpga_timer.clear_irq();
+            // Once a timeout has happened, there is no reason to keep trying to detect further
+            // timeouts.
+            fpga_timer.unlisten();
+        });
+        ctx.resources
+            .host_interface
+            .lock(|host_interface| host_interface.report_error(mcu_common::Error::FPGA_TIMEOUT));
+        error!("FPGA timeout expired");
     }
 
     // Ideally this whole task would be excluded when the dev feature is
@@ -212,7 +229,7 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_device, debug_resources, camera_i2c, host_interface],
+    #[task(resources = [spi, state, debug_led, fpga_device, fpga_timer, debug_resources, camera_i2c, host_interface],
         spawn = [handle_spi_packet])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
@@ -238,6 +255,11 @@ const APP: () = {
                     .state
                     .lock(|state| fpga::report_boot(state, &buffer));
                 info!("FPGA reported boot #{}", count);
+                ctx.resources.fpga_timer.lock(|t| {
+                    t.reset();
+                    t.clear_irq();
+                    t.listen();
+                });
             }
             #[cfg(feature = "dev")]
             fpga::Action::DebugLog => {
@@ -461,6 +483,35 @@ fn init_peripherals(
     let mut host_interface = HostInterface::new(board.host_bus);
     host_interface.init_status = init_status;
 
+    // Set up a timer for detecting if the FPGA stops sending us updates because it has
+    // crashed/hung. The timer interval is chosen to be larger than the duration of each iteration
+    // of the FPGA's main loop. We reset the timer whenever we receive an update from the FPGA,
+    // so if the timer interrupt fires we know something is wrong.
+    let fpga_timer_duration: MicroSecond = 5_000.ms().into();
+    let fpga_timer = p.TIM15.timer(&mut rcc);
+    // Can't use the HAL Timer .start() due to
+    // https://github.com/stm32-rs/stm32g0xx-hal/issues/91
+    // so we twiddle the registers by hand for now.
+    // TODO(b/224877274): use .start() when the HAL crate is fixed.
+    //fpga_timer.start(fpga_timer_duration);
+    {
+        let fpga_timer = unsafe { hal::stm32::Peripherals::steal().TIM15 };
+        fpga_timer
+            .cr1
+            .modify(|_, w| w.cen().clear_bit().urs().set_bit());
+        fpga_timer.cnt.reset();
+        fpga_timer.sr.write(|w| w.uif().clear_bit());
+        let cycles = fpga_timer_duration.cycles(rcc.clocks.apb_tim_clk);
+        let psc = cycles / 0xffff;
+        let arr = cycles / (psc + 1);
+        fpga_timer
+            .psc
+            .write(|w| unsafe { w.psc().bits(psc as u16) });
+        fpga_timer.arr.write(|w| unsafe { w.bits(arr) });
+        fpga_timer.egr.write(|w| w.ug().set_bit());
+        fpga_timer.cr1.modify(|_, w| w.cen().set_bit());
+    }
+
     // Trigger an interrupt when the SPI CS line changes.
     let fpga_spi_cs = board
         .fpga_spi_cs
@@ -619,6 +670,7 @@ fn init_peripherals(
         state: ApplicationState::default(),
         debug_led: board.debug_led,
         fpga_device,
+        fpga_timer,
         #[cfg(feature = "dev")]
         debug_resources,
         #[cfg(feature = "dev")]
