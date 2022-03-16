@@ -21,7 +21,7 @@ impl CommonHostInterface {
     pub fn read_register(&self, register: u8) -> Option<u16> {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
-            registers::ERRORS => self.error.into(),
+            registers::ERROR => self.error.into(),
             registers::SYSTEM_STATUS if self.error != Error::None => Status::FAULT.bits(),
             registers::SYSTEM_STATUS => Status::OK.bits(),
             _ => return self.read_dev_register(register),
@@ -77,21 +77,21 @@ mod tests {
     #[test]
     fn test_error_reporting() {
         let mut interface = CommonHostInterface::new();
-        assert_eq!(interface.read_register(registers::ERRORS), Some(0));
+        assert_eq!(interface.read_register(registers::ERROR), Some(0));
         assert_eq!(
             interface.read_register(registers::SYSTEM_STATUS),
             Some(Status::OK.bits())
         );
         interface.report_error(Error::HostI2cOverrun);
         assert_eq!(
-            interface.read_register(registers::ERRORS),
+            interface.read_register(registers::ERROR),
             Some(u16::from(Error::HostI2cOverrun))
         );
         // Reporting a second error has no effect, since only the first error
         // reported is known.
         interface.report_error(Error::HostI2cUnderrun);
         assert_eq!(
-            interface.read_register(registers::ERRORS),
+            interface.read_register(registers::ERROR),
             Some(u16::from(Error::HostI2cOverrun))
         );
     }

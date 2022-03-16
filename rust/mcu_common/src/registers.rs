@@ -20,8 +20,8 @@ pub const APPLICATION_VERSION: u8 = 4;
 /// RO: Which memory banks can currently be written.
 pub const MEMORY_BANK_AVAILABLE: u8 = 5;
 
-/// RO: Errors. See individual error bits in the errors module.
-pub const ERRORS: u8 = 6;
+/// RO: The first error that has occurred, if any. See errors.rs for values.
+pub const ERROR: u8 = 6;
 
 /// WO: Which application features are enabled.
 pub const ENABLED_FEATURES: u8 = 7;
