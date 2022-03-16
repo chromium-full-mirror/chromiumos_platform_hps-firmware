@@ -173,24 +173,24 @@ The host should poll this register before issuing a Memory Write command.
 
 ## Common Error Status
 
-| BIT | NAME      | DESCRIPTION                |
-|:----|:----------|:---------------------------|
-| 15  |           |                            |
-| 14  |           |                            |
-| 13  |           |                            |
-| 12  |           |                            |
-| 11  |           |                            |
-| 10  | SPINOTVER | SPI flash was not verified |
-| 9   | BUFORUN   | Buffer overrun             |
-| 8   | BUFNAVAIL | Buffer not available       |
-| 7   | I2CBADREQ | A bad I2C request was made |
-| 6   | SPIFLASH  | SPI flash access failed    |
-| 5   | CAMERA    | Camera not functional      |
-| 4   | I2CORUN   | I2C overrun                |
-| 3   | I2CBERR   | I2C bus error              |
-| 2   | PANIC     | A panic occurred           |
-| 1   | MCUFLASH  | Error writing to MCU flash |
-| 0   | I2CURUN   | I2C Underrun               |
+| BIT | NAME      | DESCRIPTION                  |
+|:----|:----------|:-----------------------------|
+| 15  |           |                              |
+| 14  |           |                              |
+| 13  | FPGACOMM  | FPGA↔MCU communication error |
+| 12  | SELFTEST  | Self-test failed             |
+| 11  | TFLITE    | TFLite reported an error     |
+| 10  | SPINOTVER | SPI flash was not verified   |
+| 9   | BUFORUN   | Buffer overrun               |
+| 8   | BUFNAVAIL | Buffer not available         |
+| 7   | I2CBADREQ | A bad I2C request was made   |
+| 6   | SPIFLASH  | SPI flash access failed      |
+| 5   | CAMERA    | Camera not functional        |
+| 4   | I2CORUN   | I2C overrun                  |
+| 3   | I2CBERR   | I2C bus error                |
+| 2   | PANIC     | A panic occurred             |
+| 1   | MCUFLASH  | Error writing to MCU flash   |
+| 0   | I2CURUN   | I2C Underrun                 |
 
 ## Feature Enable
 
