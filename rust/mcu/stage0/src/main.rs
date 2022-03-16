@@ -77,7 +77,7 @@ const APP: () = {
             if ctx.spawn.handle_event(event).is_err() {
                 ctx.resources
                     .host_interface
-                    .i2c_report_err(Error::BUFFER_OVERRUN);
+                    .i2c_report_err(Error::BufferOverrun);
             }
         }
     }
@@ -94,7 +94,7 @@ const APP: () = {
             HostEvent::Command(Command::EraseStage1) => {
                 host_interface.lock(|h| h.stage0_ctx.mark_stage1_invalid());
                 if ctx.resources.flash_writer.erase_slot().is_err() {
-                    host_interface.lock(|h| h.i2c_report_err(Error::MCU_FLASH_WRITE_ERROR));
+                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
                 // Reenable I2C. It was disabled above in the I2C interrupt handler.
                 host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
@@ -107,7 +107,7 @@ const APP: () = {
                     .write(event.address, &*event.data)
                     .is_err()
                 {
-                    host_interface.lock(|h| h.i2c_report_err(Error::MCU_FLASH_WRITE_ERROR));
+                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
                 }
                 host_interface.lock(|h| h.supply_mem_block(event.data.release()));
                 // Reenable I2C. It was disabled above in the I2C interrupt handler.
@@ -124,7 +124,7 @@ const APP: () = {
             HostEvent::Command(_) => {
                 // All other commands are only implemented in stage1.
                 // Here in stage0, they are an error.
-                host_interface.lock(|h| h.i2c_report_err(Error::HOST_I2C_BAD_REQUEST));
+                host_interface.lock(|h| h.i2c_report_err(Error::HostI2cBadRequest));
             }
         }
     }

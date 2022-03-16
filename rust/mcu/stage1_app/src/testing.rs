@@ -37,10 +37,10 @@ pub(crate) fn verify_spi_test_data(
     while address < SPI_FLASH_SIZE {
         spi_flash
             .read(address, &mut buf)
-            .map_err(|_| Error::SPI_FLASH)?;
+            .map_err(|_| Error::SpiFlash)?;
         for (offset, byte) in buf.iter_mut().enumerate() {
             if *byte != offset as u8 {
-                return Err(Error::SPI_FLASH);
+                return Err(Error::SpiFlash);
             }
         }
         address += buf.len() as u32;

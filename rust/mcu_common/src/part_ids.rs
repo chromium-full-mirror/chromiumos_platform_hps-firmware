@@ -38,11 +38,11 @@ impl PartIds {
             .chunks_exact(4)
             .map(|b| u32::from_be_bytes([b[0], b[1], b[2], b[3]]));
         Ok(PartIds {
-            mcu_id: input.next().ok_or(Error::BUFFER_OVERRUN)?,
-            fpga_id: input.next().ok_or(Error::BUFFER_OVERRUN)?,
-            camera_id: input.next().ok_or(Error::BUFFER_OVERRUN)?,
-            spi_flash_manufacturer_id: input.next().ok_or(Error::BUFFER_OVERRUN)?,
-            spi_flash_device_id: input.next().ok_or(Error::BUFFER_OVERRUN)?,
+            mcu_id: input.next().ok_or(Error::BufferOverrun)?,
+            fpga_id: input.next().ok_or(Error::BufferOverrun)?,
+            camera_id: input.next().ok_or(Error::BufferOverrun)?,
+            spi_flash_manufacturer_id: input.next().ok_or(Error::BufferOverrun)?,
+            spi_flash_device_id: input.next().ok_or(Error::BufferOverrun)?,
         })
     }
 
@@ -106,8 +106,8 @@ mod test {
     #[test]
     fn test_part_ids_from_bytes() {
         // Bytes shorter than PartIds:
-        assert_eq!(PartIds::from_bytes(&[]), Err(Error::BUFFER_OVERRUN));
-        assert_eq!(PartIds::from_bytes(&[1, 2]), Err(Error::BUFFER_OVERRUN));
+        assert_eq!(PartIds::from_bytes(&[]), Err(Error::BufferOverrun));
+        assert_eq!(PartIds::from_bytes(&[1, 2]), Err(Error::BufferOverrun));
         // Bytes longer than PartIds:
         let mut bytes = as_bytes(&PartIds::default());
         bytes.push(1);

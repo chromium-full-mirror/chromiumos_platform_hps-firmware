@@ -82,17 +82,17 @@ mod tests {
             interface.read_register(registers::SYSTEM_STATUS),
             Some(Status::OK.bits())
         );
-        interface.report_error(Error::HOST_I2C_OVERRUN);
+        interface.report_error(Error::HostI2cOverrun);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(u16::from(Error::HOST_I2C_OVERRUN))
+            Some(u16::from(Error::HostI2cOverrun))
         );
         // Reporting a second error has no effect, since only the first error
         // reported is known.
-        interface.report_error(Error::HOST_I2C_UNDERRUN);
+        interface.report_error(Error::HostI2cUnderrun);
         assert_eq!(
             interface.read_register(registers::ERRORS),
-            Some(u16::from(Error::HOST_I2C_OVERRUN))
+            Some(u16::from(Error::HostI2cOverrun))
         );
     }
 

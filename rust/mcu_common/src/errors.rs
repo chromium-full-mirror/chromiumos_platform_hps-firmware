@@ -8,56 +8,54 @@ use num_enum::TryFromPrimitive;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u16)]
-// TODO: Fix naming of enum variants.
-#[allow(non_camel_case_types)]
 pub enum Error {
     None = 0,
 
     /// An I2C underrun occurred.
-    HOST_I2C_UNDERRUN = 0x0001,
+    HostI2cUnderrun = 0x0001,
 
     /// An error occurred writing to MCU flash.
-    MCU_FLASH_WRITE_ERROR = 0x0002,
+    McuFlashWriteError = 0x0002,
 
     /// A panic occurred.
-    PANIC = 0x0004,
+    Panic = 0x0004,
 
     /// An I2C bus error occurred.
-    HOST_I2C_BUS_ERROR = 0x0008,
+    HostI2cBusError = 0x0008,
 
     /// An I2C overrun occurred.
-    HOST_I2C_OVERRUN = 0x0010,
+    HostI2cOverrun = 0x0010,
 
     /// Something is wrong with the camera.
-    CAMERA = 0x0020,
+    Camera = 0x0020,
 
     /// Something is wrong with the SPI flash.
-    SPI_FLASH = 0x0040,
+    SpiFlash = 0x0040,
 
     /// Something was wrong with a request from the host.
-    HOST_I2C_BAD_REQUEST = 0x0080,
+    HostI2cBadRequest = 0x0080,
 
     /// An attempt was made to use a buffer, but the buffer was not available,
     /// possibly because it was already in use.
-    BUFFER_NOT_AVAILABLE = 0x0100,
+    BufferNotAvailable = 0x0100,
 
     /// An attempt was made to read or write beyond the end of a buffer.
-    BUFFER_OVERRUN = 0x0200,
+    BufferOverrun = 0x0200,
 
     /// The SPI flash does not match the embedded hash, an update is required.
-    SPI_FLASH_NOT_VERIFIED = 0x0400,
+    SpiFlashNotVerified = 0x0400,
 
     /// TFLITE Micro reported an error.
-    TFLITE_FAILURE = 0x0800,
+    TfliteFailure = 0x0800,
 
     /// A self test that was requested by the host has failed.
-    SELF_TEST_FAILED = 0x1000,
+    SelfTestFailed = 0x1000,
 
     /// Communication between the FPGA and the MCU encountered an error.
-    FPGA_MCU_COMM_ERROR = 0x2000,
+    FpgaMcuCommError = 0x2000,
 
     /// The FPGA application did not send an update within the expected time.
-    FPGA_TIMEOUT = 0x4000,
+    FpgaTimeout = 0x4000,
 }
 
 impl core::fmt::Display for Error {
@@ -78,11 +76,11 @@ mod tests {
 
     #[test]
     fn test_from_int() {
-        assert_eq!(Error::try_from(8), Ok(Error::HOST_I2C_BUS_ERROR));
+        assert_eq!(Error::try_from(8), Ok(Error::HostI2cBusError));
     }
 
     #[test]
     fn test_to_int() {
-        assert_eq!(u16::from(Error::HOST_I2C_BUS_ERROR), 8u16);
+        assert_eq!(u16::from(Error::HostI2cBusError), 8u16);
     }
 }

@@ -143,7 +143,7 @@ impl State {
             Event::WriteRegister(event) => match event.register {
                 registers::CONFIGURE_OPTION_BYTES => {
                     let request = OptionBytesConfigRequest::from_bits(event.value)
-                        .ok_or(Error::HOST_I2C_BAD_REQUEST)?;
+                        .ok_or(Error::HostI2cBadRequest)?;
                     configure_option_bytes(&mut self.flash, request)?;
                     if request.contains(OptionBytesConfigRequest::RELOAD) {
                         reset_reloading_option_bytes(&mut self.rtc, &mut self.pwr, &mut self.scb);
@@ -151,12 +151,12 @@ impl State {
                 }
                 registers::COMMAND => match Command::try_from(event.value) {
                     Ok(Command::Reset) => cortex_m::peripheral::SCB::sys_reset(),
-                    _ => return Err(Error::HOST_I2C_BAD_REQUEST),
+                    _ => return Err(Error::HostI2cBadRequest),
                 },
-                _ => return Err(Error::HOST_I2C_BAD_REQUEST),
+                _ => return Err(Error::HostI2cBadRequest),
             },
             Event::None => {}
-            Event::WriteMemory(_) => return Err(Error::HOST_I2C_BAD_REQUEST),
+            Event::WriteMemory(_) => return Err(Error::HostI2cBadRequest),
         }
         Ok(())
     }
@@ -200,11 +200,11 @@ fn configure_option_bytes(
         let mut unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
             .FLASH
             .unlock()
-            .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+            .map_err(|_| Error::McuFlashWriteError)?;
         use hal::flash::WriteErase;
         unlocked_flash
             .erase_page(hal::flash::FlashPage(0))
-            .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+            .map_err(|_| Error::McuFlashWriteError)?;
         unlocked_flash.lock();
     }
 
@@ -215,12 +215,12 @@ fn configure_option_bytes(
     let unlocked_flash = unsafe { hal::stm32::Peripherals::steal() }
         .FLASH
         .unlock()
-        .map_err(|_| Error::MCU_FLASH_WRITE_ERROR)?;
+        .map_err(|_| Error::McuFlashWriteError)?;
     flash.optkeyr.write(|w| unsafe { w.bits(0x08192A3B) });
     flash.optkeyr.write(|w| unsafe { w.bits(0x4C5D6E7F) });
     if flash.cr.read().optlock().bit_is_set() {
         unlocked_flash.lock();
-        return Err(Error::MCU_FLASH_WRITE_ERROR);
+        return Err(Error::McuFlashWriteError);
     }
 
     // We write protect from page 0 to page STAGE0_NUM_PAGES - 1. Note,

@@ -147,7 +147,7 @@ where
         let status = self.classifier.init_status();
         mcu_println!(self, "Classifier status: {:?}", status);
         if status != TfLiteInitStatus::InitOk {
-            self.mcu.report_error(mcu_common::Error::TFLITE_FAILURE);
+            self.mcu.report_error(mcu_common::Error::TfliteFailure);
         }
         if let Err(error) = self.camera_setup() {
             mcu_println!(self, "Camera error: {:?}", error);
@@ -598,13 +598,13 @@ fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
     // TODO: Get rid of our own Error enum and just use
     // mcu_common::Error everywhere.
     match error {
-        Error::Camera => mcu_common::Error::CAMERA,
-        Error::InvalidArg => mcu_common::Error::HOST_I2C_BAD_REQUEST,
-        Error::McuTimeout => mcu_common::Error::FPGA_MCU_COMM_ERROR,
-        Error::SelfTestFailed => mcu_common::Error::SELF_TEST_FAILED,
-        Error::SpiError => mcu_common::Error::FPGA_MCU_COMM_ERROR,
-        Error::TfLiteFailure => mcu_common::Error::TFLITE_FAILURE,
-        Error::UnknownFeature => mcu_common::Error::HOST_I2C_BAD_REQUEST,
+        Error::Camera => mcu_common::Error::Camera,
+        Error::InvalidArg => mcu_common::Error::HostI2cBadRequest,
+        Error::McuTimeout => mcu_common::Error::FpgaMcuCommError,
+        Error::SelfTestFailed => mcu_common::Error::SelfTestFailed,
+        Error::SpiError => mcu_common::Error::FpgaMcuCommError,
+        Error::TfLiteFailure => mcu_common::Error::TfliteFailure,
+        Error::UnknownFeature => mcu_common::Error::HostI2cBadRequest,
     }
 }
 

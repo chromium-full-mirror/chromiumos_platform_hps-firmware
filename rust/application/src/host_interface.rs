@@ -181,7 +181,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     self.command_triggered();
                     return Some(Event::Command(command));
                 } else {
-                    self.report_error(Error::HOST_I2C_BAD_REQUEST);
+                    self.report_error(Error::HostI2cBadRequest);
                 }
             }
             registers::ENABLED_FEATURES => {
@@ -194,7 +194,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 state.camera_test_iterations = value;
                 return Some(Event::TestCameraI2c);
             }
-            _ => self.report_error(Error::HOST_I2C_BAD_REQUEST),
+            _ => self.report_error(Error::HostI2cBadRequest),
         }
         None
     }

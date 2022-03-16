@@ -404,7 +404,7 @@ mod tests {
             vec![Action::ReportFpgaError.into(), 0x00, 0x8],
             vec![status::OK, Action::ReportFpgaError.into()],
         );
-        mcu.report_error(Error::TFLITE_FAILURE);
+        mcu.report_error(Error::TfliteFailure);
         mcu.spi.done();
     }
 }

@@ -37,7 +37,7 @@ impl Buffer {
             self.size += bytes.len();
             Ok(())
         } else {
-            Err(Error::BUFFER_OVERRUN)
+            Err(Error::BufferOverrun)
         }
     }
 
