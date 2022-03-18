@@ -199,6 +199,10 @@ struct WriteStage0Config {
     /// skip all post-write initialization of option bytes
     #[clap(long, conflicts_with = "permanent-lock")]
     skip_one_time_init: bool,
+
+    /// leave device at RDP level 0
+    #[clap(long, conflicts_with = "permanent-lock")]
+    rdp0: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -299,6 +303,7 @@ where
                     permanent_lock: factory_config.permanent_lock,
                     check_version: false,
                     skip_one_time_init: false,
+                    rdp0: !factory_config.permanent_lock,
                 },
             )?;
             post_install_test_workflow::PostInstallTester::run(

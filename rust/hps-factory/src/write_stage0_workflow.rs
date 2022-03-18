@@ -227,7 +227,7 @@ impl WriteStage0Config {
         }
         if self.permanent_lock {
             options |= OptionBytesConfigRequest::RDP2;
-        } else {
+        } else if !self.rdp0 {
             options |= OptionBytesConfigRequest::RDP1;
         }
         options
