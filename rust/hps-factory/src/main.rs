@@ -27,7 +27,7 @@ use std::path::PathBuf;
 
 /// Runs HPS post-install factory workflow
 #[derive(Clap, Debug, Clone)]
-#[clap(name = "config")]
+#[clap(name = "hps-factory v19")]
 struct Config {
     /// path to I2C device
     #[clap(long, alias = "bus", default_value = "/dev/i2c-hps-controller")]
