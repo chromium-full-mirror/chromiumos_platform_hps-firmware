@@ -77,6 +77,21 @@ where
         info!("Stage0 is permanently locked and cannot be erased.");
         return Err(EraseError::PermanentlyLocked);
     }
+    if current_options.contains(OptionBytesConfigRequest::WRITE_PROTECT)
+        && !current_options.contains(OptionBytesConfigRequest::RDP1)
+    {
+        // If write protect has been applied to stage0, but we're still on RDP0,
+        // then switch temporarily to RDP1. This avoids the need to implement a
+        // special remove-write-protection command in one_time_init.
+        info!("Stage0 is write protected with no RDP. Temporarily applying RDP1.");
+        hps.write_register(
+            registers::CONFIGURE_OPTION_BYTES,
+            (OptionBytesConfigRequest::RDP1 | OptionBytesConfigRequest::RELOAD).bits(),
+        )?;
+        i2c.execute_non_i2c_stage1()
+            .context("Failed to restart one_time_init after temporary RDP1 setting")?;
+        hps = i2c.open_hps()?;
+    }
     hps.write_register(
         registers::CONFIGURE_OPTION_BYTES,
         (OptionBytesConfigRequest::ERASE | OptionBytesConfigRequest::RELOAD).bits(),
