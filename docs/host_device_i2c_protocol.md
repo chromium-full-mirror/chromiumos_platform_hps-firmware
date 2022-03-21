@@ -76,7 +76,15 @@ and are not documented here.
 
 ## Hardware Version
 
-16 bits describing hardware and RO firmware version.
+The high byte describes the hardware version, only 0x01 is used.
+
+The low byte describes the stage0 firmware version.
+
+| Value | Meaning                              |
+|:------|:-------------------------------------|
+| 0x01  | Early prototyping version            |
+| 0x02  | The stage0/stage1 boundary was moved |
+| 0x03  | The MP key is used for verification  |
 
 ## Common System Status
 
