@@ -23,7 +23,9 @@ cargo +$RUST_VERSION test
 # Harware-specific crates. Just build these.
 
 cd "${PROJECT_ROOT}/rust/mcu"
-cargo +$RUST_VERSION build
+# We do a release build of MCU firmware, since stage0 doesn't support
+# non-release builds due to size constraints.
+cargo +$RUST_VERSION build --release
 
 echo "===== Release build of factory_tester_mcu ====="
 cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --release
