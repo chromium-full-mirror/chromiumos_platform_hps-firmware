@@ -19,7 +19,7 @@ fn memory_x_contents() -> String {
     format!(
         r#"MEMORY
 {{
-    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 64K
+    FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = {}
     SLOT  (rx) : ORIGIN = 0x{:x}, LENGTH = {}
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
 }}
@@ -27,6 +27,7 @@ fn memory_x_contents() -> String {
 PROVIDE(_slot = ORIGIN(SLOT));
 "#,
         STAGE0_FLASH_START,
+        mcu_common::FLASH_SIZE - mcu_common::STAGE1_SLOT_LENGTH as u32,
         mcu_common::APPLICATION_START_ADDRESS,
         mcu_common::STAGE1_SLOT_LENGTH,
     )
