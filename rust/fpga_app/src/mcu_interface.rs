@@ -176,13 +176,18 @@ where
     }
 
     fn exchange(&mut self) -> Result<()> {
+        let command = self.buffer[0];
         self.spi
             .transfer(&mut self.buffer)
             .map_err(|_| Error::SpiError)?;
 
         for _ in 0..MCU_POLL_COUNT {
             if self.buffer[0] != 0 {
-                return Ok(());
+                if self.buffer[1] == command {
+                    return Ok(());
+                } else {
+                    return Err(Error::SpiError);
+                }
             }
             self.clear_buffer();
             self.spi
@@ -303,6 +308,16 @@ mod tests {
             vec![status::OK, Action::ReportFpgaBoot.into()],
         );
         mcu.report_boot(42).unwrap();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_response_to_different_command() {
+        let mut mcu = command_response_interface(
+            vec![Action::ReportFpgaBoot.into(), 42],
+            vec![status::OK, Action::ReadConfigRegisters.into()],
+        );
+        assert!(mcu.report_boot(42).is_err());
         mcu.spi.done();
     }
 
