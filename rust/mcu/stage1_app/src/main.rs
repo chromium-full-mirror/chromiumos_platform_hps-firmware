@@ -144,13 +144,18 @@ const APP: () = {
     #[task(binds = EXTI4_15, resources = [spi, exti, fpga_timer],
         spawn = [handle_spi_packet], priority = 2)]
     fn exti4_15_event(ctx: exti4_15_event::Context) {
+        // It's essential that we unpend the CS transition event before we call
+        // cs_changed, since cs_changed might change the state of the READY pin,
+        // which the FPGA ROM might be waiting on, resulting in another CS
+        // transition event to occur straight away. If we unpend after
+        // cs_changed, we might miss that subsequent CS transition.
+        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
         if let Some(buffer) = ctx.resources.spi.cs_changed() {
             ctx.resources.fpga_timer.reset();
             // This should never fail since there's only one buffer and we have
             // it, so the `handle_spi_packet` task's queue can't have it.
             let _ = ctx.spawn.handle_spi_packet(buffer);
         }
-        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
     }
 
     #[task(binds = TIM15, resources = [fpga_timer, host_interface])]

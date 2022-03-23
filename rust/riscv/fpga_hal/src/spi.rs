@@ -20,7 +20,8 @@ impl Transfer<u8> for McuSpi {
     type Error = Infallible;
 
     fn transfer<'b>(&mut self, buffer: &'b mut [u8]) -> Result<&'b [u8], Self::Error> {
-        // Wait until the MCU indicates that it's ready.
+        // Wait until READY is high, which indicates that the MCU has configured
+        // DMA and is ready to receive data.
         while self.mcu_spi.flags.read().ready().bit_is_clear() {}
 
         // Pull CS low.
@@ -42,7 +43,15 @@ impl Transfer<u8> for McuSpi {
             *byte = self.mcu_spi.rxd.read().bits() as u8;
         }
 
-        // Turn off SPI.
+        // Wait until READY goes low, which indicates that the MCU has observed
+        // us pulling CS low. If it hasn't gone low yet, then the MCU might have
+        // been too busy doing other stuff. We don't want the MCU to miss our CS
+        // transitions, otherwise we can get data corruption due to mixing of
+        // packets.
+        while self.mcu_spi.flags.read().ready().bit_is_set() {}
+
+        // Turn off SPI. Note this must be done after we wait for READY to go
+        // low, since the gateware resets CS high when we disable SPI.
         self.mcu_spi.cr.modify(|_, w| w.en().clear_bit());
 
         // Set CS high.
