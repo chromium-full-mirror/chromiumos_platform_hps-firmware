@@ -24,8 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#include "models/presence_0_320_240_1_20220223_141955_201k_26k_96ops.h"
-#include "models/second_0_320_240_1_20220221_123914_201k_26k_96ops.h"
+#include "models/presence_0_320_240_1_20220317_160803_201k_26k_96ops.h"
+#include "models/second_0_320_240_1_20220321_172314_201k_26k_96ops.h"
 
 // Globals
 namespace {
@@ -80,7 +80,7 @@ int tflite_init() {
   auto* allocator = tflite::MicroAllocator::Create(
       tensor_arena, kTensorArenaSize, error_reporter);
   auto model1 =
-      tflite::GetModel(presence_0_320_240_1_20220223_141955_201k_26k_96ops);
+      tflite::GetModel(presence_0_320_240_1_20220317_160803_201k_26k_96ops);
   static tflite::MicroInterpreter interpreter1_instance(
       model1, resolver_instance, allocator, error_reporter);
   TfLiteStatus allocate_status = interpreter1_instance.AllocateTensors();
@@ -92,7 +92,7 @@ int tflite_init() {
 
   // Model two is second person detector
   auto model2 =
-      tflite::GetModel(second_0_320_240_1_20220221_123914_201k_26k_96ops);
+      tflite::GetModel(second_0_320_240_1_20220321_172314_201k_26k_96ops);
   static tflite::MicroInterpreter interpreter2_instance(
       model2, resolver_instance, allocator, error_reporter);
   allocate_status = interpreter2_instance.AllocateTensors();

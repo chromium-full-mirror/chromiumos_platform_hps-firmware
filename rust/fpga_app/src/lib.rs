@@ -439,8 +439,8 @@ where
 
         mcu_println!(self, "Testing TFLM on canned data");
 
-        self.check_score(1, "presence", CAT, -101)?;
-        self.check_score(2, "second", CAT, -117)?;
+        self.check_score(1, "presence", CAT, -67)?;
+        self.check_score(2, "second", CAT, -125)?;
 
         mcu_println!(self, "Self-test passed");
         Ok(())
