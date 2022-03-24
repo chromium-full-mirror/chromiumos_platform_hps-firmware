@@ -17,6 +17,7 @@ pub enum Stage1Error {
     Missing,
     InvalidSignature,
     InvalidArgument,
+    InvalidVersion,
 }
 
 /// A struct that indicates that stage1 is considered valid - either it has
@@ -53,6 +54,7 @@ pub fn detect_and_validate_stage1(
     slot: &[u8],
     public_key: &[u8; PUBLIC_KEY_LENGTH],
     wp_state: WriteProtectState,
+    minimum_epoch: u16,
 ) -> Result<ValidStage1, Stage1Error> {
     if slot.len() != STAGE1_SLOT_LENGTH
         || (slot.as_ptr() as usize % core::mem::align_of::<ImageHeader>()) != 0
@@ -63,6 +65,9 @@ pub fn detect_and_validate_stage1(
 
     // If write-protect is asserted, then check that signature is valid.
     if wp_state == WriteProtectState::Asserted {
+        if stage1_header(slot).epoch < minimum_epoch {
+            return Err(Stage1Error::InvalidVersion);
+        }
         validate_stage1(slot, public_key).map_err(|_| Stage1Error::InvalidSignature)?;
     }
 
@@ -120,6 +125,21 @@ fn get_stage1_version(slot: &[u8]) -> [u16; 2] {
     decode_version(&hdr_sig)
 }
 
+/// Returns the largest minimum epoch number written to OTP. We determine that
+/// an OTP double-word is a minimum epoch if the value is <= 0xffff. Values >
+/// 0xffff are either blank OTP double-words, or some other value that isn't a
+/// minimum epoch. This gives us the option to use the OTP area for additional
+/// purposes in future.
+pub fn determine_minimum_epoch(otp_area: &[u64]) -> u16 {
+    let mut version = 0;
+    for &value in otp_area {
+        if value <= 0xffff {
+            version = u16::max(version, value as u16);
+        }
+    }
+    version
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -138,6 +158,9 @@ mod tests {
 
         // Insert magic value into header.
         memory[0] = mcu_common::STAGE1_MAGIC;
+
+        // Set version.
+        memory[1] = 0x10;
 
         let memory_bytes = unsafe {
             core::slice::from_raw_parts_mut(memory.as_mut_ptr() as *mut u8, memory.len() * 4)
@@ -169,15 +192,30 @@ mod tests {
         dbg!(memory_bytes.len());
 
         // Check that this passes.
-        detect_and_validate_stage1(memory_bytes, &DEV_PUBLIC_KEY, WriteProtectState::Asserted)
-            .unwrap();
+        detect_and_validate_stage1(
+            memory_bytes,
+            &DEV_PUBLIC_KEY,
+            WriteProtectState::Asserted,
+            0,
+        )
+        .unwrap();
+
+        // If the minimum epoch is greater than the actual epoch, it should fail.
+        assert!(detect_and_validate_stage1(
+            memory_bytes,
+            &DEV_PUBLIC_KEY,
+            WriteProtectState::Asserted,
+            0x11,
+        )
+        .is_err());
 
         // Change a byte inside our original payload and confirm that it fails.
         memory_bytes[1000] = 10;
         assert!(detect_and_validate_stage1(
             memory_bytes,
             &DEV_PUBLIC_KEY,
-            WriteProtectState::Asserted
+            WriteProtectState::Asserted,
+            0
         )
         .is_err());
 
@@ -186,7 +224,8 @@ mod tests {
         assert!(detect_and_validate_stage1(
             memory_bytes,
             &DEV_PUBLIC_KEY,
-            WriteProtectState::Asserted
+            WriteProtectState::Asserted,
+            0
         )
         .is_err());
 
@@ -194,7 +233,8 @@ mod tests {
         assert!(detect_and_validate_stage1(
             memory_bytes,
             &DEV_PUBLIC_KEY,
-            WriteProtectState::Deasserted
+            WriteProtectState::Deasserted,
+            0
         )
         .is_ok());
 
@@ -203,7 +243,8 @@ mod tests {
         assert!(detect_and_validate_stage1(
             memory_bytes,
             &DEV_PUBLIC_KEY,
-            WriteProtectState::Deasserted
+            WriteProtectState::Deasserted,
+            0
         )
         .is_err());
     }
@@ -211,7 +252,8 @@ mod tests {
     #[test]
     fn test_detect_and_validate_stage1_invalid_slot_length() {
         assert!(
-            detect_and_validate_stage1(&[], &DEV_PUBLIC_KEY, WriteProtectState::Asserted).is_err()
+            detect_and_validate_stage1(&[], &DEV_PUBLIC_KEY, WriteProtectState::Asserted, 0)
+                .is_err()
         );
     }
 
@@ -224,5 +266,26 @@ mod tests {
             unsafe { core::slice::from_raw_parts(memory.as_ptr() as *mut u8, memory.len() * 4) };
 
         assert_eq!(stage1_header(memory_bytes).magic, mcu_common::STAGE1_MAGIC);
+    }
+
+    #[test]
+    fn test_determine_minimum_epoch() {
+        assert_eq!(0, determine_minimum_epoch(&[]));
+        assert_eq!(0, determine_minimum_epoch(&[0xffff_ffff_ffff_ffff]));
+        assert_eq!(0x10, determine_minimum_epoch(&[0x10]));
+        assert_eq!(0x20, determine_minimum_epoch(&[0x10, 0x20]));
+        assert_eq!(0x30, determine_minimum_epoch(&[0x30, 0x20]));
+        assert_eq!(
+            0x31,
+            determine_minimum_epoch(&[
+                0xffff_ffff_ffff_ffff,
+                0x10,
+                0xffff_1234_5678,
+                0x31,
+                0x12,
+                0xffff_1234,
+                0xffff_ffff_ffff_ffff,
+            ])
+        );
     }
 }

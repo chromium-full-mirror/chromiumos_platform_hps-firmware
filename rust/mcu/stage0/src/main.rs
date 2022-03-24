@@ -220,8 +220,12 @@ fn init_peripherals(
     // Validating stage1 takes around 690ms. We do it before the I2C bus is
     // initialized so that we NACK rather than clock stretching during
     // validation.
-    let valid_stage1_result =
-        libstage0::verification::detect_and_validate_stage1(slot, PUBLIC_KEY, wp_state);
+    let valid_stage1_result = libstage0::verification::detect_and_validate_stage1(
+        slot,
+        PUBLIC_KEY,
+        wp_state,
+        get_minimum_epoch(),
+    );
 
     let sda = gpiob.pb7.into_open_drain_output_high();
     let scl = gpiob.pb6.into_open_drain_output_high();
@@ -241,6 +245,16 @@ fn init_peripherals(
         host_interface,
         flash_writer,
     }
+}
+
+fn get_minimum_epoch() -> u16 {
+    extern "C" {
+        static OTP: [u64; 128];
+    }
+    // safety: These are plain u64 values, so any data in the OTP will be a
+    // valid u64. This is safe provided the linker script made the OTP symbol
+    // point to the right place, we got the right size etc.
+    libstage0::verification::determine_minimum_epoch(unsafe { &OTP })
 }
 
 fn read_fw_wp(fw_wp: &FwWp) -> WriteProtectState {

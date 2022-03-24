@@ -26,9 +26,11 @@ fn memory_x_contents() -> String {
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = {}
     SLOT  (rx) : ORIGIN = 0x{:x}, LENGTH = {}
     RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 35K
+    OTP (r)    : ORIGIN = 0x1FFF7000, LENGTH = 1K
 }}
 
 PROVIDE(_slot = ORIGIN(SLOT));
+PROVIDE(OTP = ORIGIN(OTP));
 "#,
         STAGE0_FLASH_START,
         mcu_common::FLASH_SIZE - mcu_common::STAGE1_SLOT_LENGTH as u32,
