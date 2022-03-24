@@ -236,7 +236,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_median() {
+    fn test_calculate_median_nomiri() {
         let h = Histogram::new(TEST_DATA);
         assert_eq!(3, h.median());
 
