@@ -16,12 +16,16 @@ const STAGE0_FLASH_START: u32 = 0x08000400;
 fn memory_x_contents() -> String {
     // The full extent of the flash is:
     // FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    //
+    // Note, the MCU actually has 36KB of RAM. We restrict ourselves to 35KB so
+    // that stage1 has the option to write crash information into the last 1KB
+    // and have it remain on the next boot.
     format!(
         r#"MEMORY
 {{
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = {}
     SLOT  (rx) : ORIGIN = 0x{:x}, LENGTH = {}
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 35K
 }}
 
 PROVIDE(_slot = ORIGIN(SLOT));
