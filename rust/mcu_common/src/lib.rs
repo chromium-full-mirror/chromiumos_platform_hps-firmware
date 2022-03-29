@@ -118,7 +118,10 @@ pub const STAGE1_MAGIC: u32 = 0xC03FEFE;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ImageHeader {
     pub magic: u32,
-    pub version: u16,
+    /// A strictly incrementing version number that should generally only be
+    /// bumped if there's security critical bug and we want to prevent
+    /// downgrades to earlier versions.
+    pub epoch: u16,
     pub _reserved3: u16,
     /// The number of bytes allocated to the stage1 slot.
     pub slot_length: u32,
@@ -157,7 +160,7 @@ impl ImageHeader {
     pub const fn empty() -> Self {
         Self {
             magic: STAGE1_MAGIC,
-            version: 1,
+            epoch: 1,
             _reserved3: 0,
             slot_length: STAGE1_SLOT_LENGTH as u32,
             _reserved1: 0,
@@ -173,7 +176,7 @@ impl ImageHeader {
         }
         let mut header = ImageHeader {
             magic: u32_from_le_bytes(&bytes[0..]),
-            version: u16_from_le_bytes(&bytes[4..]),
+            epoch: u16_from_le_bytes(&bytes[4..]),
             _reserved3: u16_from_le_bytes(&bytes[6..]),
             slot_length: u32_from_le_bytes(&bytes[8..]),
             _reserved1: u32_from_le_bytes(&bytes[12..]),
@@ -263,7 +266,7 @@ mod test {
         // since hpsd knows this offset.
         let header = ImageHeader {
             magic: 0,
-            version: 0,
+            epoch: 0,
             _reserved3: 0,
             slot_length: 0,
             _reserved1: 0,
