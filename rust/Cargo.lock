@@ -648,6 +648,7 @@ dependencies = [
  "application",
  "clap",
  "clap_derive",
+ "ed25519-compact",
  "embedded-hal",
  "factory_tester_common",
  "fpga_app",

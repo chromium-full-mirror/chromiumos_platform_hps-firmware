@@ -9,6 +9,7 @@ application = { path = "../application" }
 anyhow = "1.0.38"
 # https://github.com/clap-rs/clap/issues/1684
 clap = "=3.0.0-beta.2"
+ed25519-compact = { version = "1", default-features = false, features = [ "pem", "std" ] }
 embedded-hal = "0.2.6"
 factory_tester_common = { path = "../factory_tester_common" }
 fpga_app = { path = "../fpga_app" }

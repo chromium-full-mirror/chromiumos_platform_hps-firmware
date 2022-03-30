@@ -52,6 +52,9 @@ where
         config: &Config,
         write_stage0_config: &WriteStage0Config,
     ) -> Result<()> {
+        if write_stage0_config.permanent_lock && !stage0_contains_mp_key()? {
+            bail!("STAGE0_BYTES does not contain the MP key");
+        }
         let mut stage0_writer = Stage0Writer {
             i2c: HpsI2c::new(i2c, config.clone()),
             config: config.clone(),
@@ -236,4 +239,10 @@ impl WriteStage0Config {
         }
         options
     }
+}
+
+fn stage0_contains_mp_key() -> Result<bool> {
+    const MP_KEY_PEM: &str = include_str!("../../mcu/stage0/keys/hps-accessory-mp.pub.pem");
+    let key = ed25519_compact::PublicKey::from_pem(MP_KEY_PEM)?;
+    Ok(STAGE0_BYTES.windows(key.len()).any(|w| w == *key))
 }
