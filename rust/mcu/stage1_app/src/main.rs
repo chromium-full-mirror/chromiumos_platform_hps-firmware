@@ -485,7 +485,7 @@ fn init_peripherals(
     let dma = p.DMA.split(&mut rcc, p.DMAMUX);
     let mut exti = p.EXTI;
 
-    let mut host_interface = HostInterface::new(board.host_bus);
+    let mut host_interface = HostInterface::new(board.host_bus, &header::__IMAGE_HDR);
     host_interface.init_status = init_status;
 
     // Set up a timer for detecting if the FPGA stops sending us updates because it has

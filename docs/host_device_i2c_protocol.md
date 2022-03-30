@@ -142,7 +142,7 @@ The Part IDs register consists of multiple 32 bit words as follows:
 
 ## Application Version
 
-16 bit application version number. Only present if AVERIFY is set.
+16 bit application version number. Only available in stage1.
 
 ## Camera config
 

@@ -4,7 +4,7 @@
 
 use mcu_common::ImageHeader;
 
-#[link_section = ".image_hdr"]
+#[cfg_attr(not(feature = "standalone"), link_section = ".image_hdr")]
 #[no_mangle]
 #[used]
 pub static __IMAGE_HDR: ImageHeader = ImageHeader::empty();

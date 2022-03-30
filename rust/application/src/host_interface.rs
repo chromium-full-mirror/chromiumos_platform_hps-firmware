@@ -13,6 +13,7 @@ use mcu_common::registers;
 use mcu_common::Buffer;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
+use mcu_common::ImageHeader;
 use mcu_common::MemBlock;
 use mcu_common::PartIds;
 use mcu_common::Status;
@@ -33,6 +34,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     spi_flash_erasing: bool,
     pub init_status: Status,
     pub part_ids: PartIds,
+    image_header: &'static ImageHeader,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -43,7 +45,7 @@ pub enum Event {
 }
 
 impl<I: I2cPeripheral> HostInterface<I> {
-    pub fn new(i2c: I) -> Self {
+    pub fn new(i2c: I, image_header: &'static ImageHeader) -> Self {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
@@ -56,6 +58,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             spi_flash_erasing: false,
             init_status: Status::empty(),
             part_ids: PartIds::default(),
+            image_header,
         }
     }
 
@@ -164,6 +167,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 0
             }
             registers::CAMERA_TEST_ITERATIONS => state.camera_test_iterations,
+            registers::FIRMWARE_VERSION_HIGH => self.get_version_part(0),
+            registers::FIRMWARE_VERSION_LOW => self.get_version_part(2),
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);
@@ -240,6 +245,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
             false
         }
     }
+
+    fn get_version_part(&self, offset: usize) -> u16 {
+        u16::from_be_bytes([
+            self.image_header.sig.raw_bytes[offset],
+            self.image_header.sig.raw_bytes[offset + 1],
+        ])
+    }
 }
 
 #[cfg(test)]
@@ -249,37 +261,48 @@ mod tests {
     use hps_interface::Hps;
     use hps_interface::HpsAdapter;
 
+    static HEADER: ImageHeader = create_test_header();
+
     #[test]
     fn test_read_register_twice() {
         let mut state = ApplicationState::default();
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            hps.check_magic().unwrap();
-            hps.check_magic().unwrap();
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                hps.check_magic().unwrap();
+                hps.check_magic().unwrap();
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
     }
 
     #[test]
     fn test_system_status() {
         let mut state = ApplicationState::default();
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            assert_eq!(
-                hps.read_register(registers::SYSTEM_STATUS).unwrap(),
-                (Status::OK | Status::STAGE1).bits()
-            );
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::SYSTEM_STATUS).unwrap(),
+                    (Status::OK | Status::STAGE1).bits()
+                );
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
     }
 
     #[test]
     fn test_reset() {
         let mut state = ApplicationState::default();
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            hps.perform_command(Command::Reset).unwrap();
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                hps.perform_command(Command::Reset).unwrap();
+            }),
+            &HEADER,
+        );
         assert_eq!(
             interface.handle_interrupt(&mut state),
             Some(Event::Command(Command::Reset))
@@ -289,10 +312,13 @@ mod tests {
     #[test]
     fn test_launch_app() {
         let mut state = ApplicationState::default();
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            hps.perform_command(Command::LaunchApp).unwrap();
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                hps.perform_command(Command::LaunchApp).unwrap();
+            }),
+            &HEADER,
+        );
         assert_eq!(
             interface.handle_interrupt(&mut state),
             Some(Event::Command(Command::LaunchApp))
@@ -302,11 +328,14 @@ mod tests {
     #[test]
     fn test_set_enabled_features() {
         let mut state = ApplicationState::default();
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            hps.write_register(registers::ENABLED_FEATURES, 1234)
-                .unwrap();
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                hps.write_register(registers::ENABLED_FEATURES, 1234)
+                    .unwrap();
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
         assert_eq!(state.configuration.enabled_features, 1234);
     }
@@ -315,39 +344,50 @@ mod tests {
     fn test_image_usable_user_present() {
         let mut state = ApplicationState::default();
         state.status.person_status = 0x8055;
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            assert_eq!(
-                hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
-                0x8055
-            );
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    0x8055
+                );
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
     }
+
     #[test]
     fn test_image_usable_no_user_present() {
         let mut state = ApplicationState::default();
         state.status.person_status = 0x80AB;
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            assert_eq!(
-                hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
-                0x80AB
-            );
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    0x80AB
+                );
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
     }
+
     #[test]
     fn test_image_unusable_no_user_present() {
         let mut state = ApplicationState::default();
         state.status.person_status = 0x00AB;
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            assert_eq!(
-                hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
-                0x00AB
-            );
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    0x00AB
+                );
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
     }
 
@@ -355,13 +395,45 @@ mod tests {
     fn test_second_person() {
         let mut state = ApplicationState::default();
         state.status.second_person_status = 0x807A;
-        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
-            let mut hps = HpsAdapter::without_magic_check(device);
-            assert_eq!(
-                hps.read_register(registers::SECOND_PERSON_STATUS).unwrap() as u16,
-                0x807A
-            );
-        }));
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::SECOND_PERSON_STATUS).unwrap() as u16,
+                    0x807A
+                );
+            }),
+            &HEADER,
+        );
         interface.handle_interrupt(&mut state);
+    }
+
+    #[test]
+    fn test_firmware_version() {
+        let mut state = ApplicationState::default();
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                assert_eq!(
+                    hps.read_register(registers::FIRMWARE_VERSION_LOW).unwrap() as u16,
+                    0x0304
+                );
+                assert_eq!(
+                    hps.read_register(registers::FIRMWARE_VERSION_HIGH).unwrap() as u16,
+                    0x0102
+                );
+            }),
+            &HEADER,
+        );
+        interface.handle_interrupt(&mut state);
+    }
+
+    const fn create_test_header() -> ImageHeader {
+        let mut header = ImageHeader::empty();
+        header.sig.raw_bytes[0] = 1;
+        header.sig.raw_bytes[1] = 2;
+        header.sig.raw_bytes[2] = 3;
+        header.sig.raw_bytes[3] = 4;
+        header
     }
 }
