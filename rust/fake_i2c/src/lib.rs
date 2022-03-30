@@ -88,8 +88,12 @@ impl WriteRead for FakeI2cController {
                 .send(Ok(I2cEvent::ByteReceived(*byte)))?;
         }
         if !bytes_to_read.is_empty() {
+            // StartRead should cause the first byte to sent.
             self.events_to_device.send(Ok(I2cEvent::StartRead))?;
-            for out in bytes_to_read {
+            bytes_to_read[0] = self.bytes_from_device.recv()?;
+            for out in &mut bytes_to_read[1..] {
+                // For each subsequent byte, we need to request it when we're
+                // ready.
                 self.events_to_device.send(Ok(I2cEvent::NeedByte))?;
                 *out = self.bytes_from_device.recv()?;
             }
@@ -170,7 +174,6 @@ mod tests {
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::StartWrite));
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::ByteReceived(10)));
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::StartRead));
-        assert_eq!(peripheral.next_event(), Ok(I2cEvent::NeedByte));
         peripheral.write_byte(14);
         assert_eq!(peripheral.next_event(), Ok(I2cEvent::NeedByte));
         peripheral.write_byte(15);

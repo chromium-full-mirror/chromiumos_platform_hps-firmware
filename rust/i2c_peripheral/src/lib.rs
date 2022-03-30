@@ -18,7 +18,8 @@ pub trait I2cPeripheral {
 #[derive(Eq, PartialEq, Debug)]
 #[non_exhaustive]
 pub enum I2cEvent {
-    /// Emitted when the I2C controller addresses us in read mode.
+    /// Emitted when the I2C controller addresses us in read mode. First byte
+    /// should be sent by calling `write_byte`.
     StartRead,
 
     /// Emitted when the I2C controller addresses us in write mode.

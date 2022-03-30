@@ -250,6 +250,17 @@ mod tests {
     use hps_interface::HpsAdapter;
 
     #[test]
+    fn test_read_register_twice() {
+        let mut state = ApplicationState::default();
+        let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
+            let mut hps = HpsAdapter::without_magic_check(device);
+            hps.check_magic().unwrap();
+            hps.check_magic().unwrap();
+        }));
+        interface.handle_interrupt(&mut state);
+    }
+
+    #[test]
     fn test_system_status() {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(FakeI2cPeripheral::new(|device| {
