@@ -23,13 +23,7 @@ pub enum Stage1Error {
 /// A struct that indicates that stage1 is considered valid - either it has
 /// passed a signature check or firmware write protect is deasserted.
 pub struct ValidStage1 {
-    firmware_version: [u16; 2], // Contains first 4B of validated signature.
-}
-
-impl ValidStage1 {
-    pub fn firmware_version(&self) -> &[u16; 2] {
-        &self.firmware_version
-    }
+    _private: (),
 }
 
 fn stage1_header(slot: &[u8]) -> &'static ImageHeader {
@@ -40,13 +34,6 @@ fn stage1_header(slot: &[u8]) -> &'static ImageHeader {
 
 fn get_stage1_signature(slot: &[u8]) -> [u8; SIGNATURE_LENGTH] {
     stage1_header(slot).sig.unwrap()
-}
-
-fn decode_version(hdr_sig: &[u8; SIGNATURE_LENGTH]) -> [u16; 2] {
-    [
-        u16::from_be_bytes([hdr_sig[0], hdr_sig[1]]),
-        u16::from_be_bytes([hdr_sig[2], hdr_sig[3]]),
-    ]
 }
 
 /// Checks whether it's OK to load the application, returning an error if not.
@@ -71,9 +58,7 @@ pub fn detect_and_validate_stage1(
         validate_stage1(slot, public_key).map_err(|_| Stage1Error::InvalidSignature)?;
     }
 
-    Ok(ValidStage1 {
-        firmware_version: get_stage1_version(slot),
-    })
+    Ok(ValidStage1 { _private: () })
 }
 
 fn detect_stage1(slot: &[u8]) -> Result<(), Stage1Error> {
@@ -118,11 +103,6 @@ fn validate_stage1(
 
     vkey.verify(&stage1_digest, &sign)?;
     Ok(())
-}
-
-fn get_stage1_version(slot: &[u8]) -> [u16; 2] {
-    let hdr_sig = get_stage1_signature(slot);
-    decode_version(&hdr_sig)
 }
 
 /// Returns the largest minimum epoch number written to OTP. We determine that

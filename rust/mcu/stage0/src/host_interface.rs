@@ -57,13 +57,6 @@ impl StageZContext {
             WriteProtectState::Deasserted => Status::WPOFF,
         }
     }
-    pub(crate) fn get_firmware_version(&self, register: u8) -> u16 {
-        match (register, &self.valid_stage1) {
-            (registers::FIRMWARE_VERSION_HIGH, Some(info)) => info.firmware_version()[0],
-            (registers::FIRMWARE_VERSION_LOW, Some(info)) => info.firmware_version()[1],
-            _ => 0xFFFF,
-        }
-    }
 }
 
 pub struct HostInterface<I: I2cPeripheral> {
@@ -113,12 +106,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     })
                     .unwrap_or_else(|| match event.register {
                         registers::HARDWARE_VERSION => libstage0::COMBINED_VERSION,
-                        registers::FIRMWARE_VERSION_HIGH => self
-                            .stage0_ctx
-                            .get_firmware_version(registers::FIRMWARE_VERSION_HIGH),
-                        registers::FIRMWARE_VERSION_LOW => self
-                            .stage0_ctx
-                            .get_firmware_version(registers::FIRMWARE_VERSION_LOW),
                         registers::MEMORY_BANK_AVAILABLE => {
                             if self.i2c.has_receive_buffer() {
                                 1 << memory_banks::MCU_RW
