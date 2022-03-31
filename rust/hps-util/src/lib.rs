@@ -28,13 +28,13 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
                 "Stage0 version: 0x{:x}",
                 hps.read_register(registers::HARDWARE_VERSION)?
             );
+        }
+        hps_interface::Stage::Stage1 => {
             println!(
                 "Stage1 version: 0x{:x}",
                 ((hps.read_register(registers::FIRMWARE_VERSION_HIGH)? as u32) << 16)
                     | hps.read_register(registers::FIRMWARE_VERSION_LOW)? as u32
             );
-        }
-        hps_interface::Stage::Stage1 => {
             println!("{}", hps.read_part_ids()?);
         }
         hps_interface::Stage::Application => {
