@@ -37,6 +37,10 @@ impl CommonHostInterface {
         }
     }
 
+    pub fn get_error(&self) -> Error {
+        self.error
+    }
+
     #[cfg(feature = "dev")]
     fn read_dev_register(&self, register: u8) -> Option<u16> {
         Some(match register {

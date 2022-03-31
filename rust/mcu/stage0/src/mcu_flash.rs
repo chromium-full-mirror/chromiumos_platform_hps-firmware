@@ -19,7 +19,7 @@ pub struct FlashWriter {
     // turns into a `*mut u32` which it then writes to. But we do mutate the
     // contents of the slice, so we should hold a mutable reference while we do
     // so.
-    slot: &'static mut [u8],
+    slot: Option<&'static mut [u8]>,
 }
 
 enum FlashState {
@@ -32,15 +32,14 @@ impl FlashWriter {
     pub(crate) fn new(flash: FLASH, slot: &'static mut [u8]) -> FlashWriter {
         FlashWriter {
             flash: FlashState::Locked(flash),
-            slot,
+            slot: Some(slot),
         }
     }
 
     pub(crate) fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.
-        let address = self
-            .slot
+        let address = get_slot(&mut self.slot)?
             .get(address as usize)
             .ok_or(flash::Error::PageOutOfRange)? as *const u8 as usize;
         let unlocked_flash = self.flash.unlocked()?;
@@ -51,13 +50,28 @@ impl FlashWriter {
 
     pub(crate) fn erase_slot(&mut self) -> Result<(), flash::Error> {
         let unlocked_flash = self.flash.unlocked()?;
-        let start = self.slot.as_mut_ptr() as usize;
-        for address in (start..(start + self.slot.len())).step_by(PAGE_SIZE) {
+        let slot = get_slot(&mut self.slot)?;
+        let start = slot.as_mut_ptr() as usize;
+        for address in (start..(start + slot.len())).step_by(PAGE_SIZE) {
             let page = FlashPage((address - flash::FLASH_START) / PAGE_SIZE);
             unlocked_flash.erase_page(page)?;
         }
         self.flash.lock();
         Ok(())
+    }
+
+    /// Caller takes ownership of the slot. Once called, no futher writes to
+    /// flash are permitted.
+    pub(crate) fn take_slot(&mut self) -> Result<&'static mut [u8], mcu_common::Error> {
+        self.slot.take().ok_or(mcu_common::Error::HostI2cBadRequest)
+    }
+}
+
+fn get_slot<'a>(slot: &'a mut Option<&'static mut [u8]>) -> Result<&'a mut [u8], flash::Error> {
+    if let Some(slot) = slot.as_mut() {
+        Ok(*slot)
+    } else {
+        Err(flash::Error::Illegal)
     }
 }
 

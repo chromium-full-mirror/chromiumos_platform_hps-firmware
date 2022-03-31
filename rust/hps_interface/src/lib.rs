@@ -82,7 +82,7 @@ pub trait Hps {
             Ok(Stage::Stage1)
         } else if status.contains(Status::APPLREADY) {
             Ok(Stage::Application)
-        } else if status.contains(Status::ANONVER) || status.contains(Status::AVERIFY) {
+        } else if status.contains(Status::STAGE0) || status.contains(Status::DEPRECATED1) {
             Ok(Stage::Stage0)
         } else if status.contains(Status::ONE_TIME_INIT) {
             Ok(Stage::OneTimeInit)

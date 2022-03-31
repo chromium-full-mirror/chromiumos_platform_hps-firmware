@@ -80,11 +80,12 @@ The high byte describes the hardware version, only 0x01 is used.
 
 The low byte describes the stage0 firmware version.
 
-| Value | Meaning                              |
-|:------|:-------------------------------------|
-| 0x01  | Early prototyping version            |
-| 0x02  | The stage0/stage1 boundary was moved |
-| 0x03  | The MP key is used for verification  |
+| Value | Meaning                                                                 |
+|:------|:------------------------------------------------------------------------|
+| 0x01  | Early prototyping version                                               |
+| 0x02  | The stage0/stage1 boundary was moved                                    |
+| 0x03  | The MP key is used for verification                                     |
+| 0x04  | Launch1 now does signature check. AVERIFY and ANONVER status bits gone. |
 
 ## Common System Status
 
@@ -102,8 +103,8 @@ The low byte describes the stage0 firmware version.
 | 6   |                    |                                                      |
 | 5   | WPOFF              | Write protect pin off.                               |
 | 4   | WPON               | Write protect pin on.                                |
-| 3   | ANONVER            | The stage 1 image has failed to verify.              |
-| 2   | AVERIFY            | The stage 1 image is verified                        |
+| 3   | STAGE0             | Stage 0 is running.                                  |
+| 2   | DEPRECATED1        |                                                      |
 | 1   | FAULT              | System has an unrecoverable fault.                   |
 | 0   | OK                 | System is operational.                               |
 

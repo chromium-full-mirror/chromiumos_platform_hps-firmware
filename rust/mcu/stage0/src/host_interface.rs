@@ -5,7 +5,6 @@
 use core::convert::TryFrom;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
-use libstage0::verification::ValidStage1;
 use libstage0::WriteProtectState;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
@@ -17,39 +16,17 @@ use mcu_common::MemBlock;
 use mcu_common::Status;
 
 pub(crate) struct StageZContext {
-    /// Information about stage1 or None if stage1 is absent, not validated etc.
-    valid_stage1: Option<ValidStage1>,
     write_protect_state: WriteProtectState,
 }
 
 impl StageZContext {
     fn new() -> Self {
         StageZContext {
-            valid_stage1: None,
             write_protect_state: WriteProtectState::Asserted,
         }
     }
     pub(crate) fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
         self.write_protect_state = write_protect_state;
-    }
-    /// Called when we've determined that stage1 is valid and jumping to it is
-    /// permitted. i.e. either it had a valid signature or firmware write
-    /// protect was deasserted.
-    pub(crate) fn set_stage1_valid(&mut self, valid_stage1: ValidStage1) {
-        self.valid_stage1 = Some(valid_stage1);
-    }
-    pub(crate) fn mark_stage1_invalid(&mut self) {
-        self.valid_stage1 = None;
-    }
-    pub(crate) fn can_jump_to_stage1(&self) -> bool {
-        self.valid_stage1.is_some()
-    }
-    fn get_verification_status(&self) -> Status {
-        if self.can_jump_to_stage1() {
-            Status::AVERIFY
-        } else {
-            Status::ANONVER
-        }
     }
     fn get_fw_wp_status(&self) -> Status {
         match self.write_protect_state {
@@ -97,10 +74,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .read_register(event.register)
                     .map(|common_value| match event.register {
                         registers::SYSTEM_STATUS => {
-                            common_value
-                                | (self.stage0_ctx.get_verification_status()
-                                    | self.stage0_ctx.get_fw_wp_status())
-                                .bits()
+                            common_value | (Status::STAGE0 | self.get_fw_wp_status()).bits()
                         }
                         _ => common_value,
                     })
@@ -142,6 +116,14 @@ impl<I: I2cPeripheral> HostInterface<I> {
             _ => {}
         }
         None
+    }
+
+    pub(crate) fn write_protect_state(&self) -> WriteProtectState {
+        self.stage0_ctx.write_protect_state
+    }
+
+    pub(crate) fn get_error(&self) -> mcu_common::Error {
+        self.common_interface.get_error()
     }
 
     pub(crate) fn i2c_mut(&mut self) -> &mut I {

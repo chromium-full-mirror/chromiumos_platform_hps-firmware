@@ -213,8 +213,8 @@ bitflags! {
     pub struct Status: u16 {
         const OK = 1 << 0;
         const FAULT = 1 << 1;
-        const AVERIFY = 1 << 2;
-        const ANONVER = 1 << 3;
+        const DEPRECATED1 = 1 << 2;
+        const STAGE0 = 1 << 3;
         const WPON = 1 << 4;
         const WPOFF = 1 << 5;
         const STAGE1 = 1 << 8;
