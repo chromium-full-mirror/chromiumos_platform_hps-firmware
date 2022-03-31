@@ -251,7 +251,7 @@ fn init_peripherals(
         p.I2C1, &mut rcc, sda, scl, i2c_config,
     ));
 
-    host_interface.stage0_ctx.set_write_protect_state(wp_state);
+    host_interface.set_write_protect_state(wp_state);
 
     let flash_writer = FlashWriter::new(p.FLASH, slot);
     init::LateResources {

@@ -15,31 +15,10 @@ use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_common::Status;
 
-pub(crate) struct StageZContext {
-    write_protect_state: WriteProtectState,
-}
-
-impl StageZContext {
-    fn new() -> Self {
-        StageZContext {
-            write_protect_state: WriteProtectState::Asserted,
-        }
-    }
-    pub(crate) fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
-        self.write_protect_state = write_protect_state;
-    }
-    fn get_fw_wp_status(&self) -> Status {
-        match self.write_protect_state {
-            WriteProtectState::Asserted => Status::WPON,
-            WriteProtectState::Deasserted => Status::WPOFF,
-        }
-    }
-}
-
 pub struct HostInterface<I: I2cPeripheral> {
     i2c: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
-    pub(crate) stage0_ctx: StageZContext,
+    write_protect_state: WriteProtectState,
 }
 
 pub(crate) enum HostEvent {
@@ -57,7 +36,18 @@ impl<I: I2cPeripheral> HostInterface<I> {
         Self {
             i2c: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
-            stage0_ctx: StageZContext::new(),
+            write_protect_state: WriteProtectState::Asserted,
+        }
+    }
+
+    pub(crate) fn set_write_protect_state(&mut self, write_protect_state: WriteProtectState) {
+        self.write_protect_state = write_protect_state;
+    }
+
+    fn get_fw_wp_status(&self) -> Status {
+        match self.write_protect_state {
+            WriteProtectState::Asserted => Status::WPON,
+            WriteProtectState::Deasserted => Status::WPOFF,
         }
     }
 
@@ -119,7 +109,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
     }
 
     pub(crate) fn write_protect_state(&self) -> WriteProtectState {
-        self.stage0_ctx.write_protect_state
+        self.write_protect_state
     }
 
     pub(crate) fn get_error(&self) -> mcu_common::Error {
