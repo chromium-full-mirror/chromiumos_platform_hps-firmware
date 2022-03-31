@@ -10,6 +10,7 @@ mod hps_i2c;
 mod image_workflow;
 mod post_install_test_workflow;
 mod print_part_ids_workflow;
+mod test_stage0_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
@@ -109,6 +110,9 @@ enum Command {
 
     /// prints IDs of parts contained within the HPS
     PrintPartIds,
+
+    /// Tries various things with stage0 to make sure it behaves as expected
+    TestStage0,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -328,5 +332,6 @@ where
         }
         Command::Boot(boot_config) => boot_workflow::run(i2c, boot_config, &config),
         Command::PrintPartIds => print_part_ids_workflow::run(i2c, &config),
+        Command::TestStage0 => test_stage0_workflow::Stage0Tester::run(i2c, &config),
     }
 }

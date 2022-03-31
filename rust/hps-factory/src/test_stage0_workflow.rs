@@ -1,0 +1,121 @@
+// Copyright 2022 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+use crate::hps_i2c::HpsI2c;
+use crate::Config;
+use anyhow::bail;
+use anyhow::Result;
+use embedded_hal::blocking::i2c::Read;
+use embedded_hal::blocking::i2c::Write;
+use embedded_hal::blocking::i2c::WriteRead;
+use hps_interface::BorrowedI2c;
+use hps_interface::Hps;
+use hps_interface::HpsAdapter;
+use log::info;
+use mcu_common::commands::Command;
+use mcu_common::registers;
+use mcu_common::Error;
+use mcu_common::Status;
+use mcu_common::FLASH_WRITE_SZ;
+use mcu_common::STAGE1_SLOT_LENGTH;
+
+pub(crate) struct Stage0Tester<'a, I> {
+    i2c: HpsI2c<'a, I>,
+}
+
+impl<'a, I, E> Stage0Tester<'a, I>
+where
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    pub(crate) fn run(i2c: &mut I, global_config: &Config) -> Result<()> {
+        let i2c = HpsI2c::new(i2c, global_config.clone());
+        let mut tester = Stage0Tester { i2c };
+        let mut hps = tester.reset_hps()?;
+        let stage0_version = hps.stage0_version()?;
+        info!("Starting stage0 test with version {}", stage0_version);
+        if stage0_version < 4 {
+            bail!("This workflow requires stage0 version 4 or greater");
+        }
+        if hps.status()?.contains(Status::WPOFF) {
+            bail!("This test needs firmware write-protect on");
+        }
+
+        tester.test_write_invalid_offset()?;
+        tester.test_write_invalid_register()?;
+        tester.test_invalid_command()?;
+        tester.test_unsupported_command()?;
+        tester.test_load_dev_signed_stage1()?;
+        tester.test_erase_stage1()?;
+
+        info!("Stage0 test passed");
+        Ok(())
+    }
+
+    fn test_write_invalid_offset(&mut self) -> Result<()> {
+        let data = vec![42; FLASH_WRITE_SZ * 2];
+
+        // Try 1 double-word beyond the end of flash.
+        let mut hps = self.reset_hps()?;
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)?;
+        assert!(hps.error()? == Error::McuFlashWriteError);
+
+        // Try 1 double-word less than u32::MAX in an attempt to get an integer
+        // overflow when the address is added to the slot start address. Also
+        // has the potential to trigger an overflow if len is added to address.
+        let mut hps = self.reset_hps()?;
+        hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)?;
+        assert!(hps.error()? == Error::McuFlashWriteError);
+
+        Ok(())
+    }
+
+    fn test_write_invalid_register(&mut self) -> Result<()> {
+        let mut hps = self.reset_hps()?;
+        hps.write_register(0x79, 10)?;
+        assert!(hps.error()? == Error::HostI2cBadRequest);
+        Ok(())
+    }
+
+    fn test_invalid_command(&mut self) -> Result<()> {
+        let mut hps = self.reset_hps()?;
+        hps.write_register(registers::COMMAND, 12345)?;
+        assert!(hps.error()? == Error::HostI2cBadRequest);
+        Ok(())
+    }
+
+    fn test_unsupported_command(&mut self) -> Result<()> {
+        let mut hps = self.reset_hps()?;
+        hps.perform_command(Command::LaunchApp)?;
+        assert!(hps.error()? == Error::HostI2cBadRequest);
+        Ok(())
+    }
+
+    fn test_erase_stage1(&mut self) -> Result<()> {
+        let mut hps = self.reset_hps()?;
+        hps.perform_command(Command::EraseStage1)?;
+        let mut hps = self.i2c.open_hps()?;
+        hps.perform_command(Command::Launch1)?;
+        let mut hps = self.i2c.open_hps()?;
+        assert!(hps.error()? == Error::Stage1NotFound);
+        Ok(())
+    }
+
+    fn test_load_dev_signed_stage1(&mut self) -> Result<()> {
+        self.i2c
+            .write_stage1(crate::firmware::ONE_TIME_INIT_LOADER_BYTES)?;
+        let mut hps = self.reset_hps()?;
+        hps.perform_command(Command::Launch1)?;
+        let mut hps = self.i2c.open_hps()?;
+        assert!(hps.error()? == Error::Stage1InvalidSignature);
+        Ok(())
+    }
+
+    /// Resets the HPS then waits for stage0 to start and returns an interface
+    /// to it.
+    fn reset_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
+        self.i2c.open_hps()?.perform_command(Command::Reset)?;
+        self.i2c.open_hps()
+    }
+}
