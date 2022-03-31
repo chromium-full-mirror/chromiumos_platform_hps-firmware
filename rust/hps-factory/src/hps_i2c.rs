@@ -21,7 +21,6 @@ use log::info;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
-use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::HPS_ADDRESS;
@@ -91,18 +90,22 @@ where
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
         let mut hps = self.open_hps()?;
-        let stage = hps.stage()?;
-        if stage != Stage::Stage0 {
-            bail!(
-                "Need either stage0 or the system bootloader, but got: {:?}",
-                stage
-            );
-        }
-        if !force_firmware_update
-            && hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4]
-        {
-            info!("Stage1 is already the expected version, skipping write");
-            return Ok(());
+        if !force_firmware_update {
+            let stage0_version = hps.stage0_version()?;
+            if stage0_version >= 4 {
+                // Try to load stage1 so that we can check its version.
+                hps.perform_command(Command::Launch1)?;
+                hps = self.open_hps()?;
+            }
+            if hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4] {
+                info!("Stage1 is already the expected version, skipping write");
+                return Ok(());
+            }
+            if stage0_version >= 4 {
+                // Reset back to stage0 so that we can update stage1.
+                hps.perform_command(Command::Reset)?;
+                hps = self.open_hps()?;
+            }
         }
         // Old versions of stage0 don't support the EraseStage1 command. In that
         // case, we don't need to use the command, since the MCU flash will get
@@ -204,7 +207,9 @@ where
     /// be used for stage1 binaries that don't support I2C.
     pub(crate) fn execute_non_i2c_stage1(&mut self) -> Result<()> {
         let mut hps = self.open_hps()?;
-        if hps.status()?.contains(Status::ANONVER) || hps.stage()? != Stage::Stage0 {
+        // If we're not currently running stage0, or if our stage0 is one that
+        // needs to be reset in order to validate stage1, then reset.
+        if hps.stage()? != Stage::Stage0 || hps.stage0_version()? < 4 {
             self.reset_to_bootloader()?;
         }
         if let Ok(mut stm32) = self.open_bootloader() {
@@ -212,14 +217,6 @@ where
             return Ok(());
         }
         let mut hps = self.open_hps()?;
-        let status = hps.status()?;
-        if status.contains(Status::ANONVER) {
-            if status.contains(Status::WPON) {
-                bail!("Stage1 is not signed and firmware write-protect is asserted");
-            } else {
-                bail!("Stage1 is invalid");
-            }
-        }
         hps.perform_command(Command::Launch1)?;
         Ok(())
     }
@@ -231,10 +228,9 @@ where
 
         // Check that it started.
         let mut hps = self.open_hps()?;
-        if !hps.status()?.contains(Status::STAGE1) {
-            bail!("Stage1 failed to start");
-        }
-        hps.check_errors().context("Errors reported by stage1")?;
+        let stage = hps.stage()?;
+        hps.check_errors()
+            .with_context(|| format!("Errors reported by {:?}", stage))?;
         Ok(())
     }
 

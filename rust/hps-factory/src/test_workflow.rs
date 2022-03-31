@@ -48,28 +48,29 @@ where
     // Check to see if we're connected to a HPS that already has firmware
     // loaded.
     info!("Checking for existing HPS firmware");
+    let mut stage0_present = false;
     if let Ok(mut hps) = i2c.open_hps() {
+        stage0_present = true;
         if hps.read_register(registers::HARDWARE_VERSION)? == 0 {
             bail!("HPS is running firmware, but it's not stage0 - cannot perform test");
+        }
+        if hps.status()?.contains(Status::WPON) {
+            bail!("Firmware write protect is asserted - Cannot perform test");
         }
         info!("Writing test program using stage0");
         hps.write_firmware(PRE_INSTALL_TESTER_MCU_CODE_STAGE1)
             .context("Failed to write test program via stage0")?;
         hps.check_errors()
             .context("Failed to read status after writing test program")?;
-        info!("Write complete, resetting HPS");
-        i2c.reset_to_bootloader()
-            .context("Failed to reset to stage0")?;
-        let mut hps = i2c.open_hps()?;
-        let status = hps.status()?;
-        if !status.contains(Status::AVERIFY) {
-            if status.contains(Status::WPON) {
-                bail!("Firmware write protect is asserted - Cannot perform test");
-            }
-            bail!("Stage0 failed to validate test program");
+        if hps.stage0_version()? < 4 {
+            info!("Write complete, resetting HPS");
+            i2c.reset_to_bootloader()
+                .context("Failed to reset to stage0")?;
+            hps = i2c.open_hps()?;
+            info!("Launching test program");
+        } else {
+            info!("Write complete, launching test program");
         }
-
-        info!("Launching stage1");
         hps.perform_command(Command::Launch1)?;
     } else {
         let mut stm32 = i2c.open_bootloader()?;
@@ -141,6 +142,16 @@ where
             status.outputs.spi_flash_id.device_id[0],
             status.outputs.spi_flash_id.device_id[1]
         );
+    }
+
+    if stage0_present {
+        info!("Erasing test program");
+        // Erase our test program. If we don't do this, then it'll mess with
+        // anything that performs Launch1 in order to check the firmware
+        // version, since our test program uses a very basic I2C protocol.
+        let mut hps = i2c.open_hps()?;
+        hps.perform_command(Command::EraseStage1)
+            .context("Failed to erase test program")?;
     }
 
     info!("Pre-install test passed");

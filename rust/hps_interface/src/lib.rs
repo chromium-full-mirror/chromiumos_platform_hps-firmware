@@ -57,6 +57,20 @@ pub trait Hps {
         Ok(())
     }
 
+    /// Returns the version of stage0 bootloader. Stage0 must be running. The
+    /// version returned is the software version - e.g. 3 or 4, not the full
+    /// version, e.g. 0x0103.
+    fn stage0_version(&mut self) -> Result<u8> {
+        let version = self.read_register(registers::HARDWARE_VERSION)?;
+        if version == 0 {
+            bail!(
+                "Failed to read stage0 version. Currently in stage: {:?}",
+                self.stage()?
+            );
+        }
+        Ok((version & 0xff) as u8)
+    }
+
     fn status(&mut self) -> Result<Status> {
         Status::from_bits(self.read_register(registers::SYSTEM_STATUS)?)
             .ok_or_else(|| anyhow!("Invalid status bits"))

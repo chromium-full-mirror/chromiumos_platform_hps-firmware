@@ -22,6 +22,7 @@ use log::info;
 use mcu_common::commands::Command;
 use mcu_common::registers;
 use mcu_common::OptionBytesConfigRequest;
+use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::FLASH_START;
@@ -169,6 +170,9 @@ where
 
     fn protect_stage0(&mut self) -> Result<()> {
         let i2c = &mut self.i2c;
+        if i2c.open_hps()?.status()?.contains(Status::WPON) {
+            bail!("Firmware write-protect needs to deassserted for this to work");
+        }
         i2c.execute_non_i2c_stage1()?;
         let mut hps = i2c.open_hps()?;
         let stage = hps.stage()?;
