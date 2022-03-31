@@ -28,7 +28,7 @@ ed25519-compact = { version = "1", default-features = false, features = [ "pem",
 mcu_common = { path = "../../mcu_common" }
 
 [features]
-default = ["insecure-dev-key"]
+default = ["mp-key"]
 
 # If enabled, the first 1KB of flash will be left empty. The system bootloader
 # will still run on startup and commands will need to be sent to the system
