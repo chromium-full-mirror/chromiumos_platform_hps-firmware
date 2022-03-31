@@ -4,6 +4,7 @@
 
 /// Code for verifying the stage1 slot.
 use crate::WriteProtectState;
+use mcu_common::Error;
 use mcu_common::Hash;
 use mcu_common::ImageHeader;
 use mcu_common::SIGNATURE_LENGTH;
@@ -11,14 +12,6 @@ use mcu_common::STAGE1_SLOT_LENGTH;
 
 const PAGE_SIZE: usize = 2 * 1024;
 pub const PUBLIC_KEY_LENGTH: usize = ed25519_compact::PublicKey::BYTES;
-
-#[derive(Debug)]
-pub enum Stage1Error {
-    Missing,
-    InvalidSignature,
-    InvalidArgument,
-    InvalidVersion,
-}
 
 /// A struct that indicates that stage1 is considered valid - either it has
 /// passed a signature check or firmware write protect is deasserted.
@@ -42,31 +35,31 @@ pub fn detect_and_validate_stage1(
     public_key: &[u8; PUBLIC_KEY_LENGTH],
     wp_state: WriteProtectState,
     minimum_epoch: u16,
-) -> Result<ValidStage1, Stage1Error> {
+) -> Result<ValidStage1, Error> {
     if slot.len() != STAGE1_SLOT_LENGTH
         || (slot.as_ptr() as usize % core::mem::align_of::<ImageHeader>()) != 0
     {
-        return Err(Stage1Error::InvalidArgument);
+        return Err(Error::Internal);
     }
     detect_stage1(slot)?;
 
     // If write-protect is asserted, then check that signature is valid.
     if wp_state == WriteProtectState::Asserted {
         if stage1_header(slot).epoch < minimum_epoch {
-            return Err(Stage1Error::InvalidVersion);
+            return Err(Error::Stage1TooOld);
         }
-        validate_stage1(slot, public_key).map_err(|_| Stage1Error::InvalidSignature)?;
+        validate_stage1(slot, public_key).map_err(|_| Error::Stage1InvalidSignature)?;
     }
 
     Ok(ValidStage1 { _private: () })
 }
 
-fn detect_stage1(slot: &[u8]) -> Result<(), Stage1Error> {
+fn detect_stage1(slot: &[u8]) -> Result<(), Error> {
     let magic = stage1_header(slot).magic;
     if magic == mcu_common::STAGE1_MAGIC {
         return Ok(());
     }
-    Err(Stage1Error::Missing)
+    Err(Error::Stage1NotFound)
 }
 
 fn stage1_digest(slot: &[u8]) -> [u8; 32] {

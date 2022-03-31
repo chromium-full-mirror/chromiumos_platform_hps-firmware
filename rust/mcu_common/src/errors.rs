@@ -56,6 +56,18 @@ pub enum Error {
 
     /// The FPGA application did not send an update within the expected time.
     FpgaTimeout = 0x4000,
+
+    /// Stage1 could not be found.
+    Stage1NotFound = 0x4001,
+
+    /// Stage1 does not satisfy epoch requirements.
+    Stage1TooOld = 0x4002,
+
+    /// Stage1 signature check failed.
+    Stage1InvalidSignature = 0x4003,
+
+    /// An internal constraint was violated.
+    Internal = 0x4004,
 }
 
 impl core::fmt::Display for Error {
