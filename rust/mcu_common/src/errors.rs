@@ -74,6 +74,12 @@ pub enum Error {
 
     /// An internal constraint was violated.
     Internal = 0x4004,
+
+    /// The MCU flash detected a non-recoverable ECC error.
+    McuFlashEcc = 0x4005,
+
+    /// A non-maskable interrupt was raised on the MCU for unknown reasons.
+    McuNmi = 0x4006,
 }
 
 impl core::fmt::Display for Error {

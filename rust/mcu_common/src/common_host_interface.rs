@@ -8,10 +8,56 @@
 use crate::registers;
 use crate::Error;
 use crate::Status;
+use core::cell::UnsafeCell;
+use core::mem::size_of;
 
-pub struct CommonHostInterface {
-    error: Error,
+static ERROR: SyncUnsafeCell<Error> = SyncUnsafeCell::new(Error::None);
+
+// TODO(dcallagh): replace with the real SyncUnsafeCell after
+// https://github.com/rust-lang/rust/issues/95439
+#[repr(transparent)]
+struct SyncUnsafeCell<T>(UnsafeCell<T>);
+impl<T> SyncUnsafeCell<T> {
+    const fn new(value: T) -> Self {
+        SyncUnsafeCell(UnsafeCell::new(value))
+    }
 }
+unsafe impl<T> Sync for SyncUnsafeCell<T> {}
+
+// Compile-time assertion that Error will fit into a single load/store.
+// This is an important assumption for the unsafe code below.
+const _: () = {
+    if size_of::<Error>() > 4 {
+        panic!("The Error type must be small enough to load/store with a single instruction");
+    }
+};
+
+pub fn report_error(error: Error) {
+    // We only keep track of the first error reported. This is quite likely
+    // to be the cause of any subsequent errors, so is the most important
+    // one to track.
+    //
+    // Safety: This function is called from an exception handler, which can preempt anything else,
+    // so there is a race window between reading the ERROR pointer and writing the new ERROR value.
+    // However, because we only ever set a non-None error, and the presence of any non-None error
+    // is considered fatal (FAULT bit will be reported), if there is a race we are guaranteed that
+    // one or the other error value will end up being stored. This assumption is valid because
+    // writing the ERROR value compiles down to a single store instruction.
+    unsafe {
+        if *ERROR.0.get() == Error::None {
+            *ERROR.0.get() = error;
+        }
+    }
+}
+
+fn get_error() -> Error {
+    // Safety: reading the ERROR value compiles to a single load instruction, so we are guaranteed
+    // to always read a valid value even in the presence of preemption.
+    unsafe { *ERROR.0.get() }
+}
+
+#[derive(Default)]
+pub struct CommonHostInterface {}
 
 impl CommonHostInterface {
     pub fn new() -> Self {
@@ -21,30 +67,30 @@ impl CommonHostInterface {
     pub fn read_register(&self, register: u8) -> Option<u16> {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
-            registers::ERROR => self.error.into(),
-            registers::SYSTEM_STATUS if self.error != Error::None => Status::FAULT.bits(),
-            registers::SYSTEM_STATUS => Status::OK.bits(),
+            registers::ERROR => get_error().into(),
+            registers::SYSTEM_STATUS => {
+                if get_error() != Error::None {
+                    Status::FAULT.bits()
+                } else {
+                    Status::OK.bits()
+                }
+            }
             _ => return self.read_dev_register(register),
         })
     }
 
     pub fn report_error(&mut self, error: Error) {
-        // We only keep track of the first error reported. This is quite likely
-        // to be the cause of any subsequent errors, so is the most important
-        // one to track.
-        if self.error == Error::None {
-            self.error = error;
-        }
+        report_error(error);
     }
 
     pub fn get_error(&self) -> Error {
-        self.error
+        get_error()
     }
 
     #[cfg(feature = "dev")]
     fn read_dev_register(&self, register: u8) -> Option<u16> {
         Some(match register {
-            registers::dev::SLOW_READ => dev::fib(u16::from(self.error).count_ones() as u16 + 20),
+            registers::dev::SLOW_READ => dev::fib(u16::from(get_error()).count_ones() as u16 + 20),
             _ => return None,
         })
     }
@@ -52,12 +98,6 @@ impl CommonHostInterface {
     #[cfg(not(feature = "dev"))]
     fn read_dev_register(&self, _: u8) -> Option<u16> {
         None
-    }
-}
-
-impl Default for CommonHostInterface {
-    fn default() -> Self {
-        Self { error: Error::None }
     }
 }
 

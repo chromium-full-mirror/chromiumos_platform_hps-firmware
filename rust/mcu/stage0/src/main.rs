@@ -12,6 +12,7 @@ mod mcu_flash;
 use crate::loader::*;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
+use cortex_m_rt::exception;
 use hal::gpio::gpioa;
 use hal::gpio::Floating;
 use hal::gpio::Input;
@@ -21,6 +22,7 @@ use host_interface::HostEvent;
 use host_interface::HostInterface;
 use libstage0::WriteProtectState;
 use mcu_common::commands::Command;
+use mcu_common::report_error;
 use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_flash::FlashWriter;
@@ -287,4 +289,23 @@ fn read_fw_wp(fw_wp: &FwWp) -> WriteProtectState {
         }
     }
     WriteProtectState::Deasserted
+}
+
+#[exception]
+unsafe fn NonMaskableInt() {
+    // If a flash write was interrupted, it could leave it in a state where reading from that part
+    // of flash triggers an uncorrectable ECC error, which raises an NMI.
+    let flash = hal::stm32::Peripherals::steal().FLASH;
+    if flash.eccr.read().eccd().bit_is_set() {
+        report_error(Error::McuFlashEcc);
+        // Clear the ECC error by setting the ECCD bit, to allow stage0 to make further progress.
+        flash.eccr.modify(|_, w| w.eccd().set_bit());
+        return;
+    }
+
+    // The only other (documented) cause of an NMI is SRAM parity error, which likely indicates
+    // a fatal hardware problem that we cannot recover from. In any case, returning from NMI
+    // without clearing the corresponding error bit means we are likely to enter an infinite NMI
+    // loop. Nevertheless, for the sake of completeness let's try to report the error and return.
+    report_error(Error::McuNmi);
 }

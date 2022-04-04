@@ -21,6 +21,7 @@ mod mem_block;
 mod part_ids;
 
 pub use buffer::Buffer;
+pub use common_host_interface::report_error;
 pub use common_host_interface::CommonHostInterface;
 pub use errors::Error;
 pub use hmac_sha256::Hash;
