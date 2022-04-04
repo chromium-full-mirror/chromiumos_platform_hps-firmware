@@ -22,45 +22,7 @@ struct Bin {
     count: u32,
 }
 
-const FRAME_CROPPING: u32 = 40;
-
-/// Custom CroppingIterator is used for Histogram median calculation.
-struct CroppingIterator<'a> {
-    x: u32,
-    y: u32,
-    bytes: &'a [i8],
-}
-
-impl Iterator for CroppingIterator<'_> {
-    type Item = i8;
-
-    // Instead of computing a median for a 320x240 frame, it uses the sub-square
-    // of 240x240. Left and right padding (40 pixel wide) are omitted.
-    fn next(&mut self) -> Option<i8> {
-        use crate::camera;
-        if self.x < FRAME_CROPPING {
-            self.x = FRAME_CROPPING;
-        }
-        if self.x >= camera::IMAGE_WIDTH - FRAME_CROPPING {
-            self.x = FRAME_CROPPING;
-            self.y += 1;
-        }
-        if self.y >= camera::IMAGE_HEIGHT {
-            return None;
-        }
-        let position = self.y * camera::IMAGE_WIDTH + self.x;
-        self.x += 1;
-        Some(self.bytes[position as usize])
-    }
-}
-
-fn cropping_iterator(image_data: &[i8]) -> CroppingIterator {
-    CroppingIterator {
-        x: 0,
-        y: 0,
-        bytes: image_data,
-    }
-}
+const FRAME_CROPPING: usize = 40;
 
 impl Histogram {
     pub fn new(image_data: &[i8]) -> Histogram {
@@ -81,9 +43,17 @@ impl Histogram {
             bins: [0; 256],
         };
 
-        for val in cropping_iterator(image_data) {
-            result.add(val);
+        let mut i = 0;
+        for _ in 0..FRAME_CROPPING {
+            i += FRAME_CROPPING;
+            for _ in 0..FRAME_CROPPING {
+                result.add(image_data[i]);
+                i += 1;
+            }
+            i += FRAME_CROPPING;
         }
+
+        result.count = (FRAME_CROPPING * FRAME_CROPPING) as u32;
         result
     }
 
