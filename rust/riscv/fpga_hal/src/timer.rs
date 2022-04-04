@@ -26,4 +26,9 @@ impl fpga_app::Timer for Timer {
         let elapsed = self.now().0 - start.0;
         (elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1000)) as u32
     }
+
+    fn elapsed_us(&self, start: Instant) -> u32 {
+        let elapsed = self.now().0 - start.0;
+        (elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1_000_000)) as u32
+    }
 }

@@ -8,6 +8,9 @@ pub trait Timer {
 
     /// Returns the number of milliseconds since `start`.
     fn elapsed_ms(&self, start: Instant) -> u32;
+
+    /// Returns the number of microseconds since `start`.
+    fn elapsed_us(&self, start: Instant) -> u32;
 }
 
 /// An instant in time. Representation is implementation defined, but is
@@ -27,6 +30,10 @@ pub(crate) mod testing {
         }
 
         fn elapsed_ms(&self, _start: Instant) -> u32 {
+            0
+        }
+
+        fn elapsed_us(&self, _start: Instant) -> u32 {
             0
         }
     }
