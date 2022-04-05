@@ -4,6 +4,7 @@
 
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
+use anyhow::anyhow;
 use anyhow::Context;
 use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
@@ -13,6 +14,7 @@ use hps_interface::Hps;
 use log::info;
 use mcu_common::registers;
 use mcu_common::OptionBytesConfigRequest;
+use mcu_common::Status;
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -46,6 +48,12 @@ where
         crate::firmware::ONE_TIME_INIT_LOADER_BYTES
     };
 
+    if i2c.open_hps()?.status()?.contains(Status::WPON) {
+        return Err(EraseError::Other(anyhow!(
+            "Erasing stage0 requires that firmware write protect is off"
+        )));
+    }
+
     // Erasing is done by one_time_init. Write the loader that will put it into
     // RAM and run it.
     if let Err(error) = i2c.write_stage1(one_time_init_bytes) {
@@ -66,6 +74,7 @@ where
         .context("Failed to execute one_time_init")?;
 
     let mut hps = i2c.open_hps()?;
+    hps.check_errors()?;
     let current_options = OptionBytesConfigRequest::from_bits_truncate(
         hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
     );
