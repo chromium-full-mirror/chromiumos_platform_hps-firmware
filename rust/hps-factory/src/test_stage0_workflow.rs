@@ -43,6 +43,7 @@ where
         }
 
         tester.test_write_invalid_offset()?;
+        tester.test_write_to_end()?;
         tester.test_write_invalid_register()?;
         tester.test_invalid_command()?;
         tester.test_unsupported_command()?;
@@ -73,6 +74,19 @@ where
         let mut hps = self.reset_hps()?;
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)?;
         assert!(hps.error()? == Error::McuFlashWriteError);
+
+        Ok(())
+    }
+
+    fn test_write_to_end(&mut self) -> Result<()> {
+        let data = vec![42; FLASH_WRITE_SZ * 2];
+
+        // Try writing right up to the end of flash. This is a non-error
+        // scenario, but one that we wouldn't generally exercise unless we were
+        // getting incredibly low on MCU flash.
+        let mut hps = self.reset_hps()?;
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)?;
+        assert!(hps.error()? == Error::None);
 
         Ok(())
     }
