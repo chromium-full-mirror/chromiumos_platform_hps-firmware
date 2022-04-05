@@ -37,9 +37,15 @@ impl FlashWriter {
     }
 
     pub(crate) fn write(&mut self, address: u32, data: &[u8]) -> Result<(), flash::Error> {
+        let slot = get_slot(&mut self.slot)?;
+        // The hardware will report an error if we try to write beyond the end
+        // of flash, but best not to rely on that.
+        if address as usize + data.len() > slot.len() {
+            return Err(flash::Error::PageOutOfRange);
+        }
         // Note, we deliberately shadow to ensure that we don't accidentally use
         // the relative address.
-        let address = get_slot(&mut self.slot)?
+        let address = slot
             .get(address as usize)
             .ok_or(flash::Error::PageOutOfRange)? as *const u8 as usize;
         let unlocked_flash = self.flash.unlocked()?;
