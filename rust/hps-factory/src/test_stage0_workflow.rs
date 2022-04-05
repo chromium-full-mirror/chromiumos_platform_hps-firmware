@@ -127,6 +127,10 @@ where
             .write_stage1(crate::firmware::ONE_TIME_INIT_LOADER_BYTES)?;
         let mut hps = self.reset_hps()?;
         hps.perform_command(Command::Launch1)?;
+        // Immediately after receiving the Launch1 command, the HPS should
+        // disable I2C, preventing us from sending any further requests while
+        // it's performing the signature check.
+        assert!(hps.status().is_err());
         let mut hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::Stage1InvalidSignature);
         Ok(())
