@@ -68,6 +68,12 @@ where
         hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)?;
         assert!(hps.error()? == Error::McuFlashWriteError);
 
+        // Try a write that starts in a valid location, but extends beyond the
+        // end of flash.
+        let mut hps = self.reset_hps()?;
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)?;
+        assert!(hps.error()? == Error::McuFlashWriteError);
+
         Ok(())
     }
 
