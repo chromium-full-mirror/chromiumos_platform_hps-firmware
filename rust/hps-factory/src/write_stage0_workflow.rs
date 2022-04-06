@@ -4,7 +4,6 @@
 
 use crate::erase_stage0_workflow::EraseError;
 use crate::firmware::ONE_TIME_INIT_LOADER_BYTES;
-use crate::firmware::STAGE0_BYTES;
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use crate::WriteStage0Config;
@@ -52,9 +51,6 @@ where
         config: &Config,
         write_stage0_config: &WriteStage0Config,
     ) -> Result<()> {
-        if write_stage0_config.permanent_lock && !stage0_contains_mp_key()? {
-            bail!("STAGE0_BYTES does not contain the MP key");
-        }
         let mut stage0_writer = Stage0Writer {
             i2c: HpsI2c::new(i2c, config.clone()),
             config: config.clone(),
@@ -77,6 +73,10 @@ where
     }
 
     fn write_stage0(&mut self) -> Result<WriteKind> {
+        let mut stage0_bytes = self.config.stage0_rom()?.to_vec();
+        if self.write_stage0_config.permanent_lock && !stage0_contains_mp_key(&stage0_bytes)? {
+            bail!("Stage0 does not contain the MP key");
+        }
         let i2c = &mut self.i2c;
         // --check-version is an optimization to avoid repeatedly rewriting
         // stage0 on devices that are not permanently locked. It doesn't make
@@ -119,7 +119,6 @@ where
         info!("Erasing MCU flash");
         stm32.erase_flash()?;
 
-        let mut stage0_bytes = STAGE0_BYTES.to_vec();
         // Pad out program out to an exact number of flash rows. We pad with 0xff
         // because that's what empty flash contains. Writing e.g. 100 bytes results
         // in the bootloader rejecting the write. Possibly it's using fast writes,
@@ -241,8 +240,8 @@ impl WriteStage0Config {
     }
 }
 
-fn stage0_contains_mp_key() -> Result<bool> {
+fn stage0_contains_mp_key(stage0_bytes: &[u8]) -> Result<bool> {
     const MP_KEY_PEM: &str = include_str!("../../mcu/stage0/keys/hps-accessory-mp.pub.pem");
     let key = ed25519_compact::PublicKey::from_pem(MP_KEY_PEM)?;
-    Ok(STAGE0_BYTES.windows(key.len()).any(|w| w == *key))
+    Ok(stage0_bytes.windows(key.len()).any(|w| w == *key))
 }

@@ -8,9 +8,6 @@ use anyhow::Result;
 use std::borrow::Cow;
 use std::path::PathBuf;
 
-/// The stage0 bootloader.
-pub(crate) const STAGE0_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin"));
-
 /// Initializes MCU option bytes including write protecting stage0. Also
 /// supports removing temporary write protection from stage0 and erasing stage0.
 pub(crate) const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
@@ -53,6 +50,14 @@ impl crate::Config {
             "--mcu-rom",
             &self.mcu_rom,
             include_bytes!(concat!(env!("OUT_DIR"), "/application.bin")),
+        )
+    }
+
+    pub(crate) fn stage0_rom(&self) -> Result<Cow<'static, [u8]>> {
+        read_file_or_default(
+            "--stage0-rom",
+            &self.stage0_rom,
+            include_bytes!(concat!(env!("OUT_DIR"), "/stage0.bin")),
         )
     }
 }
