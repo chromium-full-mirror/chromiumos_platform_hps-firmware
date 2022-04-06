@@ -86,6 +86,7 @@ The low byte describes the stage0 firmware version.
 | 0x02  | The stage0/stage1 boundary was moved                                    |
 | 0x03  | The MP key is used for verification                                     |
 | 0x04  | Launch1 now does signature check. AVERIFY and ANONVER status bits gone. |
+| 0x05  | Reserved for developer versions built from source. |
 
 ## Common System Status
 

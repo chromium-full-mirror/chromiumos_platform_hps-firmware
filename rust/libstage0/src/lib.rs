@@ -7,7 +7,7 @@
 pub mod verification;
 
 pub const HARDWARE_VERSION: u16 = 1;
-pub const RO_VERSION: u16 = 4;
+pub const RO_VERSION: u16 = 5;
 pub const COMBINED_VERSION: u16 = (HARDWARE_VERSION << 8) | RO_VERSION;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
