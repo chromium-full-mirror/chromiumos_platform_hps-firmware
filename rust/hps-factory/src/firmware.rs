@@ -87,3 +87,42 @@ fn read_file_or_default(
     }
     Ok(Cow::Borrowed(default))
 }
+
+impl crate::Config {
+    pub(crate) fn write_firmware_files(
+        &self,
+        write_config: &crate::WriteEmbeddedFirmwareConfig,
+    ) -> Result<()> {
+        let out = &write_config.out_dir;
+        std::fs::create_dir_all(out)?;
+        if let Ok(bytes) = self.stage0_rom() {
+            std::fs::write(out.join("stage0.bin"), bytes)?;
+        }
+        if let Ok(bytes) = self.mcu_rom() {
+            std::fs::write(out.join("mcu_rom.bin"), bytes)?;
+        }
+        if let Ok(bytes) = self.fpga_rom() {
+            std::fs::write(out.join("fpga_rom.bin"), bytes)?;
+        }
+        if let Ok(bytes) = self.fpga_bitstream() {
+            std::fs::write(out.join("fpga_bitstream.bin"), bytes)?;
+        }
+        std::fs::write(
+            out.join("one_time_init_loader.bin"),
+            ONE_TIME_INIT_LOADER_BYTES,
+        )?;
+        std::fs::write(
+            out.join("one_time_init_loader_legacy.bin"),
+            ONE_TIME_INIT_LOADER_LEGACY_BYTES,
+        )?;
+        std::fs::write(
+            out.join("pre_install_tester_mcu.bin"),
+            PRE_INSTALL_TESTER_MCU_CODE,
+        )?;
+        std::fs::write(
+            out.join("pre_install_tester_mcu_stage1.bin"),
+            PRE_INSTALL_TESTER_MCU_CODE_STAGE1,
+        )?;
+        Ok(())
+    }
+}

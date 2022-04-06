@@ -115,8 +115,11 @@ enum Command {
     /// prints IDs of parts contained within the HPS
     PrintPartIds,
 
-    /// Tries various things with stage0 to make sure it behaves as expected
+    /// tries various things with stage0 to make sure it behaves as expected
     TestStage0,
+
+    /// writes all embedded firmware files to the filesystem
+    WriteEmbeddedFirmware(WriteEmbeddedFirmwareConfig),
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -124,6 +127,13 @@ struct BootConfig {
     /// assume that the FPGA bitstream is already up-to-date
     #[clap(long)]
     skip_bitstream_write: bool,
+}
+
+#[derive(Debug, Clap, Clone)]
+struct WriteEmbeddedFirmwareConfig {
+    /// directory into which to write firmware files
+    #[clap(long)]
+    out_dir: PathBuf,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -238,6 +248,9 @@ fn main() -> Result<()> {
     simple_logger::SimpleLogger::new()
         .with_level(config.log_level())
         .init()?;
+    if let Command::WriteEmbeddedFirmware(write_config) = &config.command {
+        return config.write_firmware_files(write_config);
+    }
     #[cfg(feature = "mcp2221")]
     if config.mcp {
         let mut config = config;
@@ -337,5 +350,6 @@ where
         Command::Boot(boot_config) => boot_workflow::run(i2c, boot_config, &config),
         Command::PrintPartIds => print_part_ids_workflow::run(i2c, &config),
         Command::TestStage0 => test_stage0_workflow::Stage0Tester::run(i2c, &config),
+        Command::WriteEmbeddedFirmware(_) => unreachable!(),
     }
 }
