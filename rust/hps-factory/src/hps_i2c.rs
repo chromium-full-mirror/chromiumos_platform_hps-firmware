@@ -299,7 +299,6 @@ where
                     if start.elapsed() > STARTUP_TIMOUT {
                         bail!("{} is not running: {}", name, error)
                     }
-                    std::thread::sleep(Duration::from_millis(20));
                 }
             }
         }

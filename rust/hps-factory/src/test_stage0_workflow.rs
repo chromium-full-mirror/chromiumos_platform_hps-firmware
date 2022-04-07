@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use std::time::Instant;
+
 use crate::hps_i2c::HpsI2c;
 use crate::Config;
 use anyhow::bail;
@@ -123,9 +125,12 @@ where
     }
 
     fn test_load_dev_signed_stage1(&mut self) -> Result<()> {
+        let start = Instant::now();
         self.i2c
             .write_stage1(crate::firmware::ONE_TIME_INIT_LOADER_BYTES)?;
+        info!("Stage1 write time {}ms", start.elapsed().as_millis());
         let mut hps = self.reset_hps()?;
+        let start = Instant::now();
         hps.perform_command(Command::Launch1)?;
         // Immediately after receiving the Launch1 command, the HPS should
         // disable I2C, preventing us from sending any further requests while
@@ -133,6 +138,7 @@ where
         assert!(hps.status().is_err());
         let mut hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::Stage1InvalidSignature);
+        info!("Signature check time {}ms", start.elapsed().as_millis());
         Ok(())
     }
 
