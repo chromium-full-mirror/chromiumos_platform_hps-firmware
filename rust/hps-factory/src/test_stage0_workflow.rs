@@ -44,114 +44,114 @@ where
             bail!("This test needs firmware write-protect on");
         }
 
-        tester.test_erase_stage1()?;
-        tester.test_write_invalid_offset()?;
+        tester.test_erase_stage1();
+        tester.test_write_invalid_offset();
         // Note, test_write_to_end assumes flash is blank, so needs to be after
         // test_erase_stage1.
-        tester.test_write_to_end()?;
-        tester.test_write_invalid_register()?;
-        tester.test_invalid_command()?;
-        tester.test_unsupported_command()?;
-        tester.test_load_dev_signed_stage1()?;
+        tester.test_write_to_end();
+        tester.test_write_invalid_register();
+        tester.test_invalid_command();
+        tester.test_unsupported_command();
+        tester.test_load_dev_signed_stage1();
 
         info!("Stage0 test passed");
         Ok(())
     }
 
-    fn test_write_invalid_offset(&mut self) -> Result<()> {
+    fn test_write_invalid_offset(&mut self) {
         let data = vec![42; FLASH_WRITE_SZ * 2];
 
         // Try 1 double-word beyond the end of flash.
-        let mut hps = self.reset_hps()?;
-        hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)?;
-        hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::McuFlashWriteError);
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)
+            .unwrap();
+        hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
 
         // Try 1 double-word less than u32::MAX in an attempt to get an integer
         // overflow when the address is added to the slot start address. Also
         // has the potential to trigger an overflow if len is added to address.
-        let mut hps = self.reset_hps()?;
-        hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)?;
-        hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::McuFlashWriteError);
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)
+            .unwrap();
+        hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
 
         // Try a write that starts in a valid location, but extends beyond the
         // end of flash.
-        let mut hps = self.reset_hps()?;
-        hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)?;
-        hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::McuFlashWriteError);
-
-        Ok(())
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)
+            .unwrap();
+        hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
     }
 
-    fn test_write_to_end(&mut self) -> Result<()> {
+    fn test_write_to_end(&mut self) {
         let data = vec![42; FLASH_WRITE_SZ * 2];
 
         // Try writing right up to the end of flash. This is a non-error
         // scenario, but one that we wouldn't generally exercise unless we were
         // getting incredibly low on MCU flash.
-        let mut hps = self.reset_hps()?;
-        hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)?;
-        hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::None);
-
-        Ok(())
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)
+            .unwrap();
+        hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::None);
     }
 
-    fn test_write_invalid_register(&mut self) -> Result<()> {
-        let mut hps = self.reset_hps()?;
-        hps.write_register(0x79, 10)?;
-        assert!(hps.error()? == Error::HostI2cBadRequest);
-        Ok(())
+    fn test_write_invalid_register(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_register(0x79, 10).unwrap();
+        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
     }
 
-    fn test_invalid_command(&mut self) -> Result<()> {
-        let mut hps = self.reset_hps()?;
-        hps.write_register(registers::COMMAND, 12345)?;
-        assert!(hps.error()? == Error::HostI2cBadRequest);
-        Ok(())
+    fn test_invalid_command(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        hps.write_register(registers::COMMAND, 12345).unwrap();
+        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
     }
 
-    fn test_unsupported_command(&mut self) -> Result<()> {
-        let mut hps = self.reset_hps()?;
-        hps.perform_command(Command::LaunchApp)?;
-        assert!(hps.error()? == Error::HostI2cBadRequest);
-        Ok(())
+    fn test_unsupported_command(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        hps.perform_command(Command::LaunchApp).unwrap();
+        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
     }
 
-    fn test_erase_stage1(&mut self) -> Result<()> {
-        let mut hps = self.reset_hps()?;
-        hps.perform_command(Command::EraseStage1)?;
-        let mut hps = self.i2c.open_hps()?;
-        hps.perform_command(Command::Launch1)?;
-        let mut hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::Stage1NotFound);
-        Ok(())
+    fn test_erase_stage1(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        hps.perform_command(Command::EraseStage1).unwrap();
+        let mut hps = self.i2c.open_hps().unwrap();
+        hps.perform_command(Command::Launch1).unwrap();
+        let mut hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::Stage1NotFound);
     }
 
-    fn test_load_dev_signed_stage1(&mut self) -> Result<()> {
+    fn test_load_dev_signed_stage1(&mut self) {
         let start = Instant::now();
         self.i2c
-            .write_stage1(crate::firmware::ONE_TIME_INIT_LOADER_BYTES)?;
+            .write_stage1(crate::firmware::ONE_TIME_INIT_LOADER_BYTES)
+            .unwrap();
         info!("Stage1 write time {}ms", start.elapsed().as_millis());
-        let mut hps = self.reset_hps()?;
+        let mut hps = self.reset_hps().unwrap();
         let start = Instant::now();
-        hps.perform_command(Command::Launch1)?;
+        hps.perform_command(Command::Launch1).unwrap();
         // Immediately after receiving the Launch1 command, the HPS should
         // disable I2C, preventing us from sending any further requests while
         // it's performing the signature check.
         assert!(hps.status().is_err());
-        let mut hps = self.i2c.open_hps()?;
-        assert!(hps.error()? == Error::Stage1InvalidSignature);
+        let mut hps = self.i2c.open_hps().unwrap();
+        assert!(hps.error().unwrap() == Error::Stage1InvalidSignature);
         info!("Signature check time {}ms", start.elapsed().as_millis());
-        Ok(())
     }
 
     /// Resets the HPS then waits for stage0 to start and returns an interface
     /// to it.
     fn reset_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
-        self.i2c.open_hps()?.perform_command(Command::Reset)?;
+        self.i2c
+            .open_hps()
+            .unwrap()
+            .perform_command(Command::Reset)
+            .unwrap();
         self.i2c.open_hps()
     }
 }
