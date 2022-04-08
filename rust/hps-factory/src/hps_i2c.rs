@@ -32,8 +32,11 @@ use stm32_bootloader_client::Stm32;
 const FPGA_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
 
 /// How long we'll wait for the system bootloader or HPS stage0/stage1 to become
-/// responsive to I2C requests.
-const STARTUP_TIMOUT: Duration = Duration::from_millis(1000);
+/// responsive to I2C requests. We also use this timeout when waiting for stage0
+/// operations to complete, e.g. writing flash, erasing flash and launching
+/// stage1, so it needs to be long enough to accomodate the longest of those
+/// (probably Command::Erase1).
+const STARTUP_TIMOUT: Duration = Duration::from_millis(2000);
 
 /// How long we'll wait for the soft CPU to start.
 const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
