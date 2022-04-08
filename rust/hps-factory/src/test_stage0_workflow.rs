@@ -44,13 +44,15 @@ where
             bail!("This test needs firmware write-protect on");
         }
 
+        tester.test_erase_stage1()?;
         tester.test_write_invalid_offset()?;
+        // Note, test_write_to_end assumes flash is blank, so needs to be after
+        // test_erase_stage1.
         tester.test_write_to_end()?;
         tester.test_write_invalid_register()?;
         tester.test_invalid_command()?;
         tester.test_unsupported_command()?;
         tester.test_load_dev_signed_stage1()?;
-        tester.test_erase_stage1()?;
 
         info!("Stage0 test passed");
         Ok(())
@@ -62,6 +64,7 @@ where
         // Try 1 double-word beyond the end of flash.
         let mut hps = self.reset_hps()?;
         hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)?;
+        hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::McuFlashWriteError);
 
         // Try 1 double-word less than u32::MAX in an attempt to get an integer
@@ -69,12 +72,14 @@ where
         // has the potential to trigger an overflow if len is added to address.
         let mut hps = self.reset_hps()?;
         hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)?;
+        hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::McuFlashWriteError);
 
         // Try a write that starts in a valid location, but extends beyond the
         // end of flash.
         let mut hps = self.reset_hps()?;
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)?;
+        hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::McuFlashWriteError);
 
         Ok(())
@@ -88,6 +93,7 @@ where
         // getting incredibly low on MCU flash.
         let mut hps = self.reset_hps()?;
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)?;
+        hps = self.i2c.open_hps()?;
         assert!(hps.error()? == Error::None);
 
         Ok(())
