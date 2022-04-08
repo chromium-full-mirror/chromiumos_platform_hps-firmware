@@ -43,10 +43,6 @@ fn build_mcu_test_program(bin_name: &str, features: &str) -> Result<()> {
 fn write_stage0_bin(bin_name: &str, features: &str) -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bin_file = out_dir.join(bin_name);
-    if !cfg!(feature = "stage0-from-source") {
-        copy_or_die("../../bin/stage0/v4.bin", &bin_file);
-        return Ok(());
-    }
     Command::new("cargo")
         .current_dir("../mcu/stage0")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")

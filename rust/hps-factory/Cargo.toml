@@ -47,4 +47,3 @@ all-embedded-firmware = [
 built-in-fpga-bitstream = []
 built-in-fpga-rom = []
 built-in-mcu-rom = []
-stage0-from-source = []
