@@ -30,6 +30,10 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
             );
         }
         hps_interface::Stage::Stage1 => {
+            let crash_report = hps.crash_report()?;
+            if !crash_report.is_empty() {
+                println!("Previous crash: {}", crash_report);
+            }
             println!(
                 "Stage1 version: 0x{:x}",
                 ((hps.read_register(registers::FIRMWARE_VERSION_HIGH)? as u32) << 16)
