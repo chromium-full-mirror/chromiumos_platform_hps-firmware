@@ -170,6 +170,7 @@ where
     }
 
     fn loop_body(&mut self) -> Result<()> {
+        let loop_start_time = self.timer.now();
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
         if !features.contains(Features::MODEL1) {
@@ -196,7 +197,9 @@ where
         self.select_model(&features);
 
         let is_rotated = self.determine_rotation(&config)?;
+        let capture_start = self.timer.now();
         self.capture_well_exposed_image(is_rotated)?;
+        let capture_ms = self.timer.elapsed_ms(capture_start);
         let image_data = self.classifier.input_data(self.model_number);
         let histogram = histogram::Histogram::new(image_data);
         if self.histogram_enabled {
@@ -226,13 +229,16 @@ where
         {
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number)?;
+            let classify_ms = self.timer.elapsed_ms(start);
             model_status = 0x8000 | ((score as u16) & 0xff);
             mcu_println!(
                 self.mcu,
-                "Model {} score: {} took: {}ms",
+                "Model {} score: {:4} capture: {:3}ms classify: {:3}ms other: {:3}ms",
                 self.model_number,
                 score,
-                self.timer.elapsed_ms(start)
+                capture_ms,
+                classify_ms,
+                self.timer.elapsed_ms(loop_start_time) - capture_ms - classify_ms,
             );
         } else {
             model_status = 0;
