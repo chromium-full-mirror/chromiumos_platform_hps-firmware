@@ -17,7 +17,7 @@ pub enum Error {
     /// An error occurred writing to MCU flash.
     McuFlashWriteError = 0x0002,
 
-    /// A panic occurred.
+    /// A panic occurred on the previous boot.
     Panic = 0x0004,
 
     /// Code running on the FPGA panicked.

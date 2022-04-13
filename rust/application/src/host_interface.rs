@@ -35,6 +35,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     pub init_status: Status,
     pub part_ids: PartIds,
     image_header: &'static ImageHeader,
+    previous_crash: Option<mcu_common::Buffer>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -59,6 +60,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             init_status: Status::empty(),
             part_ids: PartIds::default(),
             image_header,
+            previous_crash: None,
         }
     }
 
@@ -115,6 +117,11 @@ impl<I: I2cPeripheral> HostInterface<I> {
         self.common_interface.report_error(error);
     }
 
+    pub fn report_previous_crash(&mut self, buffer: Buffer) {
+        self.previous_crash = Some(buffer);
+        self.report_error(mcu_common::Error::Panic);
+    }
+
     fn read_register(&mut self, event: ReadRegisterEvent, state: &ApplicationState) {
         let common_value = self
             .common_interface
@@ -169,6 +176,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
             registers::CAMERA_TEST_ITERATIONS => state.camera_test_iterations,
             registers::FIRMWARE_VERSION_HIGH => self.get_version_part(0),
             registers::FIRMWARE_VERSION_LOW => self.get_version_part(2),
+            registers::PREVIOUS_CRASH => {
+                if let Some(report) = self.previous_crash.take() {
+                    event.respond(report, &mut self.protocol_handler);
+                    return;
+                }
+                0
+            }
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);

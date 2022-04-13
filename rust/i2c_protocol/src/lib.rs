@@ -375,4 +375,12 @@ mod tests {
         protocol_handler.supply_mem_block(MemBlock::with_capacity(2));
         assert_eq!(protocol_handler.next_event(), Err(Error::BufferOverrun));
     }
+
+    #[allow(clippy::assertions_on_constants)]
+    #[test]
+    fn i2c_buffer_larger_than_crash_record_size() {
+        // We use the I2C buffer for storing and sending crash records, so it
+        // must large enough to store a crash record.
+        assert!(RECV_BUFFER_SIZE >= mcu_common::MCU_CRASH_RECORD_SIZE);
+    }
 }

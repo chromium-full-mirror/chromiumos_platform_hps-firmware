@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 use hmac_sha256::Hash;
+use mcu_common::SOC_ROM_OFFSET;
+use mcu_common::SPI_FLASH_SIZE;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -11,19 +13,26 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str;
 
-use mcu_common::SOC_ROM_OFFSET;
-use mcu_common::SPI_FLASH_SIZE;
-
 // All our boards have an stm32g071.
 #[cfg(all(feature = "standalone"))]
 fn memory_x_contents() -> String {
-    r#"MEMORY
-{
+    use mcu_common::MCU_CRASH_RECORD_SIZE;
+    use mcu_common::MCU_RAM_SIZE;
+    use mcu_common::MCU_RAM_START;
+
+    format!(
+        r#"MEMORY
+{{
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
-}
-"#
-    .to_owned()
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = {}
+    CRASH_REC (rw) : ORIGIN = {}, LENGTH = {}
+}}
+PROVIDE(CRASH_RECORD = ORIGIN(CRASH_REC));
+"#,
+        MCU_RAM_SIZE - MCU_CRASH_RECORD_SIZE,
+        MCU_RAM_START + MCU_RAM_SIZE - MCU_CRASH_RECORD_SIZE,
+        MCU_CRASH_RECORD_SIZE
+    )
 }
 
 #[cfg(all(not(feature = "standalone")))]

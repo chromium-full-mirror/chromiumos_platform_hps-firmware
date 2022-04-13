@@ -86,6 +86,9 @@ pub const PROGRAM_IN_RAM_OFFSET: usize = 10 * 1024;
 /// The full size of the SPI flash.
 pub const SPI_FLASH_SIZE: u32 = 16 * 1024 * 1024;
 
+/// Number of bytes of RAM dedicated to storing crash information.
+pub const MCU_CRASH_RECORD_SIZE: usize = 256;
+
 /// The offset in the SPI flash at which we write a test pattern.
 pub const SPI_TEST_DATA_OFFSET: u32 = 15 * 1024 * 1024;
 

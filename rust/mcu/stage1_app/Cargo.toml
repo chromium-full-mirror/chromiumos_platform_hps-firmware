@@ -26,8 +26,6 @@ i2c_peripheral = { path = "../../i2c_peripheral" }
 i2c_protocol = { path = "../../i2c_protocol" }
 log = {version = "0.4.14", features = [ "release_max_level_off" ] }
 mcu_common = { path = "../../mcu_common" }
-panic-halt = "0.2.0"
-panic-rtt-target = { version = "0.1.2", features = ["cortex-m"], optional = true }
 rtt-target = { version = "0.3.1", features = ["cortex-m"] }
 spi-memory = "0.2.0"
 stm32g0 = "0.13.0"
@@ -51,7 +49,7 @@ no-i2c-clock-stretching = []
 # Build application such that it can be flashed as standalone.
 standalone = []
 
-dev = [ "debug_logger/dev", "panic-rtt-target", "application/dev", "mcu_common/dev" ]
+dev = [ "debug_logger/dev", "application/dev", "mcu_common/dev" ]
 
 # This is intended for internal testing only. Must never be enabled in
 # production.

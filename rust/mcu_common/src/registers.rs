@@ -73,6 +73,11 @@ pub const CONFIGURE_OPTION_BYTES: u8 = 20;
 /// RO: Part IDs. This register contains the content of the PartIds struct.
 pub const PART_IDS: u8 = 21;
 
+/// RO: A crash report from the previous boot. Maximum length is 256 bytes.
+/// Payload is everything prior to the first null byte. Reading this register
+/// clears it.
+pub const PREVIOUS_CRASH: u8 = 22;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

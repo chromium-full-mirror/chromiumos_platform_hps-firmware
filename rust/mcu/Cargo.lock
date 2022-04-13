@@ -588,8 +588,6 @@ dependencies = [
  "i2c_protocol",
  "log",
  "mcu_common",
- "panic-halt",
- "panic-rtt-target",
  "rtt-target",
  "spi-memory",
  "stm32g0",

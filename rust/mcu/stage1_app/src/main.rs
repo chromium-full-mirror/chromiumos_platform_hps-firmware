@@ -11,6 +11,7 @@ mod camera;
 mod debug;
 mod fpga_device;
 mod header;
+mod panic_handler;
 mod spi_dma_controller;
 mod spi_flash;
 mod spi_peripheral;
@@ -32,13 +33,9 @@ use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::MemBlock;
 use mcu_common::PartIds;
 use mcu_common::Status;
-#[cfg(not(feature = "dev"))]
-use panic_halt as _;
-#[cfg(feature = "dev")]
-use panic_rtt_target as _;
+use mcu_common::{Buffer, MemBlock};
 use rtic::app;
 use spi_memory::series25::Flash;
 
@@ -76,10 +73,8 @@ const APP: () = {
         #[cfg(feature = "dev")]
         static mut DEBUG_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE];
-        let mut resources = init_peripherals(ctx.device, ctx.core);
-        resources
-            .host_interface
-            .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
+        #[allow(unused_mut)]
+        let mut resources = init_peripherals(ctx.device, ctx.core, MemBlock::new(I2C_RECV_BUFFER));
         #[cfg(feature = "dev")]
         {
             resources
@@ -432,6 +427,7 @@ fn rcc_config() -> hal::rcc::Config {
 fn init_peripherals(
     p: hal::stm32::Peripherals,
     cp: rtic::export::Peripherals,
+    mem_block: MemBlock,
 ) -> init::LateResources {
     let mut init_status = Status::empty();
     match p.FLASH.optr.read().rdp().bits() {
@@ -490,6 +486,17 @@ fn init_peripherals(
 
     let mut host_interface = HostInterface::new(board.host_bus, &header::__IMAGE_HDR);
     host_interface.init_status = init_status;
+
+    // We either use our MemBlock to store a crash that occurred on the previous
+    // boot, or if there was no crash, we supply the MemBlock to the host
+    // interface in order to receive data.
+    let mut buffer = Buffer::new(mem_block);
+    panic_handler::copy_crash_report(&mut buffer);
+    if !buffer.is_empty() {
+        host_interface.report_previous_crash(buffer);
+    } else {
+        host_interface.supply_mem_block(buffer.release());
+    }
 
     // Set up a timer for detecting if the FPGA stops sending us updates because it has
     // crashed/hung. The timer interval is chosen to be larger than the duration of each iteration

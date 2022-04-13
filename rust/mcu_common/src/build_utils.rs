@@ -8,8 +8,11 @@ pub fn stage1_linker_script() -> String {
 {{
     HDR   (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
     FLASH (rx) : ORIGIN = 0x{:x}, LENGTH = 0x{:x}
-    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = 36K
+    RAM  (xrw) : ORIGIN = 0x20000000, LENGTH = {}
+    CRASH_REC (rw) : ORIGIN = {}, LENGTH = {}
 }}
+
+PROVIDE(CRASH_RECORD = ORIGIN(CRASH_REC));
 
 SECTIONS
 {{
@@ -21,6 +24,9 @@ SECTIONS
         crate::APPLICATION_START_ADDRESS,
         crate::APPLICATION_VECTOR_TABLE_OFFSET,
         crate::APPLICATION_VECTOR_TABLE_ADDRESS,
-        crate::STAGE1_SLOT_LENGTH
+        crate::STAGE1_SLOT_LENGTH,
+        crate::MCU_RAM_SIZE - crate::MCU_CRASH_RECORD_SIZE,
+        crate::MCU_RAM_START + crate::MCU_RAM_SIZE - crate::MCU_CRASH_RECORD_SIZE,
+        crate::MCU_CRASH_RECORD_SIZE
     )
 }
