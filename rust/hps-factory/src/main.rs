@@ -11,6 +11,7 @@ mod image_workflow;
 mod post_install_test_workflow;
 mod print_part_ids_workflow;
 mod test_stage0_workflow;
+mod test_stage1_workflow;
 mod test_workflow;
 mod write_stage0_workflow;
 
@@ -117,6 +118,9 @@ enum Command {
 
     /// tries various things with stage0 to make sure it behaves as expected
     TestStage0,
+
+    /// tries various things with stage1 to make sure it behaves as expected
+    TestStage1,
 
     /// writes all embedded firmware files to the filesystem
     WriteEmbeddedFirmware(WriteEmbeddedFirmwareConfig),
@@ -350,6 +354,7 @@ where
         Command::Boot(boot_config) => boot_workflow::run(i2c, boot_config, &config),
         Command::PrintPartIds => print_part_ids_workflow::run(i2c, &config),
         Command::TestStage0 => test_stage0_workflow::Stage0Tester::run(i2c, &config),
+        Command::TestStage1 => test_stage1_workflow::Stage1Tester::run(i2c, &config),
         Command::WriteEmbeddedFirmware(_) => unreachable!(),
     }
 }
