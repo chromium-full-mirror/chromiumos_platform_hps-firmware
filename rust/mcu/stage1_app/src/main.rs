@@ -118,6 +118,9 @@ const APP: () = {
                 // because 1 attempt to start the FPGA is equivalent to 2.
                 let _ = ctx.spawn.try_start_fpga();
             }
+            Some(application::Event::Command(Command::TriggerMcuPanic)) => {
+                panic!("Intentional panic");
+            }
             Some(application::Event::Command(command)) => {
                 error!("Unsupported command {:?}", command);
                 host_interface.report_error(mcu_common::Error::HostI2cBadRequest);

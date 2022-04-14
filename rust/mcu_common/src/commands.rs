@@ -31,6 +31,10 @@ pub enum Command {
     #[cfg(feature = "dev")]
     MlbInterrupt = 1 << 5,
 
+    /// Trigger a deliberate panic on the MCU. This is used for testing panic
+    /// handling.
+    TriggerMcuPanic = 1 << 13,
+
     /// Writes test data to SPI flash. Only valid before LaunchApp is invoked,
     /// since after that the MCU does not have access to the SPI flash.
     WriteSpiFlashTestData = 1 << 14,
