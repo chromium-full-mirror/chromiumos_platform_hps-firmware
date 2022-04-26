@@ -7,6 +7,12 @@ use log::error;
 use mcu_common::Buffer;
 use mcu_common::MCU_CRASH_RECORD_SIZE;
 
+/// A marker that we put at the start of a crash record to avoid false-positive
+/// crash reports. RAM will have undefined values when it is first powered on,
+/// so this needs to be long enough that getting this value by random chance is
+/// unlikely.
+const CRASH_MARKER: &str = "CRASH";
+
 extern "C" {
     static mut CRASH_RECORD: [u8; MCU_CRASH_RECORD_SIZE];
 }
@@ -20,7 +26,7 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
         bytes: out,
         used: 0,
     };
-    write!(&mut out, "{}\0", info).unwrap();
+    write!(&mut out, "{}{}\0", CRASH_MARKER, info).unwrap();
     error!("{}", info);
 
     cortex_m::peripheral::SCB::sys_reset();
@@ -33,14 +39,16 @@ pub(crate) fn copy_crash_report(buffer: &mut Buffer) {
     // handlers (which don't return), so it shouldn't be possible for aliasing
     // to occur.
     let record = unsafe { &mut CRASH_RECORD };
-    if record[0] != 0 {
+    if let Some(report) = record.strip_prefix(CRASH_MARKER.as_bytes()) {
         // Provided `buffer` is empty when passed to this function, this unwrap
-        // will succeed because MCU_CRASH_RECORD_SIZE is less than the buffer
-        // capacity. Checked by the test
-        // i2c_buffer_larger_than_crash_record_size in i2c_protocol.
-        buffer.push_bytes(record).unwrap();
+        // will succeed because MCU_CRASH_RECORD_SIZE - CRASH_MARKER.len() is <=
+        // the buffer capacity. The test
+        // i2c_buffer_larger_than_crash_record_size in i2c_protocol checks the
+        // stricter condition that MCU_CRASH_RECORD_SIZE is <= the buffer
+        // capacity.
+        buffer.push_bytes(report).unwrap();
     }
-    // Clear crash report.
+    // Invalidate the crash marker.
     record[0] = 0;
 }
 
