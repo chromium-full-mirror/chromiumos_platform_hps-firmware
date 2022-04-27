@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 //! Interface to MCP2221 and MCP2221A. Uses libusb, so no MCP2221 kernel module
-//! is required. Support I2C and GPIO.
+//! is required. Supports I2C and GPIO.
 
-use embedded_hal::blocking::i2c::Read;
-use embedded_hal::blocking::i2c::Write;
-use embedded_hal::blocking::i2c::WriteRead;
+use embedded_hal::blocking::i2c;
 use std::fmt::Display;
 use std::time::Duration;
 use std::time::Instant;
@@ -68,21 +66,22 @@ pub enum Error {
     Nack,
 }
 
-pub struct I2c {
+/// An MCP device that has been opened. Supports I2C and GPIO operations.
+pub struct Handle {
     handle: rusb::DeviceHandle<rusb::GlobalContext>,
     recv: [u8; MCP_TRANSFER_SIZE],
-    config: I2cConfig,
+    config: Config,
 }
 
 /// A supported device that hasn't yet been opened.
-pub struct McpDevice {
+pub struct AvailableDevice {
     device: rusb::Device<rusb::GlobalContext>,
 }
 
 #[derive(Debug, Clone, Copy)]
 #[non_exhaustive]
-pub struct I2cConfig {
-    pub speed_hz: u32,
+pub struct Config {
+    pub i2c_speed_hz: u32,
     pub reset_on_open: bool,
     pub timeout: Duration,
 }
@@ -112,26 +111,26 @@ pub struct PinValues {
     pub gp3: PinState,
 }
 
-impl Default for I2cConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
-            speed_hz: 400_000,
+            i2c_speed_hz: 400_000,
             reset_on_open: true,
             timeout: DEFAULT_TIMEOUT,
         }
     }
 }
 
-impl McpDevice {
+impl AvailableDevice {
     /// Returns all supported devices.
-    pub fn list() -> Result<Vec<McpDevice>> {
+    pub fn list() -> Result<Vec<AvailableDevice>> {
         let mut devices = Vec::new();
         for device in rusb::devices()?.iter() {
             if let Ok(device_desc) = device.device_descriptor() {
                 if device_desc.vendor_id() == MCP2221A_VENDOR_ID
                     && device_desc.product_id() == MCP2221A_DEVICE_ID
                 {
-                    devices.push(McpDevice { device });
+                    devices.push(AvailableDevice { device });
                 }
             }
         }
@@ -139,19 +138,19 @@ impl McpDevice {
     }
 
     /// Attempts to open the I2C device.
-    pub fn open_i2c(&self, config: &I2cConfig) -> Result<I2c> {
+    pub fn open(&self, config: &Config) -> Result<Handle> {
         let mut handle = self.open_device(config)?;
         handle.claim_interface(MCP2221A_INTERFACE)?;
-        let mut i2c = I2c {
+        let mut i2c = Handle {
             handle,
             recv: [0u8; MCP_TRANSFER_SIZE],
             config: *config,
         };
-        i2c.set_speed(config.speed_hz)?;
+        i2c.set_speed(config.i2c_speed_hz)?;
         Ok(i2c)
     }
 
-    fn open_device(&self, config: &I2cConfig) -> Result<rusb::DeviceHandle<rusb::GlobalContext>> {
+    fn open_device(&self, config: &Config) -> Result<rusb::DeviceHandle<rusb::GlobalContext>> {
         if config.reset_on_open {
             // Record which device we're opening so that we can reobtain it
             // after we reset the device.
@@ -182,7 +181,7 @@ impl McpDevice {
 /// when it gets reset. Ideally, we would see what devices were on the bus
 /// before we reset, then see which "new" MCP device shows up after we reset.
 fn first_device_on_bus(bus_number: u8) -> Result<Option<rusb::Device<rusb::GlobalContext>>> {
-    for device in McpDevice::list()? {
+    for device in AvailableDevice::list()? {
         if device.device.bus_number() == bus_number {
             return Ok(Some(device.device));
         }
@@ -190,16 +189,18 @@ fn first_device_on_bus(bus_number: u8) -> Result<Option<rusb::Device<rusb::Globa
     Ok(None)
 }
 
-impl I2c {
+impl Handle {
     /// A shortcut that just opens the first supported device that we can find.
-    pub fn open_first(config: &I2cConfig) -> Result<Self> {
-        if let Some(device) = McpDevice::list()?.first() {
-            device.open_i2c(config)
+    pub fn open_first(config: &Config) -> Result<Self> {
+        if let Some(device) = AvailableDevice::list()?.first() {
+            device.open(config)
         } else {
             Err(Error::DeviceNotFound)
         }
     }
 
+    /// Can be called on startup to check that the bus is idle. Returns an error
+    /// if either SCL or SDA is being held low by something on the bus.
     pub fn check_bus(&mut self) -> Result<()> {
         self.read_status()?;
         if self.recv[22] != 1 {
@@ -416,7 +417,7 @@ impl I2c {
     }
 }
 
-impl WriteRead for I2c {
+impl i2c::WriteRead for Handle {
     type Error = Error;
 
     fn write_read(
@@ -429,7 +430,7 @@ impl WriteRead for I2c {
     }
 }
 
-impl Write for I2c {
+impl i2c::Write for Handle {
     type Error = Error;
 
     fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
@@ -437,7 +438,7 @@ impl Write for I2c {
     }
 }
 
-impl Read for I2c {
+impl i2c::Read for Handle {
     type Error = Error;
 
     fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {

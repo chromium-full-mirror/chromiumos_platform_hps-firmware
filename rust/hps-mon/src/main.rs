@@ -225,9 +225,9 @@ fn main() -> Result<()> {
 }
 
 fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps + Send>>> {
-    let mut config = mcp2221::I2cConfig::default();
-    config.speed_hz = 400_000;
-    let mut dev = mcp2221::I2c::open_first(&config)
+    let mut config = mcp2221::Config::default();
+    config.i2c_speed_hz = 400_000;
+    let mut dev = mcp2221::Handle::open_first(&config)
         .map_err(|error| anyhow!("Failed to open HPS via I2C: {}", error))?;
     let mut gpio_config = mcp2221::GpioConfig::default();
     gpio_config.set_direction(0, mcp2221::Direction::Output);

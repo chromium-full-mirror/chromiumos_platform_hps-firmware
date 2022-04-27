@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 
 use embedded_hal::blocking::i2c::Read;
-use mcp2221::GpioConfig;
-use mcp2221::I2c;
-use mcp2221::I2cConfig;
-use mcp2221::Result;
 use std::time::Duration;
 
 fn main() {
@@ -15,16 +11,16 @@ fn main() {
     }
 }
 
-fn run() -> Result<()> {
-    let mut config = I2cConfig::default();
-    config.speed_hz = 400_000;
+fn run() -> mcp2221::Result<()> {
+    let mut config = mcp2221::Config::default();
+    config.i2c_speed_hz = 400_000;
     config.timeout = Duration::from_millis(10);
-    let mut dev = I2c::open_first(&config)?;
+    let mut dev = mcp2221::Handle::open_first(&config)?;
 
     // Enable the level shifter that connects the MCP2221 to the I2C bus on the
     // HPS. This doesn't really belong in an "example" for this crate, but is
     // useful for HPS development.
-    let mut gpio_config = GpioConfig::default();
+    let mut gpio_config = mcp2221::GpioConfig::default();
     gpio_config.set_direction(0, mcp2221::Direction::Output);
     gpio_config.set_value(0, true);
     dev.configure_gpio(&gpio_config)?;

@@ -189,9 +189,9 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
     }
     #[cfg(feature = "mcp2221")]
     if flags.mcp {
-        let mut config = mcp2221::I2cConfig::default();
-        config.speed_hz = 400_000;
-        let mut dev = mcp2221::I2c::open_first(&config)
+        let mut config = mcp2221::Config::default();
+        config.i2c_speed_hz = 400_000;
+        let mut dev = mcp2221::Handle::open_first(&config)
             .map_err(|error| anyhow::anyhow!("Failed to open HPS via I2C: {}", error))?;
 
         // Enable the level shifter that connects the MCP2221 to the HPS.

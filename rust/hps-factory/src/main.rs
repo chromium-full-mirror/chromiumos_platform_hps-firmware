@@ -261,14 +261,14 @@ fn main() -> Result<()> {
         // Prevent power control via GPIO when using an MCP2221, since it's
         // unlikely to do what we want.
         config.power_gpio_offset.clear();
-        let mut i2c_config = mcp2221::I2cConfig::default();
-        i2c_config.speed_hz = 400_000;
+        let mut i2c_config = mcp2221::Config::default();
+        i2c_config.i2c_speed_hz = 400_000;
         // This timeout needs to be shorter than the STARTUP_TIMEOUT in
         // hps_i2c.rs. If both are 1 second, then we'll send a request which the
         // device won't see because it isn't ready, we'll then wait 1 second and
         // then give up.
         i2c_config.timeout = std::time::Duration::from_millis(100);
-        let mut i2c = mcp2221::I2c::open_first(&i2c_config)?;
+        let mut i2c = mcp2221::Handle::open_first(&i2c_config)?;
         i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
