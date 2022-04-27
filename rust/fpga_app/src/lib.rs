@@ -464,6 +464,16 @@ where
         for i in 0..buffer.len() {
             buffer[i] = (i16::from(input_data[i]) - 128) as i8;
         }
+
+        // Force data cache to be flushed by reading some large amount of memory
+        for i in 0..2048 {
+            // Safety - nothing is done with this data
+            unsafe {
+                // Reads one byte from each 8 word cache line
+                core::ptr::read_volatile(&buffer[i * 32]);
+            }
+        }
+
         let start = self.timer.now();
         let score = self.classifier.run_model(model_number)?;
         let elapsed = self.timer.elapsed_ms(start);
