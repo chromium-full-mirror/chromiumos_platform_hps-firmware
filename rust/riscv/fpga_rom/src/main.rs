@@ -8,7 +8,6 @@
 #[cfg(not(feature = "tflm_inference"))]
 mod non_tflm_classifier;
 
-use litex_pac;
 use riscv_rt::entry;
 
 #[entry]
@@ -46,11 +45,14 @@ unsafe fn create_classifier() -> non_tflm_classifier::NonTflmClassifier {
     non_tflm_classifier::NonTflmClassifier::sole_instance()
 }
 
-// Supply a dummy software implementation of __atomic_load_4 to work around a rustc bug:
-// https://github.com/rust-lang/rust/issues/92897
+/// Supply a dummy software implementation of __atomic_load_4 to work around a rustc bug:
+/// https://github.com/rust-lang/rust/issues/92897
+///
+/// # Safety
+/// `arg` must point to valid memory and be correctly aligned.
 #[no_mangle]
-pub extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) -> usize {
-    unsafe { *arg }
+pub unsafe extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) -> usize {
+    *arg
 }
 
 #[inline(never)]
