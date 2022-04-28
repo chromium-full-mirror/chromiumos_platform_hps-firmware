@@ -17,10 +17,13 @@ use core::convert::TryFrom;
 #[link(name = "m")]
 #[link(name = "stdc++")]
 extern "C" {
-    fn tflite_init() -> i32;
+    fn tflite_init(model1_bytes: *const u8, model2_bytes: *const u8) -> i32;
     fn tflite_get_input(model_number: u32) -> *mut i8;
     fn tflite_classify(model_number: u32, score_out: *mut i8) -> bool;
 }
+
+const MODEL1: &[u8] = include_bytes!("../../../../models/presence.tflite");
+const MODEL2: &[u8] = include_bytes!("../../../../models/second.tflite");
 
 #[non_exhaustive]
 pub struct TflmClassifier {
@@ -33,7 +36,7 @@ impl TflmClassifier {
     /// Must only be called once.
     pub unsafe fn sole_instance() -> Self {
         Self {
-            init_status: Self::from_int(tflite_init()),
+            init_status: Self::from_int(tflite_init(MODEL1.as_ptr(), MODEL2.as_ptr())),
         }
     }
 

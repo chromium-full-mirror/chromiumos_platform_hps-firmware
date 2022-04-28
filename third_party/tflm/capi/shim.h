@@ -34,7 +34,7 @@ enum TfLiteInitStatus : int32_t {
 
 // Set up TfLM environment
 // Returns a value from enum TfLiteInitStatus
-int tflite_init();
+int tflite_init(const uint8_t* model1_bytes, const uint8_t* model2_bytes);
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 320x240 greyscale image.
