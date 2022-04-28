@@ -333,16 +333,12 @@ where
             )?;
             post_install_test_workflow::PostInstallTester::run(
                 i2c,
-                // The numbers of iterations used here are higher than the
-                // defaults for the post-install-test subcommand, since we
-                // assume this is running non-interactively, so it's OK to take
-                // a little bit longer.
                 &PostInstallTestConfig {
-                    fpga_spi_read_iterations: 500,
-                    host_i2c_iterations: 5000,
-                    fpga_mcu_iterations: 500,
-                    camera_i2c_iterations: 500,
-                    camera_data_bus_iterations: 500,
+                    fpga_spi_read_iterations: 50,
+                    host_i2c_iterations: 500,
+                    fpga_mcu_iterations: 50,
+                    camera_i2c_iterations: 50,
+                    camera_data_bus_iterations: 50,
                 },
                 &config,
             )?;
