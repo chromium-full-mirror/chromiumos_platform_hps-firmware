@@ -339,7 +339,7 @@ fn execute_locally(
         LocalOperation::ResetMcu => device.reset()?,
         LocalOperation::WriteGateware => {
             if let Some(file) = &flags.gateware {
-                if let Err(error) = write_spi_flash::write_spi_flash(
+                if let Err(error) = write_spi_flash::write_file_to_spi_flash(
                     mcu_command_channel,
                     cmd_response_channel,
                     hps.clone(),
@@ -354,7 +354,7 @@ fn execute_locally(
         }
         LocalOperation::WriteSocRom => {
             if let Some(file) = &flags.soc_rom {
-                if let Err(error) = write_spi_flash::write_spi_flash(
+                if let Err(error) = write_spi_flash::write_file_to_spi_flash(
                     mcu_command_channel,
                     cmd_response_channel,
                     hps.clone(),

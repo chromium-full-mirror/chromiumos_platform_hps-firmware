@@ -28,20 +28,34 @@ const PAGES_PER_BLOCK: usize = BLOCK_SIZE / PAGE_SIZE;
 const CRC: Crc<u32> = Crc::<u32>::new(&crc::CRC_32_ISCSI);
 const MAX_OUTSTANDING_COMMANDS: usize = 28;
 
-pub(crate) fn write_spi_flash(
+pub(crate) fn write_file_to_spi_flash(
     command_channel: &mut Option<Box<dyn DataSink>>,
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
     hps: Option<Arc<Mutex<dyn Hps + Send>>>,
     start_offset: usize,
     spi_flash_file: &Path,
 ) -> Result<()> {
+    write_spi_flash(
+        command_channel,
+        cmd_response_channel,
+        hps,
+        start_offset,
+        std::fs::read(spi_flash_file)?,
+    )
+}
+
+fn write_spi_flash(
+    command_channel: &mut Option<Box<dyn DataSink>>,
+    cmd_response_channel: &mut Option<Box<dyn DataSource>>,
+    hps: Option<Arc<Mutex<dyn Hps + Send>>>,
+    start_offset: usize,
+    mut file_bytes: Vec<u8>,
+) -> Result<()> {
     assert!(start_offset % BLOCK_SIZE == 0);
     let mut hps_writer = hps.map(HpsWriter::new);
     if let (Some(command_channel), Some(cmd_response_channel)) =
         (command_channel.as_mut(), cmd_response_channel.as_mut())
     {
-        let mut file_bytes = std::fs::read(spi_flash_file)?;
-
         if file_bytes.len() > SPI_FLASH_SIZE as usize {
             bail!(
                 "File is {:0.1}MB, which is too big to fit in the SPI flash ({}MB)",
