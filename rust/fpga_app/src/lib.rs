@@ -109,6 +109,7 @@ pub struct App<S, I, C, T> {
     status: Status,
     model_number: u32,
     spi_test_data: Option<&'static [u8]>,
+    test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
     exposure: i32,
 }
@@ -153,6 +154,7 @@ where
             status: Status::default(),
             model_number: 1,
             spi_test_data: None,
+            test_image_area: None,
             exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
             exposure: 0x100,
         }
@@ -181,6 +183,10 @@ where
 
     pub fn set_spi_test_data(&mut self, region: &'static [u8]) {
         self.spi_test_data = Some(region);
+    }
+
+    pub fn set_test_image_area(&mut self, region: &'static [u8]) {
+        self.test_image_area = Some(region);
     }
 
     pub fn mcu_mut(&mut self) -> &mut McuInterface<S> {
@@ -459,54 +465,72 @@ where
             mcu_println!(self, "Self-test feature not enabled");
             return Err(Error::UnknownFeature);
         }
-        const CAT: &[u8] = include_bytes!("../test_data/cat_picture.dat");
+        let test_data = self.test_image_area.ok_or_else(|| {
+            mcu_println!(self, "Test-image area not available");
+            Error::UnknownFeature
+        })?;
 
         mcu_println!(self, "Testing TFLM on canned data");
 
-        self.check_score(1, "presence", CAT, -100)?;
-        self.check_score(2, "second", CAT, -108)?;
+        const MODEL1_EXPECTED: &[i8] = &include!("../../../test_data/presence.expected");
+        const MODEL2_EXPECTED: &[i8] = &include!("../../../test_data/second.expected");
 
-        mcu_println!(self, "Self-test passed");
+        self.run_model_on_test_images(1, test_data, MODEL1_EXPECTED)?;
+        self.run_model_on_test_images(2, test_data, MODEL2_EXPECTED)?;
+
         Ok(())
     }
 
     #[cfg(feature = "dev")]
-    fn check_score(
+    fn run_model_on_test_images(
         &mut self,
         model_number: u32,
-        name: &str,
-        input_data: &[u8],
-        expected: i8,
+        test_data: &[u8],
+        expected: &[i8],
     ) -> Result<()> {
-        let buffer = self.classifier.input_data_mut(model_number);
-        for i in 0..buffer.len() {
-            buffer[i] = (i16::from(input_data[i]) - 128) as i8;
-        }
+        const MAX_RESULTS: usize = TEST_IMAGES_MAX_SIZE as usize / TEST_IMAGE_BLOCK_SIZE;
 
-        // Force data cache to be flushed by reading some large amount of memory
-        for i in 0..2048 {
-            // Safety - nothing is done with this data
-            unsafe {
-                // Reads one byte from each 8 word cache line
-                core::ptr::read_volatile(&buffer[i * 32]);
+        let mut results: [i8; MAX_RESULTS] = [0i8; MAX_RESULTS];
+        let mut num_results = 0;
+        for input_data in test_data.chunks_exact(TEST_IMAGE_BLOCK_SIZE) {
+            // Check if the first few bytes of the image look like blank flash.
+            // If they do, assume that no image was written here. So long as our
+            // test images aren't completely overexposed, this should be
+            // suffient.
+            if input_data.starts_with(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff]) {
+                break;
             }
+
+            let buffer = self.classifier.input_data_mut(model_number);
+            for i in 0..buffer.len() {
+                buffer[i] = (i16::from(input_data[i]) - 128) as i8;
+            }
+
+            // Force data cache to be flushed by reading some large amount of memory
+            for i in 0..2048 {
+                // Safety - nothing is done with this data
+                unsafe {
+                    // Reads one byte from each 8 word cache line
+                    core::ptr::read_volatile(&buffer[i * 32]);
+                }
+            }
+
+            results[num_results] = self.classifier.run_model(model_number)?;
+            num_results += 1;
+
+            // Running all our models on all our data might take several
+            // seconds. Let the MCU know that we're still alive after each
+            // image.
+            self.mcu.resync();
+        }
+        let results = &results[..num_results];
+        if results == expected {
+            mcu_println!(self, "Model {model_number} results: {results:?} - PASS");
+        } else {
+            mcu_println!(self, "Model {model_number} results: {results:?} - FAIL");
+            mcu_println!(self, "       expected: {expected:?}");
         }
 
-        let start = self.timer.now();
-        let score = self.classifier.run_model(model_number)?;
-        let elapsed = self.timer.elapsed_ms(start);
-        if score == expected {
-            mcu_println!(self, "Got expected result {} in {}ms", expected, elapsed);
-        } else {
-            mcu_println!(
-                self,
-                "Unexpected presence score for {}: Expected {}, got {}",
-                name,
-                expected,
-                score
-            );
-            return Err(Error::SelfTestFailed);
-        }
         Ok(())
     }
 

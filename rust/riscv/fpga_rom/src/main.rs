@@ -8,7 +8,11 @@
 #[cfg(not(feature = "tflm_inference"))]
 mod non_tflm_classifier;
 
+use fpga_app::TEST_IMAGES_MAX_SIZE;
+use fpga_app::TEST_IMAGES_OFFSET;
 use riscv_rt::entry;
+
+const SPI_FLASH_ORIGIN: usize = 0x20000000;
 
 #[entry]
 fn main() -> ! {
@@ -23,13 +27,22 @@ fn main() -> ! {
         fpga_hal::Timer::default(),
     );
     app.set_spi_test_data(spi_test_data());
+    app.set_test_image_area(test_image_area());
     app.run();
 }
 
 fn spi_test_data() -> &'static [u8] {
     const MB: usize = 1024 * 1024;
-    const SPI_FLASH_ORIGIN: usize = 0x20000000;
     unsafe { core::slice::from_raw_parts((SPI_FLASH_ORIGIN + 15 * MB) as *const u8, MB) }
+}
+
+fn test_image_area() -> &'static [u8] {
+    unsafe {
+        core::slice::from_raw_parts(
+            (SPI_FLASH_ORIGIN + TEST_IMAGES_OFFSET as usize) as *const u8,
+            TEST_IMAGES_MAX_SIZE as usize,
+        )
+    }
 }
 
 /// # Safety
