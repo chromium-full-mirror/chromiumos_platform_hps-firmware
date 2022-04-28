@@ -9,6 +9,8 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use crc::Crc;
+use fpga_app::camera::IMAGE_HEIGHT;
+use fpga_app::camera::IMAGE_WIDTH;
 use hps_interface::Hps;
 use mcu_common::memory_banks;
 use mcu_common::McuDebugCommand;
@@ -177,6 +179,52 @@ fn write_spi_flash(
         );
     } else {
         bail!("No command channel available, command not sent.");
+    }
+    Ok(())
+}
+
+pub(crate) fn write_test_data(
+    command_channel: &mut Option<Box<dyn DataSink>>,
+    cmd_response_channel: &mut Option<Box<dyn DataSource>>,
+    hps: Option<Arc<Mutex<dyn Hps + Send>>>,
+    test_data_dir: &Path,
+) -> Result<()> {
+    let mut address = fpga_app::TEST_IMAGES_OFFSET as usize;
+    let mut filenames = Vec::new();
+    for entry in test_data_dir.read_dir()? {
+        let entry = entry?;
+        if let Some(extension) = entry.path().extension() {
+            if extension == "png" {
+                filenames.push(entry.path().to_owned());
+            }
+        }
+    }
+    filenames.sort();
+
+    for path in &filenames {
+        println!("Writing test image {}", path.display());
+        if address as u32 >= fpga_app::TEST_IMAGES_OFFSET + fpga_app::TEST_IMAGES_MAX_SIZE {
+            bail!("Test image area is full");
+        }
+        let image = image::open(path)
+            .map_err(|e| anyhow!("Failed to process {}: {e}", path.display()))?
+            .into_luma8();
+        if image.width() != IMAGE_WIDTH || image.height() != IMAGE_HEIGHT {
+            bail!(
+                "Image {} has unexpected dimensions {}x{}",
+                path.display(),
+                image.width(),
+                image.height()
+            );
+        }
+        write_spi_flash(
+            command_channel,
+            cmd_response_channel,
+            hps.clone(),
+            address,
+            image.into_raw(),
+        )?;
+        address += fpga_app::TEST_IMAGE_BLOCK_SIZE;
     }
     Ok(())
 }

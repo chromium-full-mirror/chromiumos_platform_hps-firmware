@@ -16,6 +16,7 @@ use mcu_common::McuDebugCommand;
 use mcu_common::MemBlock;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use mcu_common::DEBUG_COMMAND_START;
+use mcu_common::SPI_BLOCK_SIZE;
 use rtic::Mutex;
 use rtt_target::rtt_init;
 use rtt_target::DownChannel;
@@ -465,7 +466,6 @@ pub(crate) fn crc_sector(
     spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
     block: u16,
 ) -> [u8; 4] {
-    use crate::spi_flash::BLOCK_SIZE;
     use crate::spi_flash::PAGE_SIZE;
     use spi_memory::Read;
 
@@ -478,7 +478,7 @@ pub(crate) fn crc_sector(
     };
     let mut digest = CRC.digest();
     let mut buf = [0x00; PAGE_SIZE as usize];
-    const PAGES_PER_BLOCK: u32 = BLOCK_SIZE / PAGE_SIZE;
+    const PAGES_PER_BLOCK: u32 = SPI_BLOCK_SIZE / PAGE_SIZE;
     for page_offset in 0..PAGES_PER_BLOCK {
         let _ = spi_flash.read(
             (block as u32 * PAGES_PER_BLOCK + page_offset) * PAGE_SIZE,
@@ -518,7 +518,6 @@ fn test_write_speed(
     spi_flash: Option<&mut Flash<crate::board::FlashSpiControl, crate::board::FlashSpiCs>>,
     stopwatch: &mut Stopwatch<hal::stm32::TIM2>,
 ) {
-    use crate::spi_flash::BLOCK_SIZE;
     use crate::spi_flash::PAGE_SIZE;
     use spi_memory::BlockDevice;
 
@@ -536,7 +535,7 @@ fn test_write_speed(
     let mut write_time = 0;
     for page in 0..(READ_SIZE / PAGE_SIZE) {
         let address = 9 * 1024 * 1024 + page * PAGE_SIZE;
-        if address % BLOCK_SIZE == 0 {
+        if address % SPI_BLOCK_SIZE == 0 {
             erase_time += stopwatch
                 .trace(|| {
                     // safety: We hold a mutable reference to Flash, which owns

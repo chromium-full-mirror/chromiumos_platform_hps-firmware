@@ -127,6 +127,10 @@ struct Flags {
     gateware: Option<PathBuf>,
 
     #[clap(long)]
+    /// directory containing test images
+    test_data_dir: Option<PathBuf>,
+
+    #[clap(long)]
     /// filename from which SOC ROM should be read when write_soc_rom command is
     /// run
     soc_rom: Option<PathBuf>,
@@ -350,6 +354,20 @@ fn execute_locally(
                 }
             } else {
                 eprintln!("--gateware must be specified on startup");
+            }
+        }
+        LocalOperation::WriteTestImages => {
+            if let Some(test_data_dir) = &flags.test_data_dir {
+                if let Err(error) = write_spi_flash::write_test_data(
+                    mcu_command_channel,
+                    cmd_response_channel,
+                    hps.clone(),
+                    test_data_dir,
+                ) {
+                    eprintln!("{}", error);
+                }
+            } else {
+                eprintln!("--test-data-dir must be specified on startup");
             }
         }
         LocalOperation::WriteSocRom => {

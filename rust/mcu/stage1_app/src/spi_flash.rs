@@ -12,13 +12,13 @@ use hmac_sha256::Hash;
 use log::error;
 use log::info;
 use mcu_common::Error;
+use mcu_common::SPI_BLOCK_SIZE;
 use mcu_common::SPI_FLASH_SIZE;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
 
 pub(crate) const PAGE_SIZE: u32 = 256;
-pub(crate) const BLOCK_SIZE: u32 = 64 * 1024;
 
 /// Write's `data` to `address` in the SPI flash. `data` is updated based on
 /// response from the SPI flash. We don't actually use this returned data, but
@@ -47,11 +47,12 @@ pub(crate) fn write(
     // cannot yet be removed. We erase the entire SPI flash prior to writing
     // the first bit of data. Host must send data in blocks that evenly
     // divides this size.
-    if address & !(BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(BLOCK_SIZE - 1) {
+    if address & !(SPI_BLOCK_SIZE - 1) != (address + data.len() as u32 - 1) & !(SPI_BLOCK_SIZE - 1)
+    {
         error!("SPI write crosses block boundary");
         return Err(Error::HostI2cBadRequest);
     }
-    if address % BLOCK_SIZE == 0 {
+    if address % SPI_BLOCK_SIZE == 0 {
         // The spi-memory crate doesn't support erasing blocks, so we do it
         // ourselves. https://github.com/jonas-schievink/spi-memory/issues/37
         let mut spi = unsafe { SpiFlash::steal() };

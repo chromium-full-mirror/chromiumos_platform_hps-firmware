@@ -21,6 +21,8 @@ mod test_helpers;
 
 use application::Rotation;
 use application::Status;
+use camera::IMAGE_HEIGHT;
+use camera::IMAGE_WIDTH;
 pub use classifier::Classifier;
 pub use classifier::FakeClassifier;
 pub use classifier::TfLiteInitStatus;
@@ -29,6 +31,7 @@ pub use debug_commands::DebugCommand;
 use embedded_hal::blocking::spi;
 pub use features::Features;
 use hm01b0::TestPattern;
+use mcu_common::SPI_BLOCK_SIZE;
 use mcu_interface::McuInterface;
 pub use timer::Instant;
 pub use timer::Timer;
@@ -40,6 +43,21 @@ const SOC_ROM_VERSION: u8 = 1;
 // as many status reports as echo requests and (2) we'd overflow our loop
 // counter too quickly if we only did a single test.
 pub const MCU_COMMS_TESTS_PER_LOOP: u32 = 100;
+
+/// Offset into SPI flash at which we may store test images.
+pub const TEST_IMAGES_OFFSET: u32 = 8 * 1024 * 1024;
+
+/// Size of the area into which test areas are written.
+pub const TEST_IMAGES_MAX_SIZE: u32 = 2 * 1024 * 1024;
+
+/// Number of bytes in an image.
+pub const IMAGE_SIZE: usize = (IMAGE_WIDTH * IMAGE_HEIGHT) as usize;
+
+/// Alignment of each image in the test image area. We round up to the next SPI
+/// block size, so that each image starts at the start of a block, making
+/// writing of images easier.
+pub const TEST_IMAGE_BLOCK_SIZE: usize =
+    ((IMAGE_SIZE - 1) / SPI_BLOCK_SIZE as usize + 1) * SPI_BLOCK_SIZE as usize;
 
 /// Print to hps-mon via the MCU. The first argument can be anything that
 /// implements `mcu_mut()`.

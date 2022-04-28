@@ -677,6 +677,7 @@ dependencies = [
  "fpga_app",
  "host_dev_common",
  "hps_interface",
+ "image",
  "mcp2221",
  "mcu_common",
  "probe-rs",

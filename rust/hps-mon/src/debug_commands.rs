@@ -56,6 +56,7 @@ pub(crate) enum LocalOperation {
     ResetMcu,
     WriteGateware,
     WriteSocRom,
+    WriteTestImages,
     I2cCommand(mcu_common::commands::Command),
     SetFeatureEnable,
     SleepMilliseconds,
@@ -283,6 +284,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "write_soc_rom",
         help_text: "Write soft CPU binary to SPI flash",
         command_type: CommandType::LocalOperation(LocalOperation::WriteSocRom),
+        arg_parser: NO_ARG,
+    },
+    AvailableDebugCommand {
+        keyword: "write_test_images",
+        help_text: "Write all PNG files in --test-image-dir to test data area on the SPI flash",
+        command_type: CommandType::LocalOperation(LocalOperation::WriteTestImages),
         arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
