@@ -14,6 +14,8 @@ use hps_interface::HpsAdapter;
 use hps_interface::Stage;
 use log::info;
 use mcu_common::commands::Command;
+use mcu_common::memory_banks;
+use mcu_common::registers;
 use mcu_common::Error;
 
 pub(crate) struct Stage1Tester<'a, I> {
@@ -30,6 +32,8 @@ where
         let mut tester = Stage1Tester { i2c };
 
         tester.test_panic_handling();
+        tester.test_unsupported_command();
+        tester.test_write_beyond_end_of_spi_flash();
 
         info!("Stage1 test passed");
         Ok(())
@@ -46,6 +50,23 @@ where
         assert!(report.contains("Intentional panic"));
         hps = self.reset_to_stage1().unwrap();
         assert_eq!(hps.error().unwrap(), Error::None);
+    }
+
+    fn test_unsupported_command(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        hps.perform_command(Command::Launch1).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
+
+        let mut hps = self.reset_to_stage1().unwrap();
+        hps.write_register(registers::COMMAND, 255).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
+    }
+
+    fn test_write_beyond_end_of_spi_flash(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        hps.write_memory(memory_banks::SPI_FLASH, 16 * 1024 * 1024, &[0u8; 16])
+            .unwrap();
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
     /// Resets the HPS, launches to stage1 then waits for it start.
