@@ -12,6 +12,7 @@ use hmac_sha256::Hash;
 use log::error;
 use log::info;
 use mcu_common::Error;
+use mcu_common::SPI_FLASH_SIZE;
 use spi_memory::series25::Flash;
 use spi_memory::BlockDevice;
 use spi_memory::Read;
@@ -36,6 +37,9 @@ pub(crate) fn write(
     };
     if data.len() > PAGE_SIZE as usize {
         error!("SPI flash must currently be written in blocks of at most 256 bytes at a time");
+        return Err(Error::HostI2cBadRequest);
+    }
+    if address.saturating_add(data.len() as u32) > SPI_FLASH_SIZE {
         return Err(Error::HostI2cBadRequest);
     }
     // TODO(dml) the whole flash is erased as part of the update sequence, so
