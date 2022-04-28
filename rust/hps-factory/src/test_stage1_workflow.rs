@@ -40,7 +40,7 @@ where
         assert_eq!(hps.stage().unwrap(), Stage::Stage1);
         hps.check_errors().unwrap();
         hps.perform_command(Command::TriggerMcuPanic).unwrap();
-        hps = self.reset_to_stage1().unwrap();
+        hps = self.launch_stage1().unwrap();
         assert_eq!(hps.error().unwrap(), Error::Panic);
         let report = hps.crash_report().unwrap();
         assert!(report.contains("Intentional panic"));
@@ -48,14 +48,23 @@ where
         assert_eq!(hps.error().unwrap(), Error::None);
     }
 
-    /// Resets the HPS, launches to stage1 then waits for it start
+    /// Resets the HPS, launches to stage1 then waits for it start.
     fn reset_to_stage1(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
         self.i2c
             .open_hps()
             .unwrap()
             .perform_command(Command::Reset)
             .unwrap();
-        self.i2c.open_hps()?.perform_command(Command::Launch1)?;
+        self.launch_stage1()
+    }
+
+    /// Launches stage1 and waits for it to start. If stage1 is already running,
+    /// does nothing.
+    fn launch_stage1(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
+        let mut hps = self.i2c.open_hps()?;
+        if hps.stage()? == Stage::Stage0 {
+            hps.perform_command(Command::Launch1)?;
+        }
         let mut hps = self.i2c.open_hps()?;
         assert_eq!(hps.stage().unwrap(), Stage::Stage1);
         Ok(hps)
