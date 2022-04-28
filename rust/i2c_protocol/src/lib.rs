@@ -362,6 +362,8 @@ mod tests {
             protocol_handler.next_event(),
             Err(Error::BufferNotAvailable)
         );
+        // Keep turning the crank, to let all the bytes be consumed and discarded.
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
     }
 
     #[test]
