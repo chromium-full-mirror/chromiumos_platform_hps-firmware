@@ -39,9 +39,8 @@ fn main() -> Result<()> {
     }",
     );
 
-    // The symbol `end` is used by "sbrk" from libnosys. It's unlikely that sbrk
-    // is actually used from any reachable code, but linking fails if we don't
-    // define `end`.
+    // The symbol `end` is used by "sbrk" from libnosys. We set it to the end of
+    // BSS so that any allocations happen after that.
     //
     // The arena is a 256KB section region containing the TfLM tensor arena.
     // Since the standard link script does not know about the arena, We need to
@@ -49,7 +48,7 @@ fn main() -> Result<()> {
     write_file(
         &out_dir.join("tflm_inference.x"),
         "
-        PROVIDE( end = . );
+        PROVIDE( end = _ebss );
         SECTIONS {
             .arena (NOLOAD) :
             {

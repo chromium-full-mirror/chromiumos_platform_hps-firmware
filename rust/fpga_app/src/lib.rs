@@ -672,6 +672,14 @@ pub fn report_fatal_error(spi: impl spi::Transfer<u8>, error: mcu_common::Error)
     mcu.report_error(error);
 }
 
+#[cfg(feature = "dev")]
+pub fn write_stdout(spi: impl spi::Transfer<u8>, data: &[u8]) {
+    let mut mcu = McuInterface::new(spi);
+    // Printing is for debugging purposes, so is best effort only. Ignore
+    // errors.
+    let _ = mcu.write_stdout_bytes(data);
+}
+
 #[cfg(test)]
 mod tests {
     use crate::camera::testing::FakeImageDataReceiver;

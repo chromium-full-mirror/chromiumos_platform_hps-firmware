@@ -139,6 +139,17 @@ where
         hm01b0::Camera::new(self)
     }
 
+    #[cfg(feature = "dev")]
+    pub fn write_stdout_bytes(&mut self, bytes: &[u8]) -> Result<()> {
+        for chunk in bytes.chunks(BUFFER_SIZE - 1) {
+            self.clear_buffer();
+            self.buffer[0] = Action::DebugLog.into();
+            self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
+            self.exchange()?;
+        }
+        Ok(())
+    }
+
     /// Returns the next pending debug command (if any) together with an
     /// argument for that command.
     #[cfg(feature = "dev")]
