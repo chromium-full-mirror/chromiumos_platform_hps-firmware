@@ -22,8 +22,13 @@ extern "C" {
     fn tflite_classify(model_number: u32, score_out: *mut i8) -> bool;
 }
 
-const MODEL1: &[u8] = include_bytes!("../../../../models/presence.tflite");
-const MODEL2: &[u8] = include_bytes!("../../../../models/second.tflite");
+const MODEL1_SIZE: usize = include_bytes!("../../../../models/presence.tflite").len();
+const MODEL2_SIZE: usize = include_bytes!("../../../../models/second.tflite").len();
+
+#[link_section = ".model_data"]
+static MODEL1: [u8; MODEL1_SIZE] = *include_bytes!("../../../../models/presence.tflite");
+#[link_section = ".model_data"]
+static MODEL2: [u8; MODEL2_SIZE] = *include_bytes!("../../../../models/second.tflite");
 
 #[non_exhaustive]
 pub struct TflmClassifier {

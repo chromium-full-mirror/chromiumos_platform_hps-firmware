@@ -24,8 +24,12 @@ SECTIONS {
         (*(.trap.rust));
     } > spiflash
 
-    /* TODO(dml): Put large, infrequently changing assets here so that their
-     * location is not affected by changes to code (text). */
+    /* Our models are large, fixed size and during development tend to change
+     * less than our code, so put them next so as to avoid having them move around. */
+    .model_data :
+    {
+        *(.model_data)
+    } > spiflash
 
     /* All our other code. */
     .text :
