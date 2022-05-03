@@ -145,10 +145,11 @@ fn write_spi_flash(
                     }
                 }
                 pages_written += 1;
-                if pages_written % 10 == 0 {
+                if pages_written % 100 == 0 {
                     println!(
-                        "{:0.1}% complete. {:0.1}KiB/s",
+                        "{:0.1}% of {}KiB complete. {:0.1}KiB/s",
                         pages_written as f64 * 100f64 / total_pages as f64,
+                        total_pages * PAGE_SIZE / 1024,
                         ((pages_written * PAGE_SIZE) as f64 / start.elapsed().as_secs_f64())
                             / 1024f64
                     );
