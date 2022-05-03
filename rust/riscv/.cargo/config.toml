@@ -1,9 +1,8 @@
 [target.riscv32i-unknown-none-elf]
 linker = "ld.lld"
 rustflags = [
-  "-C", "link-arg=-Tlinker_discard.x",
   "-C", "link-arg=-Tmemory.x",
-  "-C", "link-arg=-Tlink.x",
+  "-C", "link-arg=-Tfpga_rom.x",
 ]
 
 [build]

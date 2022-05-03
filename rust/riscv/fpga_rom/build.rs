@@ -25,41 +25,12 @@ fn main() -> Result<()> {
     // Also tell linker to search in out_dir, so it finds the linker scripts we generate below.
     println!("cargo:rustc-link-search={}", out_dir.display());
 
-    write_file(
-        &out_dir.join("linker_discard.x"),
-        "
-    SECTIONS {
-        /DISCARD/ :
-        {
-            *(.init_array)
-            *(.gcc_except_table.*)
-            *(.eh_frame*)
-            abort(*)
-        }
-    }",
+    // Make sure that cargo rebuilds our binary if we change the linker script.
+    println!("cargo:rerun-if-changed=fpga_rom.x");
+    println!(
+        "cargo:rustc-link-search={}",
+        std::env::current_dir()?.display()
     );
-
-    // The symbol `end` is used by "sbrk" from libnosys. We set it to the end of
-    // BSS so that any allocations happen after that.
-    //
-    // The arena is a 256KB section region containing the TfLM tensor arena.
-    // Since the standard link script does not know about the arena, We need to
-    // explicitly place arena sections in the arena region.
-    write_file(
-        &out_dir.join("tflm_inference.x"),
-        "
-        PROVIDE( end = _ebss );
-        SECTIONS {
-            .arena (NOLOAD) :
-            {
-                    _farena = .;
-                    *(.arena)
-                    _earena = .;
-            } > arena
-        }
-        ",
-    );
-    println!("cargo:rustc-link-arg=-Ttflm_inference.x");
 
     if cfg!(feature = "tflm") {
         // For libc.a, libm.a and libstdc++.a.
@@ -146,12 +117,4 @@ fn print_sources_files_in_dir(tflm_gen_dir: &Path) -> Result<()> {
         }
     }
     Ok(())
-}
-
-fn write_file(path: &std::path::Path, contents: &str) {
-    if std::fs::read_to_string(&path).unwrap_or_default() != contents {
-        if let Err(error) = std::fs::write(&path, contents) {
-            panic!("Failed to write {}: {}", path.display(), error);
-        }
-    }
 }
