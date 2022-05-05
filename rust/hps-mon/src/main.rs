@@ -289,6 +289,7 @@ fn run_loop(
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
+    set_blocking_mode(&mut mcu_command_channel, true)?;
     let command_source = debug_commands::create_command_source(console, &flags.cmd.join(";"))?;
     loop {
         let mut got_data = false;
@@ -313,7 +314,10 @@ fn run_loop(
                     device,
                     &hps,
                 )?,
-                Command::Exit => return Ok(()),
+                Command::Exit => {
+                    set_blocking_mode(&mut mcu_command_channel, false)?;
+                    return Ok(());
+                }
             };
         }
         // If we don't get any data from the device, we sleep, increasing how
@@ -329,6 +333,22 @@ fn run_loop(
     }
 }
 
+fn set_blocking_mode(
+    mcu_command_channel: &mut Option<Box<dyn DataSink>>,
+    blocking: bool,
+) -> Result<()> {
+    if mcu_command_channel.is_none() {
+        return Ok(());
+    }
+    send_command_to_device(
+        &debug_commands::DebugCommand {
+            code: mcu_common::McuDebugCommand::SetBlockingMode as u8,
+            arg: if blocking { 1 } else { 0 },
+        },
+        mcu_command_channel,
+    )
+}
+
 // Executes the given local command
 fn execute_locally(
     c: &LocalCommand,
@@ -340,7 +360,10 @@ fn execute_locally(
 ) -> Result<()> {
     match c.operation {
         LocalOperation::PrintHelp => debug_commands::print_help_text(),
-        LocalOperation::ResetMcu => device.reset()?,
+        LocalOperation::ResetMcu => {
+            device.reset()?;
+            set_blocking_mode(mcu_command_channel, true)?;
+        }
         LocalOperation::WriteGateware => {
             if let Some(file) = &flags.gateware {
                 if let Err(error) = write_spi_flash::write_file_to_spi_flash(

@@ -29,4 +29,5 @@ pub enum McuDebugCommand {
     SetCameraAeTarget = 20,
     TryStartFpga = 21,
     SetCameraBlcTarget = 22,
+    SetBlockingMode = 23,
 }

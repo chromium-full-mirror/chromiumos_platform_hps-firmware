@@ -257,6 +257,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
+        keyword: "set_blocking_mode",
+        help_text: "Sets FPGA to host RTT channel as 1=blocking, 0=non-blocking",
+        command_type: CommandType::McuCommand(McuDebugCommand::SetBlockingMode),
+        arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
         keyword: "sleep_second",
         help_text: "Sleep for a second",
         command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds),

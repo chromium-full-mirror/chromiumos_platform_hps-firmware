@@ -19,6 +19,7 @@ use mcu_common::DEBUG_COMMAND_START;
 use mcu_common::SPI_BLOCK_SIZE;
 use rtic::Mutex;
 use rtt_target::rtt_init;
+use rtt_target::ChannelMode;
 use rtt_target::DownChannel;
 use rtt_target::UpChannel;
 use spi_memory::series25::Flash;
@@ -433,6 +434,16 @@ pub(crate) fn handle_mcu_debug_command(
         McuDebugCommand::TryStartFpga => {
             resources.host_interface.lock(|h| h.command_triggered());
             let _ = spawn.try_start_fpga();
+        }
+        McuDebugCommand::SetBlockingMode => {
+            let mode = if command.arg == 1 {
+                ChannelMode::BlockIfFull
+            } else {
+                ChannelMode::NoBlockSkip
+            };
+            resources.debug_resources.fpga_up_channel.set_mode(mode);
+            // Ideally we'd like to set the mode of the MCU up channel as well,
+            // but we passed ownership of it to rtt_target::set_print_channel.
         }
         McuDebugCommand::Ping => info!("Pong!"),
     }
