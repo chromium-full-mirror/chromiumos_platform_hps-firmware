@@ -13,7 +13,6 @@ use core::convert::TryFrom;
 #[link(name = "tflite-micro")]
 #[link(name = "c")]
 #[link(name = "gcc")]
-#[link(name = "nosys")]
 #[link(name = "m")]
 #[link(name = "stdc++")]
 extern "C" {

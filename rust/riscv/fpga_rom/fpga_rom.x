@@ -1,6 +1,10 @@
 PROVIDE(_stack_size = 20K);
 PROVIDE(_stack_start = ORIGIN(sram) + _stack_size);
 
+/* newlib seems to do two calls to sbrk. One of 1048 bytes and one of 3396. So
+ * we need at least 4444 bytes of heap. */
+PROVIDE(_heap_size = 5K);
+
 SECTIONS {
     /* Symbols that we don't want. */
     /DISCARD/ :
@@ -76,6 +80,13 @@ SECTIONS {
         _edata = .;
     } > sram AT > spiflash
 
+    .heap (NOLOAD) :
+    {
+        _heap_start = .;
+        . += _heap_size;
+        _heap_end = .;
+    } > sram
+
     /* The arena is a 256KB section region containing the TfLM tensor arena. */
     .arena (NOLOAD) :
     {
@@ -84,10 +95,6 @@ SECTIONS {
         _earena = .;
     } > arena
 }
-
-/* The symbol `end` is used by "sbrk" from libnosys. We set it to the end of
- * BSS so that any allocations happen after that. */
-PROVIDE( end = _ebss );
 
 /* Needed by libriscv_rt */
 PROVIDE(_max_hart_id = 0);

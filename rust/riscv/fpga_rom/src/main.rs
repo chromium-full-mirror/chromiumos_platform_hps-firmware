@@ -7,6 +7,7 @@
 
 #[cfg(not(feature = "tflm_inference"))]
 mod non_tflm_classifier;
+mod system;
 
 use fpga_app::TEST_IMAGES_MAX_SIZE;
 use fpga_app::TEST_IMAGES_OFFSET;
@@ -87,21 +88,4 @@ fn custom_exception_handler(_trap_frame: &riscv_rt::TrapFrame) -> ! {
     loop {
         unsafe { riscv::asm::wfi() };
     }
-}
-
-/// # Safety
-/// We steal the peripherals and then access the SPI bus to the MCU. Must not be
-/// called from within code that is using the MCU SPI bus. Caller must also make
-/// sure data and size are valid.
-/// This overrides _write from libnosys.
-/// TODO(dml): Drop libnosys and implement required functions ourselves.
-#[cfg(feature = "dev")]
-#[no_mangle]
-pub unsafe extern "C" fn _write(_handle: u32, data: *const u8, size: usize) -> usize {
-    let p = litex_pac::Peripherals::steal();
-    let spi = fpga_hal::McuSpi::new(p.MCU_SPI);
-    let data = core::slice::from_raw_parts(data, size);
-    fpga_app::write_stdout(spi, data);
-
-    size
 }
