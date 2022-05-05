@@ -2,7 +2,7 @@
 name = "mcu_common"
 version = "0.1.0"
 authors = ["Google"]
-edition = "2018"
+edition = "2021"
 description = "Definitions shared between stage0 and stage1"
 license = "BSD-3-Clause"
 

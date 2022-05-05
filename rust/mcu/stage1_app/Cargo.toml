@@ -1,12 +1,8 @@
 [package]
 name = "stage1_app"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 license = "BSD-3-Clause"
-# Needed because we depend on the "std" feature of mcu_common at build-time, but
-# cannot include the "std" feature in our runtime code. This is the default
-# resolver in the 2021 edition, so can be removed when we migrate to that.
-resolver = "2"
 
 [dependencies]
 application = { path = "../../application" }

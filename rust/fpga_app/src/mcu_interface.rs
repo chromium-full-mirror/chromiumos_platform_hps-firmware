@@ -154,7 +154,6 @@ where
     /// argument for that command.
     #[cfg(feature = "dev")]
     pub fn next_debug_command(&mut self) -> Option<(crate::DebugCommand, u16)> {
-        use core::convert::TryFrom;
         self.clear_buffer();
         self.buffer[0] = Action::GetDebugCommand.into();
         self.exchange().ok()?;

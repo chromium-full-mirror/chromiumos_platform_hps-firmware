@@ -1,9 +1,8 @@
 [package]
 name = "factory_tester_mcu"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 license = "BSD-3-Clause"
-resolver = "2"
 
 [dependencies]
 cortex-m = "0.6.7"
