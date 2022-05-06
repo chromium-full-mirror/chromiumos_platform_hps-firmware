@@ -85,6 +85,18 @@ where
         let _ = self.exchange();
     }
 
+    pub fn report_panic(&mut self, info: &core::panic::PanicInfo) {
+        use core::fmt::Write;
+
+        self.clear_buffer();
+        self.buffer[0] = Action::ReportFpgaPanic.into();
+        let mut out = mcu_common::fmt::FormatOutput::new(&mut self.buffer[1..]);
+        // There's not much we can do if we get an error while we're reporting a
+        // panic, so we just ignore it.
+        let _ = write!(&mut out, "{info}");
+        let _ = self.exchange();
+    }
+
     pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
         self.clear_buffer();
         self.buffer[0] = Action::WriteCameraI2c.into();

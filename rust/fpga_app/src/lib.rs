@@ -672,6 +672,12 @@ pub fn report_fatal_error(spi: impl spi::Transfer<u8>, error: mcu_common::Error)
     mcu.report_error(error);
 }
 
+pub fn report_panic(spi: impl spi::Transfer<u8>, info: &core::panic::PanicInfo) {
+    let mut mcu = McuInterface::new(spi);
+    mcu.resync();
+    mcu.report_panic(info);
+}
+
 #[cfg(feature = "dev")]
 pub fn write_stdout(spi: impl spi::Transfer<u8>, data: &[u8]) {
     let mut mcu = McuInterface::new(spi);

@@ -7,6 +7,7 @@ use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use i2c_protocol::ReadRegisterEvent;
 use i2c_protocol::WriteMemoryEvent;
+use log::error;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
 use mcu_common::registers;
@@ -115,6 +116,16 @@ impl<I: I2cPeripheral> HostInterface<I> {
 
     pub fn report_error(&mut self, error: mcu_common::Error) {
         self.common_interface.report_error(error);
+    }
+
+    pub fn report_fpga_panic(&mut self, mut bytes: &[u8]) {
+        if let Some(end) = bytes.iter().position(|b| *b == 0) {
+            bytes = &bytes[..end];
+        }
+        if let Ok(message) = core::str::from_utf8(bytes) {
+            error!("FPGA reported panic: {message}");
+        }
+        self.report_error(mcu_common::Error::FpgaPanic);
     }
 
     pub fn report_previous_crash(&mut self, buffer: Buffer) {

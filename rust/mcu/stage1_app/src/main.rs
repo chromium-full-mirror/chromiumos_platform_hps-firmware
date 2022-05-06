@@ -265,6 +265,11 @@ const APP: () = {
                     t.listen();
                 });
             }
+            fpga::Action::ReportFpgaPanic => {
+                ctx.resources
+                    .host_interface
+                    .lock(|h| h.report_fpga_panic(&buffer[1..]));
+            }
             #[cfg(feature = "dev")]
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {

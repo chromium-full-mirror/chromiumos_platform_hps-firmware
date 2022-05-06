@@ -58,6 +58,7 @@ dependencies = [
  "hps_interface",
  "i2c_peripheral",
  "i2c_protocol",
+ "log",
  "mcu_common",
  "num_enum",
 ]

@@ -36,6 +36,9 @@ pub enum Action {
     /// Reports an error.
     ReportFpgaError = 0x23,
 
+    /// Reports a panic.
+    ReportFpgaPanic = 0x24,
+
     /// Sets the debug LED on or off based on whether the first byte of the
     /// payload is 1 or 0 respectively.
     SetDebugLed = 0x60,

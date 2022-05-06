@@ -71,10 +71,10 @@ pub unsafe extern "C" fn __atomic_load_4(arg: *const usize, _ordering: usize) ->
 
 #[inline(never)]
 #[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
+fn panic(info: &core::panic::PanicInfo) -> ! {
     let p = unsafe { litex_pac::Peripherals::steal() };
     let spi = fpga_hal::McuSpi::new(p.MCU_SPI);
-    fpga_app::report_fatal_error(spi, mcu_common::Error::FpgaPanic);
+    fpga_app::report_panic(spi, info);
     loop {
         unsafe { riscv::asm::wfi() };
     }
