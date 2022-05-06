@@ -9,6 +9,7 @@
 pub mod build_utils;
 
 pub mod commands;
+pub mod fmt;
 pub mod memory_banks;
 pub mod registers;
 

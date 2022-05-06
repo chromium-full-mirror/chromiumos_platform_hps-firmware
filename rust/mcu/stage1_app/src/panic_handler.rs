@@ -4,6 +4,7 @@
 
 use core::fmt::Write as _;
 use log::error;
+use mcu_common::fmt::FormatOutput;
 use mcu_common::Buffer;
 use mcu_common::MCU_CRASH_RECORD_SIZE;
 
@@ -22,10 +23,7 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     // Safety: We'll never return from this function, so if anything else has a
     // reference to CRASH_RECORD, that reference is effectively gone.
     let out = unsafe { &mut CRASH_RECORD };
-    let mut out = Output {
-        bytes: out,
-        used: 0,
-    };
+    let mut out = FormatOutput::new(out);
     write!(&mut out, "{}{}\0", CRASH_MARKER, info).unwrap();
     error!("{}", info);
 
@@ -50,24 +48,4 @@ pub(crate) fn copy_crash_report(buffer: &mut Buffer) {
     }
     // Invalidate the crash marker.
     record[0] = 0;
-}
-
-struct Output<'a> {
-    bytes: &'a mut [u8],
-    used: usize,
-}
-
-impl<'a> core::fmt::Write for Output<'a> {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        let mut s_bytes = s.as_bytes();
-        let capacity = self.bytes.len() - self.used;
-        // Truncate if over capacity.
-        if s_bytes.len() > capacity {
-            s_bytes = &s_bytes[..capacity];
-        }
-        let new_used = self.used + s_bytes.len();
-        self.bytes[self.used..new_used].copy_from_slice(s_bytes);
-        self.used = new_used;
-        Ok(())
-    }
 }
