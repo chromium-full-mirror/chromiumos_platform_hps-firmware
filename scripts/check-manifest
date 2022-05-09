@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Checks that manifest files are updated when needed.
+
+project_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+models=()
+manifests=()
+for arg in "$@"; do
+    arg=${arg#"$project_root"}
+    if [[ "$arg" =~ ^/models/.*[.]tflite$ ]]; then
+        models+=("$arg")
+    fi
+    if [[ "$arg" =~ ^/models/manifest[.]txt$ ]]; then
+        manifests+=("$arg")
+    fi
+done
+
+if (( ("${#models[@]}" != 0) != ("${#manifests[@]}" != 0) )); then
+    echo "TFLite models and manifest files must always be updated together."
+    echo "Changed models: $models"
+    echo "Changed manifests: $manifests"
+    exit 1
+fi
