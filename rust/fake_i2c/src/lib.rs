@@ -29,7 +29,8 @@ impl Display for Error {
 pub struct FakeI2cPeripheral {
     // Only `None` while dropping.
     events_from_host: Option<mpsc::Receiver<nb::Result<I2cEvent, I2cError>>>,
-    bytes_to_host: mpsc::Sender<u8>,
+    // Only `None` while dropping.
+    bytes_to_host: Option<mpsc::Sender<u8>>,
     // This is optional so that we can release ownership when we join in drop.
     host_thread: Option<JoinHandle<()>>,
 }
@@ -54,7 +55,7 @@ impl FakeI2cPeripheral {
         let host_thread = std::thread::spawn(move || host_code(host));
         FakeI2cPeripheral {
             events_from_host: Some(events_from_host),
-            bytes_to_host,
+            bytes_to_host: Some(bytes_to_host),
             host_thread: Some(host_thread),
         }
     }
@@ -65,6 +66,7 @@ impl Drop for FakeI2cPeripheral {
         // Before we join the host thread, we need to close the channel that it
         // might be waiting on, otherwise our test might not terminate.
         self.events_from_host.take();
+        self.bytes_to_host.take();
         self.host_thread
             .take()
             .unwrap()
@@ -132,7 +134,7 @@ impl I2cPeripheral for FakeI2cPeripheral {
     }
 
     fn write_byte(&mut self, byte: u8) {
-        let _ = self.bytes_to_host.send(byte);
+        let _ = self.bytes_to_host.as_mut().unwrap().send(byte);
     }
 
     fn reset(&mut self) {}
@@ -181,15 +183,24 @@ mod tests {
         assert_eq!(peripheral.next_event(), Err(nb::Error::WouldBlock));
     }
 
-    // This test seems to be flaky on CQ. Disabling until we can make it more
-    // reliable.
     #[test]
-    #[ignore]
     fn test_no_device_response() {
         // Our host code tries to write and read, but the device side does
         // nothing. The host side should get an error when device side gets
         // dropped.
+        let peripheral = FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            assert!(device.write_read(1, &[10], &mut out).is_err());
+        });
+        // On this run, we give the controller a chance to run first before we
+        // drop the peripheral.
+        std::thread::sleep(std::time::Duration::from_millis(1));
+        core::mem::drop(peripheral);
+
         FakeI2cPeripheral::new(|mut device| {
+            // On this run, we give the peripheral a bit of time to drop before
+            // we try to talk to it.
+            std::thread::sleep(std::time::Duration::from_millis(1));
             let mut out = [0u8; 2];
             assert!(device.write_read(1, &[10], &mut out).is_err());
         });
