@@ -181,7 +181,10 @@ mod tests {
         assert_eq!(peripheral.next_event(), Err(nb::Error::WouldBlock));
     }
 
+    // This test seems to be flaky on CQ. Disabling until we can make it more
+    // reliable.
     #[test]
+    #[ignore]
     fn test_no_device_response() {
         // Our host code tries to write and read, but the device side does
         // nothing. The host side should get an error when device side gets
