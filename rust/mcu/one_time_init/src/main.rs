@@ -245,6 +245,8 @@ fn configure_option_bytes(
             // will still pulse the reset pin when a software reset occurs, but it
             // won't wait for it to go low.
             w.irhen().clear_bit();
+        } else {
+            w.irhen().set_bit();
         }
 
         if request.contains(OptionBytesConfigRequest::DISABLE_BOOT0_PIN) {
@@ -252,6 +254,9 @@ fn configure_option_bytes(
             // non-empty, this means that we will always boot from flash.
             w.n_boot_sel().set_bit();
             w.n_boot0().set_bit();
+        } else {
+            w.n_boot_sel().clear_bit();
+            w.n_boot0().clear_bit();
         }
 
         if request.contains(OptionBytesConfigRequest::RDP2) {
@@ -261,10 +266,8 @@ fn configure_option_bytes(
             // Set RDP level 1.
             unsafe { w.rdp().bits(0xbb) };
         } else if request.contains(OptionBytesConfigRequest::ERASE) {
+            // Returning to RDP level 0 triggers a full erase.
             unsafe { w.rdp().bits(0xaa) };
-            w.n_boot_sel().clear_bit();
-            w.n_boot0().clear_bit();
-            w.irhen().set_bit();
         }
 
         w
