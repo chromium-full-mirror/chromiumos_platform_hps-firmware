@@ -35,6 +35,7 @@ sign-rom = { path = "../sign-rom" }
 
 [features]
 default = [
+    "image-transfer",
     "mcp2221",
     "all-embedded-firmware",
     "test-workflow",
