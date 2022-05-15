@@ -16,16 +16,10 @@ SECTIONS {
     }
 
     /* Our first section in spiflash is located at _stext, which is the CPU
-     * reset address. We also put our trap table here. */
+     * reset address. */
     .text_init _stext :
     {
         KEEP(*(.init));
-        KEEP(*(.init.rust));
-
-        /* Align trap table. */
-        . = ALIGN(4);
-        *(.trap);
-        *(.trap.rust);
     } > spiflash
 
     /* Our models are large, fixed size and during development tend to change
@@ -40,9 +34,55 @@ SECTIONS {
         *(.text_cfu_check .text_cfu_check.*)
     } > spiflash
 
+    /* Code for libraries. We put this first so that it's less likely to be
+     * moved. */
+    .text_core :
+    {
+        *libc.a:*(.text .text.*);
+        *libgcc.a:*(.text .text.*);
+        *libstdc++.a:*(.text .text.*);
+        *libm.a:*(.text .text.*);
+        *libriscv*:*(.text .text.*);
+        *libcompiler_builtins*:*(.text .text.*);
+    } > spiflash
+
+    /* Data for libraries. We put this first so that it's less likely to be
+     * moved. */
+    .rodata_core :
+    {
+        *libc.a:*(.srodata .srodata.* .rodata .rodata.*);
+        *libgcc.a:*(.srodata .srodata.* .rodata .rodata.*);
+        *libstdc++.a:*(.srodata .srodata.* .rodata .rodata.*);
+        *libm.a:*(.srodata .srodata.* .rodata .rodata.*);
+        *libriscv*:*(.srodata .srodata.* .rodata .rodata.*);
+        *libcompiler_builtins*:*(.srodata .srodata.* .rodata .rodata.*);
+    } > spiflash
+
+    .text_tflm :
+    {
+        *libtflite-micro.a:*(.text .text.*);
+    } > spiflash
+
+    .rodata_tflm :
+    {
+        *libtflite-micro.a:*(.srodata .srodata.* .rodata .rodata.*);
+    } > spiflash
+
     /* All our other code. */
     .text :
     {
+        /* By putting .init.rust here, its address (which is referenced by
+         * .init) is less likely to change. We don't put it at the start of flash
+         * with .init because it references our main function, which is likely to
+         * change address. */
+        KEEP(*(.init.rust));
+        *(.text.sys .text.sys.*);
+
+        /* Align trap table. */
+        . = ALIGN(4);
+        *(.trap);
+        *(.trap.rust);
+
         *(.text .text.*);
     } > spiflash
 
@@ -72,13 +112,26 @@ SECTIONS {
     } > sram
 
     /* RAM that needs specific non-zero values. Addresses are in RAM, data is in
-     * SPI flash. Copied from SPI flash to RAM by asm.S (from crate riscv-rt). */
-    .data : ALIGN(4)
+     * SPI flash. Copied from SPI flash to RAM by asm.S (from crate riscv-rt).
+     *
+     * We only need alignment of 4, however we set a larger alignment so that
+     * small changes in bss are less likely to affect our layout
+     */
+    .data : ALIGN(256)
     {
         /* The address (in SPI flash) to copy from. */
         _sidata = LOADADDR(.data);
         /* The address in RAM to copy to. */
         _sdata = .;
+
+        /* We allocate data for our libraries first so that it's less likely to move. */
+        *libc.a:*(.sdata .sdata.* .data .data.*);
+        *libgcc.a:*(.sdata .sdata.* .data .data.*);
+        *libstdc++.a:*(.sdata .sdata.* .data .data.*);
+        *libm.a:*(.sdata .sdata.* .data .data.*);
+        *libriscv*:*(.sdata .sdata.* .data .data.*);
+        *libcompiler_builtins*:*(.sdata .sdata.* .data .data.*);
+
         *(.sdata .sdata.* .data .data.*);
         . = ALIGN(4);
         /* The address in RAM of the end. */
