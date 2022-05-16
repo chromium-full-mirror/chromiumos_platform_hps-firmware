@@ -29,6 +29,7 @@ enum TfLiteInitStatus : int32_t {
   TLITE_INIT_OK = 0,
   TLITE_INIT_ERR_MODEL_1 = 1,
   TLITE_INIT_ERR_MODEL_2 = 2,
+  TLITE_INIT_CFU_BUG = 3,
   TLITE_INIT_ERR_OTHER = -1,
 };
 

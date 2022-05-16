@@ -35,6 +35,11 @@ SECTIONS {
         *(.model_data)
     } > spiflash
 
+    .text_cfu_check : ALIGN(32)
+    {
+        *(.text_cfu_check .text_cfu_check.*)
+    } > spiflash
+
     /* All our other code. */
     .text :
     {

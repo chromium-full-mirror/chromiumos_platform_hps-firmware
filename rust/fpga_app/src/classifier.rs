@@ -7,13 +7,14 @@ use crate::Result;
 use num_enum::TryFromPrimitive;
 
 /// Describes how TfLite classifier is initialized
-/// Matches values in shim.4
+/// Matches values in shim.h
 #[derive(Copy, Clone, Debug, PartialEq, Eq, TryFromPrimitive)]
 #[repr(i32)]
 pub enum TfLiteInitStatus {
     InitOk = 0,
     Model1Failed = 1,
     Model2Failed = 2,
+    CfuBug = 3,
     OtherFailure = -1,
 }
 
