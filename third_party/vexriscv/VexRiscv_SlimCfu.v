@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.6.0    git head : 73c8d8e2b86b45646e9d0b2e729291f2b65e6be3
 // Component : VexRiscv
-// Git hash  : 593e180abf5ba39e7fa33d4f371646453f84496a
+// Git hash  : 520bb7b7e4b3cf6cbf8192d139dd9fc3e612e7ae
 
 
 `define Input2Kind_binary_sequential_type [0:0]
@@ -269,106 +269,102 @@ module VexRiscv (
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_64;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_65;
   wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_66;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68;
-  wire       [13:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69;
+  wire       [13:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69;
   wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_70;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_75;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78;
-  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76;
+  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83;
   wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_84;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_85;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89;
-  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87;
+  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_92;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96;
   wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_97;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_98;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100;
-  wire       [10:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101;
-  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105;
-  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107;
+  wire       [10:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99;
+  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103;
+  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_108;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112;
+  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113;
   wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_114;
-  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125;
-  wire       [7:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134;
-  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138;
-  wire       [2:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123;
+  wire       [7:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132;
+  wire       [5:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136;
+  wire       [2:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143;
+  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145;
+  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146;
   wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_147;
-  wire       [3:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149;
-  wire                _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150;
   wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_151;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155;
+  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_157;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158;
+  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158;
   wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_159;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160;
   wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_161;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162;
-  wire       [1:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_163;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_164;
-  wire       [31:0]   _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_165;
-  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_166;
+  wire       [0:0]    _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162;
   wire                _zz_RegFilePlugin_regFile_port;
   wire                _zz_decode_RegFilePlugin_rs1Data;
   wire                _zz_RegFilePlugin_regFile_port_1;
@@ -473,6 +469,8 @@ module VexRiscv (
   wire       `AluBitwiseCtrlEnum_binary_sequential_type _zz_decode_to_execute_ALU_BITWISE_CTRL_1;
   wire                decode_SRC_LESS_UNSIGNED;
   wire                decode_MEMORY_MANAGMENT;
+  wire                execute_HAS_SIDE_EFFECT;
+  wire                decode_HAS_SIDE_EFFECT;
   wire                memory_MEMORY_WR;
   wire                decode_MEMORY_WR;
   wire                execute_BYPASSABLE_MEMORY_STAGE;
@@ -502,6 +500,8 @@ module VexRiscv (
   wire       `Input2Kind_binary_sequential_type execute_CfuPlugin_CFU_INPUT_2_KIND;
   wire       `Input2Kind_binary_sequential_type _zz_execute_CfuPlugin_CFU_INPUT_2_KIND;
   wire                execute_CfuPlugin_CFU_ENABLE;
+  wire                writeBack_HAS_SIDE_EFFECT;
+  wire                memory_HAS_SIDE_EFFECT;
   wire                execute_IS_RS1_SIGNED;
   wire                execute_IS_DIV;
   wire                execute_IS_RS2_SIGNED;
@@ -894,15 +894,15 @@ module VexRiscv (
   wire                when_Stream_l342;
   wire       [31:0]   _zz_DBusCachedPlugin_rspCounter;
   reg        [31:0]   DBusCachedPlugin_rspCounter;
-  wire                when_DBusCachedPlugin_l303;
+  wire                when_DBusCachedPlugin_l307;
   wire       [1:0]    execute_DBusCachedPlugin_size;
   reg        [31:0]   _zz_execute_MEMORY_STORE_DATA_RF;
   wire                dataCache_1_io_cpu_flush_isStall;
-  wire                when_DBusCachedPlugin_l343;
-  wire                when_DBusCachedPlugin_l359;
-  wire                when_DBusCachedPlugin_l386;
-  wire                when_DBusCachedPlugin_l438;
-  wire                when_DBusCachedPlugin_l458;
+  wire                when_DBusCachedPlugin_l347;
+  wire                when_DBusCachedPlugin_l363;
+  wire                when_DBusCachedPlugin_l390;
+  wire                when_DBusCachedPlugin_l442;
+  wire                when_DBusCachedPlugin_l462;
   wire       [7:0]    writeBack_DBusCachedPlugin_rspSplits_0;
   wire       [7:0]    writeBack_DBusCachedPlugin_rspSplits_1;
   wire       [7:0]    writeBack_DBusCachedPlugin_rspSplits_2;
@@ -915,13 +915,14 @@ module VexRiscv (
   wire                _zz_writeBack_DBusCachedPlugin_rspFormated_2;
   reg        [31:0]   _zz_writeBack_DBusCachedPlugin_rspFormated_3;
   reg        [31:0]   writeBack_DBusCachedPlugin_rspFormated;
-  wire                when_DBusCachedPlugin_l484;
+  wire                when_DBusCachedPlugin_l488;
   wire       [33:0]   _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2;
   wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3;
   wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4;
   wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5;
   wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6;
   wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7;
+  wire                _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8;
   wire       `Src1CtrlEnum_binary_sequential_type _zz_decode_SRC1_CTRL_2;
   wire       `AluCtrlEnum_binary_sequential_type _zz_decode_ALU_CTRL_2;
   wire       `Src2CtrlEnum_binary_sequential_type _zz_decode_SRC2_CTRL_2;
@@ -929,7 +930,7 @@ module VexRiscv (
   wire       `ShiftCtrlEnum_binary_sequential_type _zz_decode_SHIFT_CTRL_2;
   wire       `BranchCtrlEnum_binary_sequential_type _zz_decode_BRANCH_CTRL_2;
   wire       `EnvCtrlEnum_binary_sequential_type _zz_decode_ENV_CTRL_2;
-  wire       `Input2Kind_binary_sequential_type _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8;
+  wire       `Input2Kind_binary_sequential_type _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9;
   wire                when_RegFilePlugin_l63;
   wire       [4:0]    decode_RegFilePlugin_regFileReadAddress1;
   wire       [4:0]    decode_RegFilePlugin_regFileReadAddress2;
@@ -1143,12 +1144,15 @@ module VexRiscv (
   reg        [31:0]   externalInterruptArray_regNext;
   reg        [31:0]   _zz_CsrPlugin_csrMapping_readDataInit;
   wire       [31:0]   _zz_CsrPlugin_csrMapping_readDataInit_1;
+  wire                execute_CfuPlugin_hazard;
+  wire                execute_CfuPlugin_scheduleWish;
   wire                execute_CfuPlugin_schedule;
+  wire                when_CfuPlugin_l172;
   reg                 execute_CfuPlugin_hold;
   reg                 execute_CfuPlugin_fired;
   wire                CfuPlugin_bus_cmd_fire;
-  wire                when_CfuPlugin_l171;
   wire                when_CfuPlugin_l175;
+  wire                when_CfuPlugin_l179;
   wire       [9:0]    execute_CfuPlugin_functionsIds_0;
   wire                _zz_CfuPlugin_bus_cmd_payload_inputs_1;
   reg        [23:0]   _zz_CfuPlugin_bus_cmd_payload_inputs_1_1;
@@ -1158,7 +1162,7 @@ module VexRiscv (
   wire       [31:0]   CfuPlugin_bus_rsp_rsp_payload_outputs_0;
   reg                 CfuPlugin_bus_rsp_rValid;
   reg        [31:0]   CfuPlugin_bus_rsp_rData_outputs_0;
-  wire                when_CfuPlugin_l208;
+  wire                when_CfuPlugin_l212;
   wire                when_Pipeline_l124;
   reg        [31:0]   decode_to_execute_PC;
   wire                when_Pipeline_l124_1;
@@ -1212,80 +1216,86 @@ module VexRiscv (
   wire                when_Pipeline_l124_25;
   reg                 memory_to_writeBack_MEMORY_WR;
   wire                when_Pipeline_l124_26;
-  reg                 decode_to_execute_MEMORY_MANAGMENT;
+  reg                 decode_to_execute_HAS_SIDE_EFFECT;
   wire                when_Pipeline_l124_27;
-  reg                 decode_to_execute_SRC_LESS_UNSIGNED;
+  reg                 execute_to_memory_HAS_SIDE_EFFECT;
   wire                when_Pipeline_l124_28;
-  reg        `AluBitwiseCtrlEnum_binary_sequential_type decode_to_execute_ALU_BITWISE_CTRL;
+  reg                 memory_to_writeBack_HAS_SIDE_EFFECT;
   wire                when_Pipeline_l124_29;
-  reg        `ShiftCtrlEnum_binary_sequential_type decode_to_execute_SHIFT_CTRL;
+  reg                 decode_to_execute_MEMORY_MANAGMENT;
   wire                when_Pipeline_l124_30;
-  reg        `ShiftCtrlEnum_binary_sequential_type execute_to_memory_SHIFT_CTRL;
+  reg                 decode_to_execute_SRC_LESS_UNSIGNED;
   wire                when_Pipeline_l124_31;
-  reg        `BranchCtrlEnum_binary_sequential_type decode_to_execute_BRANCH_CTRL;
+  reg        `AluBitwiseCtrlEnum_binary_sequential_type decode_to_execute_ALU_BITWISE_CTRL;
   wire                when_Pipeline_l124_32;
-  reg                 decode_to_execute_IS_CSR;
+  reg        `ShiftCtrlEnum_binary_sequential_type decode_to_execute_SHIFT_CTRL;
   wire                when_Pipeline_l124_33;
-  reg        `EnvCtrlEnum_binary_sequential_type decode_to_execute_ENV_CTRL;
+  reg        `ShiftCtrlEnum_binary_sequential_type execute_to_memory_SHIFT_CTRL;
   wire                when_Pipeline_l124_34;
-  reg        `EnvCtrlEnum_binary_sequential_type execute_to_memory_ENV_CTRL;
+  reg        `BranchCtrlEnum_binary_sequential_type decode_to_execute_BRANCH_CTRL;
   wire                when_Pipeline_l124_35;
-  reg        `EnvCtrlEnum_binary_sequential_type memory_to_writeBack_ENV_CTRL;
+  reg                 decode_to_execute_IS_CSR;
   wire                when_Pipeline_l124_36;
-  reg                 decode_to_execute_IS_MUL;
+  reg        `EnvCtrlEnum_binary_sequential_type decode_to_execute_ENV_CTRL;
   wire                when_Pipeline_l124_37;
-  reg                 execute_to_memory_IS_MUL;
+  reg        `EnvCtrlEnum_binary_sequential_type execute_to_memory_ENV_CTRL;
   wire                when_Pipeline_l124_38;
-  reg                 memory_to_writeBack_IS_MUL;
+  reg        `EnvCtrlEnum_binary_sequential_type memory_to_writeBack_ENV_CTRL;
   wire                when_Pipeline_l124_39;
-  reg                 decode_to_execute_IS_DIV;
+  reg                 decode_to_execute_IS_MUL;
   wire                when_Pipeline_l124_40;
-  reg                 execute_to_memory_IS_DIV;
+  reg                 execute_to_memory_IS_MUL;
   wire                when_Pipeline_l124_41;
-  reg                 decode_to_execute_IS_RS1_SIGNED;
+  reg                 memory_to_writeBack_IS_MUL;
   wire                when_Pipeline_l124_42;
-  reg                 decode_to_execute_IS_RS2_SIGNED;
+  reg                 decode_to_execute_IS_DIV;
   wire                when_Pipeline_l124_43;
-  reg                 decode_to_execute_CfuPlugin_CFU_ENABLE;
+  reg                 execute_to_memory_IS_DIV;
   wire                when_Pipeline_l124_44;
-  reg        `Input2Kind_binary_sequential_type decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
+  reg                 decode_to_execute_IS_RS1_SIGNED;
   wire                when_Pipeline_l124_45;
-  reg        [31:0]   decode_to_execute_RS1;
+  reg                 decode_to_execute_IS_RS2_SIGNED;
   wire                when_Pipeline_l124_46;
-  reg        [31:0]   decode_to_execute_RS2;
+  reg                 decode_to_execute_CfuPlugin_CFU_ENABLE;
   wire                when_Pipeline_l124_47;
-  reg                 decode_to_execute_SRC2_FORCE_ZERO;
+  reg        `Input2Kind_binary_sequential_type decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
   wire                when_Pipeline_l124_48;
-  reg                 decode_to_execute_PREDICTION_HAD_BRANCHED2;
+  reg        [31:0]   decode_to_execute_RS1;
   wire                when_Pipeline_l124_49;
-  reg                 decode_to_execute_CSR_WRITE_OPCODE;
+  reg        [31:0]   decode_to_execute_RS2;
   wire                when_Pipeline_l124_50;
-  reg                 decode_to_execute_CSR_READ_OPCODE;
+  reg                 decode_to_execute_SRC2_FORCE_ZERO;
   wire                when_Pipeline_l124_51;
-  reg        [31:0]   execute_to_memory_MEMORY_STORE_DATA_RF;
+  reg                 decode_to_execute_PREDICTION_HAD_BRANCHED2;
   wire                when_Pipeline_l124_52;
-  reg        [31:0]   memory_to_writeBack_MEMORY_STORE_DATA_RF;
+  reg                 decode_to_execute_CSR_WRITE_OPCODE;
   wire                when_Pipeline_l124_53;
-  reg        [31:0]   execute_to_memory_REGFILE_WRITE_DATA;
+  reg                 decode_to_execute_CSR_READ_OPCODE;
   wire                when_Pipeline_l124_54;
-  reg        [31:0]   memory_to_writeBack_REGFILE_WRITE_DATA;
+  reg        [31:0]   execute_to_memory_MEMORY_STORE_DATA_RF;
   wire                when_Pipeline_l124_55;
-  reg        [31:0]   execute_to_memory_SHIFT_RIGHT;
+  reg        [31:0]   memory_to_writeBack_MEMORY_STORE_DATA_RF;
   wire                when_Pipeline_l124_56;
-  reg        [31:0]   execute_to_memory_MUL_LL;
+  reg        [31:0]   execute_to_memory_REGFILE_WRITE_DATA;
   wire                when_Pipeline_l124_57;
-  reg        [33:0]   execute_to_memory_MUL_LH;
+  reg        [31:0]   memory_to_writeBack_REGFILE_WRITE_DATA;
   wire                when_Pipeline_l124_58;
-  reg        [33:0]   execute_to_memory_MUL_HL;
+  reg        [31:0]   execute_to_memory_SHIFT_RIGHT;
   wire                when_Pipeline_l124_59;
-  reg        [33:0]   execute_to_memory_MUL_HH;
+  reg        [31:0]   execute_to_memory_MUL_LL;
   wire                when_Pipeline_l124_60;
-  reg        [33:0]   memory_to_writeBack_MUL_HH;
+  reg        [33:0]   execute_to_memory_MUL_LH;
   wire                when_Pipeline_l124_61;
-  reg                 execute_to_memory_CfuPlugin_CFU_IN_FLIGHT;
+  reg        [33:0]   execute_to_memory_MUL_HL;
   wire                when_Pipeline_l124_62;
-  reg                 memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT;
+  reg        [33:0]   execute_to_memory_MUL_HH;
   wire                when_Pipeline_l124_63;
+  reg        [33:0]   memory_to_writeBack_MUL_HH;
+  wire                when_Pipeline_l124_64;
+  reg                 execute_to_memory_CfuPlugin_CFU_IN_FLIGHT;
+  wire                when_Pipeline_l124_65;
+  reg                 memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT;
+  wire                when_Pipeline_l124_66;
   reg        [51:0]   memory_to_writeBack_MUL_LOW;
   wire                when_Pipeline_l151;
   wire                when_Pipeline_l154;
@@ -1454,7 +1464,7 @@ module VexRiscv (
   reg [71:0] _zz_decode_SHIFT_CTRL_2_string;
   reg [31:0] _zz_decode_BRANCH_CTRL_2_string;
   reg [39:0] _zz_decode_ENV_CTRL_2_string;
-  reg [39:0] _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8_string;
+  reg [39:0] _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9_string;
   reg [95:0] decode_to_execute_SRC1_CTRL_string;
   reg [63:0] decode_to_execute_ALU_CTRL_string;
   reg [23:0] decode_to_execute_SRC2_CTRL_string;
@@ -1578,7 +1588,7 @@ module VexRiscv (
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_8 = ((decode_INSTRUCTION & 32'h00403050) == 32'h00000050);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_9 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_10 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_11),(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_12 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_13)};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_14 = 2'b00;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_15 = ({_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_16} != 2'b00);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_15 = ({_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_16} != 2'b00);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_17 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_18 != 1'b0);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_19 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_20 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_25),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_26,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_32,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_34}}};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_10 = (decode_INSTRUCTION & 32'h00001050);
@@ -1604,7 +1614,7 @@ module VexRiscv (
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_37 = 1'b0;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_38 = ((_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_39 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_40) != 1'b0);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_41 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_42,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_44} != 2'b00);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_46 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_47 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_49),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_50,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_55,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69}}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_46 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_47 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_49),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_50,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_55,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67}}};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_29 = 32'h00007034;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_31 = 32'h02007054;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_36 = 32'h00001000;
@@ -1614,9 +1624,9 @@ module VexRiscv (
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_44 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_45) == 32'h00001000);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_47 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_48) == 32'h00004004);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_49 = 1'b0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_50 = ({_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_51,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_53}} != 3'b000);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_50 = ({_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_51,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_53}} != 3'b000);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_55 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_56,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_58} != 5'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_70 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101}}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_70),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99}}};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_43 = 32'h00002010;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_45 = 32'h00005000;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_48 = 32'h00004054;
@@ -1624,11 +1634,11 @@ module VexRiscv (
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_53 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_54) == 32'h00000020);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_56 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_57) == 32'h00002040);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_58 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_59 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_60),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_61,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_63,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_66}}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_70 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71) == 32'h00000020);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72 = 1'b0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79}} != 6'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90} != 5'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126}}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69) == 32'h00000020);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_70 = 1'b0;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77}} != 6'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88} != 5'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_114,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124}}};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_52 = 32'h00000034;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_54 = 32'h00000064;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_57 = 32'h00002040;
@@ -1636,104 +1646,100 @@ module VexRiscv (
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_60 = 32'h00001040;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_61 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_62) == 32'h00000040);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_63 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_64 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_65);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_66 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_71 = 32'h00000020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_75) == 32'h00000008);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115 = 6'h0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118} != 2'b00);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_66 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_69 = 32'h00000020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_72 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73) == 32'h00000008);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_74 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_75 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_88 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113 = 6'h0;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_114 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116} != 2'b00);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133}};
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_62 = 32'h00000050;
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_64 = (decode_INSTRUCTION & 32'h00400040);
   assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_65 = 32'h00000040;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_67 = (decode_INSTRUCTION & 32'h00000038);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_68 = 32'h0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_75 = 32'h00000008;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_77 = (decode_INSTRUCTION & 32'h00000040);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78 = 32'h00000040;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_84,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_92) == 32'h00002010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_97,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125 = 2'b00;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128 != 1'b0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81 = (decode_INSTRUCTION & 32'h00004020);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82 = 32'h00004020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_84 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_85) == 32'h00000010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_86 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87) == 32'h00000020);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_92 = 32'h00002030;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94 = (decode_INSTRUCTION & 32'h00001030);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95 = 32'h00000010;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_97 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_98) == 32'h00002020);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_99 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100) == 32'h00000020);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104 = (decode_INSTRUCTION & 32'h00001010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105 = 32'h00001010;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_108) == 32'h00002010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_114};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_119 = (decode_INSTRUCTION & 32'h00000070);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120 = 32'h00000020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124) == 32'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129) == 32'h00004010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134 = 1'b0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139} != 4'b0000);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_147);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_159}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_85 = 32'h00000030;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_87 = 32'h02000020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_98 = 32'h02002060;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_100 = 32'h02003020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_108 = 32'h00002010;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110 = (decode_INSTRUCTION & 32'h00000050);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111 = 32'h00000010;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_113 = ((decode_INSTRUCTION & 32'h0000000c) == 32'h00000004);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_114 = ((decode_INSTRUCTION & 32'h00000024) == 32'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_124 = 32'h00000020;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129 = 32'h00004014;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132 = (decode_INSTRUCTION & 32'h00006014);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133 = 32'h00002010;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138) == 32'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143}};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146) == 32'h0);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_147 = 1'b0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_151,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153}} != 3'b000);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158} != 2'b00);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_159 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_163),(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_164 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_166)};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138 = 32'h00000044;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140 = (decode_INSTRUCTION & 32'h00000018);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141 = 32'h0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142 = ((decode_INSTRUCTION & 32'h00006004) == 32'h00002000);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143 = ((decode_INSTRUCTION & 32'h00005004) == 32'h00001000);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146 = 32'h00000058;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150 = ((decode_INSTRUCTION & 32'h00000044) == 32'h00000040);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_151 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152) == 32'h00002010);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154) == 32'h40000030);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_157) == 32'h00000004);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_161 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162),_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3};
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_163 = 2'b00;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_164 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_165) == 32'h00001004);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_166 = 1'b0;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152 = 32'h00002014;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154 = 32'h40000034;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_157 = 32'h00000014;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_161 = (decode_INSTRUCTION & 32'h00000044);
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162 = 32'h00000004;
-  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_165 = 32'h00005054;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_73 = 32'h00000008;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_75 = (decode_INSTRUCTION & 32'h00000040);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_76 = 32'h00000040;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_78 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_81 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_84};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_89 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90) == 32'h00002010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_91 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_92 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_94 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_97};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_101 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_104 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_115 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_116 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_120 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_123 = 2'b00;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_125 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126 != 1'b0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_128 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_133 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_79 = (decode_INSTRUCTION & 32'h00004020);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_80 = 32'h00004020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_82 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83) == 32'h00000010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_84 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_85) == 32'h00000020);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_90 = 32'h00002030;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_92 = (decode_INSTRUCTION & 32'h00001030);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_93 = 32'h00000010;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_95 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96) == 32'h00002020);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_97 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_98) == 32'h00000020);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_102 = (decode_INSTRUCTION & 32'h00001010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_103 = 32'h00001010;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_105 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106) == 32'h00002010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_107 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_108 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_110 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_117 = (decode_INSTRUCTION & 32'h00000070);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_118 = 32'h00000020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_121 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122) == 32'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_126 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127) == 32'h00004010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_129 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_132 = 1'b0;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_134 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137} != 4'b0000);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_140 = (_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_144 = {_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_151,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_83 = 32'h00000030;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_85 = 32'h02000020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_96 = 32'h02002060;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_98 = 32'h02003020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_106 = 32'h00002010;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_108 = (decode_INSTRUCTION & 32'h00000050);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_109 = 32'h00000010;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_111 = ((decode_INSTRUCTION & 32'h0000000c) == 32'h00000004);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_112 = ((decode_INSTRUCTION & 32'h00000024) == 32'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_122 = 32'h00000020;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_127 = 32'h00004014;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_130 = (decode_INSTRUCTION & 32'h00006014);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_131 = 32'h00002010;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_135 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136) == 32'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_137 = {_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139}};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_141 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142) == 32'h0);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_143 = 1'b0;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_145 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_147,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149}} != 3'b000);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_151 = ({_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154} != 2'b00);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_155 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_159),(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162)};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_136 = 32'h00000044;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_138 = ((decode_INSTRUCTION & 32'h00006004) == 32'h00002000);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_139 = ((decode_INSTRUCTION & 32'h00005004) == 32'h00001000);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_142 = 32'h00000058;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_146 = ((decode_INSTRUCTION & 32'h00000044) == 32'h00000040);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_147 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148) == 32'h00002010);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_149 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150) == 32'h40000030);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_152 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153) == 32'h00000004);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_154 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_156 = {(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_157 == _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158),_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3};
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_159 = 2'b00;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_160 = ((decode_INSTRUCTION & _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_161) == 32'h00001004);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_162 = 1'b0;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_148 = 32'h00002014;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_150 = 32'h40000034;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_153 = 32'h00000014;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_157 = (decode_INSTRUCTION & 32'h00000044);
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_158 = 32'h00000004;
+  assign _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_161 = 32'h00005054;
   assign _zz_execute_BranchPlugin_branch_src2_6 = execute_INSTRUCTION[31];
   assign _zz_execute_BranchPlugin_branch_src2_7 = execute_INSTRUCTION[31];
   assign _zz_execute_BranchPlugin_branch_src2_8 = execute_INSTRUCTION[7];
@@ -2552,10 +2558,10 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8)
-      `Input2Kind_binary_sequential_RS : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8_string = "RS   ";
-      `Input2Kind_binary_sequential_IMM_I : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8_string = "IMM_I";
-      default : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8_string = "?????";
+    case(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9)
+      `Input2Kind_binary_sequential_RS : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9_string = "RS   ";
+      `Input2Kind_binary_sequential_IMM_I : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9_string = "IMM_I";
+      default : _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9_string = "?????";
     endcase
   end
   always @(*) begin
@@ -2693,6 +2699,8 @@ module VexRiscv (
   assign _zz_decode_to_execute_ALU_BITWISE_CTRL = _zz_decode_to_execute_ALU_BITWISE_CTRL_1;
   assign decode_SRC_LESS_UNSIGNED = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[17];
   assign decode_MEMORY_MANAGMENT = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[16];
+  assign execute_HAS_SIDE_EFFECT = decode_to_execute_HAS_SIDE_EFFECT;
+  assign decode_HAS_SIDE_EFFECT = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[14];
   assign memory_MEMORY_WR = execute_to_memory_MEMORY_WR;
   assign decode_MEMORY_WR = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[13];
   assign execute_BYPASSABLE_MEMORY_STAGE = decode_to_execute_BYPASSABLE_MEMORY_STAGE;
@@ -2727,6 +2735,8 @@ module VexRiscv (
   assign memory_CfuPlugin_CFU_IN_FLIGHT = execute_to_memory_CfuPlugin_CFU_IN_FLIGHT;
   assign execute_CfuPlugin_CFU_INPUT_2_KIND = _zz_execute_CfuPlugin_CFU_INPUT_2_KIND;
   assign execute_CfuPlugin_CFU_ENABLE = decode_to_execute_CfuPlugin_CFU_ENABLE;
+  assign writeBack_HAS_SIDE_EFFECT = memory_to_writeBack_HAS_SIDE_EFFECT;
+  assign memory_HAS_SIDE_EFFECT = execute_to_memory_HAS_SIDE_EFFECT;
   assign execute_IS_RS1_SIGNED = decode_to_execute_IS_RS1_SIGNED;
   assign execute_IS_DIV = decode_to_execute_IS_DIV;
   assign execute_IS_RS2_SIGNED = decode_to_execute_IS_RS2_SIGNED;
@@ -2884,7 +2894,7 @@ module VexRiscv (
   assign decode_LEGAL_INSTRUCTION = ({((decode_INSTRUCTION & 32'h0000005f) == 32'h00000017),{((decode_INSTRUCTION & 32'h0000007f) == 32'h0000006f),{((decode_INSTRUCTION & 32'h0000007f) == 32'h0000000b),{((decode_INSTRUCTION & _zz_decode_LEGAL_INSTRUCTION) == 32'h00000003),{(_zz_decode_LEGAL_INSTRUCTION_1 == _zz_decode_LEGAL_INSTRUCTION_2),{_zz_decode_LEGAL_INSTRUCTION_3,{_zz_decode_LEGAL_INSTRUCTION_4,_zz_decode_LEGAL_INSTRUCTION_5}}}}}}} != 22'h0);
   always @(*) begin
     _zz_decode_RS2_2 = writeBack_REGFILE_WRITE_DATA;
-    if(when_DBusCachedPlugin_l484) begin
+    if(when_DBusCachedPlugin_l488) begin
       _zz_decode_RS2_2 = writeBack_DBusCachedPlugin_rspFormated;
     end
     if(when_MulPlugin_l147) begin
@@ -2963,7 +2973,7 @@ module VexRiscv (
   assign writeBack_INSTRUCTION = memory_to_writeBack_INSTRUCTION;
   always @(*) begin
     decode_arbitration_haltItself = 1'b0;
-    if(when_DBusCachedPlugin_l303) begin
+    if(when_DBusCachedPlugin_l307) begin
       decode_arbitration_haltItself = 1'b1;
     end
   end
@@ -3004,7 +3014,7 @@ module VexRiscv (
 
   always @(*) begin
     execute_arbitration_haltItself = 1'b0;
-    if(when_DBusCachedPlugin_l343) begin
+    if(when_DBusCachedPlugin_l347) begin
       execute_arbitration_haltItself = 1'b1;
     end
     if(when_CsrPlugin_l1108) begin
@@ -3017,14 +3027,17 @@ module VexRiscv (
         execute_arbitration_haltItself = 1'b1;
       end
     end
-    if(when_CfuPlugin_l175) begin
+    if(when_CfuPlugin_l172) begin
+      execute_arbitration_haltItself = 1'b1;
+    end
+    if(when_CfuPlugin_l179) begin
       execute_arbitration_haltItself = 1'b1;
     end
   end
 
   always @(*) begin
     execute_arbitration_haltByOther = 1'b0;
-    if(when_DBusCachedPlugin_l359) begin
+    if(when_DBusCachedPlugin_l363) begin
       execute_arbitration_haltByOther = 1'b1;
     end
   end
@@ -3058,7 +3071,7 @@ module VexRiscv (
       end
     end
     if(memory_CfuPlugin_CFU_IN_FLIGHT) begin
-      if(when_CfuPlugin_l208) begin
+      if(when_CfuPlugin_l212) begin
         memory_arbitration_haltItself = 1'b1;
       end
     end
@@ -3076,7 +3089,7 @@ module VexRiscv (
   assign memory_arbitration_flushNext = 1'b0;
   always @(*) begin
     writeBack_arbitration_haltItself = 1'b0;
-    if(when_DBusCachedPlugin_l458) begin
+    if(when_DBusCachedPlugin_l462) begin
       writeBack_arbitration_haltItself = 1'b1;
     end
   end
@@ -3533,7 +3546,7 @@ module VexRiscv (
   assign dBus_cmd_payload_mask = dataCache_1_io_mem_cmd_s2mPipe_m2sPipe_payload_mask;
   assign dBus_cmd_payload_size = dataCache_1_io_mem_cmd_s2mPipe_m2sPipe_payload_size;
   assign dBus_cmd_payload_last = dataCache_1_io_mem_cmd_s2mPipe_m2sPipe_payload_last;
-  assign when_DBusCachedPlugin_l303 = ((DBusCachedPlugin_mmuBus_busy && decode_arbitration_isValid) && decode_MEMORY_ENABLE);
+  assign when_DBusCachedPlugin_l307 = ((DBusCachedPlugin_mmuBus_busy && decode_arbitration_isValid) && decode_MEMORY_ENABLE);
   assign execute_DBusCachedPlugin_size = execute_INSTRUCTION[13 : 12];
   assign dataCache_1_io_cpu_execute_isValid = (execute_arbitration_isValid && execute_MEMORY_ENABLE);
   assign dataCache_1_io_cpu_execute_address = execute_SRC_ADD;
@@ -3553,8 +3566,8 @@ module VexRiscv (
 
   assign dataCache_1_io_cpu_flush_valid = (execute_arbitration_isValid && execute_MEMORY_MANAGMENT);
   assign dataCache_1_io_cpu_flush_isStall = (dataCache_1_io_cpu_flush_valid && (! dataCache_1_io_cpu_flush_ready));
-  assign when_DBusCachedPlugin_l343 = (dataCache_1_io_cpu_flush_isStall || dataCache_1_io_cpu_execute_haltIt);
-  assign when_DBusCachedPlugin_l359 = (dataCache_1_io_cpu_execute_refilling && execute_arbitration_isValid);
+  assign when_DBusCachedPlugin_l347 = (dataCache_1_io_cpu_flush_isStall || dataCache_1_io_cpu_execute_haltIt);
+  assign when_DBusCachedPlugin_l363 = (dataCache_1_io_cpu_execute_refilling && execute_arbitration_isValid);
   assign dataCache_1_io_cpu_memory_isValid = (memory_arbitration_isValid && memory_MEMORY_ENABLE);
   assign dataCache_1_io_cpu_memory_address = memory_REGFILE_WRITE_DATA;
   assign DBusCachedPlugin_mmuBus_cmd_0_isValid = dataCache_1_io_cpu_memory_isValid;
@@ -3564,12 +3577,12 @@ module VexRiscv (
   assign DBusCachedPlugin_mmuBus_end = ((! memory_arbitration_isStuck) || memory_arbitration_removeIt);
   always @(*) begin
     dataCache_1_io_cpu_memory_mmuRsp_isIoAccess = DBusCachedPlugin_mmuBus_rsp_isIoAccess;
-    if(when_DBusCachedPlugin_l386) begin
+    if(when_DBusCachedPlugin_l390) begin
       dataCache_1_io_cpu_memory_mmuRsp_isIoAccess = 1'b1;
     end
   end
 
-  assign when_DBusCachedPlugin_l386 = (1'b0 && (! dataCache_1_io_cpu_memory_isWrite));
+  assign when_DBusCachedPlugin_l390 = (1'b0 && (! dataCache_1_io_cpu_memory_isWrite));
   always @(*) begin
     dataCache_1_io_cpu_writeBack_isValid = (writeBack_arbitration_isValid && writeBack_MEMORY_ENABLE);
     if(writeBack_arbitration_haltByOther) begin
@@ -3582,7 +3595,7 @@ module VexRiscv (
   assign dataCache_1_io_cpu_writeBack_storeData[31 : 0] = writeBack_MEMORY_STORE_DATA_RF;
   always @(*) begin
     DBusCachedPlugin_redoBranch_valid = 1'b0;
-    if(when_DBusCachedPlugin_l438) begin
+    if(when_DBusCachedPlugin_l442) begin
       if(dataCache_1_io_cpu_redo) begin
         DBusCachedPlugin_redoBranch_valid = 1'b1;
       end
@@ -3592,7 +3605,7 @@ module VexRiscv (
   assign DBusCachedPlugin_redoBranch_payload = writeBack_PC;
   always @(*) begin
     DBusCachedPlugin_exceptionBus_valid = 1'b0;
-    if(when_DBusCachedPlugin_l438) begin
+    if(when_DBusCachedPlugin_l442) begin
       if(dataCache_1_io_cpu_writeBack_accessError) begin
         DBusCachedPlugin_exceptionBus_valid = 1'b1;
       end
@@ -3611,7 +3624,7 @@ module VexRiscv (
   assign DBusCachedPlugin_exceptionBus_payload_badAddr = writeBack_REGFILE_WRITE_DATA;
   always @(*) begin
     DBusCachedPlugin_exceptionBus_payload_code = 4'bxxxx;
-    if(when_DBusCachedPlugin_l438) begin
+    if(when_DBusCachedPlugin_l442) begin
       if(dataCache_1_io_cpu_writeBack_accessError) begin
         DBusCachedPlugin_exceptionBus_payload_code = {1'd0, _zz_DBusCachedPlugin_exceptionBus_payload_code};
       end
@@ -3624,8 +3637,8 @@ module VexRiscv (
     end
   end
 
-  assign when_DBusCachedPlugin_l438 = (writeBack_arbitration_isValid && writeBack_MEMORY_ENABLE);
-  assign when_DBusCachedPlugin_l458 = (dataCache_1_io_cpu_writeBack_isValid && dataCache_1_io_cpu_writeBack_haltIt);
+  assign when_DBusCachedPlugin_l442 = (writeBack_arbitration_isValid && writeBack_MEMORY_ENABLE);
+  assign when_DBusCachedPlugin_l462 = (dataCache_1_io_cpu_writeBack_isValid && dataCache_1_io_cpu_writeBack_haltIt);
   assign writeBack_DBusCachedPlugin_rspSplits_0 = dataCache_1_io_cpu_writeBack_data[7 : 0];
   assign writeBack_DBusCachedPlugin_rspSplits_1 = dataCache_1_io_cpu_writeBack_data[15 : 8];
   assign writeBack_DBusCachedPlugin_rspSplits_2 = dataCache_1_io_cpu_writeBack_data[23 : 16];
@@ -3703,7 +3716,7 @@ module VexRiscv (
     endcase
   end
 
-  assign when_DBusCachedPlugin_l484 = (writeBack_arbitration_isValid && writeBack_MEMORY_ENABLE);
+  assign when_DBusCachedPlugin_l488 = (writeBack_arbitration_isValid && writeBack_MEMORY_ENABLE);
   assign IBusCachedPlugin_mmuBus_rsp_physicalAddress = IBusCachedPlugin_mmuBus_cmd_0_virtualAddress;
   assign IBusCachedPlugin_mmuBus_rsp_allowRead = 1'b1;
   assign IBusCachedPlugin_mmuBus_rsp_allowWrite = 1'b1;
@@ -3723,11 +3736,12 @@ module VexRiscv (
   assign DBusCachedPlugin_mmuBus_rsp_refilling = 1'b0;
   assign DBusCachedPlugin_mmuBus_busy = 1'b0;
   assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_3 = ((decode_INSTRUCTION & 32'h00004050) == 32'h00004050);
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4 = ((decode_INSTRUCTION & 32'h00000004) == 32'h00000004);
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5 = ((decode_INSTRUCTION & 32'h00000048) == 32'h00000048);
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6 = ((decode_INSTRUCTION & 32'h0000000c) == 32'h00000008);
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7 = ((decode_INSTRUCTION & 32'h00001000) == 32'h0);
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2 = {1'b0,{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6 != 1'b0),{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7 != 1'b0),{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7 != 1'b0),{(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_1),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_2,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_4,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_7}}}}}}};
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_4 = ((decode_INSTRUCTION & 32'h00000018) == 32'h0);
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_5 = ((decode_INSTRUCTION & 32'h00000004) == 32'h00000004);
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_6 = ((decode_INSTRUCTION & 32'h00000048) == 32'h00000048);
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7 = ((decode_INSTRUCTION & 32'h0000000c) == 32'h00000008);
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8 = ((decode_INSTRUCTION & 32'h00001000) == 32'h0);
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2 = {1'b0,{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_7 != 1'b0),{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8 != 1'b0),{(_zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8 != 1'b0),{(_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2 != _zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_1),{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_2,{_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_4,_zz__zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2_7}}}}}}};
   assign _zz_decode_SRC1_CTRL_2 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[2 : 1];
   assign _zz_decode_SRC1_CTRL_1 = _zz_decode_SRC1_CTRL_2;
   assign _zz_decode_ALU_CTRL_2 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[7 : 6];
@@ -3742,8 +3756,8 @@ module VexRiscv (
   assign _zz_decode_BRANCH_CTRL = _zz_decode_BRANCH_CTRL_2;
   assign _zz_decode_ENV_CTRL_2 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[27 : 26];
   assign _zz_decode_ENV_CTRL_1 = _zz_decode_ENV_CTRL_2;
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[33 : 33];
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_1 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_8;
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_2[33 : 33];
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_1 = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_9;
   assign decodeExceptionPort_valid = (decode_arbitration_isValid && (! decode_LEGAL_INSTRUCTION));
   assign decodeExceptionPort_payload_code = 4'b0010;
   assign decodeExceptionPort_payload_badAddr = decode_INSTRUCTION;
@@ -4657,11 +4671,14 @@ module VexRiscv (
 
   assign _zz_CsrPlugin_csrMapping_readDataInit_1 = (_zz_CsrPlugin_csrMapping_readDataInit & externalInterruptArray_regNext);
   assign externalInterrupt = (_zz_CsrPlugin_csrMapping_readDataInit_1 != 32'h0);
-  assign execute_CfuPlugin_schedule = (execute_arbitration_isValid && execute_CfuPlugin_CFU_ENABLE);
+  assign execute_CfuPlugin_hazard = ({(writeBack_arbitration_isValid && writeBack_HAS_SIDE_EFFECT),(memory_arbitration_isValid && memory_HAS_SIDE_EFFECT)} != 2'b00);
+  assign execute_CfuPlugin_scheduleWish = (execute_arbitration_isValid && execute_CfuPlugin_CFU_ENABLE);
+  assign execute_CfuPlugin_schedule = (execute_CfuPlugin_scheduleWish && (! execute_CfuPlugin_hazard));
+  assign when_CfuPlugin_l172 = (execute_CfuPlugin_scheduleWish && execute_CfuPlugin_hazard);
   assign CfuPlugin_bus_cmd_fire = (CfuPlugin_bus_cmd_valid && CfuPlugin_bus_cmd_ready);
-  assign when_CfuPlugin_l171 = (! execute_arbitration_isStuckByOthers);
+  assign when_CfuPlugin_l175 = (! execute_arbitration_isStuckByOthers);
   assign CfuPlugin_bus_cmd_valid = ((execute_CfuPlugin_schedule || execute_CfuPlugin_hold) && (! execute_CfuPlugin_fired));
-  assign when_CfuPlugin_l175 = (CfuPlugin_bus_cmd_valid && (! CfuPlugin_bus_cmd_ready));
+  assign when_CfuPlugin_l179 = (CfuPlugin_bus_cmd_valid && (! CfuPlugin_bus_cmd_ready));
   assign execute_CfuPlugin_functionsIds_0 = _zz_execute_CfuPlugin_functionsIds_0;
   assign CfuPlugin_bus_cmd_payload_function_id = execute_CfuPlugin_functionsIds_0;
   assign CfuPlugin_bus_cmd_payload_inputs_0 = execute_RS1;
@@ -4715,7 +4732,7 @@ module VexRiscv (
     end
   end
 
-  assign when_CfuPlugin_l208 = (! CfuPlugin_bus_rsp_rsp_valid);
+  assign when_CfuPlugin_l212 = (! CfuPlugin_bus_rsp_rsp_valid);
   assign when_Pipeline_l124 = (! execute_arbitration_isStuck);
   assign when_Pipeline_l124_1 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_2 = ((! writeBack_arbitration_isStuck) && (! CsrPlugin_exceptionPortCtrl_exceptionValids_writeBack));
@@ -4752,64 +4769,67 @@ module VexRiscv (
   assign when_Pipeline_l124_24 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_25 = (! writeBack_arbitration_isStuck);
   assign when_Pipeline_l124_26 = (! execute_arbitration_isStuck);
-  assign when_Pipeline_l124_27 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_27 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_28 = (! writeBack_arbitration_isStuck);
+  assign when_Pipeline_l124_29 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_30 = (! execute_arbitration_isStuck);
   assign _zz_decode_to_execute_ALU_BITWISE_CTRL_1 = decode_ALU_BITWISE_CTRL;
   assign _zz_decode_ALU_BITWISE_CTRL = _zz_decode_ALU_BITWISE_CTRL_1;
-  assign when_Pipeline_l124_28 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_31 = (! execute_arbitration_isStuck);
   assign _zz_execute_ALU_BITWISE_CTRL = decode_to_execute_ALU_BITWISE_CTRL;
   assign _zz_decode_to_execute_SHIFT_CTRL_1 = decode_SHIFT_CTRL;
   assign _zz_execute_to_memory_SHIFT_CTRL_1 = execute_SHIFT_CTRL;
   assign _zz_decode_SHIFT_CTRL = _zz_decode_SHIFT_CTRL_1;
-  assign when_Pipeline_l124_29 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_32 = (! execute_arbitration_isStuck);
   assign _zz_execute_SHIFT_CTRL = decode_to_execute_SHIFT_CTRL;
-  assign when_Pipeline_l124_30 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_33 = (! memory_arbitration_isStuck);
   assign _zz_memory_SHIFT_CTRL = execute_to_memory_SHIFT_CTRL;
   assign _zz_decode_to_execute_BRANCH_CTRL_1 = decode_BRANCH_CTRL;
   assign _zz_decode_BRANCH_CTRL_1 = _zz_decode_BRANCH_CTRL;
-  assign when_Pipeline_l124_31 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_34 = (! execute_arbitration_isStuck);
   assign _zz_execute_BRANCH_CTRL = decode_to_execute_BRANCH_CTRL;
-  assign when_Pipeline_l124_32 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_35 = (! execute_arbitration_isStuck);
   assign _zz_decode_to_execute_ENV_CTRL_1 = decode_ENV_CTRL;
   assign _zz_execute_to_memory_ENV_CTRL_1 = execute_ENV_CTRL;
   assign _zz_memory_to_writeBack_ENV_CTRL_1 = memory_ENV_CTRL;
   assign _zz_decode_ENV_CTRL = _zz_decode_ENV_CTRL_1;
-  assign when_Pipeline_l124_33 = (! execute_arbitration_isStuck);
-  assign _zz_execute_ENV_CTRL = decode_to_execute_ENV_CTRL;
-  assign when_Pipeline_l124_34 = (! memory_arbitration_isStuck);
-  assign _zz_memory_ENV_CTRL = execute_to_memory_ENV_CTRL;
-  assign when_Pipeline_l124_35 = (! writeBack_arbitration_isStuck);
-  assign _zz_writeBack_ENV_CTRL = memory_to_writeBack_ENV_CTRL;
   assign when_Pipeline_l124_36 = (! execute_arbitration_isStuck);
+  assign _zz_execute_ENV_CTRL = decode_to_execute_ENV_CTRL;
   assign when_Pipeline_l124_37 = (! memory_arbitration_isStuck);
+  assign _zz_memory_ENV_CTRL = execute_to_memory_ENV_CTRL;
   assign when_Pipeline_l124_38 = (! writeBack_arbitration_isStuck);
+  assign _zz_writeBack_ENV_CTRL = memory_to_writeBack_ENV_CTRL;
   assign when_Pipeline_l124_39 = (! execute_arbitration_isStuck);
   assign when_Pipeline_l124_40 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_41 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_41 = (! writeBack_arbitration_isStuck);
   assign when_Pipeline_l124_42 = (! execute_arbitration_isStuck);
-  assign when_Pipeline_l124_43 = (! execute_arbitration_isStuck);
-  assign _zz_decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND_1 = decode_CfuPlugin_CFU_INPUT_2_KIND;
-  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_1;
+  assign when_Pipeline_l124_43 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_44 = (! execute_arbitration_isStuck);
-  assign _zz_execute_CfuPlugin_CFU_INPUT_2_KIND = decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
   assign when_Pipeline_l124_45 = (! execute_arbitration_isStuck);
   assign when_Pipeline_l124_46 = (! execute_arbitration_isStuck);
+  assign _zz_decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND_1 = decode_CfuPlugin_CFU_INPUT_2_KIND;
+  assign _zz_decode_CfuPlugin_CFU_INPUT_2_KIND = _zz_decode_CfuPlugin_CFU_INPUT_2_KIND_1;
   assign when_Pipeline_l124_47 = (! execute_arbitration_isStuck);
+  assign _zz_execute_CfuPlugin_CFU_INPUT_2_KIND = decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
   assign when_Pipeline_l124_48 = (! execute_arbitration_isStuck);
   assign when_Pipeline_l124_49 = (! execute_arbitration_isStuck);
   assign when_Pipeline_l124_50 = (! execute_arbitration_isStuck);
-  assign when_Pipeline_l124_51 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_52 = (! writeBack_arbitration_isStuck);
-  assign when_Pipeline_l124_53 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_54 = (! writeBack_arbitration_isStuck);
-  assign when_Pipeline_l124_55 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_51 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_52 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_53 = (! execute_arbitration_isStuck);
+  assign when_Pipeline_l124_54 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_55 = (! writeBack_arbitration_isStuck);
   assign when_Pipeline_l124_56 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_57 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_57 = (! writeBack_arbitration_isStuck);
   assign when_Pipeline_l124_58 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_59 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_60 = (! writeBack_arbitration_isStuck);
+  assign when_Pipeline_l124_60 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_61 = (! memory_arbitration_isStuck);
-  assign when_Pipeline_l124_62 = (! writeBack_arbitration_isStuck);
+  assign when_Pipeline_l124_62 = (! memory_arbitration_isStuck);
   assign when_Pipeline_l124_63 = (! writeBack_arbitration_isStuck);
+  assign when_Pipeline_l124_64 = (! memory_arbitration_isStuck);
+  assign when_Pipeline_l124_65 = (! writeBack_arbitration_isStuck);
+  assign when_Pipeline_l124_66 = (! writeBack_arbitration_isStuck);
   assign decode_arbitration_isFlushed = (({writeBack_arbitration_flushNext,{memory_arbitration_flushNext,execute_arbitration_flushNext}} != 3'b000) || ({writeBack_arbitration_flushIt,{memory_arbitration_flushIt,{execute_arbitration_flushIt,decode_arbitration_flushIt}}} != 4'b0000));
   assign execute_arbitration_isFlushed = (({writeBack_arbitration_flushNext,memory_arbitration_flushNext} != 2'b00) || ({writeBack_arbitration_flushIt,{memory_arbitration_flushIt,execute_arbitration_flushIt}} != 3'b000));
   assign memory_arbitration_isFlushed = ((writeBack_arbitration_flushNext != 1'b0) || ({writeBack_arbitration_flushIt,memory_arbitration_flushIt} != 2'b00));
@@ -5306,7 +5326,7 @@ module VexRiscv (
       if(CfuPlugin_bus_cmd_fire) begin
         execute_CfuPlugin_fired <= 1'b1;
       end
-      if(when_CfuPlugin_l171) begin
+      if(when_CfuPlugin_l175) begin
         execute_CfuPlugin_fired <= 1'b0;
       end
       if(CfuPlugin_bus_rsp_valid) begin
@@ -5315,7 +5335,7 @@ module VexRiscv (
       if(CfuPlugin_bus_rsp_rsp_ready) begin
         CfuPlugin_bus_rsp_rValid <= 1'b0;
       end
-      if(when_Pipeline_l124_61) begin
+      if(when_Pipeline_l124_64) begin
         execute_to_memory_CfuPlugin_CFU_IN_FLIGHT <= _zz_execute_to_memory_CfuPlugin_CFU_IN_FLIGHT;
       end
       if(when_Pipeline_l151) begin
@@ -5558,114 +5578,123 @@ module VexRiscv (
       memory_to_writeBack_MEMORY_WR <= memory_MEMORY_WR;
     end
     if(when_Pipeline_l124_26) begin
-      decode_to_execute_MEMORY_MANAGMENT <= decode_MEMORY_MANAGMENT;
+      decode_to_execute_HAS_SIDE_EFFECT <= decode_HAS_SIDE_EFFECT;
     end
     if(when_Pipeline_l124_27) begin
-      decode_to_execute_SRC_LESS_UNSIGNED <= decode_SRC_LESS_UNSIGNED;
+      execute_to_memory_HAS_SIDE_EFFECT <= execute_HAS_SIDE_EFFECT;
     end
     if(when_Pipeline_l124_28) begin
-      decode_to_execute_ALU_BITWISE_CTRL <= _zz_decode_to_execute_ALU_BITWISE_CTRL;
+      memory_to_writeBack_HAS_SIDE_EFFECT <= memory_HAS_SIDE_EFFECT;
     end
     if(when_Pipeline_l124_29) begin
-      decode_to_execute_SHIFT_CTRL <= _zz_decode_to_execute_SHIFT_CTRL;
+      decode_to_execute_MEMORY_MANAGMENT <= decode_MEMORY_MANAGMENT;
     end
     if(when_Pipeline_l124_30) begin
-      execute_to_memory_SHIFT_CTRL <= _zz_execute_to_memory_SHIFT_CTRL;
+      decode_to_execute_SRC_LESS_UNSIGNED <= decode_SRC_LESS_UNSIGNED;
     end
     if(when_Pipeline_l124_31) begin
-      decode_to_execute_BRANCH_CTRL <= _zz_decode_to_execute_BRANCH_CTRL;
+      decode_to_execute_ALU_BITWISE_CTRL <= _zz_decode_to_execute_ALU_BITWISE_CTRL;
     end
     if(when_Pipeline_l124_32) begin
-      decode_to_execute_IS_CSR <= decode_IS_CSR;
+      decode_to_execute_SHIFT_CTRL <= _zz_decode_to_execute_SHIFT_CTRL;
     end
     if(when_Pipeline_l124_33) begin
-      decode_to_execute_ENV_CTRL <= _zz_decode_to_execute_ENV_CTRL;
+      execute_to_memory_SHIFT_CTRL <= _zz_execute_to_memory_SHIFT_CTRL;
     end
     if(when_Pipeline_l124_34) begin
-      execute_to_memory_ENV_CTRL <= _zz_execute_to_memory_ENV_CTRL;
+      decode_to_execute_BRANCH_CTRL <= _zz_decode_to_execute_BRANCH_CTRL;
     end
     if(when_Pipeline_l124_35) begin
-      memory_to_writeBack_ENV_CTRL <= _zz_memory_to_writeBack_ENV_CTRL;
+      decode_to_execute_IS_CSR <= decode_IS_CSR;
     end
     if(when_Pipeline_l124_36) begin
-      decode_to_execute_IS_MUL <= decode_IS_MUL;
+      decode_to_execute_ENV_CTRL <= _zz_decode_to_execute_ENV_CTRL;
     end
     if(when_Pipeline_l124_37) begin
-      execute_to_memory_IS_MUL <= execute_IS_MUL;
+      execute_to_memory_ENV_CTRL <= _zz_execute_to_memory_ENV_CTRL;
     end
     if(when_Pipeline_l124_38) begin
-      memory_to_writeBack_IS_MUL <= memory_IS_MUL;
+      memory_to_writeBack_ENV_CTRL <= _zz_memory_to_writeBack_ENV_CTRL;
     end
     if(when_Pipeline_l124_39) begin
-      decode_to_execute_IS_DIV <= decode_IS_DIV;
+      decode_to_execute_IS_MUL <= decode_IS_MUL;
     end
     if(when_Pipeline_l124_40) begin
-      execute_to_memory_IS_DIV <= execute_IS_DIV;
+      execute_to_memory_IS_MUL <= execute_IS_MUL;
     end
     if(when_Pipeline_l124_41) begin
-      decode_to_execute_IS_RS1_SIGNED <= decode_IS_RS1_SIGNED;
+      memory_to_writeBack_IS_MUL <= memory_IS_MUL;
     end
     if(when_Pipeline_l124_42) begin
-      decode_to_execute_IS_RS2_SIGNED <= decode_IS_RS2_SIGNED;
+      decode_to_execute_IS_DIV <= decode_IS_DIV;
     end
     if(when_Pipeline_l124_43) begin
-      decode_to_execute_CfuPlugin_CFU_ENABLE <= decode_CfuPlugin_CFU_ENABLE;
+      execute_to_memory_IS_DIV <= execute_IS_DIV;
     end
     if(when_Pipeline_l124_44) begin
-      decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND <= _zz_decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
+      decode_to_execute_IS_RS1_SIGNED <= decode_IS_RS1_SIGNED;
     end
     if(when_Pipeline_l124_45) begin
-      decode_to_execute_RS1 <= decode_RS1;
+      decode_to_execute_IS_RS2_SIGNED <= decode_IS_RS2_SIGNED;
     end
     if(when_Pipeline_l124_46) begin
-      decode_to_execute_RS2 <= decode_RS2;
+      decode_to_execute_CfuPlugin_CFU_ENABLE <= decode_CfuPlugin_CFU_ENABLE;
     end
     if(when_Pipeline_l124_47) begin
-      decode_to_execute_SRC2_FORCE_ZERO <= decode_SRC2_FORCE_ZERO;
+      decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND <= _zz_decode_to_execute_CfuPlugin_CFU_INPUT_2_KIND;
     end
     if(when_Pipeline_l124_48) begin
-      decode_to_execute_PREDICTION_HAD_BRANCHED2 <= decode_PREDICTION_HAD_BRANCHED2;
+      decode_to_execute_RS1 <= decode_RS1;
     end
     if(when_Pipeline_l124_49) begin
-      decode_to_execute_CSR_WRITE_OPCODE <= decode_CSR_WRITE_OPCODE;
+      decode_to_execute_RS2 <= decode_RS2;
     end
     if(when_Pipeline_l124_50) begin
-      decode_to_execute_CSR_READ_OPCODE <= decode_CSR_READ_OPCODE;
+      decode_to_execute_SRC2_FORCE_ZERO <= decode_SRC2_FORCE_ZERO;
     end
     if(when_Pipeline_l124_51) begin
-      execute_to_memory_MEMORY_STORE_DATA_RF <= execute_MEMORY_STORE_DATA_RF;
+      decode_to_execute_PREDICTION_HAD_BRANCHED2 <= decode_PREDICTION_HAD_BRANCHED2;
     end
     if(when_Pipeline_l124_52) begin
-      memory_to_writeBack_MEMORY_STORE_DATA_RF <= memory_MEMORY_STORE_DATA_RF;
+      decode_to_execute_CSR_WRITE_OPCODE <= decode_CSR_WRITE_OPCODE;
     end
     if(when_Pipeline_l124_53) begin
-      execute_to_memory_REGFILE_WRITE_DATA <= _zz_decode_RS2;
+      decode_to_execute_CSR_READ_OPCODE <= decode_CSR_READ_OPCODE;
     end
     if(when_Pipeline_l124_54) begin
-      memory_to_writeBack_REGFILE_WRITE_DATA <= _zz_decode_RS2_1;
+      execute_to_memory_MEMORY_STORE_DATA_RF <= execute_MEMORY_STORE_DATA_RF;
     end
     if(when_Pipeline_l124_55) begin
-      execute_to_memory_SHIFT_RIGHT <= execute_SHIFT_RIGHT;
+      memory_to_writeBack_MEMORY_STORE_DATA_RF <= memory_MEMORY_STORE_DATA_RF;
     end
     if(when_Pipeline_l124_56) begin
-      execute_to_memory_MUL_LL <= execute_MUL_LL;
+      execute_to_memory_REGFILE_WRITE_DATA <= _zz_decode_RS2;
     end
     if(when_Pipeline_l124_57) begin
-      execute_to_memory_MUL_LH <= execute_MUL_LH;
+      memory_to_writeBack_REGFILE_WRITE_DATA <= _zz_decode_RS2_1;
     end
     if(when_Pipeline_l124_58) begin
-      execute_to_memory_MUL_HL <= execute_MUL_HL;
+      execute_to_memory_SHIFT_RIGHT <= execute_SHIFT_RIGHT;
     end
     if(when_Pipeline_l124_59) begin
-      execute_to_memory_MUL_HH <= execute_MUL_HH;
+      execute_to_memory_MUL_LL <= execute_MUL_LL;
     end
     if(when_Pipeline_l124_60) begin
-      memory_to_writeBack_MUL_HH <= memory_MUL_HH;
+      execute_to_memory_MUL_LH <= execute_MUL_LH;
+    end
+    if(when_Pipeline_l124_61) begin
+      execute_to_memory_MUL_HL <= execute_MUL_HL;
     end
     if(when_Pipeline_l124_62) begin
-      memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT <= _zz_memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT;
+      execute_to_memory_MUL_HH <= execute_MUL_HH;
     end
     if(when_Pipeline_l124_63) begin
+      memory_to_writeBack_MUL_HH <= memory_MUL_HH;
+    end
+    if(when_Pipeline_l124_65) begin
+      memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT <= _zz_memory_to_writeBack_CfuPlugin_CFU_IN_FLIGHT;
+    end
+    if(when_Pipeline_l124_66) begin
       memory_to_writeBack_MUL_LOW <= memory_MUL_LOW;
     end
     if(when_CsrPlugin_l1264) begin
