@@ -11,7 +11,6 @@ import subprocess
 import sys
 import time
 import types
-import pkg_resources
 
 from litex.soc.integration.builder import Builder, builder_args, builder_argdict
 from litex.soc.integration.soc import LiteXSoC, SoCRegion
@@ -274,19 +273,19 @@ def main():
     args = parser.parse_args()
     args.output_dir = 'build/hps_platform'
 
-    variant, variantName = 'full', 'Full'
-    if args.cpu_cfu:
-        variant, variantName = 'slim+cfu', 'SlimCfu'
-    print(f'{variantName} variant selected')
+    variant = 'slim+cfu'
+    print(f'{variant} variant selected')
 
     soc = HpsSoC(
         platform=Platform(parallel_nextpnr=args.parallel_nextpnr),
         variant=variant,
         cpu_cfu=args.cpu_cfu)
 
-    soc.cpu.use_external_variant(
-        pkg_resources.resource_filename('pythondata_cpu_vexriscv',
-                                        f'verilog/VexRiscv_{variantName}.v'))
+    cpu_verilog_path = os.path.join(
+        SOC_DIR,
+        '../third_party/vexriscv/VexRiscv_SlimCfu.v')
+
+    soc.cpu.use_external_variant(cpu_verilog_path)
 
     args.csr_svd = f'{args.output_dir}/hps.svd'
     args.memory_x = f'{args.output_dir}/memory.x'

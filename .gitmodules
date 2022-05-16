@@ -10,9 +10,6 @@
 [submodule "third_party/python/pythondata-software-compiler_rt"]
 	path = third_party/python/pythondata-software-compiler_rt
 	url = https://github.com/litex-hub/pythondata-software-compiler_rt
-[submodule "third_party/python/pythondata-cpu-vexriscv"]
-	path = third_party/python/pythondata-cpu-vexriscv
-	url = https://github.com/tcal-x/pythondata-cpu-vexriscv
 [submodule "third_party/python/litedram"]
 	path = third_party/python/litedram
 	url = https://github.com/enjoy-digital/litedram.git
