@@ -24,8 +24,8 @@ SECTIONS {
 
         /* Align trap table. */
         . = ALIGN(4);
-        (*(.trap));
-        (*(.trap.rust));
+        *(.trap);
+        *(.trap.rust);
     } > spiflash
 
     /* Our models are large, fixed size and during development tend to change
