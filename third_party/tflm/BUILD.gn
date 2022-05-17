@@ -57,7 +57,6 @@ config("tflm-config") {
     "TF_LITE_USE_GLOBAL_MIN",
     "TF_LITE_USE_GLOBAL_MAX ",
     "TF_LITE_DISABLE_X86_NEON",
-    "ISSUE_582_WORKAROUND",
   ]
   include_dirs = [
     ".",
