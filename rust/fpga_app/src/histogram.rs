@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::camera::IMAGE_HEIGHT;
+use crate::camera::IMAGE_WIDTH;
 use core::fmt;
 
 /// A Histogram of counts of pixel values
@@ -22,8 +24,6 @@ struct Bin {
     count: u32,
 }
 
-const FRAME_CROPPING: usize = 40;
-
 impl Histogram {
     pub fn new(image_data: &[i8]) -> Histogram {
         let mut result = Histogram {
@@ -37,23 +37,20 @@ impl Histogram {
         result
     }
 
+    /// Histogram from central 240x240 square in image
     pub fn new_cropped(image_data: &[i8]) -> Histogram {
         let mut result = Histogram {
             count: 0,
             bins: [0; 256],
         };
 
-        let mut i = 0;
-        for _ in 0..FRAME_CROPPING {
-            i += FRAME_CROPPING;
-            for _ in 0..FRAME_CROPPING {
+        for y in 0..IMAGE_HEIGHT {
+            for x in 40..IMAGE_WIDTH - 40 {
+                let i = (y * IMAGE_WIDTH + x) as usize;
                 result.add(image_data[i]);
-                i += 1;
             }
-            i += FRAME_CROPPING;
         }
-
-        result.count = (FRAME_CROPPING * FRAME_CROPPING) as u32;
+        result.count = (IMAGE_HEIGHT * (IMAGE_WIDTH - 80)) as u32;
         result
     }
 
@@ -182,6 +179,7 @@ mod tests {
 
     const NOT_USABLE: &[u8] = include_bytes!("../test_data/unusable-320x240.png");
     const USABLE: &[u8] = include_bytes!("../test_data/not-person-320x240.png");
+    use crate::camera::NUM_PIXELS;
 
     #[test]
     fn test_calculate_entropy_nomiri() {
@@ -203,6 +201,38 @@ mod tests {
         assert_eq!(0b011111111110 << 16, fixed_log2(255));
         assert_eq!(0b100000000000 << 16, fixed_log2(256));
         assert_eq!(0b100000000001 << 16, fixed_log2(257));
+    }
+
+    // Checks the number of values in buckets 0 and 255, and that all
+    // other bins contain 0 values.
+    fn check_histogram(h: &Histogram, b0: u32, b255: u32) {
+        assert_eq!(h.count, b0 + b255);
+        assert_eq!(h.bins[0], b0);
+        for i in 1..254 {
+            assert_eq!(h.bins[i], 0);
+        }
+        assert_eq!(h.bins[255], b255);
+    }
+
+    #[test]
+    fn test_histogram_nomiri() {
+        // Create i8 vector representing a dark 240x240 square in center of
+        // light 320x240 image
+        let mut img: [i8; NUM_PIXELS] = [127; NUM_PIXELS];
+        for y in 0..IMAGE_HEIGHT {
+            for x in 40..IMAGE_WIDTH - 40 {
+                let index = (y * IMAGE_WIDTH + x) as usize;
+                img[index] = -128;
+            }
+        }
+
+        // Full histogram has some dark and some light pixels
+        let h_full = Histogram::new(&img);
+        check_histogram(&h_full, 240 * IMAGE_HEIGHT, 80 * IMAGE_HEIGHT);
+
+        // Cropped histogram only has dark pixels
+        let h_cropped = Histogram::new_cropped(&img);
+        check_histogram(&h_cropped, 240 * IMAGE_HEIGHT, 0);
     }
 
     #[test]
