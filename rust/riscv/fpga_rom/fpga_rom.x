@@ -71,6 +71,13 @@ SECTIONS {
     /* All our other code. */
     .text :
     {
+        /* Align to a SPI flash block boundary so it's less likely that this
+         * section will cross a block boundary. It also means that changes
+         * to TFLM will be less likely to shift this section. We fill with the
+         * empty flash value (0xff) so that we can skip writing the padding. */
+        FILL(0xffffffff);
+        . = ALIGN(65536);
+
         /* By putting .init.rust here, its address (which is referenced by
          * .init) is less likely to change. We don't put it at the start of flash
          * with .init because it references our main function, which is likely to
