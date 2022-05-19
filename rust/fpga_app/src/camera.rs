@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::histogram::Histogram;
 use crate::Error;
 use crate::Result;
+use core::ops::Range;
 
 pub const IMAGE_WIDTH: u32 = 320;
 pub const IMAGE_HEIGHT: u32 = 240;
@@ -47,6 +49,7 @@ pub trait CameraDataInterface {
 
 pub struct ImageDataReceiver<C> {
     camera: C,
+    pub(crate) histogram: Histogram,
 }
 
 pub struct ImageDimensions {
@@ -69,7 +72,10 @@ impl Default for ImageDimensions {
 
 impl<C: CameraDataInterface> ImageDataReceiver<C> {
     pub(crate) fn new(camera: C) -> Self {
-        Self { camera }
+        Self {
+            camera,
+            histogram: Histogram::default(),
+        }
     }
 
     /// Waits for the start of a frame, then receives image data into `buffer`.
@@ -89,6 +95,7 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         if image_dimensions.column_count & 3 != 0 {
             return Err(Error::InvalidArg);
         }
+        self.histogram = Default::default();
         self.camera.start();
         // TODO(dml): Change the buffer to [u32] so that we don't need this.
         if (buffer.as_ptr() as usize) & 0x3 != 0 {
@@ -109,6 +116,24 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         image_dimensions: &ImageDimensions,
     ) -> Result<()> {
         let row_out_len = (image_dimensions.column_count >> 2) as usize;
+        // Number of words per row that we put into the histogram.
+        const HIST_WORDS_PER_ROW: usize = IMAGE_HEIGHT as usize / 4;
+        // Number of rows at the top that are excluded from the histogram.
+        const NON_HIST_ROW_COUNT: usize = (CAMERA_WIDTH_HEIGHT - IMAGE_HEIGHT as usize) / 2;
+        // The rows that are included in the histogram.
+        const HIST_ROW_RANGE: Range<usize> =
+            NON_HIST_ROW_COUNT..CAMERA_WIDTH_HEIGHT - NON_HIST_ROW_COUNT;
+        // Number of words at the start of each row, within the capture area
+        // that we exclude from the histogram.
+        let non_hist_words_left = if image_dimensions.column_count > image_dimensions.row_count {
+            // Image is wider than it is high, so we exclude the difference
+            // between width and the height from the histogram.
+            (IMAGE_WIDTH - IMAGE_HEIGHT) as usize / 2 / 4
+        } else {
+            // Image is higher than it is wide, so no pixels are excluded from
+            // each row.
+            0
+        };
         // Convert column start from pixels to words. We discard the low two
         // bits in the process. So if column_start is 1, 2 or 3, then we'll
         // start from 0. We could have instead said that such column_starts are
@@ -118,10 +143,27 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         let mut row_index = 0;
         for row_out in buffer_u32.chunks_exact_mut(row_out_len) {
             loop {
+                let non_hist_len;
+                let hist_len;
+                if HIST_ROW_RANGE.contains(&row_index) {
+                    non_hist_len = non_hist_words_left;
+                    hist_len = HIST_WORDS_PER_ROW;
+                } else {
+                    // We're outside the histogram rows. Don't add any part of
+                    // this row to the histogram.
+                    non_hist_len = HIST_WORDS_PER_ROW;
+                    hist_len = 0;
+                }
+                // Split `row_out` into three parts, any of which may be empty.
+                // The left are right parts are parts of the image and are
+                // captured, but are excluded from the histogram. The middle
+                // part is the only part that is included in the histogram.
+                let (left_out, rest) = row_out.split_at_mut(non_hist_len);
+                let (middle_out, right_out) = rest.split_at_mut(hist_len);
                 // We always receive the row, even if we haven't yet reached the
                 // starting row. Thay way the code to read the row gets into
                 // cache.
-                self.receive_row(row_out, left_margin_words)?;
+                self.receive_row(left_out, middle_out, right_out, left_margin_words)?;
                 row_index += 1;
                 // Check if the row we capture above is one that we want to
                 // keep. If it is, fall out of the inner loop so that we can
@@ -134,11 +176,33 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         Ok(())
     }
 
-    fn receive_row(&mut self, row_out: &mut [u32], left_margin_words: u32) -> Result<()> {
+    fn receive_row(
+        &mut self,
+        left_out: &mut [u32],
+        middle_out: &mut [u32],
+        right_out: &mut [u32],
+        left_margin_words: u32,
+    ) -> Result<()> {
         // Skip pixels to the left of the cropping area.
         self.skip_words(left_margin_words)?;
-        // Transfer the image data.
-        for word in row_out {
+        // Transfer the image data - non-histogram left edge.
+        for word in left_out {
+            self.wait_for_data()?;
+            *word = self.camera.read_word();
+        }
+        // Transfer the image data - update histogram.
+        for word in middle_out {
+            self.wait_for_data()?;
+            let value = self.camera.read_word();
+            *word = value;
+            // We just add one of the 4 bytes in our word to the histogram.
+            // Sampling 1 in 4 bytes is sufficient for our purposes.
+            // Experimentally, we could sample as much as 3/4 bytes without
+            // dropping pixels, however we don't really need that much sampling.
+            self.histogram.add((value & 0xff) as i8);
+        }
+        // Transfer the image data - non-histogram right edge.
+        for word in right_out {
             self.wait_for_data()?;
             *word = self.camera.read_word();
         }
@@ -378,6 +442,42 @@ mod tests {
             calculate_exposure(MIN_EXPOSURE)
         );
         Ok(())
+    }
+
+    fn histogram_from_image_capture(
+        pixels: &[i8],
+        image_dimensions: &ImageDimensions,
+    ) -> Histogram {
+        let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
+        camera.frame_image(image_dimensions);
+        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut buffer = ImageBuffer::default();
+        image_receiver
+            .receive_image_data(&mut buffer, image_dimensions)
+            .unwrap();
+        image_receiver.histogram
+    }
+
+    // Check that image capture computes the same histogram as if we pass the
+    // image data directly to Histogram::new_cropped.
+    #[test]
+    fn test_histogram_consistent_nomiri() {
+        let pixels = png_pixels(images::NOT_PERSON).unwrap();
+
+        let mut image_dimensions = ImageDimensions::default();
+        let via_capture = histogram_from_image_capture(&pixels, &image_dimensions);
+        let reference = Histogram::new_cropped(&pixels);
+        assert_eq!(via_capture.count(), reference.count());
+        assert_eq!(via_capture, reference);
+
+        image_dimensions.rotate_90();
+        let via_capture = histogram_from_image_capture(&pixels, &image_dimensions);
+        let reference = Histogram::new_cropped(&pixels);
+        // We can't actually check that the two histograms are equal in the case
+        // of rotation because Histogram::new_cropped will sample different
+        // pixels. The best we can do is check that the number of pixels sampled
+        // is the same.
+        assert_eq!(via_capture.count(), reference.count());
     }
 
     #[test]

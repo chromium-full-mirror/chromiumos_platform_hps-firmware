@@ -32,6 +32,7 @@ use core::convert::TryFrom;
 pub use debug_commands::DebugCommand;
 use embedded_hal::blocking::spi;
 pub use features::Features;
+pub use histogram::Histogram;
 use hm01b0::TestPattern;
 use mcu_common::SPI_BLOCK_SIZE;
 use mcu_interface::McuInterface;
@@ -228,11 +229,14 @@ where
         let capture_start = self.timer.now();
         self.capture_well_exposed_image(is_rotated)?;
         let capture_ms = self.timer.elapsed_ms(capture_start);
-        let image_data = self.classifier.input_data(self.model_number);
-        let histogram = histogram::Histogram::new(image_data);
         if self.histogram_enabled {
             let e = self.exposure;
-            mcu_println!(self.mcu, "{} exp: {:#06x}", histogram, e);
+            mcu_println!(
+                self.mcu,
+                "{} exp: {:#06x}",
+                self.image_data_receiver.histogram,
+                e
+            );
         }
 
         // Image transfer can be enabled either via a feature (transfer over
@@ -252,7 +256,7 @@ where
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
         let model_status;
-        if histogram.is_usable()
+        if self.image_data_receiver.histogram.is_usable()
             && (features.contains(Features::MODEL1) || features.contains(Features::MODEL2))
         {
             let start = self.timer.now();
@@ -354,7 +358,7 @@ where
         const BEGIN_THRESHOLD: i32 = 20;
         const END_THRESHOLD: i32 = 5;
         const MAX_STEPS: usize = 15;
-        let mut median = self.get_image_median() as i32;
+        let mut median = self.image_data_receiver.histogram.median() as i32;
         let mut diff = median - target;
         if diff.abs() > BEGIN_THRESHOLD {
             let done_down = &|median| median - target < END_THRESHOLD;
@@ -365,7 +369,7 @@ where
                 self.step_exposure(if diff < 0 { 64 } else { -64 })?;
                 self.capture_image(false)?;
                 self.capture_image(rotate_clockwise)?;
-                median = self.get_image_median() as i32;
+                median = self.image_data_receiver.histogram.median() as i32;
                 diff = median - target;
                 steps += 1;
             }
@@ -386,12 +390,6 @@ where
         self.exposure = (val + delta).clamp(camera::MIN_EXPOSURE, camera::MAX_EXPOSURE);
         self.write_exposure()?;
         Ok(())
-    }
-
-    // Calculate median of current image buffer
-    fn get_image_median(&self) -> i8 {
-        let image_data = self.classifier.input_data(self.model_number);
-        histogram::Histogram::new_cropped(image_data).median()
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {

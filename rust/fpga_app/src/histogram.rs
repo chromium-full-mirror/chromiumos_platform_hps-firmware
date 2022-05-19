@@ -7,6 +7,7 @@ use crate::camera::IMAGE_WIDTH;
 use core::fmt;
 
 /// A Histogram of counts of pixel values
+#[derive(Debug, PartialEq, Eq)]
 pub struct Histogram {
     // Binned data
     // bin[0] stores counts for pixels of value -128
@@ -22,9 +23,15 @@ struct Bin {
     count: u32,
 }
 
+impl Default for Histogram {
+    fn default() -> Self {
+        Self { bins: [0u32; 256] }
+    }
+}
+
 impl Histogram {
     pub fn new(image_data: &[i8]) -> Histogram {
-        let mut result = Histogram { bins: [0; 256] };
+        let mut result = Histogram::default();
 
         for &val in image_data {
             result.add(val);
@@ -51,7 +58,8 @@ impl Histogram {
     }
 
     /// Adds a single value to the histogram
-    fn add(&mut self, value: i8) {
+    #[inline(always)]
+    pub fn add(&mut self, value: i8) {
         let index = (value as i16 + 128) as usize;
         self.bins[index] += 1;
     }
@@ -210,6 +218,12 @@ mod tests {
             assert_eq!(h.bins[i], 0);
         }
         assert_eq!(h.bins[255], b255);
+    }
+
+    #[test]
+    fn test_median() {
+        let h = Histogram::new(TEST_DATA);
+        assert_eq!(3, h.median());
     }
 
     #[test]
