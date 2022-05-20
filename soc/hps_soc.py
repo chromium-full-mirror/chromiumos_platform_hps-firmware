@@ -16,11 +16,14 @@ from litespi import LiteSPI
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
 from litespi.phy.generic import LiteSPIPHY
+from litex.soc.cores.cpu import CPUS
+from litex.soc.cores.cpu.vexriscv import VexRiscv
 from litex.soc.integration.builder import Builder
 from litex.soc.integration.builder import builder_argdict
 from litex.soc.integration.builder import builder_args
 from litex.soc.integration.soc import LiteXSoC
 from litex.soc.integration.soc import SoCRegion
+from litex.soc.interconnect import wishbone
 from migen import Record
 
 from .cam_control import CameraControl
@@ -63,7 +66,7 @@ class HpsSoC(LiteXSoC):
         'csr': csr_origin,
     }
 
-    cpu_type = 'vexriscv'
+    cpu_type = 'vexriscvhps'
 
     def __init__(self, *, platform, cpu_cfu=None, variant=None):
         LiteXSoC.__init__(self,
@@ -155,9 +158,20 @@ class HpsSoC(LiteXSoC):
             with_csr=False)
         self.csr.add('spiflash_mmap')
         self.csr.add('spiflash_phy')
+        # Our CPU's ibus (instruction bus) is connected directly to the SPI
+        # flash rather than via the main bus that is used by the dbus (data
+        # bus). This prevents code from being executed from anywhere other than
+        # SPI flash. i.e. we can't run code from RAM, which is better from a
+        # security perspective.
+        dbus_flash_interface = wishbone.Interface(
+            data_width=self.bus.data_width,
+            adr_width=self.bus.address_width)
+        self.submodules.spiflash_arbiter = wishbone.Arbiter(
+            masters=[self.cpu.ibus, dbus_flash_interface],
+            target=self.spiflash_mmap.bus)
         self.bus.add_slave(
             name='spiflash',
-            slave=self.spiflash_mmap.bus,
+            slave=dbus_flash_interface,
             region=self.spiflash_region)
 
     def setup_camera(self):
@@ -198,7 +212,7 @@ class HpsSoC(LiteXSoC):
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     parser.add_argument('--nextpnr-seed', metavar='NUMBER',
-                        default=270, type=int,
+                        default=359, type=int,
                         help='Use random seed NUMBER for nextpnr')
 
 
@@ -249,6 +263,8 @@ def parse_metrics(output_filename):
 
 
 def main():
+    CPUS['vexriscvhps'] = VexRiscvHps
+
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
     # --build does nothing, accept it for backwards compatibility
@@ -321,6 +337,18 @@ def main():
         ['rustfmt', f'{pac_out_dir}/lib.rs', f'{pac_out_dir}/build.rs'])
 
     print(f'Build outputs at {builder.output_dir}')
+
+
+class VexRiscvHps(VexRiscv):
+    """The soft CPU used by HPS.
+
+    Differs from VexRiscv in that the ibus (instruction bus) isn't listed as a
+    peripheral bus. We handle the ibus separately.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.periph_buses = [self.dbus]
 
 
 if __name__ == '__main__':
