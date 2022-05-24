@@ -24,7 +24,6 @@ from migen import Record
 
 from .hps_platform import Platform
 from .cam_control import CameraControl
-from .patch_cpu_variant import patch_cpu_variant
 from .spi_controller import SpiController
 
 
@@ -250,8 +249,6 @@ def parse_metrics(output_filename):
 
 
 def main():
-    patch_cpu_variant()
-
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
     # --build does nothing, accept it for backwards compatibility
@@ -273,8 +270,9 @@ def main():
     args = parser.parse_args()
     args.output_dir = 'build/hps_platform'
 
-    variant = 'slim+cfu'
-    print(f'{variant} variant selected')
+    # Our custom Vexriscv configuration is not exactly 'full+cfu'
+    # but the differences don't matter to Litex.
+    variant = 'full+cfu'
 
     soc = HpsSoC(
         platform=Platform(parallel_nextpnr=args.parallel_nextpnr),
