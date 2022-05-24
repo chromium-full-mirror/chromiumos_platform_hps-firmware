@@ -7,8 +7,9 @@
 import random
 from unittest import TestCase
 
+from migen import Record
+from migen import run_simulation
 from migen.sim.core import passive
-from migen import Record, run_simulation
 
 from . import cam_control
 

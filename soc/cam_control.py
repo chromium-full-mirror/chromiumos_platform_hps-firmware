@@ -4,12 +4,19 @@
 
 """Gateware for receiving data from the HM01B0 camera."""
 
-from migen import (
-    Cat, FSM, If, Module, NextState, NextValue,
-    Signal, Record, ResetInserter)
-
 from litex.soc.interconnect import stream
-from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR
+from litex.soc.interconnect.csr import CSRStatus
+from litex.soc.interconnect.csr import CSRStorage
+from migen import Cat
+from migen import FSM
+from migen import If
+from migen import Module
+from migen import NextState
+from migen import NextValue
+from migen import Record
+from migen import ResetInserter
+from migen import Signal
 
 
 # Defines the I/O input signals from the camera
@@ -168,7 +175,8 @@ class CameraControl(Module, AutoCSR):
             'to reset')
         self._start_run = CSRStorage(
             1,
-            description='Writing a 1 to this field while idle starts the transfer.')
+            description='Writing a 1 to this field while idle starts ' +
+            'the transfer.')
         self._wait_row = CSRStorage(
             1,
             description='Writing a 1 to this field while running waits ' +

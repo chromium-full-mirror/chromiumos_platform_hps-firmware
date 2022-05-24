@@ -12,18 +12,19 @@ import sys
 import time
 import types
 
-from litex.soc.integration.builder import Builder, builder_args, builder_argdict
-from litex.soc.integration.soc import LiteXSoC, SoCRegion
-
+from litespi import LiteSPI
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
 from litespi.phy.generic import LiteSPIPHY
-from litespi import LiteSPI
-
+from litex.soc.integration.builder import Builder
+from litex.soc.integration.builder import builder_argdict
+from litex.soc.integration.builder import builder_args
+from litex.soc.integration.soc import LiteXSoC
+from litex.soc.integration.soc import SoCRegion
 from migen import Record
 
-from .hps_platform import Platform
 from .cam_control import CameraControl
+from .hps_platform import Platform
 from .spi_controller import SpiController
 
 
@@ -185,7 +186,7 @@ class HpsSoC(LiteXSoC):
             region.type = 'cached' if region.cached else 'io'
             if region.linker:
                 region.type += '+linker'
-        self.csr_regions = self.csr.regions
+        self.csr_regions = self.csr.regions  # pylint: disable=W0201
 
         self.configure_rom()
 

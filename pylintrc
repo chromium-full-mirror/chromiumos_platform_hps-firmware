@@ -142,6 +142,7 @@ enable=
 # TODO: Re-enable consider-using-in.
 # TODO: Re-enable try-except-raise.
 # TODO: Re-enable chained-comparison.
+# TODO: Enable import-error when pylint can use CrOS site-packages.
 disable=
     broad-except,
     chained-comparison,
@@ -152,6 +153,7 @@ disable=
     fixme,
     file-ignored,
     keyword-arg-before-vararg,
+    import-error,
     import-outside-toplevel,
     inconsistent-return-statements,
     invalid-name,

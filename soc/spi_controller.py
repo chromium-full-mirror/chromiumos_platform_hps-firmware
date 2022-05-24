@@ -5,12 +5,19 @@
 """SPI Controller gateware for communication with the MCU."""
 
 from itertools import count
-from unittest import TestCase
 import random
+from unittest import TestCase
 
-from migen import Cat, If, Module, Signal, passive, run_simulation
-
-from litex.soc.interconnect.csr import AutoCSR, CSRField, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR
+from litex.soc.interconnect.csr import CSRField
+from litex.soc.interconnect.csr import CSRStatus
+from litex.soc.interconnect.csr import CSRStorage
+from migen import Cat
+from migen import If
+from migen import Module
+from migen import passive
+from migen import run_simulation
+from migen import Signal
 
 
 # SPI clock

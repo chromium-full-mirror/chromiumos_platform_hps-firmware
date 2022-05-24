@@ -3,12 +3,20 @@
 # found in the LICENSE file.
 """Platform definition file for HPS proto2"""
 
-from migen import Module, ClockDomain, Signal, If, log2_int
-from migen.genlib.resetsync import AsyncResetSynchronizer
-from litex.build.generic_platform import Pins, Subsignal, IOStandard, Misc
+from hps_lattice_nx import NXLRAM
+from litex.build.generic_platform import IOStandard
+from litex.build.generic_platform import Misc
+from litex.build.generic_platform import Pins
+from litex.build.generic_platform import Subsignal
 from litex.build.lattice import LatticePlatform
 from litex.soc.cores.clock import NXOSCA
-from hps_lattice_nx import NXLRAM
+from migen import ClockDomain
+from migen import If
+from migen import log2_int
+from migen import Module
+from migen import Signal
+from migen.genlib.resetsync import AsyncResetSynchronizer
+
 
 hps_io = [
     # HM01B0 camera connection
