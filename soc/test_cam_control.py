@@ -35,7 +35,7 @@ class PixelProducerTest(TestCase):
 
     def assert_stream_content(self, expected):
         yield
-        for (value, first, last) in expected:
+        for value in expected:
             yield self.dut.output.ready.eq(1)
             while not (yield self.dut.output.valid):
                 yield
@@ -46,11 +46,6 @@ class PixelProducerTest(TestCase):
 
     def test_it_sends_a_frame(self):
         frame = [random.randrange(256) for _ in range(self._FRAME_PIXELS)]
-        expected = [
-            (frame[0], True, False),
-            *[(p, False, False) for p in frame[1:-1]],
-            (frame[-1], False, True)
-        ]
 
         def run():
             yield
@@ -63,7 +58,7 @@ class PixelProducerTest(TestCase):
             yield self.pads.fvld.eq(0)
         run_simulation(
             self.dut,
-            generators=[run(), self.assert_stream_content(expected)])
+            generators=[run(), self.assert_stream_content(frame)])
 
     def test_it_handles_fvld(self):
         """Checks that pixels sent while fvld lowered are not recorded."""
@@ -79,11 +74,7 @@ class PixelProducerTest(TestCase):
             (False, 7),
             (False, 8),
         ]
-        EXPECTED = [
-            (2, True, False),
-            (3, False, False),
-            (5, True, False),
-        ]
+        EXPECTED = [2, 3, 5]
 
         def run():
             for (fvld, pixel) in PAD_DATA:
@@ -92,63 +83,6 @@ class PixelProducerTest(TestCase):
         run_simulation(
             self.dut,
             generators=[run(), self.assert_stream_content(EXPECTED)])
-
-    def test_it_sets_first_and_last(self):
-        """Checks that first and last are handled correctly"""
-        PAD_DATA = [
-            # (fvld, data to send)
-            (False, 0),
-            (False, 1),
-            (True, 2),
-            (True, 3),
-            (True, 4),
-            (True, 5),
-            (True, 6),
-            (True, 7),
-            (False, 8),
-            (False, 9),
-            (False, 10),
-            (True, 11),
-            (True, 12),
-            (True, 13),
-            (True, 14),
-            (True, 15),
-            (False, 16),
-            (False, 17),
-            (True, 18),
-            (True, 19),
-            (False, 20),
-            (False, 21),
-        ]
-        EXPECTED = [
-            # First frame is 6 pixels long instead of expected 5
-            (2, True, False),
-            (3, False, False),
-            (4, False, False),
-            (5, False, False),
-            # This pixel is last by count
-            (6, False, True),
-            (7, False, False),
-            # Next frame is expected 5 pixels
-            (11, True, False),
-            (12, False, False),
-            (13, False, False),
-            (14, False, False),
-            (15, False, True),
-            # Final frame is just two pixels
-            (18, True, False),
-            (19, False, False),
-        ]
-
-        def run():
-            for (fvld, pixel) in PAD_DATA:
-                yield self.pads.fvld.eq(fvld)
-                yield from self.send_pixel(pixel)
-        run_simulation(
-            self.dut,
-            generators=[
-                run(),
-                self.assert_stream_content(EXPECTED)])
 
 
 def send(stream, data):
