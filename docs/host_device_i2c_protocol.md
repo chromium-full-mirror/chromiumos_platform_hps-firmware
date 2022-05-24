@@ -1,4 +1,4 @@
-## Protocol overview
+# HPS I2C Protocol
 
 All communication is initiated by the host (I2C controller) and consists of
 either a single write (START_WRITE...STOP), or a write_read
@@ -21,12 +21,12 @@ The first byte written by the host is the command byte:
 | 1     | Register Access. |
 | 01    | Unused           |
 
-# Write Memory
+## Write memory
 
 6 bit Parameter specifies the memory bank, followed by a 32 bit start address,
 and then the data.
 
-## Memory Banks
+### Memory banks
 
 | Number | Bank          |                    |
 |:-------|:--------------|:-------------------|
@@ -34,7 +34,7 @@ and then the data.
 | 1      | FPGA gateware | Writable in stage1 |
 | 2      | SOC ROM       | Writable in stage1 |
 
-# Register Access
+## Register access
 
 7 bit Parameter specifies the register number. The host either requests data
 from the register (write_read operation), or data to be written to the register
@@ -42,39 +42,42 @@ follows the command (write operation). All writes are 16 bits. All documented
 reads are 16 bits. Registers larger than 16 bits are supported but are currently
 only used for development and debugging purposes.
 
-| Register | Access | Stage       | Description            |
-|:---------|:-------|:------------|:-----------------------|
-| 0        | RO     | All         | Magic Number           |
-| 1        | RO     | All         | Hardware Version       |
-| 2        | RO     | All         | Common System Status   |
-| 3        | WO     | All         | Common System Commands |
-| 4        | RO     | All         | Application Version    |
-| 5        | RO     | All         | Memory Bank Status     |
-| 6        | RO     | All         | Common Error Status    |
-| 7        | RW     | Appl        | Feature Enable         |
-| 8        | RO     | Appl        | Feature 0 Status Bits  |
-| 9        | RO     | Appl        | Feature 1 Status Bits  |
-| 10       | RO     | Stage0      | Firmware Version HIGH  |
-| 11       | RO     | Stage0      | Firmware Version LOW   |
-| 12       | RO     | Appl        | FPGA boot count        |
-| 13       | RO     | Appl        | FPGA loop count        |
-| 14       | RO     | Appl        | FPGA ROM version       |
-| 15       | RO     | Appl        | SPI flash status bits  |
-| 16       | RO     | Appl        | Debug idx reg          |
-| 17       | RO     | Appl        | Debug val reg          |
-| 18       | RO     | Appl        | Camera config          |
-| 19       | WO     | Appl        | Start camera test      |
-| 20       | RW     | OneTimeInit | Option byte config     |
-| 21       | RO     | Appl        | Part IDs               |
+| Register | Access | Stage       | Description                  |
+|:---------|:-------|:------------|:-----------------------------|
+| 0        | RO     | All         | Magic number                 |
+| 1        | RO     | Stage0      | Hardware version             |
+| 2        | RO     | All         | System status                |
+| 3        | WO     | All         | System commands              |
+| 4        | RO     | ---         | Application version (unused) |
+| 5        | RO     | All         | Memory bank available        |
+| 6        | RO     | All         | Error                        |
+| 7        | RW     | Appl        | Enabled features             |
+| 8        | RO     | Appl        | Feature 0                    |
+| 9        | RO     | Appl        | Feature 1                    |
+| 10       | RO     | Stage1/Appl | Firmware version (high)      |
+| 11       | RO     | Stage1/Appl | Firmware version (low)       |
+| 12       | RO     | Appl        | FPGA boot count              |
+| 13       | RO     | Appl        | FPGA loop count              |
+| 14       | RO     | Appl        | FPGA ROM version             |
+| 15       | RO     | Appl        | SPI flash status bits        |
+| 16       | RO     | Appl        | Debug idx reg                |
+| 17       | RO     | Appl        | Debug val reg                |
+| 18       | RO     | Appl        | Camera configuration         |
+| 19       | WO     | Appl        | Start camera test            |
+| 20       | RW     | OneTimeInit | Option bytes configuration   |
+| 21       | RO     | Appl        | Part IDs                     |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.
 
-## Magic Number
+### Register 0: Magic number
 
 0x9df2
 
-## Hardware Version
+### Register 1: Hardware version
+
+This register is only valid while stage0 is running. At other times, it reads
+zero.
 
 The high byte describes the hardware version, only 0x01 is used.
 
@@ -88,7 +91,7 @@ The low byte describes the stage0 firmware version.
 | 0x04  | Launch1 now does signature check. AVERIFY and ANONVER status bits gone. |
 | 0x05  | Reserved for developer versions built from source. |
 
-## Common System Status
+### Register 2: System status
 
 | BIT | NAME               | DESCRIPTION                                          |
 |:----|:-------------------|:-----------------------------------------------------|
@@ -109,7 +112,7 @@ The low byte describes the stage0 firmware version.
 | 1   | FAULT              | System has an unrecoverable fault.                   |
 | 0   | OK                 | System is operational.                               |
 
-## Common System Commands
+### Register 3: System commands
 
 | BIT | NAME            | DESCRIPTION                                      |
 |:----|:----------------|:-------------------------------------------------|
@@ -130,23 +133,50 @@ The low byte describes the stage0 firmware version.
 | 1   | LAUNCH1         | Launch stage1 (from stage0)                      |
 | 0   | RESET           | Reset module to stage0                           |
 
-## Part IDs
+### Register 5: Memory bank available
 
-The Part IDs register consists of multiple 32 bit words as follows:
+Bit N is set if memory bank N is available for a Memory Write request.
+The host should poll this register before issuing a Memory Write command.
 
-| BYTE_OFFSET | NAME         | DESCRIPTION                                  |
-|:------------|:-------------|:---------------------------------------------|
-| 0           | MCU_ID       | See See RM04444 section 40.10.1              |
-| 4           | FPGA_ID      | Not yet implemented. Reserved for future use |
-| 8           | CAMERA_ID    | Camera part ID                               |
-| 12          | SPI_FLASH_MN | SPI flash manufacturer                       |
-| 16          | SPI_FLASH_PI | SPI flash part ID                            |
+### Register 6: Error
 
-## Application Version
+If an unrecoverable error has occurred (indicated by the FAULT bit in the
+system status register), then the error register contains a value that
+identifies the first error that occurred.
 
-16 bit application version number. Only available in stage1.
+See [`rust/mcu_common/src/errors.rs`](../rust/mcu_common/src/errors.rs)
+for the mapping from values to error names and descriptions.
 
-## Camera config
+### Register 7: Enabled features
+
+| BIT | NAME      | DESCRIPTION      |
+|:----|:----------|:-----------------|
+| 15  |           |                  |
+| 14  |           |                  |
+| 13  |           |                  |
+| 12  |           |                  |
+| 11  |           |                  |
+| 10  |           |                  |
+| 9   |           |                  |
+| 8   |           |                  |
+| 7   |           |                  |
+| 6   |           |                  |
+| 5   |           |                  |
+| 4   |           |                  |
+| 3   |           |                  |
+| 2   |           |                  |
+| 1   | FEATURE1  | Enable feature 1 |
+| 0   | FEATURE0  | Enable feature 0 |
+
+### Registers 8-9: Feature N
+
+| BIT | NAME   | DESCRIPTION                         |
+|:----|:-------|:------------------------------------|
+| 15  | USABLE | The feature result is valid to use. |
+
+Bits 7-0 are the feature result.
+
+### Register 18: Camera configuration
 
 | BIT | NAME         | DESCRIPTION                            |
 |:----|:-------------|:---------------------------------------|
@@ -176,45 +206,19 @@ Supported rotations:
 | 2     |            |                                        |
 | 3     |            |                                        |
 
-## Memory Bank Ready
+### Register 21: Part IDs
 
-Bit N is set if memory bank N is available for a Memory Write request.
-The host should poll this register before issuing a Memory Write command.
+The Part IDs register consists of multiple 32 bit words as follows:
 
-## Common Error Status
+| BYTE_OFFSET | NAME         | DESCRIPTION                                  |
+|:------------|:-------------|:---------------------------------------------|
+| 0           | MCU_ID       | See [RM0444] section 40.10.1                 |
+| 4           | FPGA_ID      | Not yet implemented. Reserved for future use |
+| 8           | CAMERA_ID    | Camera part ID                               |
+| 12          | SPI_FLASH_MN | SPI flash manufacturer                       |
+| 16          | SPI_FLASH_PI | SPI flash part ID                            |
 
-The errors register contains a value that identifies the first error that
-occurred. See rust/mcu_common/src/errors.rs for the mapping from values to error
-names and descriptions.
-
-## Feature Enable
-
-| BIT | NAME      | DESCRIPTION      |
-|:----|:----------|:-----------------|
-| 15  |           |                  |
-| 14  |           |                  |
-| 13  |           |                  |
-| 12  |           |                  |
-| 11  |           |                  |
-| 10  |           |                  |
-| 9   |           |                  |
-| 8   |           |                  |
-| 7   |           |                  |
-| 6   |           |                  |
-| 5   |           |                  |
-| 4   |           |                  |
-| 3   |           |                  |
-| 2   |           |                  |
-| 1   | FEATURE1  | Enable feature 1 |
-| 0   | FEATURE0  | Enable feature 0 |
-
-## Feature N
-
-| BIT | NAME   | DESCRIPTION                         |
-|:----|:-------|:------------------------------------|
-| 15  | USABLE | The feature result is valid to use. |
-
-Bits 7-0 are the feature result.
+[RM0444]: https://www.st.com/resource/en/reference_manual/rm0444-stm32g0x1-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
 
 ## Boot sequence
 
