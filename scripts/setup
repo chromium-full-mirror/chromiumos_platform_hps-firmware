@@ -8,7 +8,6 @@ PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 source "${PROJECT_ROOT}/environment"
 
 set -e
-git submodule update --init --recursive
 
 if [ ! -e /etc/make.conf ] ; then
     echo "HPS helper scripts must be run inside the ChromeOS chroot." >&2
