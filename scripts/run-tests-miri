@@ -11,10 +11,19 @@
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-source "${PROJECT_ROOT}/environment"
-
+if [ ! -f /opt/hps-sdk/bin/miri ] ; then
+    echo "Error: /opt/hps-sdk/bin/miri does not exist" >&2
+    echo "This script must be run inside the Chrome OS chroot." >&2
+    echo "Miri is provided by hps-sdk-0.0.1-r3 or greater." >&2
+    echo "(Try: sudo emerge -G hps-sdk)" >&2
+    exit 1
+fi
 
 cd "${PROJECT_ROOT}/rust"
+
+# TODO(dcallagh): remove $HOME/.cargo/bin once xargo is packaged properly
+# in Chrome OS, or its usage is eliminated
+export PATH="/opt/hps-sdk/bin:${HOME}/.cargo/bin:${PATH}"
 
 # exclude TERM for a modest speedup, as per:
 # https://github.com/rust-lang/miri/issues/1702
@@ -23,7 +32,6 @@ export MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-env-exclude=TERM"
 # We exclude hps-factory from miri tests because its build.rs builds lots of
 # other crates that are time-consuming to build.
 cargo \
-    +"${RUST_NIGHTLY_VERSION}" \
     miri test \
     --exclude hps-factory \
     --workspace \
