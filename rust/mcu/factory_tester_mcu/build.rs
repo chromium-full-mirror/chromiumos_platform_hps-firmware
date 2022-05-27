@@ -122,15 +122,6 @@ fn write_compressed_gateware() {
 /// Runs `command`. Exits with a non-zero status if the command failed to run or
 /// returned a non-zero exit code.
 fn run(command: &mut Command) {
-    // Prepend our bin directory to the path. This allows building without our
-    // installed bin directory already being on the path.
-    command.env(
-        "PATH",
-        format!(
-            "../../../third_party/installed/bin:{}",
-            std::env::var("PATH").expect("PATH must be set")
-        ),
-    );
     let status = command.status();
     if !status
         .as_ref()
