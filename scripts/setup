@@ -178,28 +178,6 @@ if ! riscv64-unknown-elf-gcc --version 2>/dev/null | grep 10.1.0 >/dev/null; the
     fi
 fi
 
-if ! which rustup >/dev/null; then
-    echo -n "Install Rust [y]/n?" >&2
-    read -r answer
-    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        if ! which rustup >/dev/null; then
-            echo "restart your shell and then re-run this script"
-            exit 1
-        fi
-    fi
-fi
-
-rustup toolchain install "${RUST_VERSION}" --profile default
-
-rustup "+${RUST_VERSION}" target add thumbv6m-none-eabi
-rustup "+${RUST_VERSION}" target add thumbv7em-none-eabihf
-rustup "+${RUST_VERSION}" target add x86_64-unknown-linux-musl
-rustup "+${RUST_VERSION}" target add riscv32i-unknown-none-elf
-(cd "${PROJECT_ROOT}" && rustup override set "${RUST_VERSION}")
-
-rustup component add llvm-tools-preview
-
 for i in flip-link; do
     if [ ! -f "${HOME}/.cargo/bin/${i}" ]; then
         cargo install "${i}"

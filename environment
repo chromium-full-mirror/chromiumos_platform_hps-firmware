@@ -29,8 +29,6 @@ else
 fi
 export HOSTPATH="${HPS_ROOT}/build/host"
 
-export RUST_VERSION=1.58.1
-
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
@@ -38,6 +36,7 @@ PATH="${HPS_ROOT}/third_party/gn/out:${PATH}"
 PATH="${HPS_ROOT}/third_party/installed/bin:${PATH}"
 PATH="${RUST_DIR}:${PATH}"
 PATH="${HOSTPATH}:${PATH}"
+PATH="/opt/hps-sdk/bin:${PATH}"
 PATH="${HPS_ROOT}/scripts:${PATH}"
 export PATH
 

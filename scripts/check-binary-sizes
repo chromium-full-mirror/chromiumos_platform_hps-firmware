@@ -16,7 +16,7 @@ STAGE0="${PROJECT_ROOT}/rust/mcu/target/thumbv6m-none-eabi/release/stage0.bin"
 APPLICATION="${PROJECT_ROOT}/rust/mcu/target/thumbv6m-none-eabi/release/stage1_app.bin"
 (
     cd "${PROJECT_ROOT}/rust/mcu"
-    cargo "+${RUST_VERSION}" build -p stage0 --release
+    cargo build -p stage0 --release
     arm-none-eabi-objcopy \
         -O binary \
         target/thumbv6m-none-eabi/release/stage0 \
@@ -24,7 +24,7 @@ APPLICATION="${PROJECT_ROOT}/rust/mcu/target/thumbv6m-none-eabi/release/stage1_a
 )
 (
     cd "${PROJECT_ROOT}/rust/mcu"
-    cargo "+${RUST_VERSION}" build -p stage1_app --release
+    cargo build -p stage1_app --release
     arm-none-eabi-objcopy \
         -O binary \
         target/thumbv6m-none-eabi/release/stage1_app \

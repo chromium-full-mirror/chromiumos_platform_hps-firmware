@@ -1,0 +1,5 @@
+[toolchain]
+channel = "1.58.1"
+components = [ "llvm-tools-preview", "rustfmt" ]
+targets = [ "riscv32i-unknown-none-elf", "thumbv6m-none-eabi", "thumbv7em-none-eabihf", "x86_64-unknown-linux-musl" ]
+profile = "default"
