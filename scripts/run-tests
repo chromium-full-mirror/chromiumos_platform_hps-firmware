@@ -34,10 +34,6 @@ cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --feature
 echo "===== Stage1 build of factory_tester_mcu ====="
 cargo +$RUST_VERSION build -p factory_tester_mcu --no-default-features --features stage1
 
-echo "===== factory_tester ====="
-cd "${PROJECT_ROOT}/rust/factory_tester"
-cargo +$RUST_VERSION build
-
 echo "===== RISCV default ====="
 cd "${PROJECT_ROOT}/rust/riscv"
 cargo +$RUST_VERSION build
