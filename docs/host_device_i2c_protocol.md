@@ -171,11 +171,11 @@ for the mapping from values to error names and descriptions.
 
 ### Registers 8-9: Feature N
 
-| BIT | NAME   | DESCRIPTION                         |
-|:----|:-------|:------------------------------------|
-| 15  | USABLE | The feature result is valid to use. |
-
-Bits 7-0 are the feature result.
+| BITS | NAME   | DESCRIPTION                         |
+|:-----|:-------|:------------------------------------|
+| 15   | USABLE | The feature result is valid to use. |
+| 14-8 | COUNT  | Wrapping result counter.            |
+| 7-0  | RESULT | Signed 8 bit score                  |
 
 ### Register 18: Camera configuration
 

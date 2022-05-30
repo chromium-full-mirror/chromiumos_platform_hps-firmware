@@ -109,6 +109,7 @@ pub struct App<S, I, C, T> {
     timer: T,
     status: Status,
     model_number: u32,
+    model_result_count: [u8; 2],
     spi_test_data: Option<&'static [u8]>,
     test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
@@ -154,6 +155,7 @@ where
             timer,
             status: Status::default(),
             model_number: 1,
+            model_result_count: [0; 2],
             spi_test_data: None,
             test_image_area: None,
             exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
@@ -255,7 +257,9 @@ where
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number)?;
             let classify_ms = self.timer.elapsed_ms(start);
-            model_status = 0x8000 | ((score as u16) & 0xff);
+            let result_count = &mut self.model_result_count[self.model_number as usize - 1];
+            *result_count += 1;
+            model_status = 0x8000 | ((score as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
             mcu_println!(
                 self.mcu,
                 "Model {} score: {:4} capture: {:3}ms classify: {:3}ms other: {:3}ms",
@@ -717,7 +721,7 @@ mod tests {
         let mut expected_status = Status {
             loop_count: 1,
             person_status: 0,
-            second_person_status: 0x8042,
+            second_person_status: 0x8142,
             enabled_features: app.mcu.spi.state.configuration.enabled_features,
         };
         assert_eq!(app.mcu.spi.state.status, expected_status);
@@ -728,43 +732,43 @@ mod tests {
         app.classifier.models_executed = 0;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.person_status = 0x8073;
+        expected_status.person_status = 0x8173;
         assert_eq!(app.mcu.spi.state.status, expected_status);
         assert_eq!(app.classifier.models_executed, 1);
-        assert_eq!(app.status.person_status, 0x8073);
-        assert_eq!(app.status.second_person_status, 0x8042);
+        assert_eq!(app.status.person_status, 0x8173);
+        assert_eq!(app.status.second_person_status, 0x8142);
 
         // SPD over threshold, presence doesn't run.
         app.mcu.spi.state.configuration.model_repeat_threshold = 0x8010;
         app.classifier.model_outputs[0] = 0x63;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.second_person_status = 0x8063;
+        expected_status.second_person_status = 0x8263;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         app.classifier.model_outputs[0] = 0x53;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.second_person_status = 0x8053;
+        expected_status.second_person_status = 0x8353;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         // SPD runs, but goes below threshold, triggering presence.
         app.classifier.model_outputs[0] = 0x03;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.second_person_status = 0x8003;
+        expected_status.second_person_status = 0x8403;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         app.classifier.model_outputs[0] = 0x56;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.person_status = 0x8056;
+        expected_status.person_status = 0x8256;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         app.classifier.model_outputs[0] = 0x04;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
-        expected_status.second_person_status = 0x8004;
+        expected_status.second_person_status = 0x8504;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         // Both models disabled.
