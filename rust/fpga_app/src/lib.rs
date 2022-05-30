@@ -19,6 +19,7 @@ mod fake_mcu;
 #[cfg(test)]
 mod test_helpers;
 
+use application::Configuration;
 use application::Rotation;
 use application::Status;
 use camera::IMAGE_HEIGHT;
@@ -218,7 +219,7 @@ where
             self.process_debug_commands();
         }
 
-        self.select_model(&features);
+        self.select_model(&features, &config);
 
         let is_rotated = self.determine_rotation(&config)?;
         let capture_start = self.timer.now();
@@ -610,12 +611,19 @@ where
     /// Selects which model to use for the current loop iteration so that each
     /// enabled feature gets a turn. If no model features are enabled, will
     /// select model 1.
-    fn select_model(&mut self, features: &Features) {
+    fn select_model(&mut self, features: &Features, config: &Configuration) {
         // Advance to next model number out of 1 and 2.
         self.model_number = (self.model_number % 2) + 1;
 
         // If we're on model 1, but that's not active, advance to model 2.
         if self.model_number == 1 && !features.contains(Features::MODEL1) {
+            self.model_number = 2;
+        }
+        // If our last SPD (model 2) score was over the threshold then only run
+        // model 2.
+        let spd_threshold = (config.model_repeat_threshold & 0xff) as i8;
+        let spd_score = (self.status.second_person_status & 0xff) as i8;
+        if spd_threshold != 127 && spd_score >= spd_threshold {
             self.model_number = 2;
         }
         // If we're on model 2, but that's not active, advance to model 1. Note,
@@ -687,7 +695,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_feature_toggle_nomiri() -> Result<()> {
+    fn test_model_selection_nomiri() -> Result<()> {
         let mut app = App::new(
             FakeMcu::default(),
             FakeImageDataReceiver,
@@ -698,50 +706,76 @@ mod tests {
         // Turn exposure control off to avoid trying to change exposure of camera fakes.
         app.exposure_algorithm = ExposureAlgorithm::FullyManual;
 
-        // Iteration 1: Both models enabled - second person model runs.
+        // Both models enabled - second person model runs.
         app.classifier.model_outputs[0] = 0x42;
         app.mcu.spi.state.configuration = Configuration {
             enabled_features: (Features::MODEL1 | Features::MODEL2).bits(),
             camera_config: Rotation::Clockwise.into(),
+            ..Configuration::default()
         };
         assert_eq!(app.loop_body(), Ok(()));
-        let status1 = Status {
+        let mut expected_status = Status {
             loop_count: 1,
             person_status: 0,
             second_person_status: 0x8042,
             enabled_features: app.mcu.spi.state.configuration.enabled_features,
         };
-        assert_eq!(app.mcu.spi.state.status, status1);
+        assert_eq!(app.mcu.spi.state.status, expected_status);
         assert_eq!(app.classifier.models_executed, 2);
 
-        // Iteration 2: Both models enabled - presence detection runs.
+        // Both models enabled - presence detection runs.
         app.classifier.model_outputs[0] = 0x73;
         app.classifier.models_executed = 0;
         assert_eq!(app.loop_body(), Ok(()));
-        let status2 = Status {
-            person_status: 0x8073,
-            loop_count: 2,
-            ..status1
-        };
-        assert_eq!(app.mcu.spi.state.status, status2);
+        expected_status.loop_count += 1;
+        expected_status.person_status = 0x8073;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
         assert_eq!(app.classifier.models_executed, 1);
         assert_eq!(app.status.person_status, 0x8073);
         assert_eq!(app.status.second_person_status, 0x8042);
 
-        // Iteration 3: Both models disabled.
-        app.classifier.models_executed = 0;
-        app.mcu.spi.state.configuration = Configuration {
-            enabled_features: Features::DISABLED.bits(),
-            camera_config: Rotation::Clockwise.into(),
-        };
+        // SPD over threshold, presence doesn't run.
+        app.mcu.spi.state.configuration.model_repeat_threshold = 0x8010;
+        app.classifier.model_outputs[0] = 0x63;
         assert_eq!(app.loop_body(), Ok(()));
-        let status3 = Status {
-            loop_count: 3,
-            person_status: 0,
-            second_person_status: 0,
-            enabled_features: app.mcu.spi.state.configuration.enabled_features,
-        };
-        assert_eq!(app.mcu.spi.state.status, status3);
+        expected_status.loop_count += 1;
+        expected_status.second_person_status = 0x8063;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        app.classifier.model_outputs[0] = 0x53;
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.second_person_status = 0x8053;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        // SPD runs, but goes below threshold, triggering presence.
+        app.classifier.model_outputs[0] = 0x03;
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.second_person_status = 0x8003;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        app.classifier.model_outputs[0] = 0x56;
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.person_status = 0x8056;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        app.classifier.model_outputs[0] = 0x04;
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.second_person_status = 0x8004;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        // Both models disabled.
+        app.classifier.models_executed = 0;
+        app.mcu.spi.state.configuration.enabled_features = Features::DISABLED.bits();
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.person_status = 0;
+        expected_status.second_person_status = 0;
+        expected_status.enabled_features = app.mcu.spi.state.configuration.enabled_features;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
         assert_eq!(app.classifier.models_executed, 0);
 
         Ok(())

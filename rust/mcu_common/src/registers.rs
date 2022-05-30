@@ -78,6 +78,17 @@ pub const PART_IDS: u8 = 21;
 /// clears it.
 pub const PREVIOUS_CRASH: u8 = 22;
 
+/// WO: Threshold(s) that determine model-repeat behavior.
+///
+/// Most significant byte: Reserved. Should be set to -128 (0x80).
+///
+/// Least significant byte: Second person repeat threshold. Default 127 (0x7f).
+/// If the second person model is enabled and gets a score >= this threshold,
+/// then the presence model will not be run until the second person score drops
+/// below this threshold. Setting the threshold to 127 (default) disables this
+/// behavior.
+pub const MODEL_REPEAT_THRESHOLD: u8 = 23;
+
 #[cfg(feature = "dev")]
 pub mod dev {
     /// RO: Reads will be sufficiently slow to cause an underrun.

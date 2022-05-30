@@ -224,6 +224,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 state.camera_test_iterations = value;
                 return Some(Event::TestCameraI2c);
             }
+            registers::MODEL_REPEAT_THRESHOLD => {
+                state.configuration.model_repeat_threshold = value;
+            }
             _ => self.report_error(Error::HostI2cBadRequest),
         }
         None

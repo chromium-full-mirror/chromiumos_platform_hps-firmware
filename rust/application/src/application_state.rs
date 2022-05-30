@@ -27,10 +27,11 @@ pub struct ApplicationState {
 /// as bytes, hence the repr(C). The host writes parts individually via
 /// registers.
 #[repr(C)]
-#[derive(Default, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub enabled_features: u16,
     pub camera_config: u16,
+    pub model_repeat_threshold: u16,
 }
 
 /// Current status of the HPS. This is writable by the FPGA and is read by the
@@ -44,6 +45,17 @@ pub struct Status {
     pub enabled_features: u16,
     pub loop_count: u16,
     pub second_person_status: u16,
+}
+
+impl Default for Configuration {
+    fn default() -> Self {
+        Self {
+            enabled_features: 0,
+            camera_config: 0,
+            // High byte defaults to -128. Low byte defaults to 127.
+            model_repeat_threshold: 0x807f,
+        }
+    }
 }
 
 #[cfg(feature = "image-transfer")]
@@ -127,6 +139,7 @@ mod tests {
         let configuration = Configuration {
             enabled_features: 0x42,
             camera_config: Rotation::Clockwise.into(),
+            model_repeat_threshold: 0x5621,
         };
         let configuration2 = Configuration::from_bytes(&configuration.to_bytes());
         assert_eq!(configuration, configuration2);
