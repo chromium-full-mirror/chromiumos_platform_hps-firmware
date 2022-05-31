@@ -260,14 +260,16 @@ where
             let result_count = &mut self.model_result_count[self.model_number as usize - 1];
             *result_count = result_count.wrapping_add(1);
             model_status = 0x8000 | ((score as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
+            let total_ms = self.timer.elapsed_ms(loop_start_time);
             mcu_println!(
                 self.mcu,
-                "Model {} score: {:4} capture: {:3}ms classify: {:3}ms other: {:3}ms",
+                "Model {} score: {:4} capture: {:3}ms classify: {:3}ms other: {:3}ms total: {:3}ms",
                 self.model_number,
                 score,
                 capture_ms,
                 classify_ms,
-                self.timer.elapsed_ms(loop_start_time) - capture_ms - classify_ms,
+                total_ms - capture_ms - classify_ms,
+                total_ms
             );
         } else {
             model_status = 0;
