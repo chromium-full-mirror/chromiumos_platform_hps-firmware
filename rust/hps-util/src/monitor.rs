@@ -46,20 +46,23 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
                 // Print out the S1 latencies for the row we're finishing, which
                 // doesn't include the most recent latency.
                 let last_latency = latencies.pop().unwrap();
-                println!("               latencies={latencies:?}");
+                println!("                 latencies={latencies:?}");
                 latencies.clear();
                 latencies.push(last_latency);
             }
-            print!("S1: {:10}", model1.to_string());
+            print!("S1: {:>4}", model1.to_string());
             std::io::stdout().flush()?;
             has_model1_output = true;
         }
         if model2 != prev_model2 {
             prev_model2 = model2;
             if !has_model1_output {
-                print!("              ");
+                print!("        ");
             }
-            println!("S2: {:10} latencies={latencies:?}", model2.to_string());
+            println!(
+                "      S2: {:>4}   latencies={latencies:?}",
+                model2.to_string()
+            );
             latencies.clear();
             has_model1_output = false;
         }
