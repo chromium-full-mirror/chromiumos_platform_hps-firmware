@@ -8,7 +8,7 @@ use hps_interface::Hps;
 use mcu_common::registers;
 use std::fmt::Display;
 use std::io::Write;
-use std::time::Duration;
+use std::time::Instant;
 
 pub fn run(hps: &mut dyn Hps) -> Result<()> {
     hps.launch_app()?;
@@ -23,17 +23,19 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
     let mut prev_model1 = ModelOutput::default();
     let mut prev_model2 = ModelOutput::default();
     let mut has_model1_output = false;
+    let mut latencies = Vec::new();
 
     loop {
         // Wait until the FPGA completes a loop.
+        let start = Instant::now();
         loop {
             let loop_counter = hps.read_register(registers::FPGA_LOOP_COUNT)?;
             if loop_counter != last_loop_counter {
                 last_loop_counter = loop_counter;
                 break;
             }
-            std::thread::sleep(Duration::from_millis(100));
         }
+        latencies.push(start.elapsed().as_millis());
 
         let model1 = ModelOutput::from_u16(hps.read_register(registers::USER_PRESENT_STATUS)?);
         let model2 = ModelOutput::from_u16(hps.read_register(registers::SECOND_PERSON_STATUS)?);
@@ -41,7 +43,12 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
         if model1 != prev_model1 {
             prev_model1 = model1;
             if has_model1_output {
-                println!();
+                // Print out the S1 latencies for the row we're finishing, which
+                // doesn't include the most recent latency.
+                let last_latency = latencies.pop().unwrap();
+                println!("               latencies={latencies:?}");
+                latencies.clear();
+                latencies.push(last_latency);
             }
             print!("S1: {:10}", model1.to_string());
             std::io::stdout().flush()?;
@@ -52,7 +59,8 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
             if !has_model1_output {
                 print!("              ");
             }
-            println!("S2: {:10}", model2.to_string());
+            println!("S2: {:10} latencies={latencies:?}", model2.to_string());
+            latencies.clear();
             has_model1_output = false;
         }
     }
