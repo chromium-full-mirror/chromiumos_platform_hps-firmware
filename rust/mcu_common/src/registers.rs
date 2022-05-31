@@ -80,7 +80,10 @@ pub const PREVIOUS_CRASH: u8 = 22;
 
 /// WO: Threshold(s) that determine model-repeat behavior.
 ///
-/// Most significant byte: Reserved. Should be set to -128 (0x80).
+/// Most significant byte: Presence detection repeat threshold. Default -128
+/// (0x80). If presence detection is enabled and gets a score < this threshold,
+/// then the SPD model will not be run until the score becomes >= this
+/// threshold.
 ///
 /// Least significant byte: Second person repeat threshold. Default 127 (0x7f).
 /// If the second person model is enabled and gets a score >= this threshold,
