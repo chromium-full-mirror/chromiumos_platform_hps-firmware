@@ -171,16 +171,14 @@ mod tests {
     use super::*;
     const TEST_DATA: &[i8] = &[-125, -65, -65, -55, 3, 55, 75, 77, 125];
 
-    use crate::test_helpers::png_pixels;
-
-    const NOT_USABLE: &[u8] = include_bytes!("../test_data/unusable-320x240.png");
-    const USABLE: &[u8] = include_bytes!("../test_data/not-person-320x240.png");
     use crate::camera::NUM_PIXELS;
+    use crate::test_helpers::images;
+    use crate::test_helpers::png_pixels;
 
     #[test]
     fn test_calculate_entropy_nomiri() {
-        assert!(!Histogram::new(&png_pixels(NOT_USABLE).unwrap()).is_usable());
-        assert!(Histogram::new(&png_pixels(USABLE).unwrap()).is_usable());
+        assert!(!Histogram::new(&png_pixels(images::WHITE).unwrap()).is_usable());
+        assert!(Histogram::new(&png_pixels(images::NOT_PERSON).unwrap()).is_usable());
 
         // An image with all pixels of the same value is not usable
         assert!(!Histogram::new(&[25; 76800]).is_usable());
@@ -237,13 +235,13 @@ mod tests {
 
         // The median of cropped image should not be same as full frame.
         assert_ne!(
-            Histogram::new(&png_pixels(USABLE).unwrap()).median(),
-            Histogram::new_cropped(&png_pixels(USABLE).unwrap()).median()
+            Histogram::new(&png_pixels(images::NOT_PERSON).unwrap()).median(),
+            Histogram::new_cropped(&png_pixels(images::NOT_PERSON).unwrap()).median()
         );
         // The median of entire white image should be the same.
         assert_eq!(
-            Histogram::new(&png_pixels(NOT_USABLE).unwrap()).median(),
-            Histogram::new_cropped(&png_pixels(NOT_USABLE).unwrap()).median()
+            Histogram::new(&png_pixels(images::WHITE).unwrap()).median(),
+            Histogram::new_cropped(&png_pixels(images::WHITE).unwrap()).median()
         );
     }
 

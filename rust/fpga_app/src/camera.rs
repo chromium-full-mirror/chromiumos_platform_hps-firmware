@@ -12,6 +12,8 @@ pub const NUM_PIXELS: usize = IMAGE_WIDTH as usize * IMAGE_HEIGHT as usize;
 /// The width and height of the camera's output in pixels.
 pub const CAMERA_WIDTH_HEIGHT: usize = 324;
 
+pub const CAMERA_NUM_PIXELS: usize = CAMERA_WIDTH_HEIGHT * CAMERA_WIDTH_HEIGHT;
+
 // Time between frames, measured in time to transmit a number of pixel lines.
 // This value gives a frame rate of approximately 21Hz
 pub const FRAME_LENGTH: u16 = 344 * 2;
@@ -121,7 +123,10 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
                 // cache.
                 self.receive_row(row_out, left_margin_words)?;
                 row_index += 1;
-                if row_index >= image_dimensions.row_start {
+                // Check if the row we capture above is one that we want to
+                // keep. If it is, fall out of the inner loop so that we can
+                // advance to the next row.
+                if row_index as u32 > image_dimensions.row_start {
                     break;
                 }
             }
@@ -201,34 +206,119 @@ impl ImageDimensions {
 
 #[cfg(test)]
 pub(crate) mod testing {
+    use core::ops::Deref;
+    use core::ops::DerefMut;
+
     use super::*;
 
-    #[derive(Default)]
     pub(crate) struct FakeCameraDataInterface {
-        value: u32,
+        offset: usize,
+        pixels: Vec<i8>,
+    }
+
+    /// A buffer for storing an image. This buffer is suitable for passing to
+    /// receive_image_data, which requires 4-byte alignment.
+    #[repr(align(4))]
+    pub(crate) struct ImageBuffer {
+        pixels: [i8; NUM_PIXELS],
+    }
+
+    impl FakeCameraDataInterface {
+        pub fn from_signed_bytes(pixels: Vec<i8>) -> Self {
+            Self { offset: 0, pixels }
+        }
+
+        /// Expands image data by adding borders that will be cut off during
+        /// image capture. Prior to calling, image data must be 320x240.
+        /// `image_dimensions` should be the same as what will be used during
+        /// capture.
+        pub fn frame_image(&mut self, image_dimensions: &ImageDimensions) {
+            assert_eq!(self.pixels.len(), NUM_PIXELS);
+            let mut new_pixels = Vec::with_capacity(CAMERA_NUM_PIXELS);
+            let num_pixels_top_bottom = CAMERA_WIDTH_HEIGHT * (image_dimensions.row_start as usize);
+            // The number of pixels dropped on the left is rounded down to a
+            // multiple of 4. This matches the what's done when we capture
+            // images, since capturing requires all reads to be 4-byte aligned.
+            let num_pixels_left =
+                (image_dimensions.column_start - (image_dimensions.column_start % 4)) as usize;
+            let num_pixels_right =
+                CAMERA_WIDTH_HEIGHT - num_pixels_left - image_dimensions.column_count as usize;
+            new_pixels.extend(core::iter::repeat(0).take(num_pixels_top_bottom));
+            for row in self
+                .pixels
+                .chunks_exact(image_dimensions.column_count as usize)
+            {
+                new_pixels.extend(core::iter::repeat(0).take(num_pixels_left));
+                new_pixels.extend_from_slice(row);
+                new_pixels.extend(core::iter::repeat(0).take(num_pixels_right));
+            }
+            new_pixels.extend(core::iter::repeat(0).take(num_pixels_top_bottom));
+            self.pixels = new_pixels;
+            assert_eq!(self.pixels.len(), CAMERA_NUM_PIXELS);
+        }
     }
 
     impl CameraDataInterface for FakeCameraDataInterface {
         fn start(&mut self) {
-            self.value = 0x04030201;
+            self.offset = 0;
         }
 
-        fn signal_wait_row(&mut self) {}
+        fn signal_wait_row(&mut self) {
+            self.offset = self.offset - (self.offset % CAMERA_WIDTH_HEIGHT) + CAMERA_WIDTH_HEIGHT;
+            if self.offset >= self.pixels.len() {
+                self.offset = 0;
+            }
+        }
 
         fn is_data_ready(&self) -> bool {
             true
         }
 
         fn read_word(&mut self) -> u32 {
+            let v = &self.pixels[self.offset..];
+            let value = u32::from_le_bytes([v[0] as u8, v[1] as u8, v[2] as u8, v[3] as u8]);
+            self.offset = (self.offset + 4) % self.pixels.len();
+            value
+        }
+    }
+
+    impl Default for FakeCameraDataInterface {
+        fn default() -> Self {
             // We need enough different values to pass entropy calculations.
-            self.value = self.value.wrapping_add(0x04040404);
-            self.value
+            Self::from_signed_bytes((-128..=127).collect())
+        }
+    }
+
+    impl Default for ImageBuffer {
+        fn default() -> Self {
+            Self {
+                pixels: [0i8; NUM_PIXELS],
+            }
+        }
+    }
+
+    impl Deref for ImageBuffer {
+        type Target = [i8];
+
+        fn deref(&self) -> &Self::Target {
+            &self.pixels
+        }
+    }
+
+    impl DerefMut for ImageBuffer {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.pixels
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::test_helpers::images;
+    use crate::test_helpers::png_pixels;
+
+    use super::testing::FakeCameraDataInterface;
+    use super::testing::ImageBuffer;
     use super::*;
 
     #[test]
@@ -288,5 +378,35 @@ mod tests {
             calculate_exposure(MIN_EXPOSURE)
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_receive_image_data_nomiri() {
+        let pixels = png_pixels(images::NOT_PERSON).unwrap();
+        let image_dimensions = ImageDimensions::default();
+        let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
+        camera.frame_image(&image_dimensions);
+        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut buffer = ImageBuffer::default();
+        image_receiver
+            .receive_image_data(&mut buffer, &image_dimensions)
+            .unwrap();
+        assert_eq!(pixels, *buffer);
+    }
+
+    #[test]
+    fn test_receive_image_data_rotated_nomiri() {
+        let mut pixels = png_pixels(images::NOT_PERSON).unwrap();
+        crate::image_rotation::rotate_240_320_clockwise(&mut pixels);
+        let mut image_dimensions = ImageDimensions::default();
+        image_dimensions.rotate_90();
+        let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
+        camera.frame_image(&image_dimensions);
+        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut buffer = ImageBuffer::default();
+        image_receiver
+            .receive_image_data(&mut buffer, &image_dimensions)
+            .unwrap();
+        assert_eq!(pixels, *buffer);
     }
 }

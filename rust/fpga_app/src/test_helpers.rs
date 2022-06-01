@@ -4,6 +4,11 @@
 
 use crate::camera::NUM_PIXELS;
 
+pub mod images {
+    pub const WHITE: &[u8] = include_bytes!("../test_data/unusable-320x240.png");
+    pub const NOT_PERSON: &[u8] = include_bytes!("../test_data/not-person-320x240.png");
+}
+
 // Retrieves i8 pixel values from a PNG image
 pub fn png_pixels(png_bytes: &[u8]) -> image::ImageResult<Vec<i8>> {
     use image::ImageDecoder;
