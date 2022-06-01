@@ -395,15 +395,9 @@ where
     }
 
     fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
-        let mut dimensions = camera::ImageDimensions {
-            column_start: 2,
-            column_count: camera::IMAGE_WIDTH,
-            row_start: (324 - camera::IMAGE_HEIGHT) / 2,
-            row_count: camera::IMAGE_HEIGHT,
-        };
+        let mut dimensions = camera::ImageDimensions::default();
         if rotate_clockwise {
-            core::mem::swap(&mut dimensions.column_start, &mut dimensions.row_start);
-            core::mem::swap(&mut dimensions.column_count, &mut dimensions.row_count);
+            dimensions.rotate_90();
         }
         let buffer = self.classifier.input_data_mut(self.model_number);
         self.image_data_receiver

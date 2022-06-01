@@ -9,6 +9,9 @@ pub const IMAGE_WIDTH: u32 = 320;
 pub const IMAGE_HEIGHT: u32 = 240;
 pub const NUM_PIXELS: usize = IMAGE_WIDTH as usize * IMAGE_HEIGHT as usize;
 
+/// The width and height of the camera's output in pixels.
+pub const CAMERA_WIDTH_HEIGHT: usize = 324;
+
 // Time between frames, measured in time to transmit a number of pixel lines.
 // This value gives a frame rate of approximately 21Hz
 pub const FRAME_LENGTH: u16 = 344 * 2;
@@ -49,6 +52,17 @@ pub struct ImageDimensions {
     pub column_count: u32,
     pub row_start: u32,
     pub row_count: u32,
+}
+
+impl Default for ImageDimensions {
+    fn default() -> Self {
+        Self {
+            column_start: (CAMERA_WIDTH_HEIGHT as u32 - IMAGE_WIDTH) / 2,
+            column_count: IMAGE_WIDTH,
+            row_start: (CAMERA_WIDTH_HEIGHT as u32 - IMAGE_HEIGHT) / 2,
+            row_count: IMAGE_HEIGHT,
+        }
+    }
 }
 
 impl<C: CameraDataInterface> ImageDataReceiver<C> {
@@ -173,6 +187,15 @@ pub fn calculate_exposure(value: i32) -> hm01b0::Exposure {
             analog_gain,
             digital_gain: val as u16,
         }
+    }
+}
+
+impl ImageDimensions {
+    /// Rotates dimensions by 90 degrees. Clockwise or anticlockwise are not
+    /// specified, since the result would be the same.
+    pub(crate) fn rotate_90(&mut self) {
+        core::mem::swap(&mut self.column_start, &mut self.row_start);
+        core::mem::swap(&mut self.column_count, &mut self.row_count);
     }
 }
 
