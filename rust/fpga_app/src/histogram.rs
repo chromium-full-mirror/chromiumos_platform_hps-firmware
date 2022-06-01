@@ -8,8 +8,6 @@ use core::fmt;
 
 /// A Histogram of counts of pixel values
 pub struct Histogram {
-    // Total of bins = number of pixels used to construct histogram
-    count: u32,
     // Binned data
     // bin[0] stores counts for pixels of value -128
     // bin[1] stores counts for -127, and so on up to
@@ -26,10 +24,7 @@ struct Bin {
 
 impl Histogram {
     pub fn new(image_data: &[i8]) -> Histogram {
-        let mut result = Histogram {
-            count: 0,
-            bins: [0; 256],
-        };
+        let mut result = Histogram { bins: [0; 256] };
 
         for &val in image_data {
             result.add(val);
@@ -39,10 +34,7 @@ impl Histogram {
 
     /// Histogram from central 240x240 square in image
     pub fn new_cropped(image_data: &[i8]) -> Histogram {
-        let mut result = Histogram {
-            count: 0,
-            bins: [0; 256],
-        };
+        let mut result = Histogram { bins: [0; 256] };
 
         for y in 0..IMAGE_HEIGHT {
             for x in 40..IMAGE_WIDTH - 40 {
@@ -50,7 +42,6 @@ impl Histogram {
                 result.add(image_data[i]);
             }
         }
-        result.count = (IMAGE_HEIGHT * (IMAGE_WIDTH - 80)) as u32;
         result
     }
 
@@ -58,7 +49,6 @@ impl Histogram {
     fn add(&mut self, value: i8) {
         let index = (value as i16 + 128) as usize;
         self.bins[index] += 1;
-        self.count += 1;
     }
 
     /// Iterator over bin indices and values
@@ -69,10 +59,15 @@ impl Histogram {
         })
     }
 
+    /// Returns the number of values added to this histogram.
+    pub fn count(&self) -> u32 {
+        self.bins.iter().sum()
+    }
+
     /// Median pixel value, ignoring extreme pixel values
     pub fn median(&self) -> i8 {
         let mut running_total = 0;
-        let target = self.count / 2;
+        let target = self.count() / 2;
         for bin in self.bin_iter() {
             running_total += bin.count;
             if running_total > target {
@@ -99,8 +94,9 @@ impl Histogram {
 
         // Now calculate the percentages in each bin
         let mut result = [0u32; 8];
+        let count: u32 = bin8.iter().sum();
         for i in 0..8 {
-            result[i] = bin8[i] * 100 / self.count;
+            result[i] = bin8[i] * 100 / count;
         }
         result
     }
@@ -206,7 +202,6 @@ mod tests {
     // Checks the number of values in buckets 0 and 255, and that all
     // other bins contain 0 values.
     fn check_histogram(h: &Histogram, b0: u32, b255: u32) {
-        assert_eq!(h.count, b0 + b255);
         assert_eq!(h.bins[0], b0);
         for i in 1..254 {
             assert_eq!(h.bins[i], 0);
