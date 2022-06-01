@@ -258,7 +258,7 @@ where
             let score = self.classifier.run_model(self.model_number)?;
             let classify_ms = self.timer.elapsed_ms(start);
             let result_count = &mut self.model_result_count[self.model_number as usize - 1];
-            *result_count += 1;
+            *result_count = result_count.wrapping_add(1);
             model_status = 0x8000 | ((score as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
             mcu_println!(
                 self.mcu,
