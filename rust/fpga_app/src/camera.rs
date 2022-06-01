@@ -24,14 +24,12 @@ pub const END_IMAGE_MARKER: [u8; 8] = [227, 114, 212, 105, 101, 111, 21, 193];
 pub const AE_TARGET: u8 = 60;
 
 pub trait ImageDataReceiver {
-    /// Configures camera DMA to receive into `buffer` then calls
-    /// `trigger_callback` then waits for DMA to complete. If `trigger_callback`
-    /// returns an error, then DMA is cancelled and the error is returned.
+    /// Waits for the start of a frame, then receives image data into `buffer`.
+    /// The camera must already be streaming.
     fn receive_image_data(
         &mut self,
         buffer: &mut [i8],
         image_dimensions: &ImageDimensions,
-        trigger_callback: impl FnOnce() -> Result<()>,
     ) -> Result<()>;
 }
 
@@ -81,13 +79,12 @@ pub(crate) mod testing {
             &mut self,
             buffer: &mut [i8],
             _image_dimensions: &ImageDimensions,
-            trigger_callback: impl FnOnce() -> Result<()>,
         ) -> Result<()> {
             // Inserts fake image data to pass entropy calculations.
             for (i, v) in buffer.iter_mut().enumerate() {
                 *v = ((i & 0xff) as i16 - 128) as i8;
             }
-            (trigger_callback)()
+            Ok(())
         }
     }
 }

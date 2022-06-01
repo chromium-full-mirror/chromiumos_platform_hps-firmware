@@ -16,7 +16,6 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         &mut self,
         buffer: &mut [i8],
         image_dimensions: &ImageDimensions,
-        trigger_callback: impl FnOnce() -> Result<()>,
     ) -> Result<()> {
         if image_dimensions.row_count as usize * image_dimensions.column_count as usize
             != buffer.len()
@@ -31,11 +30,6 @@ impl ImageDataReceiver for DmaImageDataReceiver {
         self.reset();
         self.wait_idle();
         self.start();
-        if let Err(error) = (trigger_callback)() {
-            self.reset();
-            self.wait_idle();
-            return Err(error);
-        }
         // TODO(dml): Change the buffer to [u32] so that we don't need this.
         if (buffer.as_ptr() as usize) & 0x3 != 0 {
             return Err(Error::InvalidArg);

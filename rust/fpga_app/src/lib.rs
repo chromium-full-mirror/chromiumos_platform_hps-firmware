@@ -406,7 +406,7 @@ where
         }
         let buffer = self.classifier.input_data_mut(self.model_number);
         self.image_data_receiver
-            .receive_image_data(buffer, &dimensions, || Ok(()))?;
+            .receive_image_data(buffer, &dimensions)?;
         if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
