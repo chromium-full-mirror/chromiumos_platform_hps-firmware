@@ -23,7 +23,7 @@ fn main() -> ! {
     let classifier = unsafe { create_classifier() };
     let mut app = fpga_app::App::new(
         fpga_hal::McuSpi::new(p.MCU_SPI),
-        fpga_hal::DmaImageDataReceiver::new(p.CAM_CONTROL),
+        fpga_hal::FpgaCameraDataInterface::new(p.CAM_CONTROL),
         classifier,
         fpga_hal::Timer::default(),
     );

@@ -22,6 +22,7 @@ mod test_helpers;
 use application::Configuration;
 use application::Rotation;
 use application::Status;
+use camera::ImageDataReceiver;
 use camera::IMAGE_HEIGHT;
 use camera::IMAGE_WIDTH;
 pub use classifier::Classifier;
@@ -101,7 +102,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 pub struct App<S, I, C, T> {
     mcu: McuInterface<S>,
-    image_data_receiver: I,
+    image_data_receiver: ImageDataReceiver<I>,
     classifier: C,
     #[cfg(feature = "image-transfer")]
     image_transfer_count: u32,
@@ -140,14 +141,14 @@ enum ExposureAlgorithm {
 impl<S, I, C, T> App<S, I, C, T>
 where
     S: spi::Transfer<u8>,
-    I: camera::ImageDataReceiver,
+    I: camera::CameraDataInterface,
     C: Classifier,
     T: Timer,
 {
-    pub fn new(spi: S, image_data_receiver: I, classifier: C, timer: T) -> Self {
+    pub fn new(spi: S, camera_data_interface: I, classifier: C, timer: T) -> Self {
         Self {
             mcu: McuInterface::new(spi),
-            image_data_receiver,
+            image_data_receiver: ImageDataReceiver::new(camera_data_interface),
             classifier,
             #[cfg(feature = "image-transfer")]
             image_transfer_count: 0,
@@ -700,7 +701,7 @@ pub fn write_stdout(spi: impl spi::Transfer<u8>, data: &[u8]) {
 
 #[cfg(test)]
 mod tests {
-    use crate::camera::testing::FakeImageDataReceiver;
+    use crate::camera::testing::FakeCameraDataInterface;
     use crate::fake_mcu::FakeMcu;
     use crate::timer::testing::FakeTimer;
     use application::Configuration;
@@ -711,7 +712,7 @@ mod tests {
     fn test_model_selection_nomiri() -> Result<()> {
         let mut app = App::new(
             FakeMcu::default(),
-            FakeImageDataReceiver,
+            FakeCameraDataInterface::default(),
             FakeClassifier::default(),
             FakeTimer,
         );

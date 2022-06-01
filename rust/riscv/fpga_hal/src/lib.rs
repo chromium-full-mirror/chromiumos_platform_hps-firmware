@@ -8,7 +8,7 @@ mod camera;
 mod spi;
 mod timer;
 
-pub use camera::DmaImageDataReceiver;
+pub use camera::FpgaCameraDataInterface;
 pub use spi::McuSpi;
 pub use timer::Timer;
 

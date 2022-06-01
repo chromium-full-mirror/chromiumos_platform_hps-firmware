@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::Error;
 use crate::Result;
 
 pub const IMAGE_WIDTH: u32 = 320;
@@ -23,14 +24,24 @@ pub const END_IMAGE_MARKER: [u8; 8] = [227, 114, 212, 105, 101, 111, 21, 193];
 
 pub const AE_TARGET: u8 = 60;
 
-pub trait ImageDataReceiver {
-    /// Waits for the start of a frame, then receives image data into `buffer`.
-    /// The camera must already be streaming.
-    fn receive_image_data(
-        &mut self,
-        buffer: &mut [i8],
-        image_dimensions: &ImageDimensions,
-    ) -> Result<()>;
+pub trait CameraDataInterface {
+    /// Reset the interface then signal that the next data read should be from
+    /// the start of frame.
+    fn start(&mut self);
+
+    /// Signals that the next data read should be from the start of a row.
+    fn signal_wait_row(&mut self);
+
+    /// Returns whether the next word of data is ready.
+    fn is_data_ready(&self) -> bool;
+
+    /// Reads a word of image data. Calling this clears `is_data_ready`. Return
+    /// value if `is_data_ready` isn't true is unspecified.
+    fn read_word(&mut self) -> u32;
+}
+
+pub struct ImageDataReceiver<C> {
+    camera: C,
 }
 
 pub struct ImageDimensions {
@@ -38,6 +49,103 @@ pub struct ImageDimensions {
     pub column_count: u32,
     pub row_start: u32,
     pub row_count: u32,
+}
+
+impl<C: CameraDataInterface> ImageDataReceiver<C> {
+    pub(crate) fn new(camera: C) -> Self {
+        Self { camera }
+    }
+
+    /// Waits for the start of a frame, then receives image data into `buffer`.
+    /// The camera must already be streaming.
+    pub(crate) fn receive_image_data(
+        &mut self,
+        buffer: &mut [i8],
+        image_dimensions: &ImageDimensions,
+    ) -> Result<()> {
+        if image_dimensions.row_count as usize * image_dimensions.column_count as usize
+            != buffer.len()
+        {
+            return Err(Error::InvalidArg);
+        }
+        // Column count must be a multiple of 4, since we read and write a word
+        // at a time.
+        if image_dimensions.column_count & 3 != 0 {
+            return Err(Error::InvalidArg);
+        }
+        self.camera.start();
+        // TODO(dml): Change the buffer to [u32] so that we don't need this.
+        if (buffer.as_ptr() as usize) & 0x3 != 0 {
+            return Err(Error::InvalidArg);
+        }
+        let buffer_u32 = unsafe {
+            core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)
+        };
+        self.transfer_image_data(buffer_u32, image_dimensions)?;
+
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn transfer_image_data(
+        &mut self,
+        buffer_u32: &mut [u32],
+        image_dimensions: &ImageDimensions,
+    ) -> Result<()> {
+        let row_out_len = (image_dimensions.column_count >> 2) as usize;
+        // Convert column start from pixels to words. We discard the low two
+        // bits in the process. So if column_start is 1, 2 or 3, then we'll
+        // start from 0. We could have instead said that such column_starts are
+        // invalid, however it's convenient to make them valid, since a
+        // column_start=2 when rotated becomes a row_start=2, which is valid.
+        let left_margin_words = image_dimensions.column_start >> 2;
+        let mut row_index = 0;
+        for row_out in buffer_u32.chunks_exact_mut(row_out_len) {
+            loop {
+                // We always receive the row, even if we haven't yet reached the
+                // starting row. Thay way the code to read the row gets into
+                // cache.
+                self.receive_row(row_out, left_margin_words)?;
+                row_index += 1;
+                if row_index >= image_dimensions.row_start {
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn receive_row(&mut self, row_out: &mut [u32], left_margin_words: u32) -> Result<()> {
+        // Skip pixels to the left of the cropping area.
+        self.skip_words(left_margin_words)?;
+        // Transfer the image data.
+        for word in row_out {
+            self.wait_for_data()?;
+            *word = self.camera.read_word();
+        }
+        // Next read, if any, should wait for the start of the next row.
+        self.camera.signal_wait_row();
+        Ok(())
+    }
+
+    #[inline(always)]
+    fn skip_words(&mut self, num_words: u32) -> Result<()> {
+        for _ in 0..num_words {
+            self.wait_for_data()?;
+            self.camera.read_word();
+        }
+        Ok(())
+    }
+
+    #[inline(always)]
+    fn wait_for_data(&mut self) -> Result<()> {
+        for _ in 0..10_000_000 {
+            if self.camera.is_data_ready() {
+                return Ok(());
+            }
+        }
+        Err(Error::Camera)
+    }
 }
 
 // Calculate appropriate exposure settings from a single integer.
@@ -72,19 +180,26 @@ pub fn calculate_exposure(value: i32) -> hm01b0::Exposure {
 pub(crate) mod testing {
     use super::*;
 
-    pub(crate) struct FakeImageDataReceiver;
+    #[derive(Default)]
+    pub(crate) struct FakeCameraDataInterface {
+        value: u32,
+    }
 
-    impl ImageDataReceiver for FakeImageDataReceiver {
-        fn receive_image_data(
-            &mut self,
-            buffer: &mut [i8],
-            _image_dimensions: &ImageDimensions,
-        ) -> Result<()> {
-            // Inserts fake image data to pass entropy calculations.
-            for (i, v) in buffer.iter_mut().enumerate() {
-                *v = ((i & 0xff) as i16 - 128) as i8;
-            }
-            Ok(())
+    impl CameraDataInterface for FakeCameraDataInterface {
+        fn start(&mut self) {
+            self.value = 0x04030201;
+        }
+
+        fn signal_wait_row(&mut self) {}
+
+        fn is_data_ready(&self) -> bool {
+            true
+        }
+
+        fn read_word(&mut self) -> u32 {
+            // We need enough different values to pass entropy calculations.
+            self.value = self.value.wrapping_add(0x04040404);
+            self.value
         }
     }
 }
