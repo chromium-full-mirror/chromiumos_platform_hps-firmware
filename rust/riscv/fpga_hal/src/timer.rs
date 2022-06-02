@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 use fpga_app::Instant;
+use fpga_app::Microseconds;
+use fpga_app::Milliseconds;
 
 #[derive(Default)]
 pub struct Timer {}
@@ -22,13 +24,13 @@ impl fpga_app::Timer for Timer {
         }
     }
 
-    fn elapsed_ms(&self, start: Instant) -> u32 {
+    fn elapsed_ms(&self, start: Instant) -> Milliseconds {
         let elapsed = self.now().0 - start.0;
-        (elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1000)) as u32
+        Milliseconds((elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1000)) as i32)
     }
 
-    fn elapsed_us(&self, start: Instant) -> u32 {
+    fn elapsed_us(&self, start: Instant) -> Microseconds {
         let elapsed = self.now().0 - start.0;
-        (elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1_000_000)) as u32
+        Microseconds((elapsed / (crate::soc::CONFIG_CLOCK_FREQUENCY as u64 / 1_000_000)) as i32)
     }
 }

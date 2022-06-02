@@ -37,6 +37,8 @@ use hm01b0::TestPattern;
 use mcu_common::SPI_BLOCK_SIZE;
 use mcu_interface::McuInterface;
 pub use timer::Instant;
+pub use timer::Microseconds;
+pub use timer::Milliseconds;
 pub use timer::Timer;
 
 const SOC_ROM_VERSION: u8 = 1;
@@ -268,7 +270,7 @@ where
             let total_ms = self.timer.elapsed_ms(loop_start_time);
             mcu_println!(
                 self.mcu,
-                "Model {} score: {:4} capture: {:3}ms classify: {:3}ms other: {:3}ms total: {:3}ms",
+                "Model {} score: {:4} capture: {:3} classify: {:3} other: {:3} total: {:3}",
                 self.model_number,
                 score,
                 capture_ms,
