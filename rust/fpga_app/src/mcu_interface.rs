@@ -17,9 +17,12 @@ const MCU_POLL_COUNT: u32 = 1000;
 
 const CAM_MODE_SELECT: u16 = 0x0100;
 
+/// The minimum size of packet we can send to the MCU. It's not clear why, but
+/// sending less than 4 bytes causes things to break.
+const MIN_BUFFER_SIZE: usize = 4;
+
 pub struct McuInterface<S> {
     pub(crate) spi: S,
-    buffer: [u8; BUFFER_SIZE],
 }
 
 impl<S, E> McuInterface<S>
@@ -27,17 +30,14 @@ where
     S: spi::Transfer<u8, Error = E>,
 {
     pub fn new(spi: S) -> Self {
-        Self {
-            spi,
-            buffer: [0u8; BUFFER_SIZE],
-        }
+        Self { spi }
     }
 
     /// Resynchronize communication with the MCU.
     pub fn resync(&mut self) {
         loop {
-            self.clear_buffer();
-            if self.exchange().is_ok() {
+            let mut buffer = [0u8; MIN_BUFFER_SIZE];
+            if self.exchange(&mut buffer).is_ok() {
                 return;
             }
         }
@@ -49,84 +49,83 @@ where
     }
 
     pub fn report_boot(&mut self, version: u8) -> Result<()> {
-        self.clear_buffer();
-        self.buffer[0] = Action::ReportFpgaBoot.into();
-        self.buffer[1] = version;
-        self.exchange()
+        let mut buffer = [0u8; MIN_BUFFER_SIZE];
+        buffer[0] = Action::ReportFpgaBoot.into();
+        buffer[1] = version;
+        self.exchange(&mut buffer)
     }
 
     pub fn read_config(&mut self) -> Result<Configuration> {
-        self.clear_buffer();
-        self.buffer[0] = Action::ReadConfigRegisters.into();
-        self.exchange()?;
+        let mut buffer = [0u8; BUFFER_SIZE];
+        buffer[0] = Action::ReadConfigRegisters.into();
+        self.exchange(&mut buffer[..2 + core::mem::size_of::<Configuration>()])?;
         // safety: The transfer succeeded, so the MCU will have put a valid
         // Configuration into the returned buffer. We use the same definition of
         // Configuration, which is repr(C) and releases of the two binaries are
         // kept in sync.
-        Ok(unsafe {
-            core::ptr::read_unaligned(&self.buffer[2] as *const u8 as *const Configuration)
-        })
+        Ok(unsafe { core::ptr::read_unaligned(&buffer[2] as *const u8 as *const Configuration) })
     }
 
     pub fn report_status(&mut self, status: &Status) -> Result<()> {
-        self.clear_buffer();
+        let mut buffer = [0u8; BUFFER_SIZE];
         let status_bytes = status.to_bytes();
-        self.buffer[0] = Action::WriteStatusRegisters.into();
-        self.buffer[1..1 + status_bytes.len()].copy_from_slice(&status_bytes);
-        self.exchange()
+        buffer[0] = Action::WriteStatusRegisters.into();
+        buffer[1..1 + status_bytes.len()].copy_from_slice(&status_bytes);
+        self.exchange(&mut buffer[..2 + status_bytes.len()])
     }
 
     pub fn report_error(&mut self, error: mcu_common::Error) {
-        self.clear_buffer();
-        self.buffer[0] = Action::ReportFpgaError.into();
+        let mut buffer = [0u8; BUFFER_SIZE];
+        buffer[0] = Action::ReportFpgaError.into();
         let error_bytes = u16::from(error).to_le_bytes();
-        self.buffer[1..1 + error_bytes.len()].copy_from_slice(&error_bytes);
+        buffer[1..1 + error_bytes.len()].copy_from_slice(&error_bytes);
         // There's not much we can do if we get an error while we're reporting
         // an error, so we just ignore it.
-        let _ = self.exchange();
+        let _ = self.exchange(&mut buffer[..2 + error_bytes.len()]);
     }
 
     pub fn report_panic(&mut self, info: &core::panic::PanicInfo) {
         use core::fmt::Write;
 
-        self.clear_buffer();
-        self.buffer[0] = Action::ReportFpgaPanic.into();
-        let mut out = mcu_common::fmt::FormatOutput::new(&mut self.buffer[1..]);
+        let mut buffer = [0u8; BUFFER_SIZE];
+        buffer[0] = Action::ReportFpgaPanic.into();
+        let mut out = mcu_common::fmt::FormatOutput::new(&mut buffer[1..]);
         // There's not much we can do if we get an error while we're reporting a
         // panic, so we just ignore it.
         let _ = write!(&mut out, "{info}");
-        let _ = self.exchange();
+        let _ = self.exchange(&mut buffer);
     }
 
     pub fn write_camera_reg(&mut self, register: u16, value: u8) -> Result<()> {
-        self.clear_buffer();
-        self.buffer[0] = Action::WriteCameraI2c.into();
-        self.buffer[1] = 1;
-        self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
-        self.buffer[4] = value;
-        self.exchange()
+        let mut buffer = [0u8; 5];
+        buffer[0] = Action::WriteCameraI2c.into();
+        buffer[1] = 1;
+        buffer[2..4].copy_from_slice(&register.to_be_bytes());
+        buffer[4] = value;
+        self.exchange(&mut buffer)
     }
 
     pub fn read_camera_reg(&mut self, register: u16) -> u8 {
         loop {
-            self.clear_buffer();
-            self.buffer[0] = Action::ReadCameraI2c.into();
-            self.buffer[1] = 1;
-            self.buffer[2..4].copy_from_slice(&register.to_be_bytes());
-            if self.exchange().is_ok() {
-                return self.buffer[2];
+            let mut buffer = [0u8; 4];
+            buffer[0] = Action::ReadCameraI2c.into();
+            buffer[1] = 1;
+            buffer[2..4].copy_from_slice(&register.to_be_bytes());
+            if self.exchange(&mut buffer).is_ok() {
+                return buffer[2];
             }
         }
     }
 
     /// Sends an echo request to the MCU then checks that we get back the same data.
     pub fn echo_test(&mut self) -> Result<()> {
-        self.buffer[0] = Action::Echo.into();
-        for (index, byte) in self.buffer[2..].iter_mut().enumerate() {
+        let mut buffer = [0u8; BUFFER_SIZE];
+        buffer[0] = Action::Echo.into();
+        for (index, byte) in buffer[2..].iter_mut().enumerate() {
             *byte = index as u8;
         }
-        self.exchange()?;
-        for (index, byte) in self.buffer[2..].iter_mut().enumerate() {
+        self.exchange(&mut buffer)?;
+        for (index, byte) in buffer[2..].iter_mut().enumerate() {
             if *byte != index as u8 {
                 return Err(Error::SpiError);
             }
@@ -150,10 +149,10 @@ where
 
     /// Request that the MCU trigger a single frame after the specified delay.
     pub fn trigger_frame_in(&mut self, microseconds: Microseconds) -> Result<()> {
-        self.clear_buffer();
-        self.buffer[0] = Action::TriggerFrame.into();
-        self.buffer[1..5].copy_from_slice(&microseconds.0.to_le_bytes());
-        self.exchange()
+        let mut buffer = [0u8; 5];
+        buffer[0] = Action::TriggerFrame.into();
+        buffer[1..5].copy_from_slice(&microseconds.0.to_le_bytes());
+        self.exchange(&mut buffer)
     }
 
     pub fn camera(&mut self) -> hm01b0::Camera<McuInterface<S>> {
@@ -163,10 +162,10 @@ where
     #[cfg(feature = "dev")]
     pub fn write_stdout_bytes(&mut self, bytes: &[u8]) -> Result<()> {
         for chunk in bytes.chunks(BUFFER_SIZE - 1) {
-            self.clear_buffer();
-            self.buffer[0] = Action::DebugLog.into();
-            self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
-            self.exchange()?;
+            let mut buffer = [0u8; BUFFER_SIZE];
+            buffer[0] = Action::DebugLog.into();
+            buffer[1..1 + chunk.len()].copy_from_slice(chunk);
+            self.exchange(&mut buffer)?;
         }
         Ok(())
     }
@@ -175,12 +174,12 @@ where
     /// argument for that command.
     #[cfg(feature = "dev")]
     pub fn next_debug_command(&mut self) -> Option<(crate::DebugCommand, u16)> {
-        self.clear_buffer();
-        self.buffer[0] = Action::GetDebugCommand.into();
-        self.exchange().ok()?;
+        let mut buffer = [0u8; 5];
+        buffer[0] = Action::GetDebugCommand.into();
+        self.exchange(&mut buffer).ok()?;
         Some((
-            crate::DebugCommand::try_from(self.buffer[2]).ok()?,
-            u16::from_le_bytes([self.buffer[3], self.buffer[4]]),
+            crate::DebugCommand::try_from(buffer[2]).ok()?,
+            u16::from_le_bytes([buffer[3], buffer[4]]),
         ))
     }
 
@@ -193,45 +192,35 @@ where
             .chain(crate::camera::END_IMAGE_MARKER.iter().cloned())
             .peekable();
         while to_send.peek().is_some() {
-            self.clear_buffer();
-            self.buffer[0] = Action::DebugImage.into();
+            let mut buffer = [0u8; BUFFER_SIZE];
+            buffer[0] = Action::DebugImage.into();
             for i in 1..BUFFER_SIZE {
                 match to_send.next() {
-                    Some(byte) => self.buffer[i] = byte,
+                    Some(byte) => buffer[i] = byte,
                     None => break,
                 }
             }
-            self.exchange()?;
+            self.exchange(&mut buffer)?;
         }
         Ok(())
     }
 
-    fn exchange(&mut self) -> Result<()> {
-        let command = self.buffer[0];
-        self.spi
-            .transfer(&mut self.buffer)
-            .map_err(|_| Error::SpiError)?;
+    fn exchange(&mut self, buffer: &mut [u8]) -> Result<()> {
+        let command = buffer[0];
+        self.spi.transfer(buffer).map_err(|_| Error::SpiError)?;
 
         for _ in 0..MCU_POLL_COUNT {
-            if self.buffer[0] != 0 {
-                if self.buffer[1] == command {
+            if buffer[0] != 0 {
+                if buffer[1] == command {
                     return Ok(());
                 } else {
                     return Err(Error::SpiError);
                 }
             }
-            self.clear_buffer();
-            self.spi
-                .transfer(&mut self.buffer)
-                .map_err(|_| Error::SpiError)?;
+            buffer[0] = 0;
+            self.spi.transfer(buffer).map_err(|_| Error::SpiError)?;
         }
         Err(Error::McuTimeout)
-    }
-
-    fn clear_buffer(&mut self) {
-        for byte in self.buffer.iter_mut() {
-            *byte = 0;
-        }
     }
 }
 
@@ -243,10 +232,10 @@ where
         #[cfg(feature = "dev")]
         {
             for chunk in _s.as_bytes().chunks(BUFFER_SIZE - 1) {
-                self.clear_buffer();
-                self.buffer[0] = Action::DebugLog.into();
-                self.buffer[1..1 + chunk.len()].copy_from_slice(chunk);
-                self.exchange().map_err(|_| core::fmt::Error)?;
+                let mut buffer = [0u8; BUFFER_SIZE];
+                buffer[0] = Action::DebugLog.into();
+                buffer[1..1 + chunk.len()].copy_from_slice(chunk);
+                self.exchange(&mut buffer).map_err(|_| core::fmt::Error)?;
             }
         }
         Ok(())
@@ -307,15 +296,16 @@ mod tests {
     ) -> McuInterface<spi::Mock> {
         assert!(command.len() <= BUFFER_SIZE);
         assert!(response.len() <= BUFFER_SIZE);
-        command.resize(BUFFER_SIZE, 0);
-        response.resize(BUFFER_SIZE, 0);
+        let len = usize::max(MIN_BUFFER_SIZE, usize::max(command.len(), response.len()));
+        command.resize(len, 0);
+        response.resize(len, 0);
         let expectations = [
-            spi::Transaction::transfer(command, vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(command, vec![0u8; len]),
             // Send a couple of not-ready-yet responses.
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], vec![0u8; BUFFER_SIZE]),
+            spi::Transaction::transfer(vec![0u8; len], vec![0u8; len]),
+            spi::Transaction::transfer(vec![0u8; len], vec![0u8; len]),
             // Send our actual response.
-            spi::Transaction::transfer(vec![0u8; BUFFER_SIZE], response),
+            spi::Transaction::transfer(vec![0u8; len], response),
         ];
 
         let spi = spi::Mock::new(&expectations);
@@ -373,6 +363,7 @@ mod tests {
 
         let mut response = vec![status::OK, Action::ReadConfigRegisters.into()];
         response.extend_from_slice(&0x1234_u16.to_le_bytes());
+        response.resize(2 + core::mem::size_of::<Configuration>(), 0);
 
         let mut mcu = command_response_interface(command, response);
 
@@ -402,8 +393,10 @@ mod tests {
 
     #[test]
     fn test_report_status() {
+        let mut command = vec![Action::WriteStatusRegisters.into(), 0, 0, 0, 0, 0x34, 0x12];
+        command.resize(2 + core::mem::size_of::<Status>(), 0);
         let mut mcu = command_response_interface(
-            vec![Action::WriteStatusRegisters.into(), 0, 0, 0, 0, 0x34, 0x12],
+            command,
             vec![status::OK, Action::WriteStatusRegisters.into()],
         );
         let mut status = Status::default();
