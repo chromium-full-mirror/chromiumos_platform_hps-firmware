@@ -392,23 +392,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "dev")]
-    fn test_next_debug_command() {
-        let command = vec![Action::GetDebugCommand.into()];
-        let response = vec![
-            status::OK,
-            Action::GetDebugCommand.into(),
-            crate::DebugCommand::ClassificationOn.into(),
-            0x34,
-            0x12,
-        ];
-        let mut mcu = command_response_interface(command, response);
-        let value = mcu.next_debug_command();
-        assert_eq!(value, Some((crate::DebugCommand::ClassificationOn, 0x1234)));
-        mcu.spi.done();
-    }
-
-    #[test]
     fn test_report_status() {
         let mut mcu = command_response_interface(
             vec![Action::WriteStatusRegisters.into(), 0, 0, 0, 0, 0x34, 0x12],
