@@ -32,12 +32,17 @@ impl Histogram {
         result
     }
 
-    /// Histogram from central 240x240 square in image
+    /// Histogram from central 240x240 square in image. Within the selected
+    /// square only every 4th pixel is sampled. We sample every 4th pixel since
+    /// that is sufficient for our purposes and by not sampling every pixel, the
+    /// camera code can produce a histogram during image capture. If the camera
+    /// code tried to sample every pixel, it would be too slow and would drop
+    /// pixels, resulting in a corrupted image.
     pub fn new_cropped(image_data: &[i8]) -> Histogram {
         let mut result = Histogram { bins: [0; 256] };
 
         for y in 0..IMAGE_HEIGHT {
-            for x in 40..IMAGE_WIDTH - 40 {
+            for x in (40..IMAGE_WIDTH - 40).step_by(4) {
                 let i = (y * IMAGE_WIDTH + x) as usize;
                 result.add(image_data[i]);
             }
@@ -225,7 +230,7 @@ mod tests {
 
         // Cropped histogram only has dark pixels
         let h_cropped = Histogram::new_cropped(&img);
-        check_histogram(&h_cropped, 240 * IMAGE_HEIGHT, 0);
+        check_histogram(&h_cropped, 240 * IMAGE_HEIGHT / 4, 0);
     }
 
     #[test]
