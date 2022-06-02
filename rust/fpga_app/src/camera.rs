@@ -4,7 +4,9 @@
 
 use crate::histogram::Histogram;
 use crate::Error;
+use crate::Microseconds;
 use crate::Result;
+use crate::Timer;
 use core::ops::Range;
 
 pub const IMAGE_WIDTH: u32 = 320;
@@ -47,8 +49,9 @@ pub trait CameraDataInterface {
     fn read_word(&mut self) -> u32;
 }
 
-pub struct ImageDataReceiver<C> {
+pub struct ImageDataReceiver<C, T> {
     camera: C,
+    timer: T,
     pub(crate) histogram: Histogram,
 }
 
@@ -70,21 +73,23 @@ impl Default for ImageDimensions {
     }
 }
 
-impl<C: CameraDataInterface> ImageDataReceiver<C> {
-    pub(crate) fn new(camera: C) -> Self {
+impl<C: CameraDataInterface, T: Timer> ImageDataReceiver<C, T> {
+    pub(crate) fn new(camera: C, timer: T) -> Self {
         Self {
             camera,
+            timer,
             histogram: Histogram::default(),
         }
     }
 
     /// Waits for the start of a frame, then receives image data into `buffer`.
-    /// The camera must already be streaming.
+    /// The camera must already be streaming. Returns the number of microseconds
+    /// we waited for the start of the image.
     pub(crate) fn receive_image_data(
         &mut self,
         buffer: &mut [i8],
         image_dimensions: &ImageDimensions,
-    ) -> Result<()> {
+    ) -> Result<Microseconds> {
         if image_dimensions.row_count as usize * image_dimensions.column_count as usize
             != buffer.len()
         {
@@ -104,9 +109,7 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         let buffer_u32 = unsafe {
             core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)
         };
-        self.transfer_image_data(buffer_u32, image_dimensions)?;
-
-        Ok(())
+        self.transfer_image_data(buffer_u32, image_dimensions)
     }
 
     #[inline(never)]
@@ -114,7 +117,7 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         &mut self,
         buffer_u32: &mut [u32],
         image_dimensions: &ImageDimensions,
-    ) -> Result<()> {
+    ) -> Result<Microseconds> {
         let row_out_len = (image_dimensions.column_count >> 2) as usize;
         // Number of words per row that we put into the histogram.
         const HIST_WORDS_PER_ROW: usize = IMAGE_HEIGHT as usize / 4;
@@ -141,6 +144,12 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
         // column_start=2 when rotated becomes a row_start=2, which is valid.
         let left_margin_words = image_dimensions.column_start >> 2;
         let mut row_index = 0;
+
+        // Measure how long we need to wait for the start of the image.
+        let start = self.timer.now();
+        self.wait_for_data()?;
+        let wait_us = self.timer.elapsed_us(start);
+
         for row_out in buffer_u32.chunks_exact_mut(row_out_len) {
             loop {
                 let non_hist_len;
@@ -173,7 +182,7 @@ impl<C: CameraDataInterface> ImageDataReceiver<C> {
                 }
             }
         }
-        Ok(())
+        Ok(wait_us)
     }
 
     fn receive_row(
@@ -380,6 +389,7 @@ pub(crate) mod testing {
 mod tests {
     use crate::test_helpers::images;
     use crate::test_helpers::png_pixels;
+    use crate::timer::testing::FakeTimer;
 
     use super::testing::FakeCameraDataInterface;
     use super::testing::ImageBuffer;
@@ -450,7 +460,7 @@ mod tests {
     ) -> Histogram {
         let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
         camera.frame_image(image_dimensions);
-        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut image_receiver = ImageDataReceiver::new(camera, FakeTimer);
         let mut buffer = ImageBuffer::default();
         image_receiver
             .receive_image_data(&mut buffer, image_dimensions)
@@ -486,7 +496,7 @@ mod tests {
         let image_dimensions = ImageDimensions::default();
         let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
         camera.frame_image(&image_dimensions);
-        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut image_receiver = ImageDataReceiver::new(camera, FakeTimer);
         let mut buffer = ImageBuffer::default();
         image_receiver
             .receive_image_data(&mut buffer, &image_dimensions)
@@ -502,7 +512,7 @@ mod tests {
         image_dimensions.rotate_90();
         let mut camera = FakeCameraDataInterface::from_signed_bytes(pixels.to_owned());
         camera.frame_image(&image_dimensions);
-        let mut image_receiver = ImageDataReceiver::new(camera);
+        let mut image_receiver = ImageDataReceiver::new(camera, FakeTimer);
         let mut buffer = ImageBuffer::default();
         image_receiver
             .receive_image_data(&mut buffer, &image_dimensions)

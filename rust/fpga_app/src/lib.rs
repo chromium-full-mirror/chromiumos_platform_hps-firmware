@@ -105,7 +105,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 pub struct App<S, I, C, T> {
     mcu: McuInterface<S>,
-    image_data_receiver: ImageDataReceiver<I>,
+    image_data_receiver: ImageDataReceiver<I, T>,
     classifier: C,
     #[cfg(feature = "image-transfer")]
     image_transfer_count: u32,
@@ -118,6 +118,11 @@ pub struct App<S, I, C, T> {
     test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
     exposure: i32,
+}
+
+struct ImageMetadata {
+    /// How long we waited for the frame to start.
+    wait_start: Microseconds,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -151,7 +156,7 @@ where
     pub fn new(spi: S, camera_data_interface: I, classifier: C, timer: T) -> Self {
         Self {
             mcu: McuInterface::new(spi),
-            image_data_receiver: ImageDataReceiver::new(camera_data_interface),
+            image_data_receiver: ImageDataReceiver::new(camera_data_interface, timer.clone()),
             classifier,
             #[cfg(feature = "image-transfer")]
             image_transfer_count: 0,
@@ -229,8 +234,11 @@ where
 
         let is_rotated = self.determine_rotation(&config)?;
         let capture_start = self.timer.now();
-        self.capture_well_exposed_image(is_rotated)?;
-        let capture_ms = self.timer.elapsed_ms(capture_start);
+        let wait_image_start: Milliseconds = self
+            .capture_well_exposed_image(is_rotated)?
+            .wait_start
+            .into();
+        let capture_ms = self.timer.elapsed_ms(capture_start) - wait_image_start;
         if self.histogram_enabled {
             let e = self.exposure;
             mcu_println!(
@@ -270,13 +278,14 @@ where
             let total_ms = self.timer.elapsed_ms(loop_start_time);
             mcu_println!(
                 self.mcu,
-                "Model {} score: {:4} capture: {:3} classify: {:3} other: {:3} total: {:3}",
+                "Model {} score:{:5} wait:{:4} capture:{:4} model:{:4} other:{:4} total:{:4}",
                 self.model_number,
                 score,
+                wait_image_start,
                 capture_ms,
                 classify_ms,
-                total_ms - capture_ms - classify_ms,
-                total_ms
+                total_ms - wait_image_start - capture_ms - classify_ms,
+                total_ms,
             );
         } else {
             model_status = 0;
@@ -334,7 +343,7 @@ where
         )
     }
 
-    fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<()> {
+    fn capture_well_exposed_image(&mut self, rotate_clockwise: bool) -> Result<ImageMetadata> {
         match self.exposure_algorithm {
             ExposureAlgorithm::MedianTarget(target) => {
                 self.adjust_exposure_and_capture(target as i32, rotate_clockwise)
@@ -353,9 +362,13 @@ where
     }
 
     /// Attempts to converge median to `target` and captures an image.
-    fn adjust_exposure_and_capture(&mut self, target: i32, rotate_clockwise: bool) -> Result<()> {
+    fn adjust_exposure_and_capture(
+        &mut self,
+        target: i32,
+        rotate_clockwise: bool,
+    ) -> Result<ImageMetadata> {
         // Capture a first image
-        self.capture_image(rotate_clockwise)?;
+        let first_metadata = self.capture_image(rotate_clockwise)?;
 
         const BEGIN_THRESHOLD: i32 = 20;
         const END_THRESHOLD: i32 = 5;
@@ -379,7 +392,7 @@ where
 
         // Always take a small step toward the median anyway
         self.step_exposure(if diff < 0 { 16 } else { -16 })?;
-        Ok(())
+        Ok(first_metadata)
     }
 
     // Move exposure by one step, up or down
@@ -394,18 +407,19 @@ where
         Ok(())
     }
 
-    fn capture_image(&mut self, rotate_clockwise: bool) -> Result<()> {
+    fn capture_image(&mut self, rotate_clockwise: bool) -> Result<ImageMetadata> {
         let mut dimensions = camera::ImageDimensions::default();
         if rotate_clockwise {
             dimensions.rotate_90();
         }
         let buffer = self.classifier.input_data_mut(self.model_number);
-        self.image_data_receiver
+        let wait_start = self
+            .image_data_receiver
             .receive_image_data(buffer, &dimensions)?;
         if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
-        Ok(())
+        Ok(ImageMetadata { wait_start })
     }
 
     #[cfg(feature = "dev")]

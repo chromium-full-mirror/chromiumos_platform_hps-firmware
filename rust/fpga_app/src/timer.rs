@@ -4,7 +4,7 @@
 
 use core::fmt::Display;
 
-pub trait Timer {
+pub trait Timer: Clone {
     /// Returns the current time.
     fn now(&self) -> Instant;
 
@@ -30,6 +30,7 @@ pub struct Instant(pub u64);
 pub(crate) mod testing {
     use super::*;
 
+    #[derive(Clone)]
     pub(crate) struct FakeTimer;
 
     impl Timer for FakeTimer {
@@ -74,5 +75,11 @@ impl Display for Microseconds {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.0.fmt(f)?;
         write!(f, "us")
+    }
+}
+
+impl From<Microseconds> for Milliseconds {
+    fn from(microseconds: Microseconds) -> Self {
+        Milliseconds(microseconds.0 / 1000)
     }
 }

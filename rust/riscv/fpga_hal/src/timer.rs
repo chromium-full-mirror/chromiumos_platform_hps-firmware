@@ -6,7 +6,7 @@ use fpga_app::Instant;
 use fpga_app::Microseconds;
 use fpga_app::Milliseconds;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Timer {}
 
 impl fpga_app::Timer for Timer {
