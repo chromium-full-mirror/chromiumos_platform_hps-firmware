@@ -16,6 +16,10 @@ source "${PROJECT_ROOT}/environment"
 
 cd "${PROJECT_ROOT}/rust"
 
+# exclude TERM for a modest speedup, as per:
+# https://github.com/rust-lang/miri/issues/1702
+export MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-env-exclude=TERM"
+
 # We exclude hps-factory from miri tests because its build.rs builds lots of
 # other crates that are time-consuming to build.
 cargo \
