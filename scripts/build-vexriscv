@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Builds VexRiscv from source, putting the result in
+# third_party/vexriscv_verilog. sbt needs to be installed.
+
+set -e
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+INSTALLED_DIR="${PROJECT_ROOT}/third_party/installed"
+
+SBT_URL="https://github.com/sbt/sbt/releases/download/v1.6.2/sbt-1.6.2.tgz"
+SBT_SHA256="637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440"
+SBT_DIR="${INSTALLED_DIR}/sbt"
+
+if [ ! -d "${SBT_DIR}" ]; then
+    echo "Installing SBT"
+    cd "${INSTALLED_DIR}"
+    wget "${SBT_URL}" -O sbt.tgz
+    sha256sum --check <(echo "${SBT_SHA256}" sbt.tgz)
+    tar xf sbt.tgz
+    rm sbt.tgz
+fi
+
+BUILD_DIR="${PROJECT_ROOT}/build"
+CFU_PLAYGROUND="${BUILD_DIR}/CFU-Playground"
+DATA_VEXRISCV="${CFU_PLAYGROUND}/third_party/python/pythondata_cpu_vexriscv"
+
+if [ ! -d "${CFU_PLAYGROUND}" ]; then
+    cd "${BUILD_DIR}"
+    git clone https://github.com/google/CFU-Playground.git
+fi
+
+cd "${CFU_PLAYGROUND}"
+git checkout -q eda29975fbd57944b199cc778de25a4a54945f24
+git submodule init third_party/python/pythondata_cpu_vexriscv
+git submodule update third_party/python/pythondata_cpu_vexriscv
+
+cd "${DATA_VEXRISCV}"
+git submodule init
+git submodule update
+
+cd "${DATA_VEXRISCV}/pythondata_cpu_vexriscv/verilog/ext/VexRiscv"
+# We want to use a specific commit of VexRiscv. The one currently used by
+# pythondata_cpu_vexriscv is a little too old and doesn't include commit
+# c242744d02b, which we need for correct operation.
+git checkout -q 36f57d5eb7170b1f4e8b6c70b9e762c8cb7f9bf0
+
+cd "${CFU_PLAYGROUND}/soc/vexriscv"
+"${SBT_DIR}/bin/sbt" compile \
+    "runMain vexriscv.GenCoreDefault \
+    --dCacheSize 4096 \
+    --iCacheSize 2048 \
+    --csrPluginConfig all \
+    --cfu true \
+    --outputFile ../../../../third_party/vexriscv/VexRiscv_SlimCfu"
+
+# We don't need this file, so delete it.
+rm "${PROJECT_ROOT}/third_party/vexriscv/VexRiscv_SlimCfu.yaml"
