@@ -45,6 +45,10 @@ struct Config {
     #[clap(long)]
     mcp: bool,
 
+    /// connect to HPS via unix socket
+    #[clap(long)]
+    socket: Option<String>,
+
     #[clap(long)]
     verbose: bool,
 
@@ -272,6 +276,11 @@ fn main() -> Result<()> {
         i2c.check_bus()?;
         return run_workflow(&mut i2c, config);
     }
+    if let Some(socket) = &config.socket {
+        let mut i2c = unix_socket::I2cOverSocket::connect(&socket)?;
+        return run_workflow(&mut i2c, config);
+    }
+
     if is_hpsd_running().unwrap_or(false) {
         bail!("HPSD seems to be running. Please run `stop hpsd` before using hps-factory.");
     }

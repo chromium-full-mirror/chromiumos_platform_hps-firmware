@@ -23,6 +23,7 @@ members = [
     "mcu_common",
     "sign-rom",
     "stm32_bootloader_client",
+    "unix_socket",
 ]
 # Crates/workspaces that can't be compiled for Linux are listed here.
 exclude = [
