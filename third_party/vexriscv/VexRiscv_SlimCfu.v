@@ -754,7 +754,7 @@ module VexRiscv (
   wire                IBusCachedPlugin_iBusRsp_stages_0_output_valid;
   wire                IBusCachedPlugin_iBusRsp_stages_0_output_ready;
   wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_0_output_payload;
-  reg                 IBusCachedPlugin_iBusRsp_stages_0_halt;
+  wire                IBusCachedPlugin_iBusRsp_stages_0_halt;
   wire                IBusCachedPlugin_iBusRsp_stages_1_input_valid;
   wire                IBusCachedPlugin_iBusRsp_stages_1_input_ready;
   wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_1_input_payload;
@@ -769,9 +769,17 @@ module VexRiscv (
   wire                IBusCachedPlugin_iBusRsp_stages_2_output_ready;
   wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_2_output_payload;
   reg                 IBusCachedPlugin_iBusRsp_stages_2_halt;
+  wire                IBusCachedPlugin_iBusRsp_stages_3_input_valid;
+  wire                IBusCachedPlugin_iBusRsp_stages_3_input_ready;
+  wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_3_input_payload;
+  wire                IBusCachedPlugin_iBusRsp_stages_3_output_valid;
+  wire                IBusCachedPlugin_iBusRsp_stages_3_output_ready;
+  wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_3_output_payload;
+  reg                 IBusCachedPlugin_iBusRsp_stages_3_halt;
   wire                _zz_IBusCachedPlugin_iBusRsp_stages_0_input_ready;
   wire                _zz_IBusCachedPlugin_iBusRsp_stages_1_input_ready;
   wire                _zz_IBusCachedPlugin_iBusRsp_stages_2_input_ready;
+  wire                _zz_IBusCachedPlugin_iBusRsp_stages_3_input_ready;
   wire                IBusCachedPlugin_iBusRsp_flush;
   wire                _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready;
   wire                _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready_1;
@@ -781,6 +789,11 @@ module VexRiscv (
   wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_payload;
   reg                 _zz_IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_valid;
   reg        [31:0]   _zz_IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_payload;
+  wire                IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid;
+  wire                IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_ready;
+  wire       [31:0]   IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload;
+  reg                 _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid;
+  reg        [31:0]   _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload;
   reg                 IBusCachedPlugin_iBusRsp_readyForError;
   wire                IBusCachedPlugin_iBusRsp_output_valid;
   wire                IBusCachedPlugin_iBusRsp_output_ready;
@@ -800,6 +813,8 @@ module VexRiscv (
   wire                when_Fetcher_l329_3;
   reg                 IBusCachedPlugin_injector_nextPcCalc_valids_4;
   wire                when_Fetcher_l329_4;
+  reg                 IBusCachedPlugin_injector_nextPcCalc_valids_5;
+  wire                when_Fetcher_l329_5;
   wire                _zz_IBusCachedPlugin_decodePrediction_cmd_hadBranch;
   reg        [18:0]   _zz_IBusCachedPlugin_decodePrediction_cmd_hadBranch_1;
   wire                _zz_2;
@@ -1729,11 +1744,11 @@ module VexRiscv (
     .io_flush                                 (IBusCachedPlugin_cache_io_flush                             ), //i
     .io_cpu_prefetch_isValid                  (IBusCachedPlugin_cache_io_cpu_prefetch_isValid              ), //i
     .io_cpu_prefetch_haltIt                   (IBusCachedPlugin_cache_io_cpu_prefetch_haltIt               ), //o
-    .io_cpu_prefetch_pc                       (IBusCachedPlugin_iBusRsp_stages_0_input_payload[31:0]       ), //i
+    .io_cpu_prefetch_pc                       (IBusCachedPlugin_iBusRsp_stages_1_input_payload[31:0]       ), //i
     .io_cpu_fetch_isValid                     (IBusCachedPlugin_cache_io_cpu_fetch_isValid                 ), //i
     .io_cpu_fetch_isStuck                     (IBusCachedPlugin_cache_io_cpu_fetch_isStuck                 ), //i
     .io_cpu_fetch_isRemoved                   (IBusCachedPlugin_cache_io_cpu_fetch_isRemoved               ), //i
-    .io_cpu_fetch_pc                          (IBusCachedPlugin_iBusRsp_stages_1_input_payload[31:0]       ), //i
+    .io_cpu_fetch_pc                          (IBusCachedPlugin_iBusRsp_stages_2_input_payload[31:0]       ), //i
     .io_cpu_fetch_data                        (IBusCachedPlugin_cache_io_cpu_fetch_data[31:0]              ), //o
     .io_cpu_fetch_mmuRsp_physicalAddress      (IBusCachedPlugin_mmuBus_rsp_physicalAddress[31:0]           ), //i
     .io_cpu_fetch_mmuRsp_isIoAccess           (IBusCachedPlugin_mmuBus_rsp_isIoAccess                      ), //i
@@ -1747,7 +1762,7 @@ module VexRiscv (
     .io_cpu_fetch_physicalAddress             (IBusCachedPlugin_cache_io_cpu_fetch_physicalAddress[31:0]   ), //o
     .io_cpu_decode_isValid                    (IBusCachedPlugin_cache_io_cpu_decode_isValid                ), //i
     .io_cpu_decode_isStuck                    (IBusCachedPlugin_cache_io_cpu_decode_isStuck                ), //i
-    .io_cpu_decode_pc                         (IBusCachedPlugin_iBusRsp_stages_2_input_payload[31:0]       ), //i
+    .io_cpu_decode_pc                         (IBusCachedPlugin_iBusRsp_stages_3_input_payload[31:0]       ), //i
     .io_cpu_decode_physicalAddress            (IBusCachedPlugin_cache_io_cpu_decode_physicalAddress[31:0]  ), //o
     .io_cpu_decode_data                       (IBusCachedPlugin_cache_io_cpu_decode_data[31:0]             ), //o
     .io_cpu_decode_cacheMiss                  (IBusCachedPlugin_cache_io_cpu_decode_cacheMiss              ), //o
@@ -3201,20 +3216,14 @@ module VexRiscv (
   assign IBusCachedPlugin_iBusRsp_stages_0_input_valid = IBusCachedPlugin_fetchPc_output_valid;
   assign IBusCachedPlugin_fetchPc_output_ready = IBusCachedPlugin_iBusRsp_stages_0_input_ready;
   assign IBusCachedPlugin_iBusRsp_stages_0_input_payload = IBusCachedPlugin_fetchPc_output_payload;
-  always @(*) begin
-    IBusCachedPlugin_iBusRsp_stages_0_halt = 1'b0;
-    if(IBusCachedPlugin_cache_io_cpu_prefetch_haltIt) begin
-      IBusCachedPlugin_iBusRsp_stages_0_halt = 1'b1;
-    end
-  end
-
+  assign IBusCachedPlugin_iBusRsp_stages_0_halt = 1'b0;
   assign _zz_IBusCachedPlugin_iBusRsp_stages_0_input_ready = (! IBusCachedPlugin_iBusRsp_stages_0_halt);
   assign IBusCachedPlugin_iBusRsp_stages_0_input_ready = (IBusCachedPlugin_iBusRsp_stages_0_output_ready && _zz_IBusCachedPlugin_iBusRsp_stages_0_input_ready);
   assign IBusCachedPlugin_iBusRsp_stages_0_output_valid = (IBusCachedPlugin_iBusRsp_stages_0_input_valid && _zz_IBusCachedPlugin_iBusRsp_stages_0_input_ready);
   assign IBusCachedPlugin_iBusRsp_stages_0_output_payload = IBusCachedPlugin_iBusRsp_stages_0_input_payload;
   always @(*) begin
     IBusCachedPlugin_iBusRsp_stages_1_halt = 1'b0;
-    if(IBusCachedPlugin_mmuBus_busy) begin
+    if(IBusCachedPlugin_cache_io_cpu_prefetch_haltIt) begin
       IBusCachedPlugin_iBusRsp_stages_1_halt = 1'b1;
     end
   end
@@ -3225,7 +3234,7 @@ module VexRiscv (
   assign IBusCachedPlugin_iBusRsp_stages_1_output_payload = IBusCachedPlugin_iBusRsp_stages_1_input_payload;
   always @(*) begin
     IBusCachedPlugin_iBusRsp_stages_2_halt = 1'b0;
-    if(when_IBusCachedPlugin_l267) begin
+    if(IBusCachedPlugin_mmuBus_busy) begin
       IBusCachedPlugin_iBusRsp_stages_2_halt = 1'b1;
     end
   end
@@ -3234,8 +3243,19 @@ module VexRiscv (
   assign IBusCachedPlugin_iBusRsp_stages_2_input_ready = (IBusCachedPlugin_iBusRsp_stages_2_output_ready && _zz_IBusCachedPlugin_iBusRsp_stages_2_input_ready);
   assign IBusCachedPlugin_iBusRsp_stages_2_output_valid = (IBusCachedPlugin_iBusRsp_stages_2_input_valid && _zz_IBusCachedPlugin_iBusRsp_stages_2_input_ready);
   assign IBusCachedPlugin_iBusRsp_stages_2_output_payload = IBusCachedPlugin_iBusRsp_stages_2_input_payload;
+  always @(*) begin
+    IBusCachedPlugin_iBusRsp_stages_3_halt = 1'b0;
+    if(when_IBusCachedPlugin_l267) begin
+      IBusCachedPlugin_iBusRsp_stages_3_halt = 1'b1;
+    end
+  end
+
+  assign _zz_IBusCachedPlugin_iBusRsp_stages_3_input_ready = (! IBusCachedPlugin_iBusRsp_stages_3_halt);
+  assign IBusCachedPlugin_iBusRsp_stages_3_input_ready = (IBusCachedPlugin_iBusRsp_stages_3_output_ready && _zz_IBusCachedPlugin_iBusRsp_stages_3_input_ready);
+  assign IBusCachedPlugin_iBusRsp_stages_3_output_valid = (IBusCachedPlugin_iBusRsp_stages_3_input_valid && _zz_IBusCachedPlugin_iBusRsp_stages_3_input_ready);
+  assign IBusCachedPlugin_iBusRsp_stages_3_output_payload = IBusCachedPlugin_iBusRsp_stages_3_input_payload;
   assign IBusCachedPlugin_fetchPc_redo_valid = IBusCachedPlugin_iBusRsp_redoFetch;
-  assign IBusCachedPlugin_fetchPc_redo_payload = IBusCachedPlugin_iBusRsp_stages_2_input_payload;
+  assign IBusCachedPlugin_fetchPc_redo_payload = IBusCachedPlugin_iBusRsp_stages_3_input_payload;
   assign IBusCachedPlugin_iBusRsp_flush = ((decode_arbitration_removeIt || (decode_arbitration_flushNext && (! decode_arbitration_isStuck))) || IBusCachedPlugin_iBusRsp_redoFetch);
   assign IBusCachedPlugin_iBusRsp_stages_0_output_ready = _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready;
   assign _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready = ((1'b0 && (! _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready_1)) || IBusCachedPlugin_iBusRsp_stages_1_input_ready);
@@ -3248,6 +3268,12 @@ module VexRiscv (
   assign IBusCachedPlugin_iBusRsp_stages_2_input_valid = IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_valid;
   assign IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_ready = IBusCachedPlugin_iBusRsp_stages_2_input_ready;
   assign IBusCachedPlugin_iBusRsp_stages_2_input_payload = IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_payload;
+  assign IBusCachedPlugin_iBusRsp_stages_2_output_ready = ((1'b0 && (! IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid)) || IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_ready);
+  assign IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid = _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid;
+  assign IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload = _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload;
+  assign IBusCachedPlugin_iBusRsp_stages_3_input_valid = IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid;
+  assign IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_ready = IBusCachedPlugin_iBusRsp_stages_3_input_ready;
+  assign IBusCachedPlugin_iBusRsp_stages_3_input_payload = IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload;
   always @(*) begin
     IBusCachedPlugin_iBusRsp_readyForError = 1'b1;
     if(when_Fetcher_l320) begin
@@ -3255,17 +3281,18 @@ module VexRiscv (
     end
   end
 
-  assign when_Fetcher_l240 = (IBusCachedPlugin_iBusRsp_stages_1_input_valid || IBusCachedPlugin_iBusRsp_stages_2_input_valid);
+  assign when_Fetcher_l240 = ((IBusCachedPlugin_iBusRsp_stages_1_input_valid || IBusCachedPlugin_iBusRsp_stages_2_input_valid) || IBusCachedPlugin_iBusRsp_stages_3_input_valid);
   assign when_Fetcher_l320 = (! IBusCachedPlugin_pcValids_0);
   assign when_Fetcher_l329 = (! (! IBusCachedPlugin_iBusRsp_stages_1_input_ready));
   assign when_Fetcher_l329_1 = (! (! IBusCachedPlugin_iBusRsp_stages_2_input_ready));
-  assign when_Fetcher_l329_2 = (! execute_arbitration_isStuck);
-  assign when_Fetcher_l329_3 = (! memory_arbitration_isStuck);
-  assign when_Fetcher_l329_4 = (! writeBack_arbitration_isStuck);
-  assign IBusCachedPlugin_pcValids_0 = IBusCachedPlugin_injector_nextPcCalc_valids_1;
-  assign IBusCachedPlugin_pcValids_1 = IBusCachedPlugin_injector_nextPcCalc_valids_2;
-  assign IBusCachedPlugin_pcValids_2 = IBusCachedPlugin_injector_nextPcCalc_valids_3;
-  assign IBusCachedPlugin_pcValids_3 = IBusCachedPlugin_injector_nextPcCalc_valids_4;
+  assign when_Fetcher_l329_2 = (! (! IBusCachedPlugin_iBusRsp_stages_3_input_ready));
+  assign when_Fetcher_l329_3 = (! execute_arbitration_isStuck);
+  assign when_Fetcher_l329_4 = (! memory_arbitration_isStuck);
+  assign when_Fetcher_l329_5 = (! writeBack_arbitration_isStuck);
+  assign IBusCachedPlugin_pcValids_0 = IBusCachedPlugin_injector_nextPcCalc_valids_2;
+  assign IBusCachedPlugin_pcValids_1 = IBusCachedPlugin_injector_nextPcCalc_valids_3;
+  assign IBusCachedPlugin_pcValids_2 = IBusCachedPlugin_injector_nextPcCalc_valids_4;
+  assign IBusCachedPlugin_pcValids_3 = IBusCachedPlugin_injector_nextPcCalc_valids_5;
   assign IBusCachedPlugin_iBusRsp_output_ready = (! decode_arbitration_isStuck);
   assign decode_arbitration_isValid = IBusCachedPlugin_iBusRsp_output_valid;
   assign _zz_IBusCachedPlugin_decodePrediction_cmd_hadBranch = _zz__zz_IBusCachedPlugin_decodePrediction_cmd_hadBranch[11];
@@ -3395,16 +3422,16 @@ module VexRiscv (
 
   assign iBus_cmd_payload_size = IBusCachedPlugin_cache_io_mem_cmd_payload_size;
   assign IBusCachedPlugin_s0_tightlyCoupledHit = 1'b0;
-  assign IBusCachedPlugin_cache_io_cpu_prefetch_isValid = (IBusCachedPlugin_iBusRsp_stages_0_input_valid && (! IBusCachedPlugin_s0_tightlyCoupledHit));
-  assign IBusCachedPlugin_cache_io_cpu_fetch_isValid = (IBusCachedPlugin_iBusRsp_stages_1_input_valid && (! IBusCachedPlugin_s1_tightlyCoupledHit));
-  assign IBusCachedPlugin_cache_io_cpu_fetch_isStuck = (! IBusCachedPlugin_iBusRsp_stages_1_input_ready);
+  assign IBusCachedPlugin_cache_io_cpu_prefetch_isValid = (IBusCachedPlugin_iBusRsp_stages_1_input_valid && (! IBusCachedPlugin_s0_tightlyCoupledHit));
+  assign IBusCachedPlugin_cache_io_cpu_fetch_isValid = (IBusCachedPlugin_iBusRsp_stages_2_input_valid && (! IBusCachedPlugin_s1_tightlyCoupledHit));
+  assign IBusCachedPlugin_cache_io_cpu_fetch_isStuck = (! IBusCachedPlugin_iBusRsp_stages_2_input_ready);
   assign IBusCachedPlugin_mmuBus_cmd_0_isValid = IBusCachedPlugin_cache_io_cpu_fetch_isValid;
-  assign IBusCachedPlugin_mmuBus_cmd_0_isStuck = (! IBusCachedPlugin_iBusRsp_stages_1_input_ready);
-  assign IBusCachedPlugin_mmuBus_cmd_0_virtualAddress = IBusCachedPlugin_iBusRsp_stages_1_input_payload;
+  assign IBusCachedPlugin_mmuBus_cmd_0_isStuck = (! IBusCachedPlugin_iBusRsp_stages_2_input_ready);
+  assign IBusCachedPlugin_mmuBus_cmd_0_virtualAddress = IBusCachedPlugin_iBusRsp_stages_2_input_payload;
   assign IBusCachedPlugin_mmuBus_cmd_0_bypassTranslation = 1'b0;
-  assign IBusCachedPlugin_mmuBus_end = (IBusCachedPlugin_iBusRsp_stages_1_input_ready || IBusCachedPlugin_externalFlush);
-  assign IBusCachedPlugin_cache_io_cpu_decode_isValid = (IBusCachedPlugin_iBusRsp_stages_2_input_valid && (! IBusCachedPlugin_s2_tightlyCoupledHit));
-  assign IBusCachedPlugin_cache_io_cpu_decode_isStuck = (! IBusCachedPlugin_iBusRsp_stages_2_input_ready);
+  assign IBusCachedPlugin_mmuBus_end = (IBusCachedPlugin_iBusRsp_stages_2_input_ready || IBusCachedPlugin_externalFlush);
+  assign IBusCachedPlugin_cache_io_cpu_decode_isValid = (IBusCachedPlugin_iBusRsp_stages_3_input_valid && (! IBusCachedPlugin_s2_tightlyCoupledHit));
+  assign IBusCachedPlugin_cache_io_cpu_decode_isStuck = (! IBusCachedPlugin_iBusRsp_stages_3_input_ready);
   assign IBusCachedPlugin_cache_io_cpu_decode_isUser = (CsrPlugin_privilege == 2'b00);
   assign IBusCachedPlugin_rsp_iBusRspOutputHalt = 1'b0;
   assign IBusCachedPlugin_rsp_issueDetected = 1'b0;
@@ -3445,16 +3472,16 @@ module VexRiscv (
     end
   end
 
-  assign IBusCachedPlugin_decodeExceptionPort_payload_badAddr = {IBusCachedPlugin_iBusRsp_stages_2_input_payload[31 : 2],2'b00};
+  assign IBusCachedPlugin_decodeExceptionPort_payload_badAddr = {IBusCachedPlugin_iBusRsp_stages_3_input_payload[31 : 2],2'b00};
   assign when_IBusCachedPlugin_l239 = ((IBusCachedPlugin_cache_io_cpu_decode_isValid && IBusCachedPlugin_cache_io_cpu_decode_mmuRefilling) && (! IBusCachedPlugin_rsp_issueDetected));
   assign when_IBusCachedPlugin_l244 = ((IBusCachedPlugin_cache_io_cpu_decode_isValid && IBusCachedPlugin_cache_io_cpu_decode_mmuException) && (! IBusCachedPlugin_rsp_issueDetected_1));
   assign when_IBusCachedPlugin_l250 = ((IBusCachedPlugin_cache_io_cpu_decode_isValid && IBusCachedPlugin_cache_io_cpu_decode_cacheMiss) && (! IBusCachedPlugin_rsp_issueDetected_2));
   assign when_IBusCachedPlugin_l256 = ((IBusCachedPlugin_cache_io_cpu_decode_isValid && IBusCachedPlugin_cache_io_cpu_decode_error) && (! IBusCachedPlugin_rsp_issueDetected_3));
   assign when_IBusCachedPlugin_l267 = (IBusCachedPlugin_rsp_issueDetected_4 || IBusCachedPlugin_rsp_iBusRspOutputHalt);
-  assign IBusCachedPlugin_iBusRsp_output_valid = IBusCachedPlugin_iBusRsp_stages_2_output_valid;
-  assign IBusCachedPlugin_iBusRsp_stages_2_output_ready = IBusCachedPlugin_iBusRsp_output_ready;
+  assign IBusCachedPlugin_iBusRsp_output_valid = IBusCachedPlugin_iBusRsp_stages_3_output_valid;
+  assign IBusCachedPlugin_iBusRsp_stages_3_output_ready = IBusCachedPlugin_iBusRsp_output_ready;
   assign IBusCachedPlugin_iBusRsp_output_payload_rsp_inst = IBusCachedPlugin_cache_io_cpu_decode_data;
-  assign IBusCachedPlugin_iBusRsp_output_payload_pc = IBusCachedPlugin_iBusRsp_stages_2_output_payload;
+  assign IBusCachedPlugin_iBusRsp_output_payload_pc = IBusCachedPlugin_iBusRsp_stages_3_output_payload;
   assign IBusCachedPlugin_cache_io_flush = (decode_arbitration_isValid && decode_FLUSH_ALL);
   assign dataCache_1_io_mem_cmd_ready = (! dataCache_1_io_mem_cmd_rValid);
   assign dataCache_1_io_mem_cmd_s2mPipe_valid = (dataCache_1_io_mem_cmd_valid || dataCache_1_io_mem_cmd_rValid);
@@ -5048,11 +5075,13 @@ module VexRiscv (
       IBusCachedPlugin_fetchPc_inc <= 1'b0;
       _zz_IBusCachedPlugin_iBusRsp_stages_0_output_ready_2 <= 1'b0;
       _zz_IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_valid <= 1'b0;
+      _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid <= 1'b0;
       IBusCachedPlugin_injector_nextPcCalc_valids_0 <= 1'b0;
       IBusCachedPlugin_injector_nextPcCalc_valids_1 <= 1'b0;
       IBusCachedPlugin_injector_nextPcCalc_valids_2 <= 1'b0;
       IBusCachedPlugin_injector_nextPcCalc_valids_3 <= 1'b0;
       IBusCachedPlugin_injector_nextPcCalc_valids_4 <= 1'b0;
+      IBusCachedPlugin_injector_nextPcCalc_valids_5 <= 1'b0;
       IBusCachedPlugin_rspCounter <= _zz_IBusCachedPlugin_rspCounter;
       IBusCachedPlugin_rspCounter <= 32'h0;
       dataCache_1_io_mem_cmd_rValid <= 1'b0;
@@ -5127,6 +5156,12 @@ module VexRiscv (
       if(IBusCachedPlugin_iBusRsp_stages_1_output_ready) begin
         _zz_IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_valid <= (IBusCachedPlugin_iBusRsp_stages_1_output_valid && (! IBusCachedPlugin_iBusRsp_flush));
       end
+      if(IBusCachedPlugin_iBusRsp_flush) begin
+        _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid <= 1'b0;
+      end
+      if(IBusCachedPlugin_iBusRsp_stages_2_output_ready) begin
+        _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_valid <= (IBusCachedPlugin_iBusRsp_stages_2_output_valid && (! IBusCachedPlugin_iBusRsp_flush));
+      end
       if(IBusCachedPlugin_fetchPc_flushed) begin
         IBusCachedPlugin_injector_nextPcCalc_valids_0 <= 1'b0;
       end
@@ -5168,6 +5203,15 @@ module VexRiscv (
       end
       if(IBusCachedPlugin_fetchPc_flushed) begin
         IBusCachedPlugin_injector_nextPcCalc_valids_4 <= 1'b0;
+      end
+      if(IBusCachedPlugin_fetchPc_flushed) begin
+        IBusCachedPlugin_injector_nextPcCalc_valids_5 <= 1'b0;
+      end
+      if(when_Fetcher_l329_5) begin
+        IBusCachedPlugin_injector_nextPcCalc_valids_5 <= IBusCachedPlugin_injector_nextPcCalc_valids_4;
+      end
+      if(IBusCachedPlugin_fetchPc_flushed) begin
+        IBusCachedPlugin_injector_nextPcCalc_valids_5 <= 1'b0;
       end
       if(iBus_rsp_valid) begin
         IBusCachedPlugin_rspCounter <= (IBusCachedPlugin_rspCounter + 32'h00000001);
@@ -5371,10 +5415,13 @@ module VexRiscv (
     if(IBusCachedPlugin_iBusRsp_stages_1_output_ready) begin
       _zz_IBusCachedPlugin_iBusRsp_stages_1_output_m2sPipe_payload <= IBusCachedPlugin_iBusRsp_stages_1_output_payload;
     end
-    if(IBusCachedPlugin_iBusRsp_stages_1_input_ready) begin
-      IBusCachedPlugin_s1_tightlyCoupledHit <= IBusCachedPlugin_s0_tightlyCoupledHit;
+    if(IBusCachedPlugin_iBusRsp_stages_2_output_ready) begin
+      _zz_IBusCachedPlugin_iBusRsp_stages_2_output_m2sPipe_payload <= IBusCachedPlugin_iBusRsp_stages_2_output_payload;
     end
     if(IBusCachedPlugin_iBusRsp_stages_2_input_ready) begin
+      IBusCachedPlugin_s1_tightlyCoupledHit <= IBusCachedPlugin_s0_tightlyCoupledHit;
+    end
+    if(IBusCachedPlugin_iBusRsp_stages_3_input_ready) begin
       IBusCachedPlugin_s2_tightlyCoupledHit <= IBusCachedPlugin_s1_tightlyCoupledHit;
     end
     if(dataCache_1_io_mem_cmd_ready) begin

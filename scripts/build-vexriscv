@@ -54,6 +54,7 @@ cd "${CFU_PLAYGROUND}/soc/vexriscv"
     "runMain vexriscv.GenCoreDefault \
     --dCacheSize 4096 \
     --iCacheSize 2048 \
+    --relaxedPcCalculation true \
     --csrPluginConfig all \
     --cfu true \
     --outputFile ../../../../third_party/vexriscv/VexRiscv_SlimCfu"
