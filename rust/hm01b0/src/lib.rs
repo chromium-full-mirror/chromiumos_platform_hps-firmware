@@ -198,6 +198,13 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         self.write_reg(0x3010, if enable { 0x01 } else { 0x00 })
     }
 
+    /// Wait until the camera returns to standby mode. Should only be used in
+    /// conjunction with Mode::StreamingNFrames.
+    pub fn wait_standby(&mut self) -> Result<()> {
+        while self.read_reg(0x0100)? != 0 {}
+        Ok(())
+    }
+
     pub fn set_mode(&mut self, mode: Mode) -> Result<()> {
         let mode_value = match mode {
             Mode::Standby => 0x00,

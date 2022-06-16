@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use crate::Error;
+use crate::Microseconds;
 use crate::Result;
 use application::fpga::commands::Action;
 use application::fpga::BUFFER_SIZE;
@@ -145,6 +146,14 @@ where
         self.camera()
             .set_mode(hm01b0::Mode::StreamingNFrames(frame_count))?;
         Ok(())
+    }
+
+    /// Request that the MCU trigger a single frame after the specified delay.
+    pub fn trigger_frame_in(&mut self, microseconds: Microseconds) -> Result<()> {
+        self.clear_buffer();
+        self.buffer[0] = Action::TriggerFrame.into();
+        self.buffer[1..5].copy_from_slice(&microseconds.0.to_le_bytes());
+        self.exchange()
     }
 
     pub fn camera(&mut self) -> hm01b0::Camera<McuInterface<S>> {
@@ -400,6 +409,16 @@ mod tests {
         let mut status = Status::default();
         status.loop_count = 0x1234;
         mcu.report_status(&status).unwrap();
+        mcu.spi.done();
+    }
+
+    #[test]
+    fn test_trigger_frame_in() {
+        let mut mcu = command_response_interface(
+            vec![Action::TriggerFrame.into(), 0x78, 0x56, 0x34, 0x12],
+            vec![status::OK, Action::TriggerFrame.into()],
+        );
+        mcu.trigger_frame_in(Microseconds(0x12345678)).unwrap();
         mcu.spi.done();
     }
 

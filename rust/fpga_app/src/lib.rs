@@ -66,6 +66,13 @@ pub const TEST_IMAGE_BLOCK_SIZE: usize =
 
 const NUM_MODELS: usize = 2;
 
+/// Initial delay from when we start running a model until when we need the next
+/// camera frame to be ready. This should ideally be >= classification time for
+/// all models, although not too much more. Regardless, we'll automatically
+/// adjust the trigger delay based on actual timings, so this is only a starting
+/// value.
+const INITIAL_FRAME_TRIGGER_DELAY: Microseconds = Microseconds(300_000);
+
 /// Print to hps-mon via the MCU. The first argument can be anything that
 /// implements `mcu_mut()`.
 macro_rules! mcu_println {
@@ -116,6 +123,15 @@ pub struct App<S, I, C, T> {
     status: Status,
     model_number: u32,
     model_result_count: [u8; NUM_MODELS],
+    /// The model number, if any, that was run on the last iteration of the
+    /// loop. Used to determine which element of trigger_delay_by_model to
+    /// update.
+    last_model_number: Option<u32>,
+    /// Whether we've triggered a frame that we're still waiting to receive.
+    frame_pending: bool,
+    /// How long we'll wait before triggering a camera frame when we're about to
+    /// run a particular model.
+    trigger_delay_by_model: [Microseconds; NUM_MODELS],
     spi_test_data: Option<&'static [u8]>,
     test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
@@ -125,6 +141,9 @@ pub struct App<S, I, C, T> {
 struct ImageMetadata {
     /// How long we waited for the frame to start.
     wait_start: Microseconds,
+    /// Whether we missed the start of our frame, or no frame had previously
+    /// been requested.
+    missed_frame: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -167,6 +186,9 @@ where
             status: Status::default(),
             model_number: 1,
             model_result_count: [0; NUM_MODELS],
+            last_model_number: None,
+            frame_pending: false,
+            trigger_delay_by_model: [INITIAL_FRAME_TRIGGER_DELAY; NUM_MODELS],
             spi_test_data: None,
             test_image_area: None,
             exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
@@ -236,11 +258,26 @@ where
 
         let is_rotated = self.determine_rotation(&config)?;
         let capture_start = self.timer.now();
-        let wait_image_start: Milliseconds = self
-            .capture_well_exposed_image(is_rotated)?
-            .wait_start
-            .into();
-        let capture_ms = self.timer.elapsed_ms(capture_start) - wait_image_start;
+        let image_metadata = self.capture_well_exposed_image(is_rotated)?;
+        let image_wait_ms: Milliseconds = image_metadata.wait_start.into();
+
+        if let Some(last_model_number) = self.last_model_number {
+            let model_delay = &mut self.trigger_delay_by_model[last_model_number as usize - 1];
+            let adjust = if image_metadata.missed_frame {
+                Microseconds(10_000)
+            } else if image_metadata.wait_start > Microseconds(15_000) {
+                // When we had to wait a long time, move quickly toward a high
+                // target.
+                Microseconds(12_000) - image_metadata.wait_start
+            } else {
+                // When we had to wait less time, use a lower target, but move
+                // slower towards it.
+                (Microseconds(2_500) - image_metadata.wait_start).div(8)
+            };
+            *model_delay += adjust;
+        }
+
+        let capture_ms = self.timer.elapsed_ms(capture_start) - image_wait_ms;
         if self.histogram_enabled {
             let e = self.exposure;
             mcu_println!(
@@ -271,9 +308,18 @@ where
         if self.image_data_receiver.histogram.is_usable()
             && (features.contains(Features::MODEL1) || features.contains(Features::MODEL2))
         {
+            // Request the next camera frame so that it starts streaming shortly
+            // after we finish running our model.
+            let frame_delay = self.trigger_delay_by_model[self.model_number as usize - 1];
+            self.image_data_receiver.start();
+            self.mcu.trigger_frame_in(frame_delay)?;
+            self.frame_pending = true;
+            self.last_model_number = Some(self.model_number);
+
             let start = self.timer.now();
             let score = self.classifier.run_model(self.model_number)?;
             let classify_ms = self.timer.elapsed_ms(start);
+
             let result_count = &mut self.model_result_count[self.model_number as usize - 1];
             *result_count = result_count.wrapping_add(1);
             model_status = 0x8000 | ((score as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
@@ -283,14 +329,15 @@ where
                 "Model {} score:{:5} wait:{:4} capture:{:4} model:{:4} other:{:4} total:{:4}",
                 self.model_number,
                 score,
-                wait_image_start,
+                image_wait_ms,
                 capture_ms,
                 classify_ms,
-                total_ms - wait_image_start - capture_ms - classify_ms,
+                total_ms - image_wait_ms - capture_ms - classify_ms,
                 total_ms,
             );
         } else {
             model_status = 0;
+            self.last_model_number = None;
         }
         if self.model_number == 1 {
             self.status.person_status = model_status;
@@ -311,7 +358,7 @@ where
         // Set frame rate to ~21Hz by doubling frame length
         camera.set_frame_length(2 * 0x158)?;
         // Set camera to stream
-        camera.set_mode(hm01b0::Mode::Streaming)?;
+        //camera.set_mode(hm01b0::Mode::Streaming)?;
 
         match self.exposure_algorithm {
             ExposureAlgorithm::MedianTarget(_) => {
@@ -394,6 +441,10 @@ where
 
         // Always take a small step toward the median anyway
         self.step_exposure(if diff < 0 { 16 } else { -16 })?;
+
+        // We only return metadata for the first frame that we captured, since
+        // that's the one, if any, that was timed to arrive at a particular
+        // time.
         Ok(first_metadata)
     }
 
@@ -415,13 +466,30 @@ where
             dimensions.rotate_90();
         }
         let buffer = self.classifier.input_data_mut(self.model_number);
+
+        let mut missed_frame = false;
+        if !self.frame_pending || self.image_data_receiver.has_missed_start_of_frame() {
+            // Wait until the camera returns to standby before we request a new
+            // frame. Triggering frames when there is still a frame in progress
+            // can put the camera into a bad state.
+            self.mcu.camera().wait_standby()?;
+            self.image_data_receiver.start();
+            self.mcu.trigger_frame_in(Microseconds(0))?;
+            missed_frame = true;
+        }
         let wait_start = self
             .image_data_receiver
             .receive_image_data(buffer, &dimensions)?;
+
+        self.frame_pending = false;
+
         if rotate_clockwise {
             image_rotation::rotate_240_320_clockwise(buffer);
         }
-        Ok(ImageMetadata { wait_start })
+        Ok(ImageMetadata {
+            wait_start,
+            missed_frame,
+        })
     }
 
     #[cfg(feature = "dev")]

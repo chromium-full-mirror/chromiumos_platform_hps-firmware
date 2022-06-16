@@ -64,6 +64,7 @@ const APP: () = {
         tick_count: u32,
         rcc: Rcc,
         interrupt_pin: board::InterruptPin,
+        frame_timer: hal::timer::Timer<hal::stm32::TIM14>,
     }
 
     #[init]
@@ -157,6 +158,20 @@ const APP: () = {
         }
     }
 
+    #[task(binds = TIM14, resources = [frame_timer, camera_i2c, host_interface])]
+    fn tim14_tick(mut ctx: tim14_tick::Context) {
+        let timer = ctx.resources.frame_timer;
+        timer.clear_irq();
+        timer.unlisten();
+
+        let mut camera = hm01b0::Camera::new(ctx.resources.camera_i2c);
+        if camera.set_mode(hm01b0::Mode::StreamingNFrames(1)).is_err() {
+            ctx.resources
+                .host_interface
+                .lock(|host_interface| host_interface.report_error(mcu_common::Error::Camera));
+        }
+    }
+
     #[task(binds = TIM15, resources = [fpga_timer, host_interface])]
     fn fpga_timer_tick(mut ctx: fpga_timer_tick::Context) {
         ctx.resources.fpga_timer.lock(|fpga_timer| {
@@ -233,7 +248,8 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_device, fpga_timer, debug_resources, camera_i2c, host_interface],
+    #[task(resources = [spi, state, debug_led, fpga_device, fpga_timer, debug_resources,
+        camera_i2c, host_interface, frame_timer],
         spawn = [handle_spi_packet])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
@@ -324,6 +340,17 @@ const APP: () = {
                     info!("FPGA reports error: {:?}", error);
                     ctx.resources.host_interface.lock(|h| h.report_error(error));
                 }
+            }
+            fpga::Action::TriggerFrame => {
+                // We set a delay of at least 1us, since a delay of 0 isn't
+                // permitted (HAL asserts > 0).
+                let frame_delay = MicroSecond(
+                    u32::from_le_bytes([buffer[1], buffer[2], buffer[3], buffer[4]]).max(1),
+                );
+                ctx.resources.frame_timer.reset();
+                ctx.resources.frame_timer.clear_irq();
+                ctx.resources.frame_timer.listen();
+                ctx.resources.frame_timer.start(frame_delay);
             }
             fpga::Action::Poll => {}
             fpga::Action::Echo => {}
@@ -675,6 +702,7 @@ fn init_peripherals(
         #[cfg(feature = "dev")]
         debug_timer: debug::init_debug_timer(p.TIM16, &mut rcc),
         camera_i2c,
+        frame_timer: p.TIM14.timer(&mut rcc),
         stopwatch,
         tick_count: 0,
         rcc,

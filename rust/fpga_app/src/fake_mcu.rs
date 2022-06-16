@@ -75,6 +75,7 @@ impl spi::Transfer<u8> for FakeMcu {
                 application::fpga::report_boot(&mut self.state, &buffer);
             }
             Action::ReportFpgaError => {}
+            Action::TriggerFrame => {}
             Action::Echo => {}
             _ => panic!("Unimplemented fake of {:?}", request.action),
         }

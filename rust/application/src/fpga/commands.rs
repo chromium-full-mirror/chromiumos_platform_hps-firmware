@@ -39,6 +39,10 @@ pub enum Action {
     /// Reports a panic.
     ReportFpgaPanic = 0x24,
 
+    /// Trigger a single frame from the camera in N microseconds, where N is
+    /// encoded as a little-endian u32.
+    TriggerFrame = 0x25,
+
     /// Sets the debug LED on or off based on whether the first byte of the
     /// payload is 1 or 0 respectively.
     SetDebugLed = 0x60,

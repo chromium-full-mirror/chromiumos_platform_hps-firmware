@@ -64,6 +64,26 @@ impl core::ops::Add for Milliseconds {
     }
 }
 
+impl core::ops::AddAssign for Microseconds {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl core::ops::Sub for Microseconds {
+    type Output = Microseconds;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Microseconds(self.0 - rhs.0)
+    }
+}
+
+impl Microseconds {
+    pub fn div(self, divisor: i32) -> Self {
+        Microseconds(self.0 / divisor)
+    }
+}
+
 impl Display for Milliseconds {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.0.fmt(f)?;

@@ -82,6 +82,20 @@ impl<C: CameraDataInterface, T: Timer> ImageDataReceiver<C, T> {
         }
     }
 
+    /// Prepare to receive a frame.
+    pub(crate) fn start(&mut self) {
+        self.camera.start();
+    }
+
+    /// Returns whether we've missed the start of the frame. Result is only
+    /// valid if called after start and before receive_image_data.
+    pub(crate) fn has_missed_start_of_frame(&self) -> bool {
+        // If there's data ready, then the frame has already started, even if we
+        // haven't technically dropped any yet - the window of time when we have
+        // received the first word, but haven't yet dropped it is very small.
+        self.camera.is_data_ready()
+    }
+
     /// Waits for the start of a frame, then receives image data into `buffer`.
     /// The camera must already be streaming. Returns the number of microseconds
     /// we waited for the start of the image.
@@ -101,7 +115,6 @@ impl<C: CameraDataInterface, T: Timer> ImageDataReceiver<C, T> {
             return Err(Error::InvalidArg);
         }
         self.histogram = Default::default();
-        self.camera.start();
         // TODO(dml): Change the buffer to [u32] so that we don't need this.
         if (buffer.as_ptr() as usize) & 0x3 != 0 {
             return Err(Error::InvalidArg);
