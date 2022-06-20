@@ -90,7 +90,7 @@ fn write_application_bin() -> Result<()> {
         out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
         &bin_file,
     )?;
-    sign_stage1_binary(&bin_file)
+    Ok(())
 }
 
 fn build_one_time_init_loader(name: &str, features: &str) -> Result<()> {
