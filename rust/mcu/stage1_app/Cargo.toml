@@ -45,6 +45,9 @@ no-i2c-clock-stretching = []
 # Build application such that it can be flashed as standalone.
 standalone = []
 
+# NOTE: if you add or rename any features here, also carefully check in src/header.rs
+# that the 'taint' header field will still be set appropriately!
+
 dev = [ "debug_logger/dev", "application/dev", "mcu_common/dev" ]
 
 # This is intended for internal testing only. Must never be enabled in

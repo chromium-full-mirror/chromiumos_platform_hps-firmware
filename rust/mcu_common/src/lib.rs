@@ -131,7 +131,11 @@ pub struct ImageHeader {
     /// bumped if there's security critical bug and we want to prevent
     /// downgrades to earlier versions.
     pub epoch: u16,
-    pub _reserved3: u16,
+    /// A value indicating whether this image is "tainted" -- that is, may contain debugging code
+    /// that is not suitable for production devices. Zero means the image is not tainted, any
+    /// non-zero value means it is tainted. The signer will refuse to sign a tainted image.
+    pub taint: u8,
+    pub _reserved3: u8,
     /// The number of bytes allocated to the stage1 slot.
     pub slot_length: u32,
     pub _reserved1: u32,
@@ -170,12 +174,19 @@ impl ImageHeader {
         Self {
             magic: STAGE1_MAGIC,
             epoch: 1,
+            taint: 0,
             _reserved3: 0,
             slot_length: STAGE1_SLOT_LENGTH as u32,
             _reserved1: 0,
             _reserved2: 0,
             sig: Signature::empty(),
         }
+    }
+
+    pub const fn tainted() -> Self {
+        let mut header = Self::empty();
+        header.taint = 1;
+        header
     }
 
     /// Returns bytes deserialized as an ImageHeader.
@@ -186,7 +197,8 @@ impl ImageHeader {
         let mut header = ImageHeader {
             magic: u32_from_le_bytes(&bytes[0..]),
             epoch: u16_from_le_bytes(&bytes[4..]),
-            _reserved3: u16_from_le_bytes(&bytes[6..]),
+            taint: bytes[6],
+            _reserved3: bytes[7],
             slot_length: u32_from_le_bytes(&bytes[8..]),
             _reserved1: u32_from_le_bytes(&bytes[12..]),
             _reserved2: u32_from_le_bytes(&bytes[16..]),
@@ -276,6 +288,7 @@ mod test {
         let header = ImageHeader {
             magic: 0,
             epoch: 0,
+            taint: 0,
             _reserved3: 0,
             slot_length: 0,
             _reserved1: 0,

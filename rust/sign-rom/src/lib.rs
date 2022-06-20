@@ -50,6 +50,11 @@ pub fn zero_signature(file_bytes: &mut [u8]) -> Result<()> {
 pub fn hash_image_bytes(payload: &[u8]) -> Result<[u8; 32]> {
     let header = ImageHeader::from_bytes(payload)
         .ok_or_else(|| anyhow!("Input file is too small to contain a header"))?;
+
+    if header.taint != 0 {
+        bail!("Input file is tainted (contains development code), refusing to sign");
+    }
+
     let mut slot_length = header.slot_length as usize;
     // Old stage1 binaries didn't include the slot length in their header, they
     // had a reserved field with a value of 0. We shouldn't encounter them, but
@@ -148,6 +153,19 @@ mod test {
                 29, 192, 69, 12, 77, 49, 196, 10, 197, 224, 170, 93, 44, 51
             ]
         );
+    }
+
+    #[test]
+    fn test_it_refuses_to_sign_tainted_header() {
+        let mut image: [u8; 256] = [0xCC; 256];
+        let mut header = ImageHeader::tainted();
+        header.slot_length = 4096;
+        const HEADER_LEN: usize = core::mem::size_of::<ImageHeader>();
+        image[..HEADER_LEN].copy_from_slice(unsafe {
+            core::slice::from_raw_parts(&header as *const ImageHeader as *const u8, HEADER_LEN)
+        });
+
+        assert!(super::hash_image_bytes(&image).is_err());
     }
 
     #[test]
