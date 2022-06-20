@@ -81,7 +81,7 @@ fn configure_dma_channel(
     channel.set_direction(direction);
     channel.set_transfer_length(buf.len() as u16);
     channel.set_priority_level(hal::dma::Priority::VeryHigh);
-    channel.set_word_size::<u32>(hal::dma::WordSize::BITS8);
+    channel.set_word_size(hal::dma::WordSize::BITS8);
     channel.set_circular_mode(false);
 }
 

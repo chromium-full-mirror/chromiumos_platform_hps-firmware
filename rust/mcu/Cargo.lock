@@ -628,9 +628,9 @@ dependencies = [
 
 [[package]]
 name = "stm32g0xx-hal"
-version = "0.1.0"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2d93d8efd67a0f7d7be7409e9b0a0e3eebcc8b311f03a7f2695121d1fc13a92"
+checksum = "0a9d4579a8453f759213dc8c3f97d9b089436d4ed14250f5b673a212eeccf4c3"
 dependencies = [
  "bare-metal 1.0.0",
  "cortex-m 0.7.3",

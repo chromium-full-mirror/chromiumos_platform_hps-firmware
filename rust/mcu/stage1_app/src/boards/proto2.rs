@@ -7,7 +7,6 @@
 use crate::spi_dma_controller;
 use cortex_m::peripheral::SYST;
 use delayed_i2c::DelayedI2c;
-use hal::delay::Delay;
 use hal::dmamux::DmaMuxIndex;
 use hal::gpio;
 use hal::gpio::Analog;
@@ -24,6 +23,7 @@ use hal::stm32::SPI1;
 use hal::stm32::SPI2;
 use hal::stm32::TIM1;
 use hal::stm32::TIM3;
+use hal::timer::delay::Delay;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 use stm32g0_utils::IntoOpenDrainOutputHigh;
 
@@ -115,7 +115,7 @@ impl Board {
         let sda = a.pa12.into_open_drain_output_high();
         let scl = a.pa11.into_open_drain_output_high();
 
-        let camera_i2c = i2c2.i2c(sda, scl, hal::i2c::Config::new(400.khz()), rcc);
+        let camera_i2c = i2c2.i2c(sda, scl, hal::i2c::Config::new(120.khz()), rcc);
 
         Self {
             fpga_spi_cs: a.pa8,

@@ -211,7 +211,7 @@ fn configure_dma_channel(
     channel.set_memory_address(buffer.as_ptr() as u32, true);
     channel.set_transfer_length(buffer.len() as u16);
     channel.set_peripheral_address(spi_dr_address, false);
-    channel.set_word_size::<u32>(hal::dma::WordSize::BITS8);
+    channel.set_word_size(hal::dma::WordSize::BITS8);
     channel.select_peripheral(peripheral);
     channel.enable();
 }

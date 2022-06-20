@@ -15,7 +15,7 @@ delayed_i2c = { path = "../../delayed_i2c" }
 embedded-hal = "0.2.4"
 # TODO(dml): Update to a later version of stm32g0xx-hal once b/200756174 is
 # better understood.
-hal = { package = "stm32g0xx-hal", version = "=0.1.0", features = ["rt"]}
+hal = { package = "stm32g0xx-hal", version = "=0.1.5", features = ["rt"]}
 hm01b0 = { path = "../../hm01b0" }
 hmac-sha256 = "0.1.6"
 i2c_peripheral = { path = "../../i2c_peripheral" }
