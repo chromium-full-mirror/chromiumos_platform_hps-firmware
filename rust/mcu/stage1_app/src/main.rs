@@ -508,29 +508,8 @@ fn init_peripherals(
     // of the FPGA's main loop. We reset the timer whenever we receive an update from the FPGA,
     // so if the timer interrupt fires we know something is wrong.
     let fpga_timer_duration: MicroSecond = 5_000.ms().into();
-    let fpga_timer = p.TIM15.timer(&mut rcc);
-    // Can't use the HAL Timer .start() due to
-    // https://github.com/stm32-rs/stm32g0xx-hal/issues/91
-    // so we twiddle the registers by hand for now.
-    // TODO(b/224877274): use .start() when the HAL crate is fixed.
-    //fpga_timer.start(fpga_timer_duration);
-    {
-        let fpga_timer = unsafe { hal::stm32::Peripherals::steal().TIM15 };
-        fpga_timer
-            .cr1
-            .modify(|_, w| w.cen().clear_bit().urs().set_bit());
-        fpga_timer.cnt.reset();
-        fpga_timer.sr.write(|w| w.uif().clear_bit());
-        let cycles = fpga_timer_duration.cycles(rcc.clocks.apb_tim_clk);
-        let psc = cycles / 0xffff;
-        let arr = cycles / (psc + 1);
-        fpga_timer
-            .psc
-            .write(|w| unsafe { w.psc().bits(psc as u16) });
-        fpga_timer.arr.write(|w| unsafe { w.bits(arr) });
-        fpga_timer.egr.write(|w| w.ug().set_bit());
-        fpga_timer.cr1.modify(|_, w| w.cen().set_bit());
-    }
+    let mut fpga_timer = p.TIM15.timer(&mut rcc);
+    fpga_timer.start(fpga_timer_duration);
 
     // Trigger an interrupt when the SPI CS line changes.
     let fpga_spi_cs = board
