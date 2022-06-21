@@ -12,7 +12,7 @@ use std::process::Command;
 fn main() -> Result<()> {
     build_mcu_test_program("factory_tester_mcu.bin", "")?;
     build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
-    build_fpga_bitstream()?;
+    copy_fpga_bitstream()?;
     build_fpga_rom()?;
     write_application_bin()?;
     write_stage0_bin("stage0.bin", "mp-key")?;
@@ -111,15 +111,19 @@ fn build_one_time_init_loader(name: &str, features: &str) -> Result<()> {
     sign_stage1_binary(&bin_file)
 }
 
-fn build_fpga_bitstream() -> Result<()> {
+fn copy_fpga_bitstream() -> Result<()> {
     let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
     let bitstream_dest = out_dir.join("hps_platform.bit");
     if cfg!(feature = "built-in-fpga-bitstream") {
         let bitstream = Path::new("../../build/hps_platform/gateware/hps_platform.bit");
-        // Due to how slow it is to build the gateware, we only build if the output
+        // Due to how slow it is to build the gateware, we only complain if the output
         // files don't exist. i.e. rebuilding is left to the user.
         if !bitstream.exists() {
-            Command::new("../../scripts/build-fpga-bitstream").run()?;
+            bail!(
+                "FPGA bitstream not found at {:?}\n\
+                 (run scripts/build-fpga-bitstream inside the chroot to build it)",
+                bitstream
+            );
         }
         copy_or_die(bitstream, bitstream_dest);
     } else {
