@@ -37,6 +37,7 @@ sign-rom = { path = "../sign-rom" }
 default = [
     "mcp2221",
     "all-embedded-firmware",
+    "test-workflow",
 ]
 
 image-transfer = [ "mcu_common/image-transfer", "fpga_app/image-transfer" ]
@@ -49,3 +50,6 @@ built-in-fpga-bitstream = []
 built-in-fpga-rom = []
 built-in-mcu-rom = []
 stage0-from-source = []
+
+# Enables support for 'hps-factory test' (the pre-install test workflow).
+test-workflow = []

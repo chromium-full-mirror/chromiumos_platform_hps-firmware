@@ -10,8 +10,10 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn main() -> Result<()> {
-    build_mcu_test_program("factory_tester_mcu.bin", "")?;
-    build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
+    if cfg!(feature = "test-workflow") {
+        build_mcu_test_program("factory_tester_mcu.bin", "")?;
+        build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
+    }
     copy_fpga_bitstream()?;
     build_fpga_rom()?;
     write_application_bin()?;
