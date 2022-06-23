@@ -64,6 +64,8 @@ pub const IMAGE_SIZE: usize = (IMAGE_WIDTH * IMAGE_HEIGHT) as usize;
 pub const TEST_IMAGE_BLOCK_SIZE: usize =
     ((IMAGE_SIZE - 1) / SPI_BLOCK_SIZE as usize + 1) * SPI_BLOCK_SIZE as usize;
 
+const NUM_MODELS: usize = 2;
+
 /// Print to hps-mon via the MCU. The first argument can be anything that
 /// implements `mcu_mut()`.
 macro_rules! mcu_println {
@@ -113,7 +115,7 @@ pub struct App<S, I, C, T> {
     timer: T,
     status: Status,
     model_number: u32,
-    model_result_count: [u8; 2],
+    model_result_count: [u8; NUM_MODELS],
     spi_test_data: Option<&'static [u8]>,
     test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
@@ -164,7 +166,7 @@ where
             timer,
             status: Status::default(),
             model_number: 1,
-            model_result_count: [0; 2],
+            model_result_count: [0; NUM_MODELS],
             spi_test_data: None,
             test_image_area: None,
             exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
@@ -627,8 +629,8 @@ where
     /// enabled feature gets a turn. If no model features are enabled, will
     /// select model 1.
     fn select_model(&mut self, features: &Features, config: &Configuration) {
-        // Advance to next model number out of 1 and 2.
-        self.model_number = (self.model_number % 2) + 1;
+        // Advance to next model (where the first model is numbered 1).
+        self.model_number = (self.model_number % (NUM_MODELS as u32)) + 1;
 
         // If we're on model 1, but that's not active, advance to model 2.
         if self.model_number == 1 && !features.contains(Features::MODEL1) {
