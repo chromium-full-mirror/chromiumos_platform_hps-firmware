@@ -52,8 +52,8 @@ git checkout -q 36f57d5eb7170b1f4e8b6c70b9e762c8cb7f9bf0
 cd "${CFU_PLAYGROUND}/soc/vexriscv"
 "${SBT_DIR}/bin/sbt" compile \
     "runMain vexriscv.GenCoreDefault \
-    --dCacheSize 4096 \
-    --iCacheSize 2048 \
+    --dCacheSize 1024 \
+    --iCacheSize 8192 \
     --relaxedPcCalculation true \
     --csrPluginConfig all \
     --cfu true \

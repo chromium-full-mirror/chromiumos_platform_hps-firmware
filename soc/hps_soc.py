@@ -198,7 +198,7 @@ class HpsSoC(LiteXSoC):
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     parser.add_argument('--nextpnr-seed', metavar='NUMBER',
-                        default=164, type=int,
+                        default=270, type=int,
                         help='Use random seed NUMBER for nextpnr')
 
 
