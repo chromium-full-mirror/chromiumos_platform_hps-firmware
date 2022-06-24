@@ -20,13 +20,13 @@ pub enum TfLiteInitStatus {
 
 pub trait Classifier {
     /// Returns a mutable reference into which the input data can be written.
-    fn input_data_mut(&mut self, model_number: u32) -> &mut [i8];
+    fn input_data_mut(&mut self) -> &mut [i8];
 
     /// Returns a non-mutable reference to the data already written.
-    fn input_data(&self, model_number: u32) -> &[i8];
+    fn input_data(&self) -> &[i8];
 
-    /// Run a model.
-    fn run_model(&mut self, model_number: u32) -> Result<i8>;
+    /// Run the model.
+    fn run_model(&mut self) -> Result<(i8, i8)>;
 
     /// Did initialization succeed?
     fn init_status(&self) -> TfLiteInitStatus;
@@ -34,24 +34,22 @@ pub trait Classifier {
 
 pub struct FakeClassifier {
     input_data: [i8; crate::camera::NUM_PIXELS],
-    /// Which models have been executed. Bit 0 being set means that the first
-    /// model has been executed and so on for each successive bit.
-    pub(crate) models_executed: u8,
+    pub(crate) model_executed: bool,
     pub(crate) model_outputs: [i8; 32],
 }
 
 impl Classifier for FakeClassifier {
-    fn input_data_mut(&mut self, _model_number: u32) -> &mut [i8] {
+    fn input_data_mut(&mut self) -> &mut [i8] {
         self.input_data.as_mut()
     }
 
-    fn input_data(&self, _model_number: u32) -> &[i8] {
+    fn input_data(&self) -> &[i8] {
         &self.input_data
     }
 
-    fn run_model(&mut self, model_number: u32) -> Result<i8> {
-        self.models_executed |= 1 << (model_number as usize - 1);
-        Ok(self.model_outputs[0])
+    fn run_model(&mut self) -> Result<(i8, i8)> {
+        self.model_executed = true;
+        Ok((self.model_outputs[0], self.model_outputs[1]))
     }
     fn init_status(&self) -> TfLiteInitStatus {
         TfLiteInitStatus::InitOk
@@ -62,7 +60,7 @@ impl Default for FakeClassifier {
     fn default() -> Self {
         Self {
             input_data: [0i8; crate::camera::NUM_PIXELS],
-            models_executed: 0,
+            model_executed: false,
             model_outputs: [0i8; 32],
         }
     }

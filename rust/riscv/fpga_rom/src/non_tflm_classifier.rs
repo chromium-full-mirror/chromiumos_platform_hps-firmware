@@ -26,15 +26,15 @@ impl NonTflmClassifier {
 }
 
 impl Classifier for NonTflmClassifier {
-    fn input_data_mut(&mut self, _model_number: u32) -> &mut [i8] {
+    fn input_data_mut(&mut self) -> &mut [i8] {
         self.data
     }
 
-    fn input_data(&self, _model_number: u32) -> &[i8] {
+    fn input_data(&self) -> &[i8] {
         self.data
     }
 
-    fn run_model(&mut self, _model_number: u32) -> Result<i8> {
+    fn run_model(&mut self) -> Result<(i8, i8)> {
         Err(Error::TfLiteFailure)
     }
 

@@ -120,17 +120,12 @@ pub struct App<S, I, C, T> {
     histogram_enabled: bool,
     timer: T,
     status: Status,
-    model_number: u32,
     model_result_count: [u8; NUM_MODELS],
-    /// The model number, if any, that was run on the last iteration of the
-    /// loop. Used to determine which element of trigger_delay_by_model to
-    /// update.
-    last_model_number: Option<u32>,
     /// Whether we've triggered a frame that we're still waiting to receive.
     frame_pending: bool,
     /// How long we'll wait before triggering a camera frame when we're about to
-    /// run a particular model.
-    trigger_delay_by_model: [Microseconds; NUM_MODELS],
+    /// run our model.
+    trigger_delay: Microseconds,
     spi_test_data: Option<&'static [u8]>,
     test_image_area: Option<&'static [u8]>,
     exposure_algorithm: ExposureAlgorithm,
@@ -183,11 +178,9 @@ where
             histogram_enabled: false,
             timer,
             status: Status::default(),
-            model_number: 1,
             model_result_count: [0; NUM_MODELS],
-            last_model_number: None,
             frame_pending: false,
-            trigger_delay_by_model: [INITIAL_FRAME_TRIGGER_DELAY; NUM_MODELS],
+            trigger_delay: INITIAL_FRAME_TRIGGER_DELAY,
             spi_test_data: None,
             test_image_area: None,
             exposure_algorithm: ExposureAlgorithm::MedianTarget(-64),
@@ -253,28 +246,24 @@ where
             self.process_debug_commands();
         }
 
-        self.select_model(&features);
-
         let is_rotated = self.determine_rotation(&config)?;
         let capture_start = self.timer.now();
         let image_metadata = self.capture_well_exposed_image(is_rotated)?;
         let image_wait_ms: Milliseconds = image_metadata.wait_start.into();
 
-        if let Some(last_model_number) = self.last_model_number {
-            let model_delay = &mut self.trigger_delay_by_model[last_model_number as usize - 1];
-            let adjust = if image_metadata.missed_frame {
-                Microseconds(10_000)
-            } else if image_metadata.wait_start > Microseconds(15_000) {
-                // When we had to wait a long time, move quickly toward a high
-                // target.
-                Microseconds(12_000) - image_metadata.wait_start
-            } else {
-                // When we had to wait less time, use a lower target, but move
-                // slower towards it.
-                (Microseconds(2_500) - image_metadata.wait_start).div(8)
-            };
-            *model_delay += adjust;
-        }
+        let model_delay = &mut self.trigger_delay;
+        let adjust = if image_metadata.missed_frame {
+            Microseconds(10_000)
+        } else if image_metadata.wait_start > Microseconds(15_000) {
+            // When we had to wait a long time, move quickly toward a high
+            // target.
+            Microseconds(12_000) - image_metadata.wait_start
+        } else {
+            // When we had to wait less time, use a lower target, but move
+            // slower towards it.
+            (Microseconds(2_500) - image_metadata.wait_start).div(8)
+        };
+        *model_delay += adjust;
 
         let capture_ms = self.timer.elapsed_ms(capture_start) - image_wait_ms;
         if self.histogram_enabled {
@@ -292,8 +281,7 @@ where
         #[cfg(feature = "image-transfer")]
         {
             if features.contains(Features::IMAGE_TRANSFER) || self.image_transfer_count != 0 {
-                self.mcu
-                    .send_image_data(self.classifier.input_data(self.model_number))?;
+                self.mcu.send_image_data(self.classifier.input_data())?;
             }
             if self.image_transfer_count != 0 && self.image_transfer_count != u32::MAX {
                 self.image_transfer_count -= 1;
@@ -303,45 +291,41 @@ where
         // Classification needs to be done after any other uses of the image
         // (e.g. image transfer), since it overwrites the image buffer with
         // other data.
-        let model_status;
         if self.image_data_receiver.histogram.is_usable()
             && (features.contains(Features::MODEL1) || features.contains(Features::MODEL2))
         {
             // Request the next camera frame so that it starts streaming shortly
             // after we finish running our model.
-            let frame_delay = self.trigger_delay_by_model[self.model_number as usize - 1];
             self.image_data_receiver.start();
-            self.mcu.trigger_frame_in(frame_delay)?;
+            self.mcu.trigger_frame_in(self.trigger_delay)?;
             self.frame_pending = true;
-            self.last_model_number = Some(self.model_number);
 
             let start = self.timer.now();
-            let score = self.classifier.run_model(self.model_number)?;
+            let scores = self.classifier.run_model()?;
             let classify_ms = self.timer.elapsed_ms(start);
 
-            let result_count = &mut self.model_result_count[self.model_number as usize - 1];
-            *result_count = result_count.wrapping_add(1);
-            model_status = 0x8000 | ((score as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
+            if features.contains(Features::MODEL1) {
+                let result_count = &mut self.model_result_count[0];
+                *result_count = result_count.wrapping_add(1);
+                self.status.person_status =
+                    0x8000 | ((scores.0 as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
+            }
+            if features.contains(Features::MODEL2) {
+                let result_count = &mut self.model_result_count[1];
+                *result_count = result_count.wrapping_add(1);
+                self.status.second_person_status =
+                    0x8000 | ((scores.1 as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
+            }
             let total_ms = self.timer.elapsed_ms(loop_start_time);
             mcu_println!(
                 self.mcu,
-                "Model {} score:{:5} wait:{:4} capture:{:4} model:{:4} other:{:4} total:{:4}",
-                self.model_number,
-                score,
+                "scores:{scores:4?} wait:{:4} capture:{:4} model:{:4} other:{:4} total:{:4}",
                 image_wait_ms,
                 capture_ms,
                 classify_ms,
                 total_ms - image_wait_ms - capture_ms - classify_ms,
                 total_ms,
             );
-        } else {
-            model_status = 0;
-            self.last_model_number = None;
-        }
-        if self.model_number == 1 {
-            self.status.person_status = model_status;
-        } else {
-            self.status.second_person_status = model_status;
         }
 
         self.status.loop_count += 1;
@@ -464,7 +448,7 @@ where
         if rotate_clockwise {
             dimensions.rotate_90();
         }
-        let buffer = self.classifier.input_data_mut(self.model_number);
+        let buffer = self.classifier.input_data_mut();
 
         let mut missed_frame = false;
         if !self.frame_pending || self.image_data_receiver.has_missed_start_of_frame() {
@@ -557,25 +541,10 @@ where
 
         mcu_println!(self, "Testing TFLM on canned data");
 
-        const MODEL1_EXPECTED: &[i8] = &include!("../../../test_data/presence.expected");
-        const MODEL2_EXPECTED: &[i8] = &include!("../../../test_data/second.expected");
-
-        self.run_model_on_test_images(1, test_data, MODEL1_EXPECTED)?;
-        self.run_model_on_test_images(2, test_data, MODEL2_EXPECTED)?;
-
-        Ok(())
-    }
-
-    #[cfg(feature = "dev")]
-    fn run_model_on_test_images(
-        &mut self,
-        model_number: u32,
-        test_data: &[u8],
-        expected: &[i8],
-    ) -> Result<()> {
         const MAX_RESULTS: usize = TEST_IMAGES_MAX_SIZE as usize / TEST_IMAGE_BLOCK_SIZE;
 
-        let mut results: [i8; MAX_RESULTS] = [0i8; MAX_RESULTS];
+        let mut presence_results: [i8; MAX_RESULTS] = [0; MAX_RESULTS];
+        let mut second_person_results: [i8; MAX_RESULTS] = [0; MAX_RESULTS];
         let mut num_results = 0;
         for input_data in test_data.chunks_exact(TEST_IMAGE_BLOCK_SIZE) {
             // Check if the first few bytes of the image look like blank flash.
@@ -586,12 +555,14 @@ where
                 break;
             }
 
-            let buffer = self.classifier.input_data_mut(model_number);
+            let buffer = self.classifier.input_data_mut();
             for i in 0..buffer.len() {
                 buffer[i] = (i16::from(input_data[i]) - 128) as i8;
             }
 
-            results[num_results] = self.classifier.run_model(model_number)?;
+            let outputs = self.classifier.run_model()?;
+            presence_results[num_results] = outputs.0;
+            second_person_results[num_results] = outputs.1;
             num_results += 1;
 
             // Running all our models on all our data might take several
@@ -599,15 +570,32 @@ where
             // image.
             self.mcu.resync();
         }
-        let results = &results[..num_results];
-        if results == expected {
-            mcu_println!(self, "Model {model_number} results: {results:?} - PASS");
-        } else {
-            mcu_println!(self, "Model {model_number} results: {results:?} - FAIL");
-            mcu_println!(self, "       expected: {expected:?}");
-        }
+
+        self.check_results(
+            "Presence",
+            num_results,
+            &presence_results,
+            &include!("../../../test_data/presence.expected"),
+        );
+        self.check_results(
+            "Second person",
+            num_results,
+            &second_person_results,
+            &include!("../../../test_data/second.expected"),
+        );
 
         Ok(())
+    }
+
+    #[cfg(feature = "dev")]
+    fn check_results(&mut self, name: &str, num_results: usize, results: &[i8], expected: &[i8]) {
+        let results = &results[..num_results];
+        if results == expected {
+            mcu_println!(self, "{name:>13} results: {results:?} - PASS");
+        } else {
+            mcu_println!(self, "{name:>13} results: {results:?} - FAIL");
+            mcu_println!(self, "             expected: {expected:?}");
+        }
     }
 
     /// Repeatedly reads some test data that we've previously written to the SPI
@@ -688,28 +676,8 @@ where
             .camera()
             .set_test_pattern(Some(TestPattern::ColorBar))?;
         self.capture_image(false)?;
-        camera_tester::check_test_pattern(self.classifier.input_data_mut(self.model_number))?;
+        camera_tester::check_test_pattern(self.classifier.input_data_mut())?;
         Ok(())
-    }
-
-    /// Selects which model to use for the current loop iteration so that each
-    /// enabled feature gets a turn. If no model features are enabled, will
-    /// select model 1.
-    fn select_model(&mut self, features: &Features) {
-        // Advance to next model (where the first model is numbered 1).
-        self.model_number = (self.model_number % (NUM_MODELS as u32)) + 1;
-
-        // If we're on model 1, but that's not active, advance to model 2.
-        if self.model_number == 1 && !features.contains(Features::MODEL1) {
-            self.model_number = 2;
-        }
-        // If we're on model 2, but that's not active, advance to model 1. Note,
-        // this means that if neither model is active, we'll use model 1. It
-        // won't actually run, but we need a model to always be selected so that
-        // we have a buffer into which to capture images.
-        if self.model_number == 2 && !features.contains(Features::MODEL2) {
-            self.model_number = 1;
-        }
     }
 
     /// Writes exposure settings to the camera, assuming they are set
@@ -783,51 +751,68 @@ mod tests {
         // Turn exposure control off to avoid trying to change exposure of camera fakes.
         app.exposure_algorithm = ExposureAlgorithm::FullyManual;
 
-        // Iteration 1: Both models enabled - second person model runs.
+        // Iteration: Both features enabled.
         app.classifier.model_outputs[0] = 0x42;
+        app.classifier.model_outputs[1] = 0x12;
         app.mcu.spi.state.configuration = Configuration {
             enabled_features: (Features::MODEL1 | Features::MODEL2).bits(),
             camera_config: Rotation::Clockwise.into(),
         };
         assert_eq!(app.loop_body(), Ok(()));
-        let status1 = Status {
+        let mut expected_status = Status {
             loop_count: 1,
-            person_status: 0,
-            second_person_status: 0x8142,
+            person_status: 0x8142,
+            second_person_status: 0x8112,
             enabled_features: app.mcu.spi.state.configuration.enabled_features,
         };
-        assert_eq!(app.mcu.spi.state.status, status1);
-        assert_eq!(app.classifier.models_executed, 2);
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+        assert!(app.classifier.model_executed);
 
-        // Iteration 2: Both models enabled - presence detection runs.
+        // Iteration 2: Both features enabled.
         app.classifier.model_outputs[0] = 0x73;
-        app.classifier.models_executed = 0;
+        app.classifier.model_outputs[1] = 0x24;
+        app.classifier.model_executed = false;
         assert_eq!(app.loop_body(), Ok(()));
-        let status2 = Status {
-            person_status: 0x8173,
-            loop_count: 2,
-            ..status1
-        };
-        assert_eq!(app.mcu.spi.state.status, status2);
-        assert_eq!(app.classifier.models_executed, 1);
-        assert_eq!(app.status.person_status, 0x8173);
-        assert_eq!(app.status.second_person_status, 0x8142);
+        expected_status.loop_count += 1;
+        expected_status.person_status = 0x8273;
+        expected_status.second_person_status = 0x8224;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+        assert!(app.classifier.model_executed);
+        assert_eq!(app.status.person_status, 0x8273);
+        assert_eq!(app.status.second_person_status, 0x8224);
 
-        // Iteration 3: Both models disabled.
-        app.classifier.models_executed = 0;
-        app.mcu.spi.state.configuration = Configuration {
-            enabled_features: Features::DISABLED.bits(),
-            camera_config: Rotation::Clockwise.into(),
-        };
+        // Iteration 3: Only presence enabled.
+        app.mcu.spi.state.configuration.enabled_features = Features::MODEL1.bits();
+        app.classifier.model_outputs[0] = 0x52;
+        app.classifier.model_outputs[1] = 0x59;
         assert_eq!(app.loop_body(), Ok(()));
-        let status3 = Status {
-            loop_count: 3,
-            person_status: 0,
-            second_person_status: 0,
-            enabled_features: app.mcu.spi.state.configuration.enabled_features,
-        };
-        assert_eq!(app.mcu.spi.state.status, status3);
-        assert_eq!(app.classifier.models_executed, 0);
+        expected_status.loop_count += 1;
+        expected_status.enabled_features = Features::MODEL1.bits();
+        expected_status.person_status = 0x8352;
+        expected_status.second_person_status = 0;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        // Iteration 4: Only SPD enabled.
+        app.mcu.spi.state.configuration.enabled_features = Features::MODEL2.bits();
+        app.classifier.model_outputs[0] = 0x55;
+        app.classifier.model_outputs[1] = 0x57;
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.enabled_features = Features::MODEL2.bits();
+        expected_status.person_status = 0;
+        expected_status.second_person_status = 0x8357;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+
+        // Both features disabled.
+        app.classifier.model_executed = false;
+        app.mcu.spi.state.configuration.enabled_features = Features::DISABLED.bits();
+        assert_eq!(app.loop_body(), Ok(()));
+        expected_status.loop_count += 1;
+        expected_status.person_status = 0;
+        expected_status.second_person_status = 0;
+        expected_status.enabled_features = app.mcu.spi.state.configuration.enabled_features;
+        assert_eq!(app.mcu.spi.state.status, expected_status);
+        assert!(!app.classifier.model_executed);
 
         Ok(())
     }

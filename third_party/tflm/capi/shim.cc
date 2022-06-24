@@ -42,11 +42,6 @@ class IgnoringErrorReporter : public tflite::ErrorReporter {
 
 IgnoringErrorReporter* error_reporter = nullptr;
 tflite::MicroInterpreter* interpreter1 = nullptr;
-tflite::MicroInterpreter* interpreter2 = nullptr;
-
-tflite::MicroInterpreter* get_interpreter(int model_number) {
-  return model_number == 1 ? interpreter1 : interpreter2;
-}
 
 // An area of memory to use for input, output, and intermediate arrays.
 constexpr int kTensorArenaSize = 256 * 1024;
@@ -114,7 +109,7 @@ bool has_cfu_bug() {
 
 }  // namespace
 
-int tflite_init(const uint8_t* model1_bytes, const uint8_t* model2_bytes) {
+int tflite_init(const uint8_t* model_bytes) {
   static IgnoringErrorReporter error_reporter_instance;
   error_reporter = &error_reporter_instance;
 
@@ -139,47 +134,37 @@ int tflite_init(const uint8_t* model1_bytes, const uint8_t* model2_bytes) {
     return TLITE_INIT_CFU_BUG;
   }
 
-  // Model one is presence sensor
-  auto model1 = tflite::GetModel(model1_bytes);
+  // Model one is currently the only model.
+  auto model = tflite::GetModel(model_bytes);
   static tflite::MicroInterpreter interpreter1_instance(
-      model1, resolver_instance, allocator, error_reporter);
+      model, resolver_instance, allocator, error_reporter);
   TfLiteStatus allocate_status = interpreter1_instance.AllocateTensors();
   if (allocate_status != kTfLiteOk) {
-    TF_LITE_REPORT_ERROR(error_reporter, "Model 1 AllocateTensors() failed");
+    TF_LITE_REPORT_ERROR(error_reporter, "AllocateTensors() failed");
     return TLITE_INIT_ERR_MODEL_1;
   }
   interpreter1 = &interpreter1_instance;
-
-  // Model two is second person detector
-  auto model2 = tflite::GetModel(model2_bytes);
-  static tflite::MicroInterpreter interpreter2_instance(
-      model2, resolver_instance, allocator, error_reporter);
-  allocate_status = interpreter2_instance.AllocateTensors();
-  if (allocate_status != kTfLiteOk) {
-    TF_LITE_REPORT_ERROR(error_reporter, "Model 2 AllocateTensors() failed");
-    return TLITE_INIT_ERR_MODEL_2;
-  }
-  interpreter2 = &interpreter2_instance;
 
   // If seen no errors, then we are all good
   return TLITE_INIT_OK;
 }
 
 // Allocate memory from the tensor_arena for the model's tensors.
-int8_t* tflite_get_input(int model_number) {
-  return get_interpreter(model_number)->input(0)->data.int8;
+int8_t* tflite_get_input() {
+  return interpreter1->input(0)->data.int8;
 }
 
-bool tflite_classify(int model_number, int8_t* score) {
+bool tflite_classify(int8_t* score1, int8_t* score2) {
   // Run inference
-  if (kTfLiteOk != get_interpreter(model_number)->Invoke()) {
+  if (kTfLiteOk != interpreter1->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
     return false;
   }
 
   // Fetch output
-  TfLiteTensor* output = get_interpreter(model_number)->output(0);
-  *score = output->data.int8[0];
+  TfLiteTensor* output = interpreter1->output(0);
+  *score1 = output->data.int8[0];
+  *score2 = output->data.int8[1];
 
   return true;
 }

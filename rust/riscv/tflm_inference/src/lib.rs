@@ -16,18 +16,15 @@ use core::convert::TryFrom;
 #[link(name = "m")]
 #[link(name = "stdc++")]
 extern "C" {
-    fn tflite_init(model1_bytes: *const u8, model2_bytes: *const u8) -> i32;
-    fn tflite_get_input(model_number: u32) -> *mut i8;
-    fn tflite_classify(model_number: u32, score_out: *mut i8) -> bool;
+    fn tflite_init(model_bytes: *const u8) -> i32;
+    fn tflite_get_input() -> *mut i8;
+    fn tflite_classify(score1_out: *mut i8, score2_out: *mut i8) -> bool;
 }
 
-const MODEL1_SIZE: usize = include_bytes!("../../../../models/presence.tflite").len();
-const MODEL2_SIZE: usize = include_bytes!("../../../../models/second.tflite").len();
+const MODEL_SIZE: usize = include_bytes!("../../../../models/shared.tflite").len();
 
 #[link_section = ".model_data"]
-static MODEL1: [u8; MODEL1_SIZE] = *include_bytes!("../../../../models/presence.tflite");
-#[link_section = ".model_data"]
-static MODEL2: [u8; MODEL2_SIZE] = *include_bytes!("../../../../models/second.tflite");
+static MODEL: [u8; MODEL_SIZE] = *include_bytes!("../../../../models/shared.tflite");
 
 #[non_exhaustive]
 pub struct TflmClassifier {
@@ -40,7 +37,7 @@ impl TflmClassifier {
     /// Must only be called once.
     pub unsafe fn sole_instance() -> Self {
         Self {
-            init_status: Self::from_int(tflite_init(MODEL1.as_ptr(), MODEL2.as_ptr())),
+            init_status: Self::from_int(tflite_init(MODEL.as_ptr())),
         }
     }
 
@@ -50,36 +47,27 @@ impl TflmClassifier {
 }
 
 impl fpga_app::Classifier for TflmClassifier {
-    fn input_data_mut(&mut self, model_number: u32) -> &mut [i8] {
+    fn input_data_mut(&mut self) -> &mut [i8] {
         // safety: TflmClassifier::sole_instance requires that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
         // large enough to store NUM_PIXELS.
-        unsafe {
-            core::slice::from_raw_parts_mut(
-                tflite_get_input(model_number),
-                fpga_app::camera::NUM_PIXELS,
-            )
-        }
+        unsafe { core::slice::from_raw_parts_mut(tflite_get_input(), fpga_app::camera::NUM_PIXELS) }
     }
 
-    fn input_data(&self, model_number: u32) -> &[i8] {
+    fn input_data(&self) -> &[i8] {
         // safety: TflmClassifier::sole_instance requires that only a single
         // instance of TflmClassifier exists, so we can guarantee that our
         // return value won't alias. The C++ code allocates an arena that is
         // large enough to store NUM_PIXELS.
-        unsafe {
-            core::slice::from_raw_parts(
-                tflite_get_input(model_number),
-                fpga_app::camera::NUM_PIXELS,
-            )
-        }
+        unsafe { core::slice::from_raw_parts(tflite_get_input(), fpga_app::camera::NUM_PIXELS) }
     }
 
-    fn run_model(&mut self, model_number: u32) -> Result<i8> {
-        let mut score = 0i8;
-        if unsafe { tflite_classify(model_number, &mut score as *mut i8) } {
-            Ok(score)
+    fn run_model(&mut self) -> Result<(i8, i8)> {
+        let mut score1 = 0i8;
+        let mut score2 = 0i8;
+        if unsafe { tflite_classify(&mut score1 as *mut i8, &mut score2 as *mut i8) } {
+            Ok((score1, score2))
         } else {
             Err(TfLiteFailure)
         }

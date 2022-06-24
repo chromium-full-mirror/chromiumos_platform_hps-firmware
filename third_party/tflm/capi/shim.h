@@ -35,16 +35,16 @@ enum TfLiteInitStatus : int32_t {
 
 // Set up TfLM environment
 // Returns a value from enum TfLiteInitStatus
-int tflite_init(const uint8_t* model1_bytes, const uint8_t* model2_bytes);
+int tflite_init(const uint8_t* model_bytes);
 
 // Obtain a pointer to the model input vector
 // This is the tensor input data. It is assumed to be a 320x240 greyscale image.
 // Note that data is signed with black being -128 and white being +127
-int8_t* tflite_get_input(int model_number);
+int8_t* tflite_get_input();
 
-// Run a classification and return result
-// Returns true on successful model run, false if error detected
-bool tflite_classify(int model_number, int8_t* score);
+// Run a classification and write the results into `score1` and `score2`.
+// Returns true on successful model run, false if error detected.
+bool tflite_classify(int8_t* score1, int8_t* score2);
 
 #ifdef __cplusplus
 }
