@@ -181,13 +181,15 @@ pub trait Hps {
 
     fn write_firmware(&mut self, bytes: &[u8]) -> Result<()> {
         self.perform_command(Command::EraseStage1)?;
+        self.wait_memory_bank_available(memory_banks::MCU_RW)?;
+        self.check_errors()?;
         let mut address = 0;
         for chunk in bytes.chunks(256) {
-            self.wait_memory_bank_available(memory_banks::MCU_RW)?;
             self.write_memory(memory_banks::MCU_RW, address, chunk)?;
+            self.wait_memory_bank_available(memory_banks::MCU_RW)?;
             address += chunk.len() as u32;
         }
-        self.wait_memory_bank_available(memory_banks::MCU_RW)?;
+        self.check_errors()?;
         Ok(())
     }
 
