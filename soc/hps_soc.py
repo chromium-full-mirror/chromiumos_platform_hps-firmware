@@ -331,10 +331,6 @@ def main():
 
     parser = argparse.ArgumentParser(description='HPS SoC')
     hps_soc_args(parser)
-    # --build does nothing, accept it for backwards compatibility
-    parser.add_argument(
-        '--build', action='store_true',
-        help=argparse.SUPPRESS)
     parser.add_argument(
         '--no-build', action='store_true',
         help='Skip building gateware. This is useful if you just want to ' +
