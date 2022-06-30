@@ -11,37 +11,14 @@ fi
 
 # Exports environment variables needed by parts of this project.
 
-# The following environment variables should already be set to appropriate
-# values:
-#   RADIANT_DIR (e.g. $HOME/lscc/radiant/2.2/bin/lin64)
-#
-# If RADIANT_DIR isn't set, then only simulation can be used.
-
 HPS_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
-
-RUSTC="$(which rustc)"
-# handle the case where rustc is not yet installed
-if [ -z "${RUSTC}" ]; then
-  echo "rustc not found"
-  RUST_DIR=""
-else
-  RUST_DIR=$(dirname "${RUSTC}")
-fi
-export HOSTPATH="${HPS_ROOT}/build/host"
 
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
-PATH="${RUST_DIR}:${PATH}"
-PATH="${HOSTPATH}:${PATH}"
 PATH="/opt/hps-sdk/bin:${PATH}"
 PATH="${HPS_ROOT}/scripts:${PATH}"
 export PATH
-
-# RADIANT_DIR is optionally defined
-if [ -d "${RADIANT_DIR:-}" ]; then
-    export PATH="${PATH}:${RADIANT_DIR}"
-fi
 
 # This speeds up recompilation of verilator generated code quit a bit.
 export OBJCACHE=ccache
