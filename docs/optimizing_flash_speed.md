@@ -27,7 +27,7 @@ If the number of blocks is higher than you'd like, dump the assembly of the ELF
 file with and without your println commented.
 
 ```
-./third_party/installed/bin/riscv64-unknown-elf-objdump -d \
+/opt/hps-sdk/bin/riscv64-unknown-elf-objdump -d \
    ./rust/riscv/target/riscv32i-unknown-none-elf/release/fpga_rom >~/tmp/a.S
 ```
 
