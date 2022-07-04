@@ -1,6 +1,13 @@
-# ChromiumOS HPS
+# ChromiumOS Human Presence Sensor
 
-See [design document](https://goto.google.com/cros-hps-nx17-dd)
+The ChromiumOS Human Presence Sensor is a hardware peripheral which can
+detect the presence of one or more humans in front of the Chromebook.
+
+This repository contains source code for the firmware which runs on the
+peripheral.
+
+For more information, refer to the
+[design document](https://goto.google.com/cros-hps-dd) (Googlers only).
 
 ## Initial Setup
 
