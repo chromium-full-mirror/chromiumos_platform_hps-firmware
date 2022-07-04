@@ -33,8 +33,11 @@ impl I2cOverSocket {
     pub fn connect(file_path: &str) -> Result<I2cOverSocket, Error> {
         let socket = UnixStream::connect(file_path)?;
         socket
-            .set_read_timeout(Some(Duration::new(1, 0)))
+            .set_read_timeout(Some(Duration::new(5, 0)))
             .expect("Couldn't set read timeout");
+        socket
+            .set_write_timeout(Some(Duration::new(5, 0)))
+            .expect("Couldn't set write timeout");
         Ok(Self { socket })
     }
 
