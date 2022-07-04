@@ -30,13 +30,4 @@ For more information, refer to the
 
 * FPGA SoC: [FPGA Build and Program Guide](docs/fpga_build.md)
 * [MCU](docs/mcu_build.md)
-
-## Editing code
-
-If your editor has IDE features for Python (e.g. vscode with the Python
-extension installed), then you should open it with the appropriate environment
-variables set. e.g.:
-
-```sh
-(source environment; code .)
-```
+* [Using an IDE](docs/ide.md)
