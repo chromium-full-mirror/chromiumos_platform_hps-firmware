@@ -14,8 +14,9 @@ For more information, refer to the
 * Reference material
     * [I2C protocol](docs/host_device_i2c_protocol.md)
 * How-to guides for developers
-    * [Building and programming the FPGA](docs/fpga_build.md)
-    * [Building and programming the MCU](docs/mcu_build.md)
+    * [Developing outside the ebuild](docs/outside_ebuild.md)
+    * [Working with HPS proto2](docs/proto2.md)
+    * [Capturing images](docs/capturing_images.md)
     * [Using an IDE](docs/ide.md)
     * [Optimizing FPGA ROM flash layout](docs/optimizing_flash_speed.md)
     * [Regenerating TfLM](docs/regen_tflm.md)
