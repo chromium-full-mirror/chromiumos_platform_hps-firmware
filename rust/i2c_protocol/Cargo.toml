@@ -6,7 +6,7 @@ authors = ["Google"]
 license = "BSD-3-Clause"
 
 [dependencies]
-i2c_peripheral = { path = "../i2c_peripheral" }  # provided by ebuild
+i2c_peripheral = { path = "../i2c_peripheral" }
 mcu_common = { path = "../mcu_common" }
 nb = "1.0.0"
 

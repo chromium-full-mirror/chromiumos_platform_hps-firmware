@@ -10,7 +10,7 @@ license = "BSD-3-Clause"
 bitflags = "1.3.2"
 hmac-sha256 = "0.1.6"
 num_enum = { version = "0.5.1", default-features = false }
-i2c_peripheral = { path = "../i2c_peripheral" }  # provided by ebuild
+i2c_peripheral = { path = "../i2c_peripheral" }
 
 [features]
 dev = []

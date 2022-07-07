@@ -9,7 +9,7 @@ anyhow = "1.0.38"
 # https://github.com/clap-rs/clap/issues/1684
 clap = "=3.0.0-beta.2"
 ed25519-compact = { version = "1", default-features = false, features = [ "pem" ] }
-mcu_common = { path = "../mcu_common" }  # provided by ebuild
+mcu_common = { path = "../mcu_common" }
 
 [build-dependencies]
 clap_derive = "=3.0.0-beta.2"

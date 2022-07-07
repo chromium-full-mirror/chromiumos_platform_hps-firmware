@@ -7,7 +7,7 @@ license = "BSD-3-Clause"
 
 [dependencies]
 hal = { package = "stm32g0xx-hal", version = "0.1.0" }
-i2c_peripheral = { path = "../../i2c_peripheral" }  # provided by ebuild
+i2c_peripheral = { path = "../../i2c_peripheral" }
 stm32g0 = "0.13.0"
 nb = "1.0.0"
 
