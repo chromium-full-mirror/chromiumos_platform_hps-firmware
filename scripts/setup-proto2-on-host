@@ -26,6 +26,9 @@ if [ ! -f "${MCP_UDEV_RULES}" ]; then
 SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", GROUP="plugdev", TAG+="uaccess", RUN="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/usbhid/unbind'"
 EOF
         ) | sudo tee "${MCP_UDEV_RULES}"
+
+        # Trigger the rule to avoid replugging.
+        sudo udevadm trigger --action=add --attr-match=idVendor=04d8 --attr-match=idProduct=00dd
     fi
 fi
 
@@ -42,5 +45,22 @@ EOF
 
         # Remove the module as well to avoid the need to reboot.
         sudo rmmod hid_mcp2221 2>/dev/null || true
+    fi
+fi
+
+FT4232_UDEV_RULES=/etc/udev/rules.d/60-ft4232.rules
+if [ ! -f "${FT4232_UDEV_RULES}" ]; then
+    echo -n "OK to create ${FT4232_UDEV_RULES} [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        (
+            cat <<'EOF'
+# 0403:6011 is FT4232
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="660", GROUP="plugdev", TAG+="uaccess"
+EOF
+        ) | sudo tee "${FT4232_UDEV_RULES}"
+
+        # Trigger the rule to avoid replugging.
+        sudo udevadm trigger --action=add --attr-match=idVendor=0403 --attr-match=idProduct=6011
     fi
 fi
