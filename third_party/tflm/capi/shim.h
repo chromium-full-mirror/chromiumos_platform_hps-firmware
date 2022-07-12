@@ -17,8 +17,8 @@ limitations under the License.
 //
 #include <stdint.h>
 #include <stdarg.h>
-#ifndef _TFLITE_LITEX_H_
-#define _TFLITE_LITEX_H_
+#ifndef THIRD_PARTY_TFLM_CAPI_SHIM_H_
+#define THIRD_PARTY_TFLM_CAPI_SHIM_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,4 +50,4 @@ bool tflite_classify(int model_number, int8_t* score);
 }
 #endif
 
-#endif  // _TFLITE_LITEX_H_
+#endif  // THIRD_PARTY_TFLM_CAPI_SHIM_H_

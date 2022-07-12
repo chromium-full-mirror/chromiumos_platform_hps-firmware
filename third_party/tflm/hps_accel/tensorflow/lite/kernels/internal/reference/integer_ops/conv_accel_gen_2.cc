@@ -20,8 +20,8 @@
 #include <algorithm>
 #include <cstdio>
 
-#include "gateware_constants.h"
-#include "hps_cfu.h"
+#include "third_party/tflm/hps_accel/gateware_constants.h"
+#include "third_party/tflm/hps_accel/hps_cfu.h"
 #include "tensorflow/lite/kernels/internal/common.h"
 
 #if GATEWARE_GEN == 2
@@ -32,7 +32,8 @@ namespace reference_integer_ops {
 namespace {
 
 // Loads process parameters into the CFU
-void LoadPostProcessParameters(int channel_start, int num_channels,
+void LoadPostProcessParameters(int channel_start,
+                               int num_channels,
                                const int32_t* bias_data,
                                const int32_t* output_shift,
                                const int32_t* output_multiplier) {
@@ -45,7 +46,8 @@ void LoadPostProcessParameters(int channel_start, int num_channels,
 }
 
 // Loads filter parameters, correctly split between the two stores
-void LoadFilterData(int channel_start, int num_channels,
+void LoadFilterData(int channel_start,
+                    int num_channels,
                     const RuntimeShape& filter_shape,
                     const uint32_t* data_base) {
   const int num_filter_words_per_output =
@@ -68,13 +70,17 @@ void LoadFilterData(int channel_start, int num_channels,
 }
 
 // Accelerate Mode0
-void ConvPerChannel4x4Mode0(
-    const ConvParams& params, const int32_t* output_multiplier,
-    const int32_t* output_shift, const RuntimeShape& input_shape,
-    const int8_t* input_data, const RuntimeShape& filter_shape,
-    const int8_t* filter_data, const RuntimeShape& bias_shape,
-    const int32_t* bias_data, const RuntimeShape& output_shape,
-    int8_t* output_data) {
+void ConvPerChannel4x4Mode0(const ConvParams& params,
+                            const int32_t* output_multiplier,
+                            const int32_t* output_shift,
+                            const RuntimeShape& input_shape,
+                            const int8_t* input_data,
+                            const RuntimeShape& filter_shape,
+                            const int8_t* filter_data,
+                            const RuntimeShape& bias_shape,
+                            const int32_t* bias_data,
+                            const RuntimeShape& output_shape,
+                            int8_t* output_data) {
   // Get dimensions of the tensors.
   const int input_width = input_shape.Dims(2);
   const int output_height = output_shape.Dims(1);
@@ -128,20 +134,24 @@ void ConvPerChannel4x4Mode0(
 
     // Reset accelerator state
     cfu_set(REG_ACCELERATOR_RESET, 0);
-  };
+  }
 }
 
 // Collects a single ouput value and optionally places it into memory
 inline void CollectValue(uint32_t*& p, int advance, bool write) {
   uint32_t val = cfu_get(REG_OUTPUT_WORD);
-  if (write) *p = val;
+  if (write)
+    *p = val;
   p += advance;
 }
 
 // Collects output from the accelerator into the output area for groups of four
 // pixels. Collects num_channels of data per pixel.
-void CollectOutput(const int start_channel, const int num_channels,
-                   uint32_t* output, const int num_pixels, const int depth) {
+void CollectOutput(const int start_channel,
+                   const int num_channels,
+                   uint32_t* output,
+                   const int num_pixels,
+                   const int depth) {
   const int num_words_per_pixel = depth / 4;
 
   // Find first output location
@@ -159,13 +169,17 @@ void CollectOutput(const int start_channel, const int num_channels,
 }
 
 // Accelerate Mode1
-void ConvPerChannel4x4Mode1(
-    const ConvParams& params, const int32_t* output_multiplier,
-    const int32_t* output_shift, const RuntimeShape& input_shape,
-    const int8_t* input_data, const RuntimeShape& filter_shape,
-    const int8_t* filter_data, const RuntimeShape& bias_shape,
-    const int32_t* bias_data, const RuntimeShape& output_shape,
-    int8_t* output_data) {
+void ConvPerChannel4x4Mode1(const ConvParams& params,
+                            const int32_t* output_multiplier,
+                            const int32_t* output_shift,
+                            const RuntimeShape& input_shape,
+                            const int8_t* input_data,
+                            const RuntimeShape& filter_shape,
+                            const int8_t* filter_data,
+                            const RuntimeShape& bias_shape,
+                            const int32_t* bias_data,
+                            const RuntimeShape& output_shape,
+                            int8_t* output_data) {
   const int input_depth = input_shape.Dims(3);
   const int output_depth = output_shape.Dims(3);
 
@@ -233,12 +247,15 @@ bool CanAccelerateConv4x4(const ConvParams& params,
                           const RuntimeShape& output_shape,
                           const int32_t* bias_data) {
   // No padding allowed
-  if (params.padding_type != PaddingType::kValid) return false;
+  if (params.padding_type != PaddingType::kValid)
+    return false;
 
   // Must have bias_data and single batch
-  if (!bias_data) return false;
+  if (!bias_data)
+    return false;
   const int batches = MatchingDim(input_shape, 0, output_shape, 0);
-  if (batches != 1) return false;
+  if (batches != 1)
+    return false;
 
   const int input_depth = input_shape.Dims(3);
   const int output_depth = output_shape.Dims(3);
@@ -246,23 +263,30 @@ bool CanAccelerateConv4x4(const ConvParams& params,
   const int stride_height = params.stride_height;
   if (input_depth == 1) {
     // For input layers, stride must be two
-    if (stride_height != 2 || stride_width != 2) return false;
+    if (stride_height != 2 || stride_width != 2)
+      return false;
     // Input and output width are fixed
-    if (input_shape.Dims(2) != 322 || output_shape.Dims(2) != 160) return false;
+    if (input_shape.Dims(2) != 322 || output_shape.Dims(2) != 160)
+      return false;
     // Output depth is fixed
-    if (output_depth != 16) return false;
+    if (output_depth != 16)
+      return false;
   } else {
     // For all other layers, stride must be 1
-    if (stride_height != 1 || stride_width != 1) return false;
+    if (stride_height != 1 || stride_width != 1)
+      return false;
     // Input depth must be multiple of 16, and output depth a multiple of 4
-    if (input_depth % 16 != 0) return false;
-    if (output_depth % 4 != 0) return false;
+    if (input_depth % 16 != 0)
+      return false;
+    if (output_depth % 4 != 0)
+      return false;
   }
 
   // Must be 4x4
   const int filter_height = filter_shape.Dims(1);
   const int filter_width = filter_shape.Dims(2);
-  if (filter_height != 4 || filter_width != 4) return false;
+  if (filter_height != 4 || filter_width != 4)
+    return false;
 
   // Must fit in filter word storage
   const int filter_values_per_output =
@@ -271,7 +295,8 @@ bool CanAccelerateConv4x4(const ConvParams& params,
   const int filter_values = 4 * filter_values_per_output;
   // 4 values per word
   const int filter_words = filter_values / 4;
-  if (filter_words > NUM_FILTER_STORES * FILTER_WORDS_PER_STORE) return false;
+  if (filter_words > NUM_FILTER_STORES * FILTER_WORDS_PER_STORE)
+    return false;
 
   // Dilation must be 1
   if (params.dilation_height_factor != 1 || params.dilation_width_factor != 1)
@@ -289,8 +314,10 @@ void ConvPerChannel4x4(const ConvParams& params,
                        const int8_t* input_data,
                        const RuntimeShape& filter_shape,
                        const int8_t* filter_data,
-                       const RuntimeShape& bias_shape, const int32_t* bias_data,
-                       const RuntimeShape& output_shape, int8_t* output_data) {
+                       const RuntimeShape& bias_shape,
+                       const int32_t* bias_data,
+                       const RuntimeShape& output_shape,
+                       int8_t* output_data) {
   // Configure parameters common to Mode 0 and 1
   const int input_depth = input_shape.Dims(3);
 

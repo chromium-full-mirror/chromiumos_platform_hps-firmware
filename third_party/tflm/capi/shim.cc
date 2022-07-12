@@ -17,8 +17,8 @@ limitations under the License.
 //
 // Based on
 // tensorflow/lite/micro/examples/person_detection_experimental/main_functions.h
-#include "capi/shim.h"
-#include "riscv.h"
+#include "third_party/tflm/capi/shim.h"
+#include "third_party/SaxonSoc/riscv.h"
 
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
