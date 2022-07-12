@@ -66,7 +66,6 @@ only used for development and debugging purposes.
 | 19       | WO     | Appl        | Start camera test            |
 | 20       | RW     | OneTimeInit | Option bytes configuration   |
 | 21       | RO     | Appl        | Part IDs                     |
-| 22       | WO     | Appl        | Model repeat threshold(s)    |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.

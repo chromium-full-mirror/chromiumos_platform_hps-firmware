@@ -16,7 +16,6 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
     // Configure enabled features.
     let enabled_features = Features::MODEL1 | Features::MODEL2;
     hps.write_register(registers::ENABLED_FEATURES, enabled_features.bits())?;
-    hps.write_register(registers::MODEL_REPEAT_THRESHOLD, 0xe520)?;
 
     let mut last_loop_counter = 0;
 
