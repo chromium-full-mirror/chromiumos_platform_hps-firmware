@@ -711,13 +711,6 @@ where
         if spd_threshold != 127 && spd_score >= spd_threshold {
             self.model_number = 2;
         }
-        // If our last present (model 1) score was under the presence repeat
-        // threshold, then only run model 1.
-        let presence_threshold = (config.model_repeat_threshold >> 8 & 0xff) as i8;
-        let presence_score = (self.status.person_status & 0xff) as i8;
-        if presence_score < presence_threshold {
-            self.model_number = 1;
-        }
         // If we're on model 2, but that's not active, advance to model 1. Note,
         // this means that if neither model is active, we'll use model 1. It
         // won't actually run, but we need a model to always be selected so that
@@ -827,7 +820,7 @@ mod tests {
         assert_eq!(app.status.second_person_status, 0x8142);
 
         // SPD over threshold, presence doesn't run.
-        app.mcu.spi.state.configuration.model_repeat_threshold = 0xe010;
+        app.mcu.spi.state.configuration.model_repeat_threshold = 0x8010;
         app.classifier.model_outputs[0] = 0x63;
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
@@ -857,31 +850,6 @@ mod tests {
         assert_eq!(app.loop_body(), Ok(()));
         expected_status.loop_count += 1;
         expected_status.second_person_status = 0x8504;
-        assert_eq!(app.mcu.spi.state.status, expected_status);
-
-        // Presence model keeps running while below its threshold (0xe0 or -32).
-        app.classifier.model_outputs[0] = -50;
-        assert_eq!(app.loop_body(), Ok(()));
-        expected_status.loop_count += 1;
-        expected_status.person_status = 0x83ce;
-        assert_eq!(app.mcu.spi.state.status, expected_status);
-
-        app.classifier.model_outputs[0] = -51;
-        assert_eq!(app.loop_body(), Ok(()));
-        expected_status.loop_count += 1;
-        expected_status.person_status = 0x84cd;
-        assert_eq!(app.mcu.spi.state.status, expected_status);
-
-        app.classifier.model_outputs[0] = 8;
-        assert_eq!(app.loop_body(), Ok(()));
-        expected_status.loop_count += 1;
-        expected_status.person_status = 0x8508;
-        assert_eq!(app.mcu.spi.state.status, expected_status);
-
-        app.classifier.model_outputs[0] = 6;
-        assert_eq!(app.loop_body(), Ok(()));
-        expected_status.loop_count += 1;
-        expected_status.second_person_status = 0x8606;
         assert_eq!(app.mcu.spi.state.status, expected_status);
 
         // Both models disabled.
