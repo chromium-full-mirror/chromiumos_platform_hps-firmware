@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SOFTWARE_CFU_H
-#define SOFTWARE_CFU_H
-
-#ifdef CFU_SOFTWARE_DEFINED
+#ifndef THIRD_PARTY_TFLM_HPS_ACCEL_SOFTWARE_CFU_H_
+#define THIRD_PARTY_TFLM_HPS_ACCEL_SOFTWARE_CFU_H_
 
 #include <algorithm>
 #include <cassert>
@@ -25,8 +23,10 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "gateware_constants.h"
-#include "global_debug.h"
+#ifdef CFU_SOFTWARE_DEFINED
+
+#include "third_party/tflm/hps_accel/gateware_constants.h"
+#include "third_party/tflm/hps_accel/global_debug.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 
 namespace soft_cfu {
@@ -62,8 +62,8 @@ inline int32_t MaccOne() {
 }
 
 // Very simple storage class.
-// TODO: wrap around at calculated point instead of at end of data
-// TODO: allow input data to be double-buffered
+// FIXME: wrap around at calculated point instead of at end of data
+// FIXME: allow input data to be double-buffered
 #define MAX_STORAGE_WORDS 16384
 class Storage {
  public:
@@ -379,4 +379,4 @@ inline uint32_t software_cfu(int funct3, int funct7, uint32_t rs1,
 
 #endif  // CFU_SOFTWARE_DEFINED
 
-#endif  // SOFTWARE_CFU_H
+#endif  // THIRD_PARTY_TFLM_HPS_ACCEL_SOFTWARE_CFU_H_

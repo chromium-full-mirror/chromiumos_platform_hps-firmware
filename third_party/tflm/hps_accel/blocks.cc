@@ -16,11 +16,11 @@
 
 #if GATEWARE_GEN == 1
 
-#include "blocks.h"
+#include "third_party/tflm/hps_accel/blocks.h"
 
 #include <cstdio>
 
-#include "hps_cfu.h"
+#include "third_party/tflm/hps_accel/hps_cfu.h"
 #include "tensorflow/lite/kernels/internal/common.h"
 
 namespace hps_accel {

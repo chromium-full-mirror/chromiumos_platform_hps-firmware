@@ -15,14 +15,14 @@
  */
 
 // Some useful building blocks for building the gen1 accelerator
-#ifndef _BLOCKS_H
-#define _BLOCKS_H
+#ifndef THIRD_PARTY_TFLM_HPS_ACCEL_BLOCKS_H_
+#define THIRD_PARTY_TFLM_HPS_ACCEL_BLOCKS_H_
 #if GATEWARE_GEN == 1
 
 #include <cstddef>
 #include <cstdint>
 
-#include "hps_cfu.h"
+#include "third_party/tflm/hps_accel/hps_cfu.h"
 
 namespace hps_accel {
 
@@ -110,4 +110,4 @@ inline void Reset() { cfu_set(REG_RESET, 0); }
 };  // namespace hps_accel
 
 #endif  // GATEWARE_GEN
-#endif  // _BLOCKS_H
+#endif  // THIRD_PARTY_TFLM_HPS_ACCEL_BLOCKS_H_

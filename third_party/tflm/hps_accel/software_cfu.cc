@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#ifdef CFU_SOFTWARE_DEFINED
+#include "third_party/tflm/hps_accel/software_cfu.h"
 
-#include "software_cfu.h"
+#ifdef CFU_SOFTWARE_DEFINED
 
 #include <cstddef>
 #include <cstdint>

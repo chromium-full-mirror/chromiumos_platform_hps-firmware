@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _HPS_CFU_H
-#define _HPS_CFU_H
+#ifndef THIRD_PARTY_TFLM_HPS_ACCEL_HPS_CFU_H_
+#define THIRD_PARTY_TFLM_HPS_ACCEL_HPS_CFU_H_
 
-#include "cfu.h"
-#include "gateware_constants.h"
+#include "third_party/tflm/hps_accel/cfu.h"
+#include "third_party/tflm/hps_accel/gateware_constants.h"
 
 // Convenience macros for get/set
 #define cfu_set(reg, val) cfu_op(INS_SET, reg, val, 0)
@@ -27,4 +27,4 @@
 // Ping instructions for checking CFU is available
 #define cfu_ping(val1, val2) cfu_op(INS_PING, 0, val1, val2)
 
-#endif  // _HPS_CFU_H
+#endif  // THIRD_PARTY_TFLM_HPS_ACCEL_HPS_CFU_H_

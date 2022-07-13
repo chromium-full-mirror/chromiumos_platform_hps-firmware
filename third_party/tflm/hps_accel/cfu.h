@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef CFU_H
-#define CFU_H
+#ifndef THIRD_PARTY_TFLM_HPS_ACCEL_CFU_H_
+#define THIRD_PARTY_TFLM_HPS_ACCEL_CFU_H_
 
 #include <stdint.h>
 
-#include "riscv.h"
-#include "software_cfu.h"
+#include "third_party/SaxonSoc/riscv.h"
+#include "third_party/tflm/hps_accel/software_cfu.h"
 
 /* riscv.h defines a macro:
 
@@ -77,4 +77,4 @@
 #define cfu_op(funct3, funct7, rs1, rs2) cfu_op_hw(funct3, funct7, rs1, rs2)
 #endif
 
-#endif  // CFU_H
+#endif  // THIRD_PARTY_TFLM_HPS_ACCEL_CFU_H_
