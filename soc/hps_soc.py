@@ -151,7 +151,8 @@ class HpsSoC(LiteXSoC):
             i_CE=cfu_cen,
         )
 
-        # Connect separate clock to CFU, keep reset from oscillator clock domain
+        # Connect separate clock to CFU, keep reset from oscillator clock
+        # domain
         self.cpu.cfu_params.update(i_clk=clko)
         self.cpu.cfu_params.update(i_reset=ResetSignal('osc'))
 
@@ -273,7 +274,7 @@ class HpsSoC(LiteXSoC):
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     parser.add_argument('--nextpnr-seed', metavar='NUMBER',
-                        default=42, type=int,
+                        default=28, type=int,
                         help='Use random seed NUMBER for nextpnr')
 
 

@@ -240,7 +240,7 @@ fn timing(rcc: &mut Rcc, i2c_speed: Hertz) -> u32 {
     // minimum values.
     let scl_low_ns = core::cmp::max(scl_cycle_ns * 5 / 7, MIN_SCL_LOW_NS);
     let scl_high_ns = core::cmp::max(scl_cycle_ns - scl_low_ns, MIN_SCL_HIGH_NS);
-    let prescaler = apb_freq.0 / TARGET_CLOCK - 1;
+    let prescaler = (apb_freq.0 / TARGET_CLOCK).saturating_sub(1);
     let presc_ns = 1_000_000_000 / (apb_freq.0 / (prescaler + 1));
     // SCL will be low for presc_ns * (scl_low + 1). When computing scl_low, we
     // add `presc_ns - 1` so that we in effect round up, as it's better for

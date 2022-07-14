@@ -20,8 +20,9 @@ from migen import run_simulation
 from migen import Signal
 
 
-# SPI clock
-DEFAULT_SPI_CLK_FREQ = 4_000_000
+# With the MCU's APB clock running at 12MHz, 1.5MHz is the fastest SPI clock
+# that it can currently keep up with.
+DEFAULT_SPI_CLK_FREQ = 1_500_000
 
 
 def bitfield(name, size, reset, desc):

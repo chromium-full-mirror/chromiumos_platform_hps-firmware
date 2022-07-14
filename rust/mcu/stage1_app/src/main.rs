@@ -126,7 +126,11 @@ mod app {
         // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
         // is still handled when we're idle and the CPU is put to sleep.
         p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
-        let mut rcc = p.RCC.freeze(rcc_config());
+        let mut rcc = p.RCC.freeze(rcc_low_freq_config());
+        // These clock values are set manually due to stm32g0xx-hal bug
+        // (ref. https://github.com/stm32-rs/stm32g0xx-hal/issues/110).
+        rcc.clocks.apb_clk = 12.mhz();
+        rcc.clocks.apb_tim_clk = 12.mhz();
         let mut delay = Delay::syst(cp.SYST, &rcc);
 
         let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
@@ -316,7 +320,7 @@ mod app {
 
         info!(
             "MCU application started. CPU is running at {}MHz",
-            rcc.clocks.sys_clk.0 / 1000000
+            rcc.clocks.ahb_clk.0 / 1000000
         );
 
         host_interface.part_ids = part_ids;
@@ -658,6 +662,10 @@ mod app {
     #[task(shared = [fpga_device, host_interface, state, rcc])]
     fn try_start_fpga(ctx: try_start_fpga::Context) {
         let mut host_interface = ctx.shared.host_interface;
+        // Switch System Clock to HSI (required to reconfigure PLL).
+        let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
+        raw_rcc.cfgr.write(|w| w);
+        raw_rcc.freeze(rcc_high_freq_config());
         match ctx.shared.fpga_device.start_fpga(ctx.shared.rcc) {
             Ok(_) => {
                 host_interface.lock(|h| h.set_application_running(true));
@@ -667,6 +675,12 @@ mod app {
                 host_interface.lock(|host_interface| host_interface.report_error(error));
             }
         }
+
+        // Switch System Clock to HSI (required to reconfigure PLL).
+        let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
+        raw_rcc.cfgr.write(|w| w);
+        raw_rcc.freeze(rcc_low_freq_config());
+
         host_interface.lock(|h| h.command_completed());
     }
 
@@ -689,25 +703,36 @@ mod app {
         // other tasks at this priory can run concurrently. Also, basing the
         // delay on cycles means that changes in our CPU speed will affect the
         // duration. But this is good enough for testing purposes. If the CPU is
-        // running at 60MHz, then 500_000 cycles should be about 8ms.
-        cortex_m::asm::delay(500_000);
+        // running at slow mode (12 MHz), then 100_000 cycles should be about 8ms.
+        cortex_m::asm::delay(100_000);
         let _ = ctx.local.interrupt_pin.set_high();
         ctx.shared.host_interface.lock(|h| h.command_completed());
     }
 }
 
-fn rcc_config() -> hal::rcc::Config {
-    // Clock our CPU at 60MHz. This is as close as we can get to the maximum
-    // supported clock speed of 64MHz, while still being a multiple of 12MHz,
-    // which is required in order to drive the camera at 6MHz. Once we have the
-    // camera's clock connected to a pin supported by TIM1, then we can if we
-    // want separate these and run the CPU at the full 64MHz.
-
-    // Changing this back to 64MHz is blocked on an update to stm32g0xx-hal. See
-    // TODO in proto2.rs regarding camera_mclk_tim being TIM3 instead of TIM1.
+fn rcc_low_freq_config() -> hal::rcc::Config {
+    // RCC configuration for a low-power mode.
+    // SYSCLK is running at 48 MHz. Core, AHB, APB clock is running at 12 MHz.
+    // SYSCLK (a multiple of 12 MHz) is required in order to drive the camera at 6 MHz.
     let pll_cfg = hal::rcc::PllConfig {
         m: 1,
-        n: 15,
+        n: 12,
+        r: 4,
+        ..hal::rcc::PllConfig::default()
+    };
+
+    hal::rcc::Config::pll()
+        .pll_cfg(pll_cfg)
+        .ahb_psc(hal::rcc::Prescaler::Div4)
+}
+
+fn rcc_high_freq_config() -> hal::rcc::Config {
+    // RCC configuration for a high-power mode.
+    // SYSCLK is running at 64 MHz. Core, AHB, APB clock is running at 64 MHz.
+    // This configuration is only used during the flash verification stage.
+    let pll_cfg = hal::rcc::PllConfig {
+        m: 1,
+        n: 16,
         r: 4,
         ..hal::rcc::PllConfig::default()
     };

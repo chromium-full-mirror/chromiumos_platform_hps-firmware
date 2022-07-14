@@ -263,6 +263,9 @@ where
             (Microseconds(2_500) - image_metadata.wait_start).div(8)
         };
         *model_delay += adjust;
+        if *model_delay < Microseconds(0) {
+            *model_delay = Microseconds(0)
+        }
 
         let capture_ms = self.timer.elapsed_ms(capture_start) - image_wait_ms;
         if self.histogram_enabled {
