@@ -91,12 +91,14 @@ fn write_compressed_gateware() {
 
     let mut yosys_commands: OsString = "synth_nexus -flatten -top top -json ".into();
     yosys_commands.push(&json_file);
-    run(Command::new("yosys")
+    run(Command::new("../../../scripts/run-tool")
+        .arg("yosys")
         .arg("-p")
         .arg(yosys_commands)
         .arg(verilog_file));
 
-    run(Command::new("nextpnr-nexus")
+    run(Command::new("../../../scripts/run-tool")
+        .arg("nextpnr-nexus")
         .args(["--device", "LIFCL-17-8UWG72C"])
         .args(["--pdc", pdc_file])
         .arg("--json")
@@ -104,7 +106,8 @@ fn write_compressed_gateware() {
         .arg("--fasm")
         .arg(&fasm_file));
 
-    run(Command::new("prjoxide")
+    run(Command::new("../../../scripts/run-tool")
+        .arg("prjoxide")
         .arg("pack")
         .arg(&fasm_file)
         .arg(&bit_file));

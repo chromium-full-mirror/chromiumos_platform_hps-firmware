@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Runs a tool inside the chroot - either directly if we're already in the
+# chroot, or by using bubblewrap (bwrap).
+
+if [ -e /etc/cros_chroot_version ] ; then
+    # We're already inside the chroot, just run the command.
+    exec "$@"
+fi
+
+CHROMIUMOS=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/../../../..)
+CHROOT="${CHROMIUMOS}/chroot"
+
+if [ ! -d "${CHROOT}" ]; then
+    echo "ChromiumOS chroot not found at ${CHROOT}" >&2
+    exit 1
+fi
+
+exec bwrap \
+    --bind "${CHROOT}" / \
+    --bind "${CHROMIUMOS}" "${CHROMIUMOS}" \
+    --dev /dev \
+    --proc /proc \
+    --setenv PATH /opt/hps-sdk/bin:/usr/bin:/bin:/usr/sbin \
+    "$@"
