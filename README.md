@@ -15,6 +15,7 @@ For more information, refer to the
     * [I2C protocol](docs/host_device_i2c_protocol.md)
 * How-to guides for developers
     * [Developing outside the ebuild](docs/outside_ebuild.md)
+    * [Developing outside the ChromeOS chroot](docs/working_outside_chroot.md)
     * [Working with HPS proto2](docs/proto2.md)
     * [Capturing images](docs/capturing_images.md)
     * [Using an IDE](docs/ide.md)

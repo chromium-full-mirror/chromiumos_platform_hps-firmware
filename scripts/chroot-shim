@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This script is not intended to be run directly. Rather it is intended to
+# invoke symbolic links that point to it. It then runs the binary with the same
+# name as the symbolic link inside the ChromeOS chroot.
+
+WD=$(realpath "${PWD}")
+CHROMIUMOS="${WD%/src/platform*}"
+CHROOT="${CHROMIUMOS}/chroot"
+
+# Determine the name of the symbolic link that was invoked.
+PROG="$(basename "$0")"
+
+# When something (generally rust-analyzer) runs `rustc --print sysroot`, prefix
+# the output with the chroot path, so that it's a valid path outside the chroot.
+if [[ "${PROG}" = "rustc" && "$1" = "--print" && "$2" = "sysroot" ]]; then
+    echo -n "${CHROOT}"
+fi
+
+exec bwrap \
+    --bind "${CHROOT}" / \
+    --bind "${HOME}" "${HOME}" \
+    --dev /dev \
+    --proc /proc \
+    --setenv PATH /opt/hps-sdk/bin:/usr/bin:/bin:/usr/sbin \
+    "${PROG}" \
+    "$@"
