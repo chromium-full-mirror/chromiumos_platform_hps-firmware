@@ -20,7 +20,7 @@ if [ ! -d "${CHROOT}" ]; then
     exit 1
 fi
 
-if ! command -v bwrap; then
+if ! command -v bwrap >/dev/null; then
     echo "bwrap isn't installed." >&2
     echo "Please either run in chroot or install with:" >&2
     echo "sudo apt install bubblewrap" >&2
