@@ -13,6 +13,11 @@ NORMAL='\033[0m'
 set -e
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
+# If we're outside the chroot, rerun inside.
+if [ ! -e /etc/cros_chroot_version ] ; then
+    exec "${PROJECT_ROOT}/scripts/run-tool" "$0" "$@"
+fi
+
 source "${PROJECT_ROOT}/environment"
 
 # Crates that can be tested without hardware.

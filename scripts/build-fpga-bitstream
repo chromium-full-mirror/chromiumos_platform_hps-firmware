@@ -6,12 +6,12 @@
 
 set -o errexit
 
-if [ ! -e /etc/cros_chroot_version ] ; then
-    echo "HPS helper scripts must be run inside the ChromeOS chroot." >&2
-    exit 1
-fi
-
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+# If we're outside the chroot, rerun inside.
+if [ ! -e /etc/cros_chroot_version ] ; then
+    exec "${PROJECT_ROOT}/scripts/run-tool" "$0" "$@"
+fi
 
 cd "${PROJECT_ROOT}"
 
