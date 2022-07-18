@@ -12,5 +12,5 @@ Provided rustup is installed, the external toolchain will call into the chroot
 and use the toolchain there. For this to work, you'll need to install bwrap:
 
 ```sh
-sudo apt install bwrap
+sudo apt install bubblewrap
 ```

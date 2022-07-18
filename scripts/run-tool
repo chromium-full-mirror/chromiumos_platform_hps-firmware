@@ -20,6 +20,13 @@ if [ ! -d "${CHROOT}" ]; then
     exit 1
 fi
 
+if ! command -v bwrap; then
+    echo "bwrap isn't installed." >&2
+    echo "Please either run in chroot or install with:" >&2
+    echo "sudo apt install bubblewrap" >&2
+    exit 1
+fi
+
 exec bwrap \
     --bind "${CHROOT}" / \
     --bind "${HOME}" "${HOME}" \
