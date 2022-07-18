@@ -22,7 +22,8 @@ fi
 
 exec bwrap \
     --bind "${CHROOT}" / \
-    --bind "${CHROMIUMOS}" "${CHROMIUMOS}" \
+    --bind "${HOME}" "${HOME}" \
+    --bind "${CHROOT}/home/${USER}/.cargo" "${HOME}/.cargo" \
     --dev /dev \
     --proc /proc \
     --setenv PATH /opt/hps-sdk/bin:/usr/bin:/bin:/usr/sbin \
