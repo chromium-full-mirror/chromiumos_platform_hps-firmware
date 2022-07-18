@@ -29,7 +29,7 @@ BUILD_FLAGS=(
 
 cargo build "${BUILD_FLAGS[@]}"
 
-"${OBJCOPY-llvm-objcopy}" \
+llvm-objcopy \
     "target/riscv32i-unknown-none-elf/release/fpga_rom" \
     -O binary \
     "${ROM}"
