@@ -36,7 +36,6 @@ use mcu_common::commands::Command;
 use mcu_common::PartIds;
 use mcu_common::Status;
 use mcu_common::{Buffer, MemBlock};
-use rtic::app;
 use spi_memory::series25::Flash;
 
 const CAMERA_ID: u16 = 0x01b0;
@@ -45,39 +44,58 @@ extern "C" {
     pub static VECTOR_TABLE: u32;
 }
 
-#[app(device = hal::stm32, peripherals = true)]
-const APP: () = {
-    struct Resources {
+#[rtic::app(
+    device = hal::stm32,
+    peripherals = true,
+    dispatchers = [TIM17])]
+mod app {
+    use super::*;
+
+    #[shared]
+    struct SharedResources {
         state: ApplicationState,
         host_interface: HostInterface<board::HostBus>,
         spi: SpiPeripheral,
+        #[lock_free]
         exti: hal::stm32::EXTI,
+        #[lock_free]
         debug_led: board::DebugLed,
+        #[lock_free]
         fpga_device: FpgaDevice,
         fpga_timer: hal::timer::Timer<hal::stm32::TIM15>,
         #[cfg(feature = "dev")]
+        #[lock_free]
         debug_resources: crate::debug::DebugResources,
         #[cfg(feature = "dev")]
+        #[lock_free]
         debug_timer: hal::timer::Timer<hal::stm32::TIM16>,
+        #[lock_free]
         camera_i2c: board::CameraI2c,
+        #[lock_free]
         stopwatch: Stopwatch<hal::stm32::TIM2>,
+        #[lock_free]
         tick_count: u32,
+        #[lock_free]
         rcc: Rcc,
-        interrupt_pin: board::InterruptPin,
+        #[lock_free]
         frame_timer: hal::timer::Timer<hal::stm32::TIM14>,
     }
 
-    #[init]
-    fn init(ctx: init::Context) -> init::LateResources {
-        static mut I2C_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
-            [0; i2c_protocol::RECV_BUFFER_SIZE];
-        #[cfg(feature = "dev")]
-        static mut DEBUG_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
-            [0; i2c_protocol::RECV_BUFFER_SIZE];
+    #[local]
+    struct LocalResources {
+        interrupt_pin: board::InterruptPin,
+    }
 
+    #[init(local = [
+        i2c_recv_buffer: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
+            [0; i2c_protocol::RECV_BUFFER_SIZE],
+        #[cfg(feature = "dev")]
+        debug_recv_buffer: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
+            [0; i2c_protocol::RECV_BUFFER_SIZE],
+    ])]
+    fn init(ctx: init::Context) -> (SharedResources, LocalResources, init::Monotonics) {
         let p = ctx.device;
         let cp = ctx.core;
-
         let mut init_status = Status::empty();
         match p.FLASH.optr.read().rdp().bits() {
             0xaa => {}
@@ -139,7 +157,7 @@ const APP: () = {
         // We either use our MemBlock to store a crash that occurred on the previous
         // boot, or if there was no crash, we supply the MemBlock to the host
         // interface in order to receive data.
-        let mut buffer = Buffer::new(MemBlock::new(I2C_RECV_BUFFER));
+        let mut buffer = Buffer::new(MemBlock::new(ctx.local.i2c_recv_buffer));
         panic_handler::copy_crash_report(&mut buffer);
         if !buffer.is_empty() {
             host_interface.report_previous_crash(buffer);
@@ -311,10 +329,10 @@ const APP: () = {
         {
             debug_resources
                 .mcu_debug_handler
-                .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
+                .supply_mem_block(MemBlock::new(ctx.local.debug_recv_buffer));
         }
 
-        init::LateResources {
+        let shared = SharedResources {
             host_interface,
             spi,
             exti,
@@ -331,105 +349,111 @@ const APP: () = {
             stopwatch,
             tick_count: 0,
             rcc,
+        };
+        let local = LocalResources {
             interrupt_pin: board.interrupt_pin,
-        }
+        };
+
+        (shared, local, init::Monotonics())
     }
 
-    #[task(binds = I2C1, resources = [host_interface, state],
-        spawn = [erase_spi_flash, write_spi_flash, try_start_fpga, write_spi_flash_test_data,
-            test_camera_i2c, signal_interrupt], priority = 3)]
+    #[task(binds = I2C1, shared = [host_interface, state],
+        priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        let host_interface = ctx.resources.host_interface;
-        match host_interface.handle_interrupt(ctx.resources.state) {
+        let mut host_interface = ctx.shared.host_interface;
+        let event = (&mut host_interface, ctx.shared.state).lock(|h, s| h.handle_interrupt(s));
+        match event {
             Some(application::Event::Command(Command::Reset)) => {
                 cortex_m::peripheral::SCB::sys_reset()
             }
             Some(application::Event::Command(Command::EraseSpiFlash)) => {
-                host_interface.set_spi_flash_erasing(true);
-                let _ = ctx.spawn.erase_spi_flash();
+                host_interface.lock(|h| h.set_spi_flash_erasing(true));
+                let _ = erase_spi_flash::spawn();
             }
             Some(application::Event::WriteSpiFlash(write_request)) => {
-                let _ = ctx.spawn.write_spi_flash(write_request);
+                let _ = write_spi_flash::spawn(write_request);
             }
             Some(application::Event::Command(Command::WriteSpiFlashTestData)) => {
-                let _ = ctx.spawn.write_spi_flash_test_data();
+                let _ = write_spi_flash_test_data::spawn();
             }
             #[cfg(feature = "dev")]
             Some(application::Event::Command(Command::MlbInterrupt)) => {
-                let _ = ctx.spawn.signal_interrupt();
+                let _ = signal_interrupt::spawn();
             }
             Some(application::Event::Command(Command::LaunchApp)) => {
                 // We can safely ignore failed attempts to swap this task
                 // because 1 attempt to start the FPGA is equivalent to 2.
-                let _ = ctx.spawn.try_start_fpga();
+                let _ = try_start_fpga::spawn();
             }
             Some(application::Event::Command(Command::TriggerMcuPanic)) => {
                 panic!("Intentional panic");
             }
             Some(application::Event::Command(command)) => {
                 error!("Unsupported command {:?}", command);
-                host_interface.report_error(mcu_common::Error::HostI2cBadRequest);
-                host_interface.command_completed();
+                host_interface.lock(|h| {
+                    h.report_error(mcu_common::Error::HostI2cBadRequest);
+                    h.command_completed();
+                });
             }
             Some(application::Event::TestCameraI2c) => {
-                let _ = ctx.spawn.test_camera_i2c();
+                let _ = test_camera_i2c::spawn();
             }
             None => {}
         }
     }
 
-    #[task(binds = DMA_CHANNEL1, resources = [spi], priority = 2)]
-    fn spi_tx_dma_interrupt(ctx: spi_tx_dma_interrupt::Context) {
-        ctx.resources.spi.handle_tx_dma_interrupt();
+    #[task(binds = DMA_CHANNEL1, shared = [spi], priority = 2)]
+    fn spi_tx_dma_interrupt(mut ctx: spi_tx_dma_interrupt::Context) {
+        ctx.shared.spi.lock(|spi| spi.handle_tx_dma_interrupt());
     }
 
-    #[task(binds = DMA_CHANNEL2_3, resources = [spi], priority = 2)]
-    fn spi_rx_dma_interrupt(ctx: spi_rx_dma_interrupt::Context) {
-        ctx.resources.spi.handle_rx_dma_interrupt();
+    #[task(binds = DMA_CHANNEL2_3, shared = [spi], priority = 2)]
+    fn spi_rx_dma_interrupt(mut ctx: spi_rx_dma_interrupt::Context) {
+        ctx.shared.spi.lock(|spi| spi.handle_rx_dma_interrupt());
     }
 
     /// Interrupt handler for EXTI channels 4 through 15. Currently only used
     /// for FPGA SPI CS changes.
-    #[task(binds = EXTI4_15, resources = [spi, exti, fpga_timer],
-        spawn = [handle_spi_packet], priority = 2)]
-    fn exti4_15_event(ctx: exti4_15_event::Context) {
+    #[task(binds = EXTI4_15, shared = [spi, exti, fpga_timer],
+        priority = 2)]
+    fn exti4_15_event(mut ctx: exti4_15_event::Context) {
         // It's essential that we unpend the CS transition event before we call
         // cs_changed, since cs_changed might change the state of the READY pin,
         // which the FPGA ROM might be waiting on, resulting in another CS
         // transition event to occur straight away. If we unpend after
         // cs_changed, we might miss that subsequent CS transition.
-        ctx.resources.exti.unpend(board::FPGA_CS_EVENT);
-        if let Some(buffer) = ctx.resources.spi.cs_changed() {
-            ctx.resources.fpga_timer.reset();
+        ctx.shared.exti.unpend(board::FPGA_CS_EVENT);
+        if let Some(buffer) = ctx.shared.spi.lock(|spi| spi.cs_changed()) {
+            ctx.shared.fpga_timer.lock(|timer| timer.reset());
             // This should never fail since there's only one buffer and we have
             // it, so the `handle_spi_packet` task's queue can't have it.
-            let _ = ctx.spawn.handle_spi_packet(buffer);
+            let _ = handle_spi_packet::spawn(buffer);
         }
     }
 
-    #[task(binds = TIM14, resources = [frame_timer, camera_i2c, host_interface])]
+    #[task(binds = TIM14, shared = [frame_timer, camera_i2c, host_interface])]
     fn tim14_tick(mut ctx: tim14_tick::Context) {
-        let timer = ctx.resources.frame_timer;
+        let timer = ctx.shared.frame_timer;
         timer.clear_irq();
         timer.unlisten();
 
-        let mut camera = hm01b0::Camera::new(ctx.resources.camera_i2c);
+        let mut camera = hm01b0::Camera::new(ctx.shared.camera_i2c);
         if camera.set_mode(hm01b0::Mode::StreamingNFrames(1)).is_err() {
-            ctx.resources
+            ctx.shared
                 .host_interface
                 .lock(|host_interface| host_interface.report_error(mcu_common::Error::Camera));
         }
     }
 
-    #[task(binds = TIM15, resources = [fpga_timer, host_interface])]
+    #[task(binds = TIM15, shared = [fpga_timer, host_interface])]
     fn fpga_timer_tick(mut ctx: fpga_timer_tick::Context) {
-        ctx.resources.fpga_timer.lock(|fpga_timer| {
+        ctx.shared.fpga_timer.lock(|fpga_timer| {
             fpga_timer.clear_irq();
             // Once a timeout has happened, there is no reason to keep trying to detect further
             // timeouts.
             fpga_timer.unlisten();
         });
-        ctx.resources
+        ctx.shared
             .host_interface
             .lock(|host_interface| host_interface.report_error(mcu_common::Error::FpgaTimeout));
         error!("FPGA timeout expired");
@@ -440,37 +464,36 @@ const APP: () = {
     // Presumably it's trying to include the function in the interrupt table
     // when it doesn't exist.
     #[task(binds = TIM16,
-        resources = [debug_resources, fpga_device, debug_timer, camera_i2c, stopwatch,
-            debug_led, tick_count, host_interface],
-        spawn = [try_start_fpga])]
+        shared = [debug_resources, fpga_device, debug_timer, camera_i2c, stopwatch,
+            debug_led, tick_count, host_interface])]
     fn debug_timer_tick(mut ctx: debug_timer_tick::Context) {
         // Make "use" of ctx to prevent unused variable warning when dev feature
         // is off.
         let _ = &mut ctx;
         #[cfg(feature = "dev")]
         {
-            ctx.resources.debug_timer.clear_irq();
-            let led = &mut ctx.resources.debug_led;
-            *ctx.resources.tick_count = (*ctx.resources.tick_count).wrapping_add(1);
-            if *ctx.resources.tick_count & 16 == 0 {
+            ctx.shared.debug_timer.clear_irq();
+            let led = &mut ctx.shared.debug_led;
+            *ctx.shared.tick_count = (*ctx.shared.tick_count).wrapping_add(1);
+            if *ctx.shared.tick_count & 16 == 0 {
                 led.set_low().unwrap();
             } else {
                 led.set_high().unwrap();
             }
             while let Some(command) = ctx
-                .resources
+                .shared
                 .debug_resources
                 .mcu_debug_handler
                 .get_mcu_debug_command()
             {
-                debug::handle_mcu_debug_command(command, &mut ctx.resources, &mut ctx.spawn);
+                debug::handle_mcu_debug_command(command, &mut ctx.shared);
             }
         }
     }
 
-    #[task(resources = [camera_i2c, state, host_interface])]
+    #[task(shared = [camera_i2c, state, host_interface])]
     fn test_camera_i2c(mut ctx: test_camera_i2c::Context) {
-        let mut camera = hm01b0::Camera::new(ctx.resources.camera_i2c);
+        let mut camera = hm01b0::Camera::new(ctx.shared.camera_i2c);
         loop {
             // For each camera test iteration, we perform 100 reads of the
             // camera ID.
@@ -480,7 +503,7 @@ const APP: () = {
                     .map(|id| id == CAMERA_ID)
                     .unwrap_or(false)
                 {
-                    ctx.resources.host_interface.lock(|host_interface| {
+                    ctx.shared.host_interface.lock(|host_interface| {
                         host_interface.report_error(mcu_common::Error::Camera)
                     });
                     break;
@@ -488,7 +511,7 @@ const APP: () = {
             }
             // Decrement test iteration register and break out of loop if it has
             // reached zero.
-            if ctx.resources.state.lock(|state| {
+            if ctx.shared.state.lock(|state| {
                 state.camera_test_iterations = state.camera_test_iterations.saturating_sub(1);
                 state.camera_test_iterations == 0
             }) {
@@ -497,48 +520,47 @@ const APP: () = {
         }
     }
 
-    #[task(resources = [spi, state, debug_led, fpga_device, fpga_timer, debug_resources,
-        camera_i2c, host_interface, frame_timer],
-        spawn = [handle_spi_packet])]
+    #[task(shared = [spi, state, debug_led, fpga_device, fpga_timer, debug_resources,
+        camera_i2c, host_interface, frame_timer])]
     fn handle_spi_packet(mut ctx: handle_spi_packet::Context, mut buffer: MemBlock) {
         let request = fpga::Request::from_received_packet(&buffer);
         match &request.action {
             fpga::Action::SetDebugLed => {
                 if buffer[1] == 0 {
-                    ctx.resources.debug_led.set_low().unwrap();
+                    ctx.shared.debug_led.set_low().unwrap();
                 } else {
-                    ctx.resources.debug_led.set_high().unwrap();
+                    ctx.shared.debug_led.set_high().unwrap();
                 }
             }
             fpga::Action::ReadConfigRegisters => ctx
-                .resources
+                .shared
                 .state
                 .lock(|state| fpga::read_config_registers(&mut buffer, state)),
             fpga::Action::WriteStatusRegisters => ctx
-                .resources
+                .shared
                 .state
                 .lock(|state| fpga::write_status_registers(&buffer, state)),
             fpga::Action::ReportFpgaBoot => {
                 let count = ctx
-                    .resources
+                    .shared
                     .state
                     .lock(|state| fpga::report_boot(state, &buffer));
                 info!("FPGA reported boot #{}", count);
-                ctx.resources.fpga_timer.lock(|t| {
+                ctx.shared.fpga_timer.lock(|t| {
                     t.reset();
                     t.clear_irq();
                     t.listen();
                 });
             }
             fpga::Action::ReportFpgaPanic => {
-                ctx.resources
+                ctx.shared
                     .host_interface
                     .lock(|h| h.report_fpga_panic(&buffer[1..]));
             }
             #[cfg(feature = "dev")]
             fpga::Action::DebugLog => {
                 if let Some(message) = fpga::payload_as_string(&buffer) {
-                    let channel = &mut ctx.resources.debug_resources.fpga_up_channel;
+                    let channel = &mut ctx.shared.debug_resources.fpga_up_channel;
                     use core::fmt::Write;
                     write!(channel, "{}", message).unwrap();
                 } else {
@@ -547,21 +569,16 @@ const APP: () = {
             }
             #[cfg(feature = "image-transfer")]
             fpga::Action::DebugImage => {
-                if !debug::transfer_image(
-                    &buffer,
-                    &mut ctx.resources.debug_resources.image_channel,
-                    ctx.resources.state,
-                    ctx.resources.host_interface,
-                ) {
+                if !debug::transfer_image(&buffer, &mut ctx.shared) {
                     // Keep repeating this task until the I2C buffer becomes
                     // available and the data can be sent.
-                    let _ = ctx.spawn.handle_spi_packet(buffer);
+                    let _ = handle_spi_packet::spawn(buffer);
                     return;
                 }
             }
             #[cfg(feature = "dev")]
             fpga::Action::GetDebugCommand => {
-                ctx.resources
+                ctx.shared
                     .debug_resources
                     .fpga_debug_handler
                     .get_debug_command(&mut buffer[2..]);
@@ -569,7 +586,7 @@ const APP: () = {
             fpga::Action::ReadCameraI2c => {
                 let num_addresses: usize = buffer[1] as usize;
                 camera::read_camera_reg(
-                    ctx.resources.camera_i2c,
+                    ctx.shared.camera_i2c,
                     // Buffer is a sequence of one or more 2B addresses.
                     &mut buffer[2..(num_addresses * 2 + 2)],
                 );
@@ -577,7 +594,7 @@ const APP: () = {
             fpga::Action::WriteCameraI2c => {
                 let num_addresses: usize = buffer[1] as usize;
                 camera::write_camera_reg(
-                    ctx.resources.camera_i2c,
+                    ctx.shared.camera_i2c,
                     // Buffer is a sequence of one or more 2B addresses
                     // and 1B values.
                     &mut buffer[2..(num_addresses * 3 + 3)],
@@ -587,7 +604,7 @@ const APP: () = {
                 let error_bits = u16::from_le_bytes([buffer[1], buffer[2]]);
                 if let Ok(error) = mcu_common::Error::try_from(error_bits) {
                     info!("FPGA reports error: {:?}", error);
-                    ctx.resources.host_interface.lock(|h| h.report_error(error));
+                    ctx.shared.host_interface.lock(|h| h.report_error(error));
                 }
             }
             fpga::Action::TriggerFrame => {
@@ -596,53 +613,53 @@ const APP: () = {
                 let frame_delay = MicroSecond(
                     u32::from_le_bytes([buffer[1], buffer[2], buffer[3], buffer[4]]).max(1),
                 );
-                ctx.resources.frame_timer.reset();
-                ctx.resources.frame_timer.clear_irq();
-                ctx.resources.frame_timer.listen();
-                ctx.resources.frame_timer.start(frame_delay);
+                ctx.shared.frame_timer.reset();
+                ctx.shared.frame_timer.clear_irq();
+                ctx.shared.frame_timer.listen();
+                ctx.shared.frame_timer.start(frame_delay);
             }
             fpga::Action::Poll => {}
             fpga::Action::Echo => {}
         }
         request.prepare_to_send(&mut buffer);
-        ctx.resources.spi.lock(|spi| spi.send(buffer));
+        ctx.shared.spi.lock(|spi| spi.send(buffer));
     }
 
-    #[task(resources = [fpga_device, host_interface])]
+    #[task(shared = [fpga_device, host_interface])]
     fn erase_spi_flash(mut ctx: erase_spi_flash::Context) {
-        if let Err(error) = spi_flash::erase(get_spi_flash(ctx.resources.fpga_device).ok()) {
-            ctx.resources
+        if let Err(error) = spi_flash::erase(get_spi_flash(ctx.shared.fpga_device).ok()) {
+            ctx.shared
                 .host_interface
                 .lock(|host_interface| host_interface.report_error(error));
         }
-        ctx.resources
+        ctx.shared
             .host_interface
             .lock(|host_interface| host_interface.set_spi_flash_erasing(false));
-        ctx.resources
+        ctx.shared
             .host_interface
             .lock(|host_interface| host_interface.command_completed());
     }
 
-    #[task(resources = [fpga_device, host_interface])]
+    #[task(shared = [fpga_device, host_interface])]
     fn write_spi_flash(mut ctx: write_spi_flash::Context, request: i2c_protocol::WriteMemoryEvent) {
         if let Err(error) = spi_flash::write(
-            get_spi_flash(ctx.resources.fpga_device).ok(),
+            get_spi_flash(ctx.shared.fpga_device).ok(),
             request.address,
             &*request.data,
         ) {
-            ctx.resources
+            ctx.shared
                 .host_interface
                 .lock(|host_interface| host_interface.report_error(error));
         }
-        ctx.resources
+        ctx.shared
             .host_interface
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(resources = [fpga_device, host_interface, state, rcc])]
+    #[task(shared = [fpga_device, host_interface, state, rcc])]
     fn try_start_fpga(ctx: try_start_fpga::Context) {
-        let mut host_interface = ctx.resources.host_interface;
-        match ctx.resources.fpga_device.start_fpga(ctx.resources.rcc) {
+        let mut host_interface = ctx.shared.host_interface;
+        match ctx.shared.fpga_device.start_fpga(ctx.shared.rcc) {
             Ok(_) => {
                 host_interface.lock(|h| h.set_application_running(true));
             }
@@ -654,10 +671,10 @@ const APP: () = {
         host_interface.lock(|h| h.command_completed());
     }
 
-    #[task(resources = [fpga_device, host_interface])]
+    #[task(shared = [fpga_device, host_interface])]
     fn write_spi_flash_test_data(ctx: write_spi_flash_test_data::Context) {
-        let mut host_interface = ctx.resources.host_interface;
-        if let Err(error) = get_spi_flash(ctx.resources.fpga_device)
+        let mut host_interface = ctx.shared.host_interface;
+        if let Err(error) = get_spi_flash(ctx.shared.fpga_device)
             .and_then(|spi_flash| testing::write_spi_test_data(spi_flash))
         {
             host_interface.lock(|h| h.report_error(error));
@@ -665,9 +682,9 @@ const APP: () = {
         host_interface.lock(|h| h.command_completed());
     }
 
-    #[task(resources = [interrupt_pin, host_interface])]
+    #[task(shared = [host_interface], local = [interrupt_pin])]
     fn signal_interrupt(mut ctx: signal_interrupt::Context) {
-        let _ = ctx.resources.interrupt_pin.set_low();
+        let _ = ctx.local.interrupt_pin.set_low();
         // TODO: If we use signal_interrupt for something other than testing and
         // debugging purposes, we should use a timer rather than a delay so that
         // other tasks at this priory can run concurrently. Also, basing the
@@ -675,16 +692,10 @@ const APP: () = {
         // duration. But this is good enough for testing purposes. If the CPU is
         // running at 60MHz, then 500_000 cycles should be about 8ms.
         cortex_m::asm::delay(500_000);
-        let _ = ctx.resources.interrupt_pin.set_high();
-        ctx.resources.host_interface.lock(|h| h.command_completed());
+        let _ = ctx.local.interrupt_pin.set_high();
+        ctx.shared.host_interface.lock(|h| h.command_completed());
     }
-
-    // Interrupts that we're not using that can be used by RTIC for spawning
-    // software tasks.
-    extern "C" {
-        fn TIM17();
-    }
-};
+}
 
 fn rcc_config() -> hal::rcc::Config {
     // Clock our CPU at 60MHz. This is as close as we can get to the maximum

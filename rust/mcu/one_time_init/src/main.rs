@@ -22,7 +22,6 @@ use mcu_common::Error;
 use mcu_common::OptionBytesConfigRequest;
 use mcu_common::Status;
 use panic_halt as _;
-use rtic::app;
 use stm32g0 as _;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 use stm32g0_utils::IntoOpenDrainOutputHigh;
@@ -40,20 +39,29 @@ pub struct State {
     scb: SCB,
 }
 
-#[app(device = hal::stm32, peripherals = true)]
-const APP: () = {
-    struct Resources {
+#[rtic::app(
+    device = hal::stm32,
+    peripherals = true,
+    dispatchers = [TIM17])]
+mod app {
+    use super::*;
+
+    #[shared]
+    struct SharedResources {}
+
+    #[local]
+    struct LocalResources {
         state: State,
     }
 
-    #[task(binds = I2C1, resources = [state],
+    #[task(binds = I2C1, local = [state],
         priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        ctx.resources.state.handle_i2c_interrupt();
+        ctx.local.state.handle_i2c_interrupt();
     }
 
     #[init]
-    fn init(ctx: init::Context) -> init::LateResources {
+    fn init(ctx: init::Context) -> (SharedResources, LocalResources, init::Monotonics) {
         let p = ctx.device;
 
         let flash = p.FLASH;
@@ -104,7 +112,7 @@ const APP: () = {
             p.I2C1, &mut rcc, sda, scl, i2c_config,
         ));
 
-        init::LateResources {
+        let local = LocalResources {
             state: State {
                 protocol_handler,
                 flash,
@@ -113,9 +121,10 @@ const APP: () = {
                 pwr,
                 scb,
             },
-        }
+        };
+        (SharedResources {}, local, init::Monotonics())
     }
-};
+}
 
 impl State {
     fn handle_i2c_interrupt(&mut self) {

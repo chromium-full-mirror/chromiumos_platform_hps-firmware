@@ -99,21 +99,30 @@ pub struct EventCounts {
     fvld_pulse_count: u32,
 }
 
-#[rtic::app(device = hal::stm32, peripherals = true)]
-const APP: () = {
-    struct Resources {
+#[rtic::app(
+    device = hal::stm32,
+    peripherals = true,
+    dispatchers = [TIM17])]
+mod app {
+    use super::*;
+
+    #[shared]
+    struct SharedResources {
+        event_counts: EventCounts,
+    }
+    #[local]
+    struct LocalResources {
         tester: Tester,
         syscfg_vrefbuf: SYSCFG_VREFBUF,
         debug_led: PA1<Output<PushPull>>,
         host_i2c: I2C1,
         exti: hal::stm32::EXTI,
-        event_counts: EventCounts,
         mlb_int: PB8<Output<OpenDrain>>,
     }
 
-    #[init(spawn = [run_test])]
-    fn init(ctx: init::Context) -> init::LateResources {
-        ctx.spawn.run_test().unwrap();
+    #[init()]
+    fn init(ctx: init::Context) -> (SharedResources, LocalResources, init::Monotonics) {
+        run_test::spawn().unwrap();
         let p = ctx.device;
         let cp = ctx.core;
         #[cfg(feature = "dev")]
@@ -287,22 +296,27 @@ const APP: () = {
             fpga_spi_copi: gpioa.pa4,
         };
 
-        init::LateResources {
+        let shared = SharedResources {
+            event_counts: EventCounts::default(),
+        };
+        let local = LocalResources {
             tester,
             syscfg_vrefbuf: p.SYSCFG_VREFBUF,
             debug_led,
             host_i2c,
             exti,
-            event_counts: EventCounts::default(),
             mlb_int,
-        }
+        };
+        (shared, local, init::Monotonics())
     }
 
-    #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts, mlb_int])]
-    fn run_test(ctx: run_test::Context) {
-        let mlb_int = ctx.resources.mlb_int;
+    #[task(
+        shared = [event_counts],
+        local = [tester, syscfg_vrefbuf, debug_led, host_i2c, mlb_int])]
+    fn run_test(mut ctx: run_test::Context) {
+        let mlb_int = ctx.local.mlb_int;
         let mut status = TestStatus::default();
-        match ctx.resources.tester.run_test(ctx.resources.event_counts) {
+        match ctx.local.tester.run_test(&mut ctx.shared) {
             Ok(outputs) => {
                 status.error_code = TEST_STATUS_OK;
                 status.outputs = outputs;
@@ -314,7 +328,7 @@ const APP: () = {
             }
         }
         if cfg!(not(feature = "dev")) {
-            report_result(ctx.resources.host_i2c, mlb_int, &status);
+            report_result(ctx.local.host_i2c, mlb_int, &status);
         }
         if cfg!(feature = "dev") {
             // In dev mode, we wait 100ms before we reset. This is to give the
@@ -334,30 +348,24 @@ const APP: () = {
         cortex_m::peripheral::SCB::sys_reset();
     }
 
-    #[task(binds = EXTI4_15, resources = [exti, event_counts], priority = 2)]
-    fn exti4_15_event(ctx: exti4_15_event::Context) {
-        let exti = ctx.resources.exti;
+    #[task(binds = EXTI4_15, shared = [event_counts], local = [exti], priority = 2)]
+    fn exti4_15_event(mut ctx: exti4_15_event::Context) {
+        let exti = ctx.local.exti;
         if exti.is_pending(hal::exti::Event::GPIO8, hal::gpio::SignalEdge::Rising) {
             exti.unpend(hal::exti::Event::GPIO8);
-            ctx.resources.event_counts.fvld_pulse_count += 1;
+            ctx.shared.event_counts.lock(|e| e.fvld_pulse_count += 1);
         }
         if exti.is_pending(hal::exti::Event::GPIO14, hal::gpio::SignalEdge::Rising) {
             exti.unpend(hal::exti::Event::GPIO14);
-            ctx.resources.event_counts.lvld_pulse_count += 1;
+            ctx.shared.event_counts.lock(|e| e.lvld_pulse_count += 1);
         }
     }
-
-    // Interrupts that we're not using that can be used by RTIC for spawning
-    // software tasks.
-    extern "C" {
-        fn TIM17();
-    }
-};
+}
 
 impl Tester {
     fn run_test(
         &mut self,
-        mut event_counts: resources::event_counts,
+        shared: &mut app::run_test::SharedResources,
     ) -> Result<TestOutputs, Error> {
         let mut outputs = TestOutputs::default();
         if let (Some(flash_spi), Some(flash_spi_cs)) =
@@ -425,7 +433,7 @@ impl Tester {
             self.stopwatch.elapsed(start).0 / 1000
         );
 
-        let event_counts = rtic::Mutex::lock(&mut event_counts, |x| *x);
+        let event_counts = rtic::Mutex::lock(&mut shared.event_counts, |x| *x);
         info!(
             "FVLD pulses: {} LVLD pulses: {}",
             event_counts.fvld_pulse_count, event_counts.lvld_pulse_count

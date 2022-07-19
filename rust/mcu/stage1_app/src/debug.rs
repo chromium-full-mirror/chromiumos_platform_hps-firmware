@@ -279,26 +279,23 @@ pub(crate) fn set_group_param_hold(camera_i2c: &mut CameraI2c) {
 #[cfg(feature = "image-transfer")]
 pub(crate) fn transfer_image(
     buffer: &MemBlock,
-    image_channel: &mut rtt_target::UpChannel,
-    mut state: crate::resources::state,
-    mut host_interface: crate::resources::host_interface,
+    shared: &mut crate::app::handle_spi_packet::SharedResources,
 ) -> bool {
-    let i2c_image_xfer_enabled = state.lock(|s| s.i2c_image_transfer_enabled());
+    let i2c_image_xfer_enabled = shared.state.lock(|s| s.i2c_image_transfer_enabled());
     let mut success = true;
     if i2c_image_xfer_enabled {
-        host_interface.lock(|host_interface| {
+        shared.host_interface.lock(|host_interface| {
             success = host_interface.queue_image_data_for_i2c(&buffer[1..]);
         });
     } else {
-        image_channel.write(&buffer[1..]);
+        shared.debug_resources.image_channel.write(&buffer[1..]);
     }
     success
 }
 
 pub(crate) fn handle_mcu_debug_command(
     command: McuDebugCommandInfo,
-    resources: &mut crate::debug_timer_tick::Resources,
-    spawn: &mut crate::debug_timer_tick::Spawn,
+    resources: &mut crate::app::debug_timer_tick::SharedResources,
 ) {
     match command.kind {
         McuDebugCommand::ReadSpiFlash => debug_read(
@@ -433,7 +430,7 @@ pub(crate) fn handle_mcu_debug_command(
         }
         McuDebugCommand::TryStartFpga => {
             resources.host_interface.lock(|h| h.command_triggered());
-            let _ = spawn.try_start_fpga();
+            let _ = crate::app::try_start_fpga::spawn();
         }
         McuDebugCommand::SetBlockingMode => {
             let mode = if command.arg == 1 {
