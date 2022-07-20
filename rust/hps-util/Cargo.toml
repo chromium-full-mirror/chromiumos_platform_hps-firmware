@@ -14,7 +14,6 @@ host_dev_common = { path = "../host_dev_common" }
 linux-embedded-hal = "0.3.1"
 mcp2221 = { path = "../mcp2221", optional = true }
 mcu_common = { path = "../mcu_common" }
-serialport = "4.0.1"
 
 [features]
 default = [ "mcp2221" ]
