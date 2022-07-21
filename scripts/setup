@@ -39,4 +39,17 @@ if [ ${#missing[@]} -gt 0 ]; then
     fi
 fi
 
+# Make sure $USER is in the plugdev group inside the chroot, for accessing the
+# MCP2221 and FT4232H USB devices.
+
+if ! id -Gn | grep -qw plugdev ; then
+    echo "${USER} is not in plugdev group" >&2
+    echo -n "Add [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        sudo usermod -aG plugdev "${USER}"
+        echo "Re-enter chroot for group changes to take effect." >&2
+    fi
+fi
+
 echo "Reminder: also run scripts/setup-proto2-on-host outside the chroot if necessary." >&2
