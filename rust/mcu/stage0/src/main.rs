@@ -28,7 +28,6 @@ use mcu_common::MemBlock;
 use mcu_flash::FlashWriter;
 use panic_halt as _;
 use rtic::app;
-use rtic::Mutex;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
 use stm32g0_utils::IntoOpenDrainOutputHigh;
 
@@ -132,68 +131,67 @@ const APP: () = {
         }
     }
 
-    #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface], priority = 2)]
-    fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
-        if let Some(event) = ctx.resources.host_interface.handle_i2c_events() {
-            if matches!(
-                event,
-                HostEvent::WriteFlash(_)
-                    | HostEvent::Command(Command::EraseStage1)
-                    | HostEvent::Command(Command::Launch1)
-            ) {
-                // Disable I2C ACK while writing flash, since writing flash
-                // prevents us from responding to I2C events in time. The host
-                // can then retry the request until it gets through. We also
-                // disable I2C while attempting to launch stage1. If we get an
-                // error then we reenable it, if we don't, then stage1 will
-                // reenable it.
-                ctx.resources
-                    .host_interface
-                    .i2c_mut()
-                    .set_i2c_enabled(false);
-            }
-            if ctx.spawn.handle_event(event).is_err() {
-                ctx.resources
-                    .host_interface
-                    .i2c_report_err(Error::BufferOverrun);
-            }
+    #[task(binds = I2C1, resources = [host_interface, flash_writer], priority = 2)]
+    fn i2c1_interrupt(mut ctx: i2c1_interrupt::Context) {
+        let event = match ctx.resources.host_interface.handle_i2c_events() {
+            Some(x) => x,
+            None => return,
+        };
+        if matches!(
+            event,
+            HostEvent::WriteFlash(_)
+                | HostEvent::Command(Command::EraseStage1)
+                | HostEvent::Command(Command::Launch1)
+        ) {
+            // Disable I2C ACK while writing flash, since writing flash
+            // prevents us from responding to I2C events in time. The host
+            // can then retry the request until it gets through. We also
+            // disable I2C while attempting to launch stage1. If we get an
+            // error then we reenable it, if we don't, then stage1 will
+            // reenable it.
+            ctx.resources
+                .host_interface
+                .i2c_mut()
+                .set_i2c_enabled(false);
         }
-    }
 
-    #[task(resources = [flash_writer, host_interface], capacity = 10)]
-    fn handle_event(ctx: handle_event::Context, event: HostEvent) {
         // Any commands received after we've decide to launch stage1 should be
         // ingored.
         if BOOTLOAD_TRIGGER.load(Ordering::Relaxed) {
             return;
         }
 
-        let mut host_interface = ctx.resources.host_interface;
         let flash_writer = ctx.resources.flash_writer;
         match event {
             HostEvent::Command(Command::Launch1) => {
-                if let Err(error) = launch_stage1(flash_writer, &mut host_interface) {
-                    host_interface.lock(|h| h.i2c_report_err(error));
+                if let Err(error) = launch_stage1(flash_writer, &mut ctx.resources.host_interface) {
+                    ctx.resources.host_interface.i2c_report_err(error);
                     // We reenable I2C only if we get an error during
                     // validation. If there was no error, then we leave it
                     // disabled until stage1 configures it.
-                    host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
+                    ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
                 }
             }
             HostEvent::Command(Command::EraseStage1) => {
                 if flash_writer.erase_slot().is_err() {
-                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
+                    ctx.resources
+                        .host_interface
+                        .i2c_report_err(Error::McuFlashWriteError);
                 }
                 // Reenable I2C. It was disabled above in the I2C interrupt handler.
-                host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
+                ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
             }
             HostEvent::WriteFlash(event) => {
                 if flash_writer.write(event.address, &*event.data).is_err() {
-                    host_interface.lock(|h| h.i2c_report_err(Error::McuFlashWriteError));
+                    ctx.resources
+                        .host_interface
+                        .i2c_report_err(Error::McuFlashWriteError);
                 }
-                host_interface.lock(|h| h.supply_mem_block(event.data.release()));
+                ctx.resources
+                    .host_interface
+                    .supply_mem_block(event.data.release());
                 // Reenable I2C. It was disabled above in the I2C interrupt handler.
-                host_interface.lock(|h| h.i2c_mut().set_i2c_enabled(true));
+                ctx.resources.host_interface.i2c_mut().set_i2c_enabled(true);
             }
             HostEvent::Command(Command::Reset) => {
                 // We want to avoid getting a WriteFlash event followed by a
@@ -206,7 +204,9 @@ const APP: () = {
             HostEvent::Command(_) => {
                 // All other commands are only implemented in stage1.
                 // Here in stage0, they are an error.
-                host_interface.lock(|h| h.i2c_report_err(Error::HostI2cBadRequest));
+                ctx.resources
+                    .host_interface
+                    .i2c_report_err(Error::HostI2cBadRequest);
             }
         }
     }
@@ -243,14 +243,14 @@ const APP: () = {
 
 fn launch_stage1(
     flash_writer: &mut FlashWriter,
-    host_interface: &mut crate::resources::host_interface,
+    host_interface: &mut HostInterface<Stm32g0I2cPeripheral<I2C1>>,
 ) -> Result<(), mcu_common::Error> {
     // By taking the slot, any subsequent attempts to write to flash will fail.
     let slot = flash_writer.take_slot()?;
     libstage0::verification::detect_and_validate_stage1(
         slot,
         PUBLIC_KEY,
-        host_interface.lock(|h| h.write_protect_state()),
+        host_interface.write_protect_state(),
         get_minimum_epoch(),
     )?;
 
