@@ -31,7 +31,7 @@ exec bwrap \
     --bind "${CHROOT}" / \
     --bind "${HOME}" "${HOME}" \
     --bind "${CHROOT}/home/${USER}/.cargo" "${HOME}/.cargo" \
-    --dev /dev \
+    --dev-bind /dev /dev \
     --proc /proc \
     --setenv PATH /opt/hps-sdk/bin:/usr/bin:/bin:/usr/sbin \
     "$@"
