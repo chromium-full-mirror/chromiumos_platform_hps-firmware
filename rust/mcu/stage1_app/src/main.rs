@@ -74,16 +74,265 @@ const APP: () = {
         #[cfg(feature = "dev")]
         static mut DEBUG_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE];
-        #[allow(unused_mut)]
-        let mut resources = init_peripherals(ctx.device, ctx.core, MemBlock::new(I2C_RECV_BUFFER));
+
+        let p = ctx.device;
+        let cp = ctx.core;
+
+        let mut init_status = Status::empty();
+        match p.FLASH.optr.read().rdp().bits() {
+            0xaa => {}
+            0xcc => init_status |= Status::STAGE0_PERM_LOCKED,
+            _ => init_status |= Status::STAGE0_LOCKED,
+        }
+        // safety: We're calling this during initialization when interrupts are
+        // disabled as required.
+        #[allow(unused_variables, unused_mut)]
+        let mut debug_resources = unsafe { debug::DebugResources::init() };
+
+        // Reset clock source to HSI. This is necessary because the bootloader
+        // (either stage0 or the STM32 system bootloader) will have left the clock
+        // source configured as the PLL.
+        p.RCC.cfgr.write(|w| w);
+        // Configure our vector table. This is necessary when being loaded by a
+        // bootloader. Neither stage0 nor the STM32 system bootloader will do this
+        // for us.
+        unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+        // Enable SPI peripheral.
+        p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
+        p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
+        // Reset SPI peripheral.
+        p.RCC.apbrstr2.write(|w| w.spi1rst().set_bit());
+        p.RCC.apbrstr2.write(|w| w.spi1rst().clear_bit());
+        p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
+        p.RCC.apbrstr1.write(|w| w.spi2rst().clear_bit());
+        // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
+        // is still handled when we're idle and the CPU is put to sleep.
+        p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
+        let mut rcc = p.RCC.freeze(rcc_config());
+        let mut delay = Delay::syst(cp.SYST, &rcc);
+
+        let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
+            stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+            stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
+        );
+        i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
+
+        let mut board = board::Board::new(
+            p.GPIOA.split(&mut rcc),
+            p.GPIOB.split(&mut rcc),
+            p.GPIOC.split(&mut rcc),
+            p.I2C1,
+            p.I2C2,
+            p.SPI1,
+            p.SPI2,
+            p.TIM1,
+            p.TIM3,
+            &mut rcc,
+            i2c_config,
+        );
+        let dma = p.DMA.split(&mut rcc, p.DMAMUX);
+        let mut exti = p.EXTI;
+
+        let mut host_interface = HostInterface::new(board.host_bus, &header::__IMAGE_HDR);
+        host_interface.init_status = init_status;
+
+        // We either use our MemBlock to store a crash that occurred on the previous
+        // boot, or if there was no crash, we supply the MemBlock to the host
+        // interface in order to receive data.
+        let mut buffer = Buffer::new(MemBlock::new(I2C_RECV_BUFFER));
+        panic_handler::copy_crash_report(&mut buffer);
+        if !buffer.is_empty() {
+            host_interface.report_previous_crash(buffer);
+        } else {
+            host_interface.supply_mem_block(buffer.release());
+        }
+
+        // Set up a timer for detecting if the FPGA stops sending us updates
+        // because it has crashed/hung. The timer interval is chosen to be
+        // larger than the duration of each iteration of the FPGA's main loop.
+        // We reset the timer whenever we receive an update from the FPGA, so if
+        // the timer interrupt fires we know something is wrong.
+        let fpga_timer_duration: MicroSecond = 5_000.ms().into();
+        let mut fpga_timer = p.TIM15.timer(&mut rcc);
+        fpga_timer.start(fpga_timer_duration);
+
+        // Trigger an interrupt when the SPI CS line changes.
+        let fpga_spi_cs = board
+            .fpga_spi_cs
+            .listen(hal::gpio::SignalEdge::All, &mut exti);
+
+        let spi = SpiPeripheral::new(
+            board.fpga_spi,
+            board.fpga_spi_clk,
+            board.fpga_spi_cipo,
+            board.fpga_spi_copi,
+            fpga_spi_cs,
+            dma.ch1,
+            dma.ch2,
+            board.spi_ready,
+        );
+
+        let stopwatch = p.TIM2.stopwatch(&mut rcc);
+
+        let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
+        let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
+        pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
+        pwm_channel.enable();
+
+        // Power off the FPGA, since if there is non-standard gateware loaded, it
+        // may ignore reset.
+        board.fpga_power_gate.set_high().unwrap();
+
+        // Put the FPGA into reset, otherwise we won't be able to reliably access
+        // the SPI flash.
+        board.fpga_programn.set_low().unwrap();
+
+        // Wait a bit to make sure that the FPGA has really powered off before we
+        // power it back on.
+        delay.delay(25.ms());
+
+        let flash_spi = spi_dma_controller::SpiDmaController::new(
+            board.flash_spi,
+            board.flash_spi_clk,
+            board.flash_spi_cipo,
+            board.flash_spi_copi,
+            dma.ch3,
+            dma.ch4,
+        );
+        let mut spi_flash = None;
+
+        // Ensure FPGA and SPI flash are powered.
+        board.fpga_power_gate.set_low().unwrap();
+
+        // Give the SPI flash chip a chance to start after we powered it on.
+        // Experimentally, on one non-dev device, 40ms was insufficient, but 50ms
+        // was sufficient. So we give it double-that to be sure.
+        delay.delay(100.ms());
+
+        let mut f = spi_flash::SpiFlash {
+            spi: flash_spi,
+            cs: board.flash_spi_cs,
+        };
+
+        if let Ok(status) = f.read_status() {
+            host_interface.spi_flash_status = status;
+        }
+
+        let flash_spi = f.spi;
+        let flash_spi_cs = f.cs;
+
+        let mut part_ids = PartIds::default();
+
+        part_ids.mcu_id = p.DBG.idcode.read().bits();
+
+        match Flash::init(flash_spi, flash_spi_cs) {
+            Ok(mut flash) => match flash.read_jedec_id() {
+                Ok(id) => {
+                    part_ids.spi_flash_manufacturer_id = id.mfr_code() as u32;
+                    part_ids.set_spi_flash_device_id(id.device_id());
+                    if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
+                        && id.device_id() == board::SPI_FLASH_DEVICE_ID
+                    {
+                        info!("Found expected flash chip");
+
+                        // Enable quad SPI. This setting is non-volatile, so in
+                        // theory we only need do this once, however the cost of
+                        // doing it every boot is only a single read, which is
+                        // very cheap.
+                        if spi_flash::enable_quad_spi(&mut flash).is_err() {
+                            host_interface.report_error(mcu_common::Error::SpiFlash);
+                            info!("Failed to enable quad SPI");
+                        }
+
+                        spi_flash = Some(flash);
+                    } else {
+                        host_interface.report_error(mcu_common::Error::SpiFlash);
+                        info!(
+                            "Unexpected flash ID {}, [{}, {}]",
+                            id.mfr_code(),
+                            id.device_id()[0],
+                            id.device_id()[1]
+                        );
+                    }
+                }
+                Err(_) => {
+                    host_interface.report_error(mcu_common::Error::SpiFlash);
+                    info!("Failed to read flash ID");
+                }
+            },
+            Err(e) => {
+                host_interface.report_error(mcu_common::Error::SpiFlash);
+                info!("Failed to initialize SPI flash: {:?}", e);
+            }
+        };
+
+        // We insert a small delay between I2C requests. If we don't do this, then
+        // if the camera is not present, we end up blocking indefinitely. If
+        // removing this delay, be sure to test with camera disconnected.
+        let mut camera_i2c = DelayedI2c {
+            i2c: board.camera_i2c,
+            delay,
+            duration_us: 10,
+        };
+
+        let mut camera = hm01b0::Camera::new(&mut camera_i2c);
+        match camera.get_camera_id() {
+            Err(_) => {
+                host_interface.report_error(mcu_common::Error::Camera);
+                info!("Failed to read camera ID");
+            }
+            Ok(id) => {
+                part_ids.camera_id = id as u32;
+                if id != CAMERA_ID {
+                    host_interface.report_error(mcu_common::Error::Camera);
+                    info!("Camera reported unexpected ID: {}", id);
+                }
+            }
+        }
+        match camera.run_init_script() {
+            Ok(_) => info!("Default HM01B0 configuration applied"),
+            Err(_) => info!("Failed to apply HM01B0 init config"),
+        };
+
+        info!(
+            "MCU application started. CPU is running at {}MHz",
+            rcc.clocks.sys_clk.0 / 1000000
+        );
+
+        host_interface.part_ids = part_ids;
+
+        let fpga_device = FpgaDevice::new(board.fpga_programn, board.fpga_power_gate, spi_flash);
+
+        // If something tried to address us while we were still initializing, the
+        // bus might have ended up in a bad state, reset it.
+        host_interface.reset_bus();
+
         #[cfg(feature = "dev")]
         {
-            resources
-                .debug_resources
+            debug_resources
                 .mcu_debug_handler
                 .supply_mem_block(MemBlock::new(DEBUG_RECV_BUFFER));
         }
-        resources
+
+        init::LateResources {
+            host_interface,
+            spi,
+            exti,
+            state: ApplicationState::default(),
+            debug_led: board.debug_led,
+            fpga_device,
+            fpga_timer,
+            #[cfg(feature = "dev")]
+            debug_resources,
+            #[cfg(feature = "dev")]
+            debug_timer: debug::init_debug_timer(p.TIM16, &mut rcc),
+            camera_i2c,
+            frame_timer: p.TIM14.timer(&mut rcc),
+            stopwatch,
+            tick_count: 0,
+            rcc,
+            interrupt_pin: board.interrupt_pin,
+        }
     }
 
     #[task(binds = I2C1, resources = [host_interface, state],
@@ -454,260 +703,6 @@ fn rcc_config() -> hal::rcc::Config {
     };
 
     hal::rcc::Config::pll().pll_cfg(pll_cfg)
-}
-
-fn init_peripherals(
-    p: hal::stm32::Peripherals,
-    cp: rtic::export::Peripherals,
-    mem_block: MemBlock,
-) -> init::LateResources {
-    let mut init_status = Status::empty();
-    match p.FLASH.optr.read().rdp().bits() {
-        0xaa => {}
-        0xcc => init_status |= Status::STAGE0_PERM_LOCKED,
-        _ => init_status |= Status::STAGE0_LOCKED,
-    }
-    // safety: We're calling this during initialization when interrupts are
-    // disabled as required.
-    #[allow(unused_variables)]
-    let debug_resources = unsafe { debug::DebugResources::init() };
-
-    // Reset clock source to HSI. This is necessary because the bootloader
-    // (either stage0 or the STM32 system bootloader) will have left the clock
-    // source configured as the PLL.
-    p.RCC.cfgr.write(|w| w);
-    // Configure our vector table. This is necessary when being loaded by a
-    // bootloader. Neither stage0 nor the STM32 system bootloader will do this
-    // for us.
-    unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
-    // Enable SPI peripheral.
-    p.RCC.apbenr2.write(|w| w.spi1en().set_bit());
-    p.RCC.apbenr1.write(|w| w.spi2en().set_bit());
-    // Reset SPI peripheral.
-    p.RCC.apbrstr2.write(|w| w.spi1rst().set_bit());
-    p.RCC.apbrstr2.write(|w| w.spi1rst().clear_bit());
-    p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
-    p.RCC.apbrstr1.write(|w| w.spi2rst().clear_bit());
-    // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
-    // is still handled when we're idle and the CPU is put to sleep.
-    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
-    let mut rcc = p.RCC.freeze(rcc_config());
-    let mut delay = Delay::syst(cp.SYST, &rcc);
-
-    let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
-        stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
-        stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
-    );
-    i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
-
-    let mut board = board::Board::new(
-        p.GPIOA.split(&mut rcc),
-        p.GPIOB.split(&mut rcc),
-        p.GPIOC.split(&mut rcc),
-        p.I2C1,
-        p.I2C2,
-        p.SPI1,
-        p.SPI2,
-        p.TIM1,
-        p.TIM3,
-        &mut rcc,
-        i2c_config,
-    );
-    let dma = p.DMA.split(&mut rcc, p.DMAMUX);
-    let mut exti = p.EXTI;
-
-    let mut host_interface = HostInterface::new(board.host_bus, &header::__IMAGE_HDR);
-    host_interface.init_status = init_status;
-
-    // We either use our MemBlock to store a crash that occurred on the previous
-    // boot, or if there was no crash, we supply the MemBlock to the host
-    // interface in order to receive data.
-    let mut buffer = Buffer::new(mem_block);
-    panic_handler::copy_crash_report(&mut buffer);
-    if !buffer.is_empty() {
-        host_interface.report_previous_crash(buffer);
-    } else {
-        host_interface.supply_mem_block(buffer.release());
-    }
-
-    // Set up a timer for detecting if the FPGA stops sending us updates because it has
-    // crashed/hung. The timer interval is chosen to be larger than the duration of each iteration
-    // of the FPGA's main loop. We reset the timer whenever we receive an update from the FPGA,
-    // so if the timer interrupt fires we know something is wrong.
-    let fpga_timer_duration: MicroSecond = 5_000.ms().into();
-    let mut fpga_timer = p.TIM15.timer(&mut rcc);
-    fpga_timer.start(fpga_timer_duration);
-
-    // Trigger an interrupt when the SPI CS line changes.
-    let fpga_spi_cs = board
-        .fpga_spi_cs
-        .listen(hal::gpio::SignalEdge::All, &mut exti);
-
-    let spi = SpiPeripheral::new(
-        board.fpga_spi,
-        board.fpga_spi_clk,
-        board.fpga_spi_cipo,
-        board.fpga_spi_copi,
-        fpga_spi_cs,
-        dma.ch1,
-        dma.ch2,
-        board.spi_ready,
-    );
-
-    let stopwatch = p.TIM2.stopwatch(&mut rcc);
-
-    let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
-    let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
-    pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
-    pwm_channel.enable();
-
-    // Power off the FPGA, since if there is non-standard gateware loaded, it
-    // may ignore reset.
-    board.fpga_power_gate.set_high().unwrap();
-
-    // Put the FPGA into reset, otherwise we won't be able to reliably access
-    // the SPI flash.
-    board.fpga_programn.set_low().unwrap();
-
-    // Wait a bit to make sure that the FPGA has really powered off before we
-    // power it back on.
-    delay.delay(25.ms());
-
-    let flash_spi = spi_dma_controller::SpiDmaController::new(
-        board.flash_spi,
-        board.flash_spi_clk,
-        board.flash_spi_cipo,
-        board.flash_spi_copi,
-        dma.ch3,
-        dma.ch4,
-    );
-    let mut spi_flash = None;
-
-    // Ensure FPGA and SPI flash are powered.
-    board.fpga_power_gate.set_low().unwrap();
-
-    // Give the SPI flash chip a chance to start after we powered it on.
-    // Experimentally, on one non-dev device, 40ms was insufficient, but 50ms
-    // was sufficient. So we give it double-that to be sure.
-    delay.delay(100.ms());
-
-    let mut f = spi_flash::SpiFlash {
-        spi: flash_spi,
-        cs: board.flash_spi_cs,
-    };
-
-    if let Ok(status) = f.read_status() {
-        host_interface.spi_flash_status = status;
-    }
-
-    let flash_spi = f.spi;
-    let flash_spi_cs = f.cs;
-
-    let mut part_ids = PartIds::default();
-
-    part_ids.mcu_id = p.DBG.idcode.read().bits();
-
-    match Flash::init(flash_spi, flash_spi_cs) {
-        Ok(mut flash) => match flash.read_jedec_id() {
-            Ok(id) => {
-                part_ids.spi_flash_manufacturer_id = id.mfr_code() as u32;
-                part_ids.set_spi_flash_device_id(id.device_id());
-                if id.mfr_code() == board::SPI_FLASH_MANUFACTURER_ID
-                    && id.device_id() == board::SPI_FLASH_DEVICE_ID
-                {
-                    info!("Found expected flash chip");
-
-                    // Enable quad SPI. This setting is non-volatile, so in
-                    // theory we only need do this once, however the cost of
-                    // doing it every boot is only a single read, which is
-                    // very cheap.
-                    if spi_flash::enable_quad_spi(&mut flash).is_err() {
-                        host_interface.report_error(mcu_common::Error::SpiFlash);
-                        info!("Failed to enable quad SPI");
-                    }
-
-                    spi_flash = Some(flash);
-                } else {
-                    host_interface.report_error(mcu_common::Error::SpiFlash);
-                    info!(
-                        "Unexpected flash ID {}, [{}, {}]",
-                        id.mfr_code(),
-                        id.device_id()[0],
-                        id.device_id()[1]
-                    );
-                }
-            }
-            Err(_) => {
-                host_interface.report_error(mcu_common::Error::SpiFlash);
-                info!("Failed to read flash ID");
-            }
-        },
-        Err(e) => {
-            host_interface.report_error(mcu_common::Error::SpiFlash);
-            info!("Failed to initialize SPI flash: {:?}", e);
-        }
-    };
-
-    // We insert a small delay between I2C requests. If we don't do this, then
-    // if the camera is not present, we end up blocking indefinitely. If
-    // removing this delay, be sure to test with camera disconnected.
-    let mut camera_i2c = DelayedI2c {
-        i2c: board.camera_i2c,
-        delay,
-        duration_us: 10,
-    };
-
-    let mut camera = hm01b0::Camera::new(&mut camera_i2c);
-    match camera.get_camera_id() {
-        Err(_) => {
-            host_interface.report_error(mcu_common::Error::Camera);
-            info!("Failed to read camera ID");
-        }
-        Ok(id) => {
-            part_ids.camera_id = id as u32;
-            if id != CAMERA_ID {
-                host_interface.report_error(mcu_common::Error::Camera);
-                info!("Camera reported unexpected ID: {}", id);
-            }
-        }
-    }
-    match camera.run_init_script() {
-        Ok(_) => info!("Default HM01B0 configuration applied"),
-        Err(_) => info!("Failed to apply HM01B0 init config"),
-    };
-
-    info!(
-        "MCU application started. CPU is running at {}MHz",
-        rcc.clocks.sys_clk.0 / 1000000
-    );
-
-    host_interface.part_ids = part_ids;
-
-    let fpga_device = FpgaDevice::new(board.fpga_programn, board.fpga_power_gate, spi_flash);
-
-    // If something tried to address us while we were still initializing, the
-    // bus might have ended up in a bad state, reset it.
-    host_interface.reset_bus();
-
-    init::LateResources {
-        host_interface,
-        spi,
-        exti,
-        state: ApplicationState::default(),
-        debug_led: board.debug_led,
-        fpga_device,
-        fpga_timer,
-        #[cfg(feature = "dev")]
-        debug_resources,
-        #[cfg(feature = "dev")]
-        debug_timer: debug::init_debug_timer(p.TIM16, &mut rcc),
-        camera_i2c,
-        frame_timer: p.TIM14.timer(&mut rcc),
-        stopwatch,
-        tick_count: 0,
-        rcc,
-        interrupt_pin: board.interrupt_pin,
-    }
 }
 
 // We could automatically enable the dev feature when image-transfer is enabled,
