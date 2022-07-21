@@ -1,3 +1,11 @@
+# Metadata information for this directory.
+#
+# For more information on DIR_METADATA files, see:
+#   https://source.chromium.org/chromium/infra/infra/+/HEAD:go/src/infra/tools/dirmd/README.md
+#
+# For the schema of this file, see Metadata message:
+#   https://source.chromium.org/chromium/infra/infra/+/HEAD:go/src/infra/tools/dirmd/proto/dir_metadata.proto
+
 buganizer {
   component_id: 1140302  # go/hpsbug
 }
@@ -5,3 +13,15 @@ buganizer_public {
   component_id: 960545  # Chrome OS Public Tracker > Peripherals > Sensors
 }
 team_email: "chromeos-hps-swe@google.com"
+
+chromeos {
+  cq {
+    source_test_plans {
+      test_plan_starlark_files {
+        host: "chrome-internal.googlesource.com"
+        project: "chromeos/config-internal"
+        path: "test/plans/v2/ctpv1_compatible/hps_cq.star"
+      }
+    }
+  }
+}
