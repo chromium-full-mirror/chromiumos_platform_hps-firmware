@@ -165,6 +165,10 @@ struct Flags {
     #[clap(long)]
     /// don't use i2c via MCP2221 for sending SPI flash data to HPS
     no_mcp_i2c: bool,
+
+    #[clap(long)]
+    /// whether to reset MCP2221
+    reset_mcp: bool,
 }
 
 fn main() -> Result<()> {
@@ -190,7 +194,7 @@ fn main() -> Result<()> {
     let hps = if flags.no_mcp_i2c {
         None
     } else {
-        Some(open_hps_i2c()?)
+        Some(open_hps_i2c(flags.reset_mcp)?)
     };
 
     let console_controller = ConsoleController::new();
@@ -228,8 +232,9 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn open_hps_i2c() -> Result<Arc<Mutex<dyn Hps + Send>>> {
+fn open_hps_i2c(reset: bool) -> Result<Arc<Mutex<dyn Hps + Send>>> {
     let mut config = mcp2221::Config::default();
+    config.reset_on_open = reset;
     config.i2c_speed_hz = 400_000;
     let mut dev = mcp2221::Handle::open_first(&config)
         .map_err(|error| anyhow!("Failed to open HPS via I2C: {}", error))?;

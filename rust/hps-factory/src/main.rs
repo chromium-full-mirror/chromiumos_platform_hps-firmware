@@ -83,6 +83,10 @@ struct Config {
     /// whether to force writing firmware, even if it appears to be up-to-date
     #[clap(long)]
     force_firmware_update: bool,
+
+    #[clap(long)]
+    /// whether to reset MCP2221
+    reset_mcp: bool,
 }
 
 #[derive(Debug, Subcommand, Clone)]
@@ -269,6 +273,7 @@ fn main() -> Result<()> {
         // unlikely to do what we want.
         config.power_gpio_offset.clear();
         let mut i2c_config = mcp2221::Config::default();
+        i2c_config.reset_on_open = config.reset_mcp;
         i2c_config.i2c_speed_hz = 400_000;
         // This timeout needs to be shorter than the STARTUP_TIMEOUT in
         // hps_i2c.rs. If both are 1 second, then we'll send a request which the
