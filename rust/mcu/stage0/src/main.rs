@@ -55,11 +55,81 @@ const APP: () = {
     fn init(ctx: init::Context) -> init::LateResources {
         static mut I2C_RECV_BUFFER: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE];
-        let mut resources = init_peripherals(ctx.device, ctx.core);
-        resources
-            .host_interface
-            .supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
-        resources
+
+        let p = ctx.device;
+        let cp = ctx.core;
+
+        // Enable DMA clock so that RTT is still handled when we're idle and the CPU
+        // is put to sleep.
+        p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
+        if cfg!(feature = "sys_bootloader") {
+            // Reset clock source to HSI. This allows us to be loaded directly from the
+            // system bootloader without a reset, since the system bootloader will have
+            // already configured the clock source to be the PLL.
+            p.RCC.cfgr.write(|w| w);
+            // Under reset, our vector table will already have been configured,
+            // however if we're loaded from the system bootloader without a reset,
+            // it won't be. We have to configure it ourselves.
+            unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
+            // The system bootloader leaves the flash in an unlocked state. We
+            // expect it to be locked. If we try to unlock it when it's already
+            // unlocked then a hard fault will result, so we lock it now. Locking
+            // when already locked doesn't cause a fault, so even if the system
+            // bootloader sometimes doesn't leave the flash unlocked, this should be
+            // safe.
+            p.FLASH.cr.modify(|_, w| w.lock().set_bit());
+        }
+        // Configure clocks so that CPU runs as full speed, otherwise we can't
+        // service I2C at 400KHz. Note, we switch this back prior to loading the
+        // application.
+        let mut rcc = p
+            .RCC
+            .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
+
+        let gpioa = p.GPIOA.split(&mut rcc);
+        let fw_wp = gpioa.pa15.into_floating_input();
+        let wp_state = read_fw_wp(&fw_wp);
+
+        // Configure PB4 as output pin.
+        let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
+        let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
+
+        let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
+
+        // Configure PC15 as output pin.
+        let mut fpga_prog = gpioc.pc15.into_push_pull_output();
+
+        // Put FPGA into reset.
+        let _ = fpga_prog.set_low();
+        // Power off the FPGA and SPI flash. We don't need either in stage0.
+        let _ = fpga_pw_gate.set_high();
+
+        let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
+            stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+            stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
+        );
+        i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
+
+        // Safety: This is the only call to this function.
+        let slot = unsafe { loader::get_stage1_slot() };
+
+        let sda = gpiob.pb7.into_open_drain_output_high();
+        let scl = gpiob.pb6.into_open_drain_output_high();
+
+        let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
+            p.I2C1, &mut rcc, sda, scl, i2c_config,
+        ));
+
+        host_interface.set_write_protect_state(wp_state);
+
+        let flash_writer = FlashWriter::new(p.FLASH, slot);
+
+        host_interface.supply_mem_block(MemBlock::new(I2C_RECV_BUFFER));
+
+        init::LateResources {
+            host_interface,
+            flash_writer,
+        }
     }
 
     #[task(binds = I2C1, spawn = [handle_event], resources = [host_interface], priority = 2)]
@@ -186,80 +256,6 @@ fn launch_stage1(
 
     BOOTLOAD_TRIGGER.store(true, Ordering::Relaxed);
     Ok(())
-}
-
-fn init_peripherals(
-    p: hal::stm32::Peripherals,
-    cp: rtic::export::Peripherals,
-) -> init::LateResources {
-    // Enable DMA clock so that RTT is still handled when we're idle and the CPU
-    // is put to sleep.
-    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
-    if cfg!(feature = "sys_bootloader") {
-        // Reset clock source to HSI. This allows us to be loaded directly from the
-        // system bootloader without a reset, since the system bootloader will have
-        // already configured the clock source to be the PLL.
-        p.RCC.cfgr.write(|w| w);
-        // Under reset, our vector table will already have been configured,
-        // however if we're loaded from the system bootloader without a reset,
-        // it won't be. We have to configure it ourselves.
-        unsafe { cp.SCB.vtor.write(&VECTOR_TABLE as *const _ as u32) };
-        // The system bootloader leaves the flash in an unlocked state. We
-        // expect it to be locked. If we try to unlock it when it's already
-        // unlocked then a hard fault will result, so we lock it now. Locking
-        // when already locked doesn't cause a fault, so even if the system
-        // bootloader sometimes doesn't leave the flash unlocked, this should be
-        // safe.
-        p.FLASH.cr.modify(|_, w| w.lock().set_bit());
-    }
-    // Configure clocks so that CPU runs as full speed, otherwise we can't
-    // service I2C at 400KHz. Note, we switch this back prior to loading the
-    // application.
-    let mut rcc = p
-        .RCC
-        .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
-
-    let gpioa = p.GPIOA.split(&mut rcc);
-    let fw_wp = gpioa.pa15.into_floating_input();
-    let wp_state = read_fw_wp(&fw_wp);
-
-    // Configure PB4 as output pin.
-    let gpiob = p.GPIOB.split(&mut rcc); // ::gpio::GpioExt
-    let mut fpga_pw_gate = gpiob.pb4.into_push_pull_output();
-
-    let gpioc = p.GPIOC.split(&mut rcc); // ::gpio::GpioExt
-
-    // Configure PC15 as output pin.
-    let mut fpga_prog = gpioc.pc15.into_push_pull_output();
-
-    // Put FPGA into reset.
-    let _ = fpga_prog.set_low();
-    // Power off the FPGA and SPI flash. We don't need either in stage0.
-    let _ = fpga_pw_gate.set_high();
-
-    let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
-        stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
-        stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
-    );
-    i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
-
-    // Safety: This is the only call to this function.
-    let slot = unsafe { loader::get_stage1_slot() };
-
-    let sda = gpiob.pb7.into_open_drain_output_high();
-    let scl = gpiob.pb6.into_open_drain_output_high();
-
-    let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
-        p.I2C1, &mut rcc, sda, scl, i2c_config,
-    ));
-
-    host_interface.set_write_protect_state(wp_state);
-
-    let flash_writer = FlashWriter::new(p.FLASH, slot);
-    init::LateResources {
-        host_interface,
-        flash_writer,
-    }
 }
 
 fn get_minimum_epoch() -> u16 {
