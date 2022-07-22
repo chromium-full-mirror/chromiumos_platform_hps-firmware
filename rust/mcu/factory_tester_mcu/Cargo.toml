@@ -13,7 +13,7 @@ delayed_i2c = { path = "../../delayed_i2c" }
 embedded-hal = "0.2.6"
 factory_tester_common = { path = "../../factory_tester_common" }
 gateware_compress = { path = "../../gateware_compress" }
-hal = { package = "stm32g0xx-hal", version = "0.1.0", features = ["rt", "stm32g071"]}
+hal = { package = "stm32g0xx-hal", version = "0.1.5", features = ["rt", "stm32g071"]}
 hm01b0 = { path = "../../hm01b0" }
 log = {version = "0.4.14", features = [ "release_max_level_off" ] }
 mcu_common = { path = "../../mcu_common" }
