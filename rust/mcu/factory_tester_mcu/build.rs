@@ -43,7 +43,7 @@ fn memory_x_contents() -> &'static str {
     r#"MEMORY
 {
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
-    RAM  (xrw) : ORIGIN = 0x20000400, LENGTH = 9K
+    RAM  (xrw) : ORIGIN = 0x20000400, LENGTH = 35K
 }
 "#
 }
