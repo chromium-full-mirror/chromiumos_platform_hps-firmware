@@ -1,0 +1,16 @@
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+[source.chromeos]
+directory = "/build/brya/usr/lib/cros_rust_registry/registry"
+
+[source.crates-io]
+replace-with = "chromeos"
+local-registry = "/nonexistent"
+
+[target.x86_64-cros-linux-gnu]
+linker = "x86_64-cros-linux-gnu-clang"
+
+[target.x86_64-pc-linux-gnu]
+linker = "x86_64-pc-linux-gnu-clang"
