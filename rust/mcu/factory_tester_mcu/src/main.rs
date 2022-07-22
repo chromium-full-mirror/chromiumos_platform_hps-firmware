@@ -114,7 +114,188 @@ const APP: () = {
     #[init(spawn = [run_test])]
     fn init(ctx: init::Context) -> init::LateResources {
         ctx.spawn.run_test().unwrap();
-        init_peripherals(ctx.device, ctx.core)
+        let p = ctx.device;
+        let cp = ctx.core;
+        #[cfg(feature = "dev")]
+        {
+            rtt_target::rtt_init_print!();
+        }
+        // SAFETY: Must be called during initialization while interrupts are
+        // disabled.
+        unsafe { debug_logger::initialize_logging() };
+
+        // Enable required peripheral clocks.
+        p.RCC
+            .apbenr1
+            .write(|w| w.spi2en().set_bit().i2c1en().set_bit());
+
+        // Reset SPI2 and I2C1. Note, setting both reset bits together in a single
+        // write doesn't appear to work (I2C is non functional), although it's not
+        // clear why.
+        p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
+        p.RCC.apbrstr1.write(|w| w.i2c1rst().set_bit());
+        p.RCC.apbrstr1.write(|w| w);
+
+        // Reset all the GPIO ports that we use. The system bootloader leaves these
+        // initialized in some way that result in I2C not working otherwise.
+        p.RCC.ioprstr.write(|w| {
+            w.ioparst().set_bit();
+            w.iopbrst().set_bit();
+            w.iopcrst().set_bit()
+        });
+        p.RCC.ioprstr.write(|w| w);
+
+        // Set alternate function and mode registers for all our GPIO ports back to
+        // their reset values. The system bootloader leaves these initialized in
+        // some way that result in I2C not working otherwise.
+        p.GPIOA.afrl.write(|w| w);
+        p.GPIOA.moder.write(|w| w);
+        p.GPIOB.afrl.write(|w| w);
+        p.GPIOB.moder.write(|w| w);
+        p.GPIOC.afrl.write(|w| w);
+        p.GPIOC.moder.write(|w| w);
+
+        // Reset system clock source to the HSI. The factory bootloader (which we
+        // are run from without a CPU reset), will have set the clock source to the
+        // PLL. If we try to configure the PLL without first switching back to the
+        // HSI, then we'll go into an infinite loop while we wait for the PLL to
+        // disable, which it will never do, since it's being used.
+        p.RCC.cfgr.write(|w| w);
+        // The system bootloader doesn't configure the vector table for us, so we do
+        // it ourselves. Also, it seems that if we put our vector table at
+        // 0x20002700, it doesn't work, whereas 0x20002800 does work. This is odd,
+        // since only the bottom 7 bits of the vtor register are reserved, but it
+        // seems to behave as though it ignores the bottom 9. If we went and put our
+        // vector table at 0x20002800, it would work, but we'd have 256 bytes less
+        // to store our program. So instead, we copy our vector table to the start
+        // of RAM. Our linker script makes sure the first 1KB of RAM is kept free.
+        const VECTOR_TABLE_DEST: usize = 0x20000000;
+        unsafe {
+            core::ptr::copy_nonoverlapping::<u32>(
+                &VECTOR_TABLE as *const _,
+                VECTOR_TABLE_DEST as *mut _,
+                64,
+            )
+        };
+        unsafe { cp.SCB.vtor.write(VECTOR_TABLE_DEST as u32) };
+        // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
+        // is still handled when we're idle and the CPU is put to sleep.
+        p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
+        let mut rcc = p
+            .RCC
+            .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
+
+        info!("HPS tester starting");
+
+        let gpioa = p.GPIOA.split(&mut rcc);
+        let gpiob = p.GPIOB.split(&mut rcc);
+        let gpioc = p.GPIOC.split(&mut rcc);
+        let mut exti = p.EXTI;
+
+        let stopwatch = create_stopwatch(p.TIM2, &mut rcc);
+        let mut debug_led = gpioa.pa1.into_push_pull_output();
+        debug_led.set_high().unwrap();
+
+        // Listen for camera's FVLD signal on the CS line from the FPGA.
+        gpioa.pa8.listen(hal::gpio::SignalEdge::Rising, &mut exti);
+        // Listen for camera's LVLD signal on the interrupt pin from the FPGA.
+        gpioc.pc14.listen(hal::gpio::SignalEdge::Rising, &mut exti);
+
+        let heartbeat = gpioa.pa3.into_pull_up_input();
+
+        // Set the MLB interrupt line low. It has a pull-up resistor, so should have
+        // been high before. The test controller can then check that it's high when
+        // it starts and that it then goes low.
+        let mut mlb_int = gpiob.pb8.into_open_drain_output();
+        mlb_int.set_low().unwrap();
+
+        // FW_WP has no pull-up resistor. We set it high now then low later on. The
+        // test controller can count the transitions.
+        let mut fwwp = gpioa.pa15.into_push_pull_output();
+        fwwp.set_high().unwrap();
+
+        // Enable a clock for the camera.
+        let pwm = p.TIM3.pwm(8.mhz(), &mut rcc);
+        let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
+        pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
+        pwm_channel.enable();
+
+        let sda = gpioa.pa12.into_open_drain_output_high();
+        let scl = gpioa.pa11.into_open_drain_output_high();
+
+        let camera_i2c = p
+            .I2C2
+            .i2c(sda, scl, hal::i2c::Config::new(400.khz()), &mut rcc);
+        // If we don't delay between I2C operations, then if the camera is not
+        // ready, we end up getting stuck forever. Something about having two
+        // operations too close together means we don't ever get a second NACK.
+        let camera_i2c = DelayedI2c {
+            i2c: camera_i2c,
+            delay: Delay,
+            duration_us: 10,
+        };
+
+        let sda = gpiob.pb7.into_open_drain_output_high();
+        let scl = gpiob.pb6.into_open_drain_output_high();
+
+        hal::i2c::SDAPin::setup(&sda);
+        hal::i2c::SCLPin::setup(&scl);
+
+        let host_i2c = p.I2C1;
+
+        // Power off the FPGA (and SPI flash) while we put the FPGA into reset,
+        // since the test gateware does not implement reset.
+        let mut fpga_power_gate = gpiob.pb5.into_push_pull_output();
+        fpga_power_gate.set_high().unwrap();
+        asm::delay(10 * CYCLES_PER_US);
+
+        // Put FPGA into reset before we power it on to ensure that it doesn't try
+        // to access the SPI flash at the same time as us.
+        let mut fpga_programn = gpioc.pc15.into_push_pull_output();
+        fpga_programn.set_low().unwrap();
+
+        // Ensure FPGA and SPI flash are powered.
+        fpga_power_gate.set_low().unwrap();
+
+        // Give the SPI flash chip a chance to start after we powered it on. The
+        // datasheet says minimum time is 2.5ms. To be generous, we give it double
+        // that.
+        asm::delay(5 * CYCLES_PER_MS);
+
+        fwwp.set_low().unwrap();
+
+        let flash_spi_cs = Some(gpiob.pb0.into_open_drain_output());
+        let flash_spi_clk = gpioa.pa5.set_speed(Speed::VeryHigh);
+        let flash_spi_copi = gpioa.pa7.set_speed(Speed::VeryHigh);
+        let flash_spi_cipo = gpioa.pa6.set_speed(Speed::VeryHigh);
+        let flash_spi = Some(p.SPI1.spi(
+            (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
+            hal::spi::MODE_0,
+            4.mhz(),
+            &mut rcc,
+        ));
+
+        let tester = Tester {
+            camera_i2c,
+            flash_spi,
+            flash_spi_cs,
+            fpga_programn,
+            stopwatch,
+            heartbeat,
+            fpga_spi: p.SPI2,
+            fpga_spi_sck: gpioa.pa0,
+            fpga_spi_copi: gpioa.pa4,
+        };
+
+        init::LateResources {
+            tester,
+            syscfg_vrefbuf: p.SYSCFG_VREFBUF,
+            debug_led,
+            host_i2c,
+            exti,
+            event_counts: EventCounts::default(),
+            mlb_int,
+        }
     }
 
     #[task(resources = [tester, syscfg_vrefbuf, debug_led, host_i2c, event_counts, mlb_int])]
@@ -172,192 +353,6 @@ const APP: () = {
         fn TIM17();
     }
 };
-
-fn init_peripherals(
-    p: hal::stm32::Peripherals,
-    cp: rtic::export::Peripherals,
-) -> init::LateResources {
-    #[cfg(feature = "dev")]
-    {
-        rtt_target::rtt_init_print!();
-    }
-    // SAFETY: Must be called during initialization while interrupts are
-    // disabled.
-    unsafe { debug_logger::initialize_logging() };
-
-    // Enable required peripheral clocks.
-    p.RCC
-        .apbenr1
-        .write(|w| w.spi2en().set_bit().i2c1en().set_bit());
-
-    // Reset SPI2 and I2C1. Note, setting both reset bits together in a single
-    // write doesn't appear to work (I2C is non functional), although it's not
-    // clear why.
-    p.RCC.apbrstr1.write(|w| w.spi2rst().set_bit());
-    p.RCC.apbrstr1.write(|w| w.i2c1rst().set_bit());
-    p.RCC.apbrstr1.write(|w| w);
-
-    // Reset all the GPIO ports that we use. The system bootloader leaves these
-    // initialized in some way that result in I2C not working otherwise.
-    p.RCC.ioprstr.write(|w| {
-        w.ioparst().set_bit();
-        w.iopbrst().set_bit();
-        w.iopcrst().set_bit()
-    });
-    p.RCC.ioprstr.write(|w| w);
-
-    // Set alternate function and mode registers for all our GPIO ports back to
-    // their reset values. The system bootloader leaves these initialized in
-    // some way that result in I2C not working otherwise.
-    p.GPIOA.afrl.write(|w| w);
-    p.GPIOA.moder.write(|w| w);
-    p.GPIOB.afrl.write(|w| w);
-    p.GPIOB.moder.write(|w| w);
-    p.GPIOC.afrl.write(|w| w);
-    p.GPIOC.moder.write(|w| w);
-
-    // Reset system clock source to the HSI. The factory bootloader (which we
-    // are run from without a CPU reset), will have set the clock source to the
-    // PLL. If we try to configure the PLL without first switching back to the
-    // HSI, then we'll go into an infinite loop while we wait for the PLL to
-    // disable, which it will never do, since it's being used.
-    p.RCC.cfgr.write(|w| w);
-    // The system bootloader doesn't configure the vector table for us, so we do
-    // it ourselves. Also, it seems that if we put our vector table at
-    // 0x20002700, it doesn't work, whereas 0x20002800 does work. This is odd,
-    // since only the bottom 7 bits of the vtor register are reserved, but it
-    // seems to behave as though it ignores the bottom 9. If we went and put our
-    // vector table at 0x20002800, it would work, but we'd have 256 bytes less
-    // to store our program. So instead, we copy our vector table to the start
-    // of RAM. Our linker script makes sure the first 1KB of RAM is kept free.
-    const VECTOR_TABLE_DEST: usize = 0x20000000;
-    unsafe {
-        core::ptr::copy_nonoverlapping::<u32>(
-            &VECTOR_TABLE as *const _,
-            VECTOR_TABLE_DEST as *mut _,
-            64,
-        )
-    };
-    unsafe { cp.SCB.vtor.write(VECTOR_TABLE_DEST as u32) };
-    // Enable DMA clock so that RTT (the mechanism used to send defmt messages)
-    // is still handled when we're idle and the CPU is put to sleep.
-    p.RCC.ahbenr.modify(|_, w| w.dmaen().set_bit());
-    let mut rcc = p
-        .RCC
-        .freeze(hal::rcc::Config::pll().pll_cfg(hal::rcc::PllConfig::default()));
-
-    info!("HPS tester starting");
-
-    let gpioa = p.GPIOA.split(&mut rcc);
-    let gpiob = p.GPIOB.split(&mut rcc);
-    let gpioc = p.GPIOC.split(&mut rcc);
-    let mut exti = p.EXTI;
-
-    let stopwatch = create_stopwatch(p.TIM2, &mut rcc);
-    let mut debug_led = gpioa.pa1.into_push_pull_output();
-    debug_led.set_high().unwrap();
-
-    // Listen for camera's FVLD signal on the CS line from the FPGA.
-    gpioa.pa8.listen(hal::gpio::SignalEdge::Rising, &mut exti);
-    // Listen for camera's LVLD signal on the interrupt pin from the FPGA.
-    gpioc.pc14.listen(hal::gpio::SignalEdge::Rising, &mut exti);
-
-    let heartbeat = gpioa.pa3.into_pull_up_input();
-
-    // Set the MLB interrupt line low. It has a pull-up resistor, so should have
-    // been high before. The test controller can then check that it's high when
-    // it starts and that it then goes low.
-    let mut mlb_int = gpiob.pb8.into_open_drain_output();
-    mlb_int.set_low().unwrap();
-
-    // FW_WP has no pull-up resistor. We set it high now then low later on. The
-    // test controller can count the transitions.
-    let mut fwwp = gpioa.pa15.into_push_pull_output();
-    fwwp.set_high().unwrap();
-
-    // Enable a clock for the camera.
-    let pwm = p.TIM3.pwm(8.mhz(), &mut rcc);
-    let mut pwm_channel = pwm.bind_pin(gpiob.pb1.set_speed(hal::gpio::Speed::VeryHigh));
-    pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
-    pwm_channel.enable();
-
-    let sda = gpioa.pa12.into_open_drain_output_high();
-    let scl = gpioa.pa11.into_open_drain_output_high();
-
-    let camera_i2c = p
-        .I2C2
-        .i2c(sda, scl, hal::i2c::Config::new(400.khz()), &mut rcc);
-    // If we don't delay between I2C operations, then if the camera is not
-    // ready, we end up getting stuck forever. Something about having two
-    // operations too close together means we don't ever get a second NACK.
-    let camera_i2c = DelayedI2c {
-        i2c: camera_i2c,
-        delay: Delay,
-        duration_us: 10,
-    };
-
-    let sda = gpiob.pb7.into_open_drain_output_high();
-    let scl = gpiob.pb6.into_open_drain_output_high();
-
-    hal::i2c::SDAPin::setup(&sda);
-    hal::i2c::SCLPin::setup(&scl);
-
-    let host_i2c = p.I2C1;
-
-    // Power off the FPGA (and SPI flash) while we put the FPGA into reset,
-    // since the test gateware does not implement reset.
-    let mut fpga_power_gate = gpiob.pb5.into_push_pull_output();
-    fpga_power_gate.set_high().unwrap();
-    asm::delay(10 * CYCLES_PER_US);
-
-    // Put FPGA into reset before we power it on to ensure that it doesn't try
-    // to access the SPI flash at the same time as us.
-    let mut fpga_programn = gpioc.pc15.into_push_pull_output();
-    fpga_programn.set_low().unwrap();
-
-    // Ensure FPGA and SPI flash are powered.
-    fpga_power_gate.set_low().unwrap();
-
-    // Give the SPI flash chip a chance to start after we powered it on. The
-    // datasheet says minimum time is 2.5ms. To be generous, we give it double
-    // that.
-    asm::delay(5 * CYCLES_PER_MS);
-
-    fwwp.set_low().unwrap();
-
-    let flash_spi_cs = Some(gpiob.pb0.into_open_drain_output());
-    let flash_spi_clk = gpioa.pa5.set_speed(Speed::VeryHigh);
-    let flash_spi_copi = gpioa.pa7.set_speed(Speed::VeryHigh);
-    let flash_spi_cipo = gpioa.pa6.set_speed(Speed::VeryHigh);
-    let flash_spi = Some(p.SPI1.spi(
-        (flash_spi_clk, flash_spi_cipo, flash_spi_copi),
-        hal::spi::MODE_0,
-        4.mhz(),
-        &mut rcc,
-    ));
-
-    let tester = Tester {
-        camera_i2c,
-        flash_spi,
-        flash_spi_cs,
-        fpga_programn,
-        stopwatch,
-        heartbeat,
-        fpga_spi: p.SPI2,
-        fpga_spi_sck: gpioa.pa0,
-        fpga_spi_copi: gpioa.pa4,
-    };
-
-    init::LateResources {
-        tester,
-        syscfg_vrefbuf: p.SYSCFG_VREFBUF,
-        debug_led,
-        host_i2c,
-        exti,
-        event_counts: EventCounts::default(),
-        mlb_int,
-    }
-}
 
 impl Tester {
     fn run_test(
