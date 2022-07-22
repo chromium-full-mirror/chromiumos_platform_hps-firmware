@@ -1,9 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
         "rust/Cargo.toml",
-        "rust/factory_tester/Cargo.toml",
         "rust/mcu/Cargo.toml",
-        "rust/riscv/Cargo.toml",
+        "rust/riscv/Cargo.toml"
     ],
     "python.linting.pylintEnabled": true
 }
