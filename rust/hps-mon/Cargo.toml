@@ -16,9 +16,4 @@ hps_interface = { path = "../hps_interface" }
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 mcp2221 = { path = "../mcp2221" }
 mcu_common = { path  = "../mcu_common" }
-probe-rs = { version = "0.10.1", optional = true }
-probe-rs-rtt = { version = "0.10.1", optional = true }
 rustyline = "9"
-
-[features]
-direct  = [ "probe-rs", "probe-rs-rtt" ]

@@ -9,9 +9,6 @@ mod openocd;
 mod text_channel;
 mod write_spi_flash;
 
-#[cfg(feature = "direct")]
-mod direct;
-
 use anyhow::anyhow;
 use anyhow::Result;
 use clap::Clap;
@@ -108,11 +105,6 @@ struct RttChannels {
 #[derive(Clap)]
 /// Monitors the HPS for debug output via SWD.
 struct Flags {
-    #[cfg(feature = "direct")]
-    #[clap(long)]
-    /// CPU model
-    cpu: Option<String>,
-
     #[clap(long)]
     /// reset MCU on start
     reset: bool,
@@ -143,15 +135,9 @@ struct Flags {
     /// image type that we expect from the camera
     image_type: ImageType,
 
-    #[cfg(feature = "direct")]
-    #[clap(long, default_value = "0")]
-    /// which probe number to use, starting from 0.
-    probe_num: usize,
-
     #[clap(long)]
-    /// if specified, connects to openocd on this port instead of using an
-    /// st-link
-    openocd_port: Option<u16>,
+    /// openocd port to which to connect
+    openocd_port: u16,
 
     #[clap(long, default_value = "9000")]
     /// base port to use for RTT channels. This port and the subsequent
@@ -173,19 +159,7 @@ struct Flags {
 
 fn main() -> Result<()> {
     let flags: Flags = Flags::parse();
-    let mut device;
-    if let Some(openocd_port) = flags.openocd_port {
-        device = openocd::OpenOcdDevice::new(openocd_port, flags.base_port)?;
-    } else {
-        #[cfg(feature = "direct")]
-        {
-            device = direct::DirectDevice::new(&flags)?;
-        }
-        #[cfg(not(feature = "direct"))]
-        {
-            anyhow::bail!("probe-rs feature is not enabled and you didn't specify --openocd-port");
-        }
-    }
+    let mut device = openocd::OpenOcdDevice::new(flags.openocd_port, flags.base_port)?;
 
     if flags.reset {
         device.reset()?;
