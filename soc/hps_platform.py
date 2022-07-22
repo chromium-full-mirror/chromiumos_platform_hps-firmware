@@ -9,6 +9,7 @@ from litex.build.generic_platform import Misc
 from litex.build.generic_platform import Pins
 from litex.build.generic_platform import Subsignal
 from litex.build.lattice import LatticePlatform
+from litex.build.lattice import oxide
 from litex.soc.cores.clock import NXOSCA
 from migen import ClockDomain
 from migen import If
@@ -144,6 +145,16 @@ _parallel_nextpnr_template = [
 ]
 
 
+# Custom yosys script template
+_yosys_template = oxide._yosys_template + [  # pylint: disable=protected-access
+    'techmap -map +/nexus/cells_sim.v t:VLO t:VHI %u',
+    'plugin -i dsp-ff',
+    'dsp_ff -rules +/nexus/dsp_rules.txt',
+    'hilomap -singleton -hicell VHI Z -locell VLO Z',
+    'write_json {build_name}.json',
+]
+
+
 # pylint: disable=abstract-method
 class Platform(LatticePlatform):
     """The HPS Platform"""
@@ -166,6 +177,7 @@ class Platform(LatticePlatform):
         template = (_parallel_nextpnr_template if parallel_nextpnr
                     else _standard_build_template)
         self.toolchain.build_template = template
+        self.toolchain.yosys_template = _yosys_template
 
     def create_crg(self):
         return _CRG(self, self.sys_clk_freq)
