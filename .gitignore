@@ -6,3 +6,4 @@ build
 target
 third_party/installed
 .env
+Cargo.lock
