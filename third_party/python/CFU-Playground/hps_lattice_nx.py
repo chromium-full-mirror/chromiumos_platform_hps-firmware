@@ -47,8 +47,13 @@ Each LRAM is 64kBytes arranged in 32 bit wide words.
   address 0x1 from the LRAM-0 port connected to the CFU.
 """
 
-from migen import ClockSignal, If, Instance, Module, Signal
 from litex.soc.interconnect import wishbone
+from migen import ClockSignal
+from migen import If
+from migen import Instance
+from migen import Module
+from migen import Signal
+
 
 kB = 1024
 
