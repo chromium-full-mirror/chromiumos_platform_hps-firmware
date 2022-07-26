@@ -38,6 +38,10 @@ struct Flags {
     #[clap(long)]
     /// A "fake" value for the register USER_PRESENT.
     fake_reg: Option<String>,
+
+    #[clap(long)]
+    /// whether to reset MCP2221
+    reset_mcp: bool,
 }
 
 #[derive(Subcommand, PartialEq, Debug)]
@@ -192,6 +196,7 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
     #[cfg(feature = "mcp2221")]
     if flags.mcp {
         let mut config = mcp2221::Config::default();
+        config.reset_on_open = flags.reset_mcp;
         config.i2c_speed_hz = 400_000;
         let mut dev = mcp2221::Handle::open_first(&config)
             .map_err(|error| anyhow::anyhow!("Failed to open HPS via I2C: {}", error))?;
