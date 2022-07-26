@@ -222,7 +222,6 @@ where
     }
 
     fn loop_body(&mut self) -> Result<()> {
-        let loop_start_time = self.timer.now();
         let config = self.mcu.read_config()?;
         let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
         if !features.contains(Features::MODEL1) {
@@ -300,9 +299,7 @@ where
             self.mcu.trigger_frame_in(self.trigger_delay)?;
             self.frame_pending = true;
 
-            let start = self.timer.now();
             let scores = self.classifier.run_model()?;
-            let classify_ms = self.timer.elapsed_ms(start);
 
             if features.contains(Features::MODEL1) {
                 let result_count = &mut self.model_result_count[0];
@@ -316,15 +313,11 @@ where
                 self.status.second_person_status =
                     0x8000 | ((scores.1 as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
             }
-            let total_ms = self.timer.elapsed_ms(loop_start_time);
             mcu_println!(
                 self.mcu,
-                "scores:{scores:4?} wait:{:4} capture:{:4} model:{:4} other:{:4} total:{:4}",
+                "scores:{scores:4?} wait:{:4} capture:{:4}",
                 image_wait_ms,
                 capture_ms,
-                classify_ms,
-                total_ms - image_wait_ms - capture_ms - classify_ms,
-                total_ms,
             );
         }
 
