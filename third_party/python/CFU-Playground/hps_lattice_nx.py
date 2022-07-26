@@ -88,6 +88,7 @@ def initval_parameters(contents, width):
 
 class NXLRAM(Module):
     """Physical LRAM block with bus interface."""
+
     def __init__(self, width=32, size=128*kB, dual_port=False, init=None):
         self.bus = wishbone.Interface(width)
         assert width in [32, 64]
@@ -127,9 +128,11 @@ class NXLRAM(Module):
         print('sel_bits_start ', sel_bits_start)
         print('adr_bits_start ', adr_bits_start)
 
+        self.a_clk_ens = []
         if dual_port:
             self.b_addrs = []
             self.b_douts = []
+            self.b_clk_ens = []
 
         # Combine RAMs to increase Depth.
         for d in range(self.depth_cascading):
@@ -160,7 +163,9 @@ class NXLRAM(Module):
 
                 byte_enable_n = ~self.bus.sel[4*w:4*(w+1)]
                 addr = self.bus.adr[adr_bits_start:adr_bits_start+14]
+                a_clk_en = Signal(reset=1)
                 if dual_port:
+                    b_clk_en = Signal(reset=1)
                     b_addr = Signal(14)
                     b_dout = Signal(32)
                     lram_block = Instance('DPSC512K',
@@ -168,7 +173,7 @@ class NXLRAM(Module):
                                           i_DIA=datain,
                                           i_ADA=addr,
                                           i_CLK=ClockSignal(),
-                                          i_CEA=0b1,
+                                          i_CEA=a_clk_en,
                                           i_WEA=wren,
                                           i_CSA=cs,
                                           i_RSTA=0b0,
@@ -178,22 +183,24 @@ class NXLRAM(Module):
                                           # port B read only
                                           i_ADB=b_addr,
                                           o_DOB=b_dout,
-                                          i_CEB=0b1,
+                                          i_CEB=b_clk_en,
                                           i_WEB=0b0,
                                           i_CSB=0b1,
                                           i_RSTB=0b0,
                                           i_CEOUTB=0b0
                                           )
+                    self.b_clk_ens.append(b_clk_en)
                     self.b_addrs.append(b_addr)
                     self.b_douts.append(b_dout)
 
                 else:
+                    a_clk_en = Signal(reset=1)
                     lram_block = Instance('SP512K',
                                           p_ECC_BYTE_SEL='BYTE_EN',
                                           i_DI=datain,
                                           i_AD=addr,
                                           i_CLK=ClockSignal(),
-                                          i_CE=0b1,
+                                          i_CE=a_clk_en,
                                           i_WE=wren,
                                           i_CS=cs,
                                           i_RSTOUT=0b0,
@@ -201,6 +208,7 @@ class NXLRAM(Module):
                                           i_BYTEEN_N=byte_enable_n,
                                           o_DO=dataout
                                           )
+                self.a_clk_ens.append(a_clk_en)
                 self.lram_blocks[d].append(lram_block)
                 self.specials += lram_block
 

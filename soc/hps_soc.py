@@ -24,9 +24,15 @@ from litex.soc.integration.builder import builder_args
 from litex.soc.integration.soc import LiteXSoC
 from litex.soc.integration.soc import SoCRegion
 from litex.soc.interconnect import wishbone
+from migen import ClockDomain
+from migen import ClockDomainsRenamer
+from migen import ClockSignal
+from migen import Instance
 from migen import Record
+from migen import ResetSignal
 
 from .cam_control import CameraControl
+from .clock_control import CfuCpuClockCtrl
 from .hps_platform import Platform
 from .spi_controller import SpiController
 
@@ -84,6 +90,7 @@ class HpsSoC(LiteXSoC):
         # RAM and arena
         self.setup_ram()
         self.setup_arena()
+        self.setup_dynamic_clock_control()
         self.connect_cfu_to_lram()
 
         # SPI Flash
@@ -101,15 +108,69 @@ class HpsSoC(LiteXSoC):
         self.csr.add('mcu_spi')
 
     def setup_ram(self):
-        self.submodules.sram = self.platform.create_ram(
-            32, self.sram_region.size, dual_port=False)
+        self.submodules.sram = ClockDomainsRenamer('osc')(
+            self.platform.create_ram(32,
+                                     self.sram_region.size,
+                                     dual_port=False))
         self.bus.add_slave('sram', self.sram.bus, self.sram_region)
 
     def setup_arena(self):
-        self.submodules.arena = self.platform.create_ram(
-            32, self.arena_region.size, dual_port=True)
+        self.submodules.arena = ClockDomainsRenamer('osc')(
+            self.platform.create_ram(32,
+                                     self.arena_region.size,
+                                     dual_port=True))
         self.bus.add_slave('arena', self.arena.bus, self.arena_region)
         self.add_config('SOC_SEPARATE_ARENA')
+
+    def setup_dynamic_clock_control(self):
+        self.submodules.cfu_cpu_clk_ctl = ClockDomainsRenamer('osc')(
+            CfuCpuClockCtrl())
+        cfu_cen = self.cfu_cpu_clk_ctl.cfu_cen
+        cpu_cen = self.cfu_cpu_clk_ctl.cpu_cen
+        ctl_cfu_bus = self.cfu_cpu_clk_ctl.cfu_bus
+        cpu_cfu_bus = self.cpu.cfu_bus
+
+        self.comb += [
+            # Connect dynamic clock control bus to CPU <-> CFU BUS
+            ctl_cfu_bus.rsp.valid.eq(cpu_cfu_bus.rsp.valid),
+            ctl_cfu_bus.rsp.ready.eq(cpu_cfu_bus.rsp.ready),
+            ctl_cfu_bus.cmd.valid.eq(cpu_cfu_bus.cmd.valid),
+            ctl_cfu_bus.cmd.ready.eq(cpu_cfu_bus.cmd.ready),
+
+            # Connect system clock to dynamic clock enable
+            self.crg.sys_clk_enable.eq(cpu_cen),
+        ]
+
+        # Create separate clock for CFU
+        clko = ClockSignal('cfu')
+        self.clock_domains.cd_cfu = ClockDomain('cfu')
+        self.specials += Instance(
+            'DCC',
+            i_CLKI=ClockSignal('osc'),
+            o_CLKO=clko,
+            i_CE=cfu_cen,
+        )
+
+        # Connect separate clock to CFU, keep reset from oscillator clock domain
+        self.cpu.cfu_params.update(i_clk=clko)
+        self.cpu.cfu_params.update(i_reset=ResetSignal('osc'))
+
+        # Connect clock enable signals to arena:
+        # A port is enabled when CPU is running,
+        # B port is enabled when CFU is running.
+        self.comb += [
+            self.arena.a_clk_ens[0].eq(cpu_cen),
+            self.arena.a_clk_ens[1].eq(cpu_cen),
+            self.arena.a_clk_ens[2].eq(cpu_cen),
+            self.arena.a_clk_ens[3].eq(cpu_cen),
+            self.arena.b_clk_ens[0].eq(cfu_cen),
+            self.arena.b_clk_ens[1].eq(cfu_cen),
+            self.arena.b_clk_ens[2].eq(cfu_cen),
+            self.arena.b_clk_ens[3].eq(cfu_cen),
+        ]
+
+        # Enable sram when CPU is running
+        self.comb += self.sram.a_clk_ens[0].eq(cpu_cen)
 
     def connect_cfu_to_lram(self):
         # create cfu <-> lram bus
@@ -212,7 +273,7 @@ class HpsSoC(LiteXSoC):
 def hps_soc_args(parser: argparse.ArgumentParser):
     builder_args(parser)
     parser.add_argument('--nextpnr-seed', metavar='NUMBER',
-                        default=15, type=int,
+                        default=42, type=int,
                         help='Use random seed NUMBER for nextpnr')
 
 
