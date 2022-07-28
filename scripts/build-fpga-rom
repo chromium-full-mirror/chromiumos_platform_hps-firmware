@@ -17,19 +17,28 @@ if [ ! -e /etc/cros_chroot_version ] ; then
 fi
 
 FEATURES="${FEATURES-tflm}"
+PROFILE="${PROFILE-release}"
 
 source "${PROJECT_ROOT}/environment"
 
 cd "${PROJECT_ROOT}/rust/riscv"
 BUILD_FLAGS=(
     -p fpga_rom
-    --release
+    --profile "${PROFILE}"
     --no-default-features
     --features "${FEATURES}")
 
 cargo build "${BUILD_FLAGS[@]}"
 
+# For the dev profile, cargo outputs to "debug". For "release" and any custom
+# profiles it outputs to the profile name.
+if [[ "${PROFILE}" == "dev" ]]; then
+    PROFILE_OUT="debug"
+else
+    PROFILE_OUT="${PROFILE}"
+fi
+
 llvm-objcopy \
-    "target/riscv32i-unknown-none-elf/release/fpga_rom" \
+    "target/riscv32i-unknown-none-elf/${PROFILE_OUT}/fpga_rom" \
     -O binary \
     "${ROM}"

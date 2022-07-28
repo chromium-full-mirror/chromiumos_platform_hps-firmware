@@ -10,9 +10,10 @@ set -e
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 FEATURES=image-transfer,dev
-if [ "$TFLM" != "0" ]; then
+if [ "${TFLM-}" != "0" ]; then
     FEATURES+=,tflm
 fi
 export FEATURES
+export PROFILE=dev
 
 exec "${PROJECT_ROOT}/scripts/build-fpga-rom"
