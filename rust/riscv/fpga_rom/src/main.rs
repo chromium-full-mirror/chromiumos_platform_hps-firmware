@@ -5,6 +5,8 @@
 #![no_main]
 #![no_std]
 
+#[cfg(debug_assertions)]
+mod mcu_logger;
 #[cfg(not(feature = "tflm_inference"))]
 mod non_tflm_classifier;
 mod system;
@@ -18,6 +20,10 @@ const SPI_FLASH_ORIGIN: usize = 0x20000000;
 #[entry]
 fn main() -> ! {
     let p = litex_pac::Peripherals::take().unwrap();
+    #[cfg(debug_assertions)]
+    {
+        mcu_logger::init_logging();
+    }
     // safety: This is the only call to create_classifier and we don't run this
     // code more than once.
     let classifier = unsafe { create_classifier() };

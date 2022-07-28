@@ -33,8 +33,9 @@ use embedded_hal::blocking::spi;
 pub use features::Features;
 pub use histogram::Histogram;
 use hm01b0::TestPattern;
+use log::info;
 use mcu_common::SPI_BLOCK_SIZE;
-use mcu_interface::McuInterface;
+pub use mcu_interface::McuInterface;
 pub use timer::Instant;
 pub use timer::Microseconds;
 pub use timer::Milliseconds;
@@ -71,32 +72,6 @@ const NUM_MODELS: usize = 2;
 /// adjust the trigger delay based on actual timings, so this is only a starting
 /// value.
 const INITIAL_FRAME_TRIGGER_DELAY: Microseconds = Microseconds(300_000);
-
-/// Print to hps-mon via the MCU. The first argument can be anything that
-/// implements `mcu_mut()`.
-macro_rules! mcu_println {
-    ($mcu:expr, $($tts:tt)*) => {
-        #[cfg(test)]
-        {
-            println!($($tts)*);
-        }
-        #[cfg(not(test))]
-        {
-            #[cfg(feature = "dev")]
-            {
-                use core::fmt::Write;
-                let _ = writeln!($mcu.mcu_mut(), $($tts)*);
-            }
-            // If printing of any kind is disabled, then pass our arguments to
-            // the formatter, but discard the result. This avoids warnings about
-            // unused variables.
-            #[cfg(not(feature = "dev"))]
-            {
-                let _ = format_args!($($tts)*);
-            }
-        }
-    };
-}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
@@ -191,19 +166,19 @@ where
     pub fn run(&mut self) -> ! {
         self.mcu.resync();
         let _ = self.mcu.report_boot(SOC_ROM_VERSION);
-        mcu_println!(self, "Hello from the Rust FPGA");
+        info!("Hello from the Rust FPGA");
         let status = self.classifier.init_status();
-        mcu_println!(self, "Classifier status: {:?}", status);
+        info!("Classifier status: {:?}", status);
         if status != TfLiteInitStatus::InitOk {
             self.mcu.report_error(mcu_common::Error::TfliteFailure);
         }
         if let Err(error) = self.camera_setup() {
-            mcu_println!(self, "Camera error: {:?}", error);
+            info!("Camera error: {:?}", error);
             self.mcu.report_error(fpga_to_mcu_error(error));
         }
         loop {
             if let Err(error) = self.loop_body() {
-                mcu_println!(&mut self.mcu, "Error: {:?}", error);
+                info!("Error: {:?}", error);
                 self.mcu.report_error(fpga_to_mcu_error(error));
             }
         }
@@ -270,12 +245,7 @@ where
         let capture_ms = self.timer.elapsed_ms(capture_start) - image_wait_ms;
         if self.histogram_enabled {
             let e = self.exposure;
-            mcu_println!(
-                self.mcu,
-                "{} exp: {:#06x}",
-                self.image_data_receiver.histogram,
-                e
-            );
+            info!("{} exp: {:#06x}", self.image_data_receiver.histogram, e);
         }
 
         // Image transfer can be enabled either via a feature (transfer over
@@ -316,11 +286,9 @@ where
                 self.status.second_person_status =
                     0x8000 | ((scores.1 as u16) & 0xff) | ((*result_count & 0x7f) as u16) << 8;
             }
-            mcu_println!(
-                self.mcu,
+            info!(
                 "scores:{scores:4?} wait:{:4} capture:{:4}",
-                image_wait_ms,
-                capture_ms,
+                image_wait_ms, capture_ms,
             );
         }
 
@@ -481,28 +449,28 @@ where
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::Transfer => {
                     self.image_transfer_count = if arg != 0 { u32::MAX } else { 0 };
-                    mcu_println!(self, "Image transfer: {}", arg != 0);
+                    info!("Image transfer: {}", arg != 0);
                 }
                 #[cfg(feature = "image-transfer")]
                 DebugCommand::TransferCount => {
                     self.image_transfer_count = arg as u32;
-                    mcu_println!(self, "Image transfer enabled ({} images)", arg);
+                    info!("Image transfer enabled ({} images)", arg);
                 }
                 DebugCommand::Histogram => {
                     self.histogram_enabled = arg != 0;
-                    mcu_println!(self, "Histogram: {}", arg != 0);
+                    info!("Histogram: {}", arg != 0);
                 }
                 DebugCommand::SelfTest => {
                     if self.self_test().is_err() {
-                        mcu_println!(self, "Self-test failed");
+                        info!("Self-test failed");
                     }
                 }
                 DebugCommand::TestSpiFlashReads => {
-                    mcu_println!(self, "Performing SPI flash read integrity test...");
+                    info!("Performing SPI flash read integrity test...");
                     self.spi_flash_read_test();
                 }
                 DebugCommand::TestFpgaMcuComms => {
-                    mcu_println!(self, "Performing FPGA<->MCU communication test...");
+                    info!("Performing FPGA<->MCU communication test...");
                     self.mcu_fpga_comm_test();
                 }
                 DebugCommand::SetExposure => {
@@ -518,7 +486,7 @@ where
                     self.set_exposure_algorithm(ExposureAlgorithm::FullyManual);
                 }
                 _ => {
-                    mcu_println!(self, "DebugCommand::{:?}({}) not implemented", command, arg);
+                    info!("DebugCommand::{:?}({}) not implemented", command, arg);
                 }
             }
         }
@@ -527,15 +495,15 @@ where
     #[cfg(feature = "dev")]
     fn self_test(&mut self) -> Result<()> {
         if !cfg!(feature = "self-test") {
-            mcu_println!(self, "Self-test feature not enabled");
+            info!("Self-test feature not enabled");
             return Err(Error::UnknownFeature);
         }
         let test_data = self.test_image_area.ok_or_else(|| {
-            mcu_println!(self, "Test-image area not available");
+            info!("Test-image area not available");
             Error::UnknownFeature
         })?;
 
-        mcu_println!(self, "Testing TFLM on canned data");
+        info!("Testing TFLM on canned data");
 
         const MAX_RESULTS: usize = TEST_IMAGES_MAX_SIZE as usize / TEST_IMAGE_BLOCK_SIZE;
 
@@ -587,10 +555,10 @@ where
     fn check_results(&mut self, name: &str, num_results: usize, results: &[i8], expected: &[i8]) {
         let results = &results[..num_results];
         if results == expected {
-            mcu_println!(self, "{name:>13} results: {results:?} - PASS");
+            info!("{name:>13} results: {results:?} - PASS");
         } else {
-            mcu_println!(self, "{name:>13} results: {results:?} - FAIL");
-            mcu_println!(self, "             expected: {expected:?}");
+            info!("{name:>13} results: {results:?} - FAIL");
+            info!("             expected: {expected:?}");
         }
     }
 
@@ -601,7 +569,7 @@ where
         let test_data = match self.spi_test_data {
             Some(x) => x,
             None => {
-                mcu_println!(self, "SPI test region not supplied");
+                info!("SPI test region not supplied");
                 return;
             }
         };
@@ -617,11 +585,9 @@ where
             }
             self.status.loop_count += 1;
             if self.status.loop_count & 0xf == 0 {
-                mcu_println!(
-                    self.mcu,
+                info!(
                     "{} iterations with {} errors so far",
-                    self.status.loop_count,
-                    bad
+                    self.status.loop_count, bad
                 );
             }
             self.status.person_status = bad;
@@ -641,11 +607,9 @@ where
             self.status.loop_count += 1;
             self.status.person_status = bad;
             let _ = self.mcu.report_status(&self.status);
-            mcu_println!(
-                self.mcu,
+            info!(
                 "{} iterations with {} errors so far",
-                self.status.loop_count,
-                bad
+                self.status.loop_count, bad
             );
         }
     }
@@ -684,10 +648,10 @@ where
 
     #[cfg(feature = "dev")]
     fn set_exposure_algorithm(&mut self, exposure_algorithm: ExposureAlgorithm) {
-        mcu_println!(self, "Exposure algorithm: {:?}", exposure_algorithm);
+        info!("Exposure algorithm: {:?}", exposure_algorithm);
         self.exposure_algorithm = exposure_algorithm;
         if let Err(error) = self.camera_setup() {
-            mcu_println!(self, "Camera setup error: {:?}", error);
+            info!("Camera setup error: {:?}", error);
         }
     }
 }

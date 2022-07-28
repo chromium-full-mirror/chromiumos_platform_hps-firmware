@@ -43,11 +43,6 @@ where
         }
     }
 
-    /// This allows an McuInterface to be used as an argument to mcu_println.
-    pub fn mcu_mut(&mut self) -> &mut Self {
-        self
-    }
-
     pub fn report_boot(&mut self, version: u8) -> Result<()> {
         let mut buffer = [0u8; MIN_BUFFER_SIZE];
         buffer[0] = Action::ReportFpgaBoot.into();
