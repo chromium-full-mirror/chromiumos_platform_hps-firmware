@@ -18,6 +18,7 @@ For more information, refer to the
     * [Developing outside the ChromeOS chroot](docs/working_outside_chroot.md)
     * [Working with HPS proto2](docs/proto2.md)
     * [Releasing new firmware](docs/releasing.md)
+    * [Running unsigned firmware on a DUT](docs/unsigned_firmware_on_dut.md)
     * [Capturing images](docs/capturing_images.md)
     * [Using an IDE](docs/ide.md)
     * [Optimizing FPGA ROM flash layout](docs/optimizing_flash_speed.md)
