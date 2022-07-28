@@ -166,3 +166,39 @@ scripts/proto2-term
 
 This script wraps the Litex terminal interface. Press Control-C twice in quick
 succession to disconnect.
+
+## Unlocking RDP (flash protection in the MCU)
+
+If you use `hps-factory` to write stage0 to proto2, it will also configure
+readout protect (RDP) level 1 to protect the MCU flash. OpenOCD (and all the
+helper scripts) will then be unable to program flash in that case:
+
+```
+[...]
+Error: stm32x device protected
+Error: failed erasing sectors 0 to 28
+embedded:startup.tcl:530: Error: ** Programming Failed **
+in procedure 'program'
+in procedure 'program_error' called at file "embedded:startup.tcl", line 595
+at file "embedded:startup.tcl", line 530
+```
+
+To remove RDP and unlock the flash, first start the OpenOCD helper script:
+
+```
+scripts/proto2-openocd
+```
+
+In another terminal, use GDB to issue the necessary register writes:
+
+```
+arm-none-eabi-gdb \
+    --ex 'target extended-remote localhost:3333' \
+    --ex 'set {int}0x40022008 = 0x45670123' \
+    --ex 'set {int}0x40022008 = 0xCDEF89AB' \
+    --ex 'set {int}0x4002200c = 0x08192A3B' \
+    --ex 'set {int}0x4002200c = 0x4C5D6E7F' \
+    --ex 'set {int}0x4002202c = 0x3f' \
+    --ex 'set {int}0x40022020 = 0xfffffeaa' \
+    --ex 'set {int}0x40022014 = 0x20000'
+```
