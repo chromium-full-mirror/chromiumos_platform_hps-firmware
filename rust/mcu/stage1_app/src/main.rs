@@ -292,6 +292,8 @@ mod app {
             delay,
             duration_us: 10,
         };
+        let mut frame_timer = p.TIM14.timer(&mut rcc);
+        frame_timer.listen();
 
         let mut camera = hm01b0::Camera::new(&mut camera_i2c);
         match camera.get_camera_id() {
@@ -345,7 +347,7 @@ mod app {
             #[cfg(feature = "dev")]
             debug_timer: debug::init_debug_timer(p.TIM16, &mut rcc),
             camera_i2c,
-            frame_timer: p.TIM14.timer(&mut rcc),
+            frame_timer,
             stopwatch,
             tick_count: 0,
             rcc,
@@ -434,8 +436,8 @@ mod app {
     #[task(binds = TIM14, shared = [frame_timer, camera_i2c, host_interface])]
     fn tim14_tick(mut ctx: tim14_tick::Context) {
         let timer = ctx.shared.frame_timer;
+        timer.pause();
         timer.clear_irq();
-        timer.unlisten();
 
         let mut camera = hm01b0::Camera::new(ctx.shared.camera_i2c);
         if camera.set_mode(hm01b0::Mode::StreamingNFrames(1)).is_err() {
@@ -613,9 +615,6 @@ mod app {
                 let frame_delay = MicroSecond(
                     u32::from_le_bytes([buffer[1], buffer[2], buffer[3], buffer[4]]).max(1),
                 );
-                ctx.shared.frame_timer.reset();
-                ctx.shared.frame_timer.clear_irq();
-                ctx.shared.frame_timer.listen();
                 ctx.shared.frame_timer.start(frame_delay);
             }
             fpga::Action::Poll => {}
