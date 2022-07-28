@@ -24,3 +24,4 @@ For more information, refer to the
     * [Using an IDE](docs/ide.md)
     * [Optimizing FPGA ROM flash layout](docs/optimizing_flash_speed.md)
     * [Regenerating TfLM](docs/regen_tflm.md)
+    * [Updating model](docs/updating_model.md)
