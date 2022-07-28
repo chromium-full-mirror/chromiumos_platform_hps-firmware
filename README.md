@@ -17,6 +17,7 @@ For more information, refer to the
     * [Developing outside the ebuild](docs/outside_ebuild.md)
     * [Developing outside the ChromeOS chroot](docs/working_outside_chroot.md)
     * [Working with HPS proto2](docs/proto2.md)
+    * [Releasing new firmware](docs/releasing.md)
     * [Capturing images](docs/capturing_images.md)
     * [Using an IDE](docs/ide.md)
     * [Optimizing FPGA ROM flash layout](docs/optimizing_flash_speed.md)
