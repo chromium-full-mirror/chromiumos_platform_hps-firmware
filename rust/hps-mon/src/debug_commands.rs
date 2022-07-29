@@ -263,10 +263,10 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
-        keyword: "sleep_second",
-        help_text: "Sleep for a second",
+        keyword: "sleep",
+        help_text: "Sleep for N milliseconds",
         command_type: CommandType::LocalOperation(LocalOperation::SleepMilliseconds),
-        arg_parser: NO_ARG,
+        arg_parser: U16_ARG,
     },
     AvailableDebugCommand {
         keyword: "ping_mcu",
