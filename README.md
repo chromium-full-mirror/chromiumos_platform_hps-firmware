@@ -14,6 +14,7 @@ For more information, refer to the
 * Reference material
     * [I2C protocol](docs/host_device_i2c_protocol.md)
     * [Flash layout](docs/flash_layout.md)
+    * [ChromiumOS packages for HPS firmware](docs/packages.md)
 * How-to guides for developers
     * [Developing outside the ebuild](docs/outside_ebuild.md)
     * [Developing outside the ChromeOS chroot](docs/working_outside_chroot.md)
