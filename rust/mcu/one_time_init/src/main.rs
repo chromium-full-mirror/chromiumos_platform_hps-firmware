@@ -24,7 +24,6 @@ use mcu_common::Status;
 use panic_halt as _;
 use stm32g0 as _;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
-use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 extern "C" {
     pub static VECTOR_TABLE: u32;
@@ -101,8 +100,8 @@ mod app {
 
         let gpiob = p.GPIOB.split(&mut rcc);
 
-        let sda = gpiob.pb7.into_open_drain_output_high();
-        let scl = gpiob.pb6.into_open_drain_output_high();
+        let sda = gpiob.pb7.into_open_drain_output_in_state(PinState::High);
+        let scl = gpiob.pb6.into_open_drain_output_in_state(PinState::High);
         let i2c_config = stm32g0_i2c_peripheral::Config::new(
             stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
             stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),

@@ -49,7 +49,6 @@ use log::info;
 use log::warn;
 use spi_memory::series25::Flash;
 use stm32g0 as _;
-use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 #[cfg(feature = "dev")]
 use panic_rtt_target as _;
@@ -229,8 +228,8 @@ mod app {
         pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
         pwm_channel.enable();
 
-        let sda = gpioa.pa12.into_open_drain_output_high();
-        let scl = gpioa.pa11.into_open_drain_output_high();
+        let sda = gpioa.pa12.into_open_drain_output_in_state(PinState::High);
+        let scl = gpioa.pa11.into_open_drain_output_in_state(PinState::High);
 
         let camera_i2c = p
             .I2C2
@@ -244,8 +243,8 @@ mod app {
             duration_us: 10,
         };
 
-        let sda = gpiob.pb7.into_open_drain_output_high();
-        let scl = gpiob.pb6.into_open_drain_output_high();
+        let sda = gpiob.pb7.into_open_drain_output_in_state(PinState::High);
+        let scl = gpiob.pb6.into_open_drain_output_in_state(PinState::High);
 
         hal::i2c::SDAPin::setup(&sda);
         hal::i2c::SCLPin::setup(&scl);

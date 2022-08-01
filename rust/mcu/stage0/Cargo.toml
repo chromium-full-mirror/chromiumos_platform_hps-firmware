@@ -18,7 +18,6 @@ panic-halt = "0.2.0"
 i2c_peripheral = { path = "../../i2c_peripheral" }
 stm32g0_i2c_peripheral = { path = "../stm32g0_i2c_peripheral" }
 hal = { package = "stm32g0xx-hal", version = "=0.1.5", features = ["rt", "stm32g071"]}
-stm32g0_utils = { path = "../stm32g0_utils" }
 
 [build-dependencies]
 anyhow = "1.0.38"

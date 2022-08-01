@@ -25,7 +25,6 @@ use hal::stm32::TIM1;
 use hal::stm32::TIM3;
 use hal::timer::delay::Delay;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
-use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 /// The type of the SPI CS pin from the FPGA once configured.
 pub type FpgaSpiCsPin = gpio::gpioa::PA8<Input<Floating>>;
@@ -102,18 +101,18 @@ impl Board {
         let mut spi_ready = c.pc14.into_push_pull_output();
         spi_ready.set_low().unwrap();
 
-        let sda = b.pb7.into_open_drain_output_high();
-        let scl = b.pb6.into_open_drain_output_high();
+        let sda = b.pb7.into_open_drain_output_in_state(PinState::High);
+        let scl = b.pb6.into_open_drain_output_in_state(PinState::High);
 
         let host_bus = Stm32g0I2cPeripheral::new(i2c1, rcc, sda, scl, i2c_config);
 
-        let flash_spi_cs = b.pb0.into_open_drain_output_high();
+        let flash_spi_cs = b.pb0.into_open_drain_output_in_state(PinState::High);
         let flash_spi_clk = a.pa5.set_speed(Speed::VeryHigh);
         let flash_spi_copi = a.pa7.set_speed(Speed::VeryHigh);
         let flash_spi_cipo = a.pa6.set_speed(Speed::VeryHigh);
 
-        let sda = a.pa12.into_open_drain_output_high();
-        let scl = a.pa11.into_open_drain_output_high();
+        let sda = a.pa12.into_open_drain_output_in_state(PinState::High);
+        let scl = a.pa11.into_open_drain_output_in_state(PinState::High);
 
         let camera_i2c = i2c2.i2c(sda, scl, hal::i2c::Config::new(120.khz()), rcc);
 
@@ -129,7 +128,7 @@ impl Board {
 
             host_bus,
 
-            interrupt_pin: b.pb8.into_open_drain_output_high(),
+            interrupt_pin: b.pb8.into_open_drain_output_in_state(PinState::High),
             debug_led: a.pa1.into_push_pull_output(),
             fpga_programn,
             fpga_power_gate,

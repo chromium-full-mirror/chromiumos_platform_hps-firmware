@@ -29,7 +29,6 @@ use mcu_flash::FlashWriter;
 use panic_halt as _;
 use rtic::Mutex;
 use stm32g0_i2c_peripheral::Stm32g0I2cPeripheral;
-use stm32g0_utils::IntoOpenDrainOutputHigh;
 
 type FwWp = gpioa::PA15<Input<Floating>>;
 
@@ -125,8 +124,8 @@ mod app {
         // Safety: This is the only call to this function.
         let slot = unsafe { loader::get_stage1_slot() };
 
-        let sda = gpiob.pb7.into_open_drain_output_high();
-        let scl = gpiob.pb6.into_open_drain_output_high();
+        let sda = gpiob.pb7.into_open_drain_output_in_state(PinState::High);
+        let scl = gpiob.pb6.into_open_drain_output_in_state(PinState::High);
 
         let mut host_interface = host_interface::HostInterface::new(Stm32g0I2cPeripheral::new(
             p.I2C1, &mut rcc, sda, scl, i2c_config,

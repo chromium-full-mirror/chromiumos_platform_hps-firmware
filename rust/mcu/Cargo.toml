@@ -8,7 +8,6 @@ members = [
     "stage0",
     "stage1_app",
     "stm32g0_i2c_peripheral",
-    "stm32g0_utils",
 ]
 
 # Optimize all dependencies
