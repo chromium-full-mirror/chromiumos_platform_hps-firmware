@@ -32,8 +32,11 @@ pub enum Error {
     /// An I2C overrun occurred.
     HostI2cOverrun = 0x0010,
 
-    /// Something is wrong with the camera.
-    Camera = 0x0020,
+    /// Something went wrong with I2C communication to the camera.
+    CameraI2c = 0x0020,
+
+    /// Timeout receiving image data from the camera.
+    CameraImageTimeout = 0x0021,
 
     /// Something is wrong with the SPI flash.
     SpiFlash = 0x0040,
@@ -91,8 +94,11 @@ impl core::fmt::Display for Error {
 }
 
 impl From<hm01b0::Error> for Error {
-    fn from(_: hm01b0::Error) -> Self {
-        Self::Camera
+    fn from(error: hm01b0::Error) -> Self {
+        match error {
+            hm01b0::Error::I2cError => Self::CameraI2c,
+            hm01b0::Error::InvalidValues => Self::Internal,
+        }
     }
 }
 

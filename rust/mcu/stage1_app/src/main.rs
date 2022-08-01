@@ -302,13 +302,13 @@ mod app {
         let mut camera = hm01b0::Camera::new(&mut camera_i2c);
         match camera.get_camera_id() {
             Err(e) => {
-                host_interface.report_error(mcu_common::Error::Camera);
+                host_interface.report_error(mcu_common::Error::CameraI2c);
                 info!("Failed to read camera ID: {e:?}");
             }
             Ok(id) => {
                 part_ids.camera_id = id as u32;
                 if id != CAMERA_ID {
-                    host_interface.report_error(mcu_common::Error::Camera);
+                    host_interface.report_error(mcu_common::Error::CameraI2c);
                     info!("Camera reported unexpected ID: {}", id);
                 }
             }
@@ -447,7 +447,7 @@ mod app {
         if camera.set_mode(hm01b0::Mode::StreamingNFrames(1)).is_err() {
             ctx.shared
                 .host_interface
-                .lock(|host_interface| host_interface.report_error(mcu_common::Error::Camera));
+                .lock(|host_interface| host_interface.report_error(mcu_common::Error::CameraI2c));
         }
     }
 
@@ -510,7 +510,7 @@ mod app {
                     .unwrap_or(false)
                 {
                     ctx.shared.host_interface.lock(|host_interface| {
-                        host_interface.report_error(mcu_common::Error::Camera)
+                        host_interface.report_error(mcu_common::Error::CameraI2c)
                     });
                     break;
                 }

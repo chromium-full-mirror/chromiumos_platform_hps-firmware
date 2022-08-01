@@ -249,7 +249,7 @@ impl<C: CameraDataInterface, T: Timer> ImageDataReceiver<C, T> {
                 return Ok(());
             }
         }
-        Err(Error::Camera)
+        Err(Error::CameraImageTimeout)
     }
 }
 
