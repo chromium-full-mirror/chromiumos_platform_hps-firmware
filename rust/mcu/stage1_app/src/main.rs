@@ -301,9 +301,9 @@ mod app {
 
         let mut camera = hm01b0::Camera::new(&mut camera_i2c);
         match camera.get_camera_id() {
-            Err(_) => {
+            Err(e) => {
                 host_interface.report_error(mcu_common::Error::Camera);
-                info!("Failed to read camera ID");
+                info!("Failed to read camera ID: {e:?}");
             }
             Ok(id) => {
                 part_ids.camera_id = id as u32;
