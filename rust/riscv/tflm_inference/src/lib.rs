@@ -4,11 +4,10 @@
 
 #![no_std]
 
-use fpga_app::Error::TfLiteFailure;
+use core::convert::TryFrom;
+use fpga_app::Error;
 use fpga_app::Result;
 use fpga_app::TfLiteInitStatus;
-
-use core::convert::TryFrom;
 
 #[link(name = "tflite-micro")]
 #[link(name = "c")]
@@ -69,7 +68,7 @@ impl fpga_app::Classifier for TflmClassifier {
         if unsafe { tflite_classify(&mut score1 as *mut i8, &mut score2 as *mut i8) } {
             Ok((score1, score2))
         } else {
-            Err(TfLiteFailure)
+            Err(Error::TfliteFailure)
         }
     }
 

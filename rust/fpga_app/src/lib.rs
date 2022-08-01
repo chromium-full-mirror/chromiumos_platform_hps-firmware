@@ -34,6 +34,7 @@ pub use features::Features;
 pub use histogram::Histogram;
 use hm01b0::TestPattern;
 use log::info;
+pub use mcu_common::Error;
 use mcu_common::SPI_BLOCK_SIZE;
 pub use mcu_interface::McuInterface;
 pub use timer::Instant;
@@ -72,17 +73,6 @@ const NUM_MODELS: usize = 2;
 /// adjust the trigger delay based on actual timings, so this is only a starting
 /// value.
 const INITIAL_FRAME_TRIGGER_DELAY: Microseconds = Microseconds(300_000);
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Error {
-    Camera,
-    InvalidArg,
-    McuTimeout,
-    SelfTestFailed,
-    SpiError,
-    TfLiteFailure,
-    UnknownFeature,
-}
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -170,16 +160,16 @@ where
         let status = self.classifier.init_status();
         info!("Classifier status: {:?}", status);
         if status != TfLiteInitStatus::InitOk {
-            self.mcu.report_error(mcu_common::Error::TfliteFailure);
+            self.mcu.report_error(Error::TfliteFailure);
         }
         if let Err(error) = self.camera_setup() {
             info!("Camera error: {:?}", error);
-            self.mcu.report_error(fpga_to_mcu_error(error));
+            self.mcu.report_error(error);
         }
         loop {
             if let Err(error) = self.loop_body() {
                 info!("Error: {:?}", error);
-                self.mcu.report_error(fpga_to_mcu_error(error));
+                self.mcu.report_error(error);
             }
         }
     }
@@ -198,7 +188,8 @@ where
 
     fn loop_body(&mut self) -> Result<()> {
         let config = self.mcu.read_config()?;
-        let features = Features::from_bits(config.enabled_features).ok_or(Error::UnknownFeature)?;
+        let features =
+            Features::from_bits(config.enabled_features).ok_or(Error::HostI2cBadRequest)?;
         if !features.contains(Features::MODEL1) {
             self.status.person_status = 0;
         }
@@ -332,7 +323,7 @@ where
     // Determine what the rotation setting is
     fn determine_rotation(&mut self, config: &application::Configuration) -> Result<bool> {
         Ok(
-            Rotation::try_from(config.camera_config & 3).map_err(|_| Error::InvalidArg)?
+            Rotation::try_from(config.camera_config & 3).map_err(|_| Error::HostI2cBadRequest)?
                 == Rotation::Clockwise,
         )
     }
@@ -494,11 +485,11 @@ where
     fn self_test(&mut self) -> Result<()> {
         if !cfg!(feature = "self-test") {
             info!("Self-test feature not enabled");
-            return Err(Error::UnknownFeature);
+            return Err(Error::HostI2cBadRequest);
         }
         let test_data = self.test_image_area.ok_or_else(|| {
             info!("Test-image area not available");
-            Error::UnknownFeature
+            Error::HostI2cBadRequest
         })?;
 
         info!("Testing TFLM on canned data");
@@ -654,21 +645,7 @@ where
     }
 }
 
-fn fpga_to_mcu_error(error: Error) -> mcu_common::Error {
-    // TODO: Get rid of our own Error enum and just use
-    // mcu_common::Error everywhere.
-    match error {
-        Error::Camera => mcu_common::Error::Camera,
-        Error::InvalidArg => mcu_common::Error::HostI2cBadRequest,
-        Error::McuTimeout => mcu_common::Error::FpgaMcuCommError,
-        Error::SelfTestFailed => mcu_common::Error::SelfTestFailed,
-        Error::SpiError => mcu_common::Error::FpgaMcuCommError,
-        Error::TfLiteFailure => mcu_common::Error::TfliteFailure,
-        Error::UnknownFeature => mcu_common::Error::HostI2cBadRequest,
-    }
-}
-
-pub fn report_fatal_error(spi: impl spi::Transfer<u8>, error: mcu_common::Error) {
+pub fn report_fatal_error(spi: impl spi::Transfer<u8>, error: Error) {
     let mut mcu = McuInterface::new(spi);
     mcu.resync();
     mcu.report_error(error);

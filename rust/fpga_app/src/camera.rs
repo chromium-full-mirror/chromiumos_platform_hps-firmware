@@ -107,17 +107,17 @@ impl<C: CameraDataInterface, T: Timer> ImageDataReceiver<C, T> {
         if image_dimensions.row_count as usize * image_dimensions.column_count as usize
             != buffer.len()
         {
-            return Err(Error::InvalidArg);
+            return Err(Error::Internal);
         }
         // Column count must be a multiple of 4, since we read and write a word
         // at a time.
         if image_dimensions.column_count & 3 != 0 {
-            return Err(Error::InvalidArg);
+            return Err(Error::Internal);
         }
         self.histogram = Default::default();
         // TODO(dml): Change the buffer to [u32] so that we don't need this.
         if (buffer.as_ptr() as usize) & 0x3 != 0 {
-            return Err(Error::InvalidArg);
+            return Err(Error::Internal);
         }
         let buffer_u32 = unsafe {
             core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u32, buffer.len() / 4)

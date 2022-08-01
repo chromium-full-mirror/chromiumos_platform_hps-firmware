@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use crate::Error;
 use crate::Microseconds;
 use crate::Result;
 use application::fpga::commands::Action;
@@ -10,6 +9,7 @@ use application::fpga::BUFFER_SIZE;
 use application::Configuration;
 use application::Status;
 use embedded_hal::blocking::spi;
+use mcu_common::Error;
 
 // Number of times the controller will poll the MCU for a response before giving
 // up.
@@ -122,7 +122,7 @@ where
         self.exchange(&mut buffer)?;
         for (index, byte) in buffer[2..].iter_mut().enumerate() {
             if *byte != index as u8 {
-                return Err(Error::SpiError);
+                return Err(Error::FpgaMcuCommError);
             }
         }
         Ok(())
@@ -202,20 +202,24 @@ where
 
     fn exchange(&mut self, buffer: &mut [u8]) -> Result<()> {
         let command = buffer[0];
-        self.spi.transfer(buffer).map_err(|_| Error::SpiError)?;
+        self.spi
+            .transfer(buffer)
+            .map_err(|_| Error::FpgaMcuCommError)?;
 
         for _ in 0..MCU_POLL_COUNT {
             if buffer[0] != 0 {
                 if buffer[1] == command {
                     return Ok(());
                 } else {
-                    return Err(Error::SpiError);
+                    return Err(Error::FpgaMcuCommError);
                 }
             }
             buffer[0] = 0;
-            self.spi.transfer(buffer).map_err(|_| Error::SpiError)?;
+            self.spi
+                .transfer(buffer)
+                .map_err(|_| Error::FpgaMcuCommError)?;
         }
-        Err(Error::McuTimeout)
+        Err(Error::FpgaMcuCommError)
     }
 }
 
@@ -248,7 +252,7 @@ where
 
     fn write(&mut self, _address: u8, bytes: &[u8]) -> Result<()> {
         if bytes.len() != 3 {
-            return Err(Error::InvalidArg);
+            return Err(Error::Internal);
         }
         let register = u16::from_be_bytes([bytes[0], bytes[1]]);
         let value = bytes[2];
@@ -264,17 +268,11 @@ where
 
     fn write_read(&mut self, _address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<()> {
         if bytes.len() != 2 || buffer.len() != 1 {
-            return Err(Error::InvalidArg);
+            return Err(Error::Internal);
         }
         let register = u16::from_be_bytes([bytes[0], bytes[1]]);
         buffer[0] = self.read_camera_reg(register);
         Ok(())
-    }
-}
-
-impl From<hm01b0::Error> for Error {
-    fn from(_: hm01b0::Error) -> Self {
-        Self::Camera
     }
 }
 

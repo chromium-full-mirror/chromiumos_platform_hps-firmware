@@ -90,6 +90,12 @@ impl core::fmt::Display for Error {
     }
 }
 
+impl From<hm01b0::Error> for Error {
+    fn from(_: hm01b0::Error) -> Self {
+        Self::Camera
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 

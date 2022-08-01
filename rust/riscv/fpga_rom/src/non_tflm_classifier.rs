@@ -35,7 +35,7 @@ impl Classifier for NonTflmClassifier {
     }
 
     fn run_model(&mut self) -> Result<(i8, i8)> {
-        Err(Error::TfLiteFailure)
+        Err(Error::TfliteFailure)
     }
 
     fn init_status(&self) -> TfLiteInitStatus {
