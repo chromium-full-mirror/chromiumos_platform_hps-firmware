@@ -304,8 +304,6 @@ where
 
         // Set frame rate to ~21Hz by doubling frame length
         camera.set_frame_length(2 * 0x158)?;
-        // Set camera to stream
-        //camera.set_mode(hm01b0::Mode::Streaming)?;
 
         match self.exposure_algorithm {
             ExposureAlgorithm::MedianTarget(_) => {
