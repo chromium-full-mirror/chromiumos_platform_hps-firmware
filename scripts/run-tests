@@ -50,6 +50,6 @@ cargo build --all-features
 # Run Python tests
 cd "${PROJECT_ROOT}"
 echo -e "\n\n${RED}=======================================${NORMAL}"
-echo -e "${GREEN}Running Python tests from soc directory${NORMAL}"
+echo -e "${GREEN}Running Python tests${NORMAL}"
 echo -e "${RED}=======================================${NORMAL}"
-scripts/pyrun -m unittest soc/*.py
+scripts/pyrun -m unittest discover -v
