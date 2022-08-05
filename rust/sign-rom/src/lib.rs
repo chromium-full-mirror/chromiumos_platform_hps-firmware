@@ -104,7 +104,8 @@ pub fn sign_hash(hash: &[u8], private_key: &ed25519_compact::SecretKey) -> Signa
 
 #[cfg(test)]
 mod test {
-    use mcu_common::{ImageHeader, Signature};
+    use mcu_common::ImageHeader;
+    use mcu_common::Signature;
 
     #[test]
     fn test_signing() {

@@ -7,7 +7,8 @@
 use embedded_hal::blocking::i2c;
 use std::error;
 use std::fmt::Display;
-use std::io::{Read, Write};
+use std::io::Read;
+use std::io::Write;
 use std::os::unix::net::UnixStream;
 use std::time::Duration;
 

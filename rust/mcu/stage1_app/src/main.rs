@@ -18,7 +18,8 @@ mod spi_peripheral;
 mod testing;
 
 use crate::boards::board;
-use crate::fpga_device::{get_spi_flash, FpgaDevice};
+use crate::fpga_device::get_spi_flash;
+use crate::fpga_device::FpgaDevice;
 use crate::spi_peripheral::SpiPeripheral;
 use application::fpga;
 use application::ApplicationState;
@@ -33,9 +34,10 @@ use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
 use mcu_common::commands::Command;
+use mcu_common::Buffer;
+use mcu_common::MemBlock;
 use mcu_common::PartIds;
 use mcu_common::Status;
-use mcu_common::{Buffer, MemBlock};
 use spi_memory::series25::Flash;
 
 const CAMERA_ID: u16 = 0x01b0;
