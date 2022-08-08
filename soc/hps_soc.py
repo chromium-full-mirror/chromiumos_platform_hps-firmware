@@ -12,6 +12,7 @@ import sys
 import time
 import types
 
+import amaranth.back.verilog
 from litespi import LiteSPI
 from litespi.modules import GD25LQ128D
 from litespi.opcodes import SpiNorFlashOpCodes as Codes
@@ -32,6 +33,7 @@ from migen import Record
 from migen import ResetSignal
 
 from .cam_control import CameraControl
+from .cfu.gen2 import hps_cfu
 from .clock_control import CfuCpuClockCtrl
 from .hps_platform import Platform
 from .spi_controller import SpiController
@@ -341,12 +343,17 @@ def main():
         '--parallel-nextpnr', action='store_true',
         help='Runs $(nproc) copies of nextpnr in parallel. Used to search ' +
         'for a seed.')
-    parser.add_argument(
-        '--cpu-cfu', default='soc/cfu.v',
-        help='Specify file containing CFU Verilog module.')
 
     args = parser.parse_args()
     args.output_dir = 'build/hps_platform'
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    cfu = hps_cfu.make_cfu(specialize_nx=True)
+    cfu_verilog = amaranth.back.verilog.convert(
+        cfu, name='Cfu', ports=cfu.ports)
+    cfu_verilog_filename = os.path.join(args.output_dir, 'cfu.v')
+    with open(cfu_verilog_filename, 'w') as f:
+        f.write(cfu_verilog)
 
     # Our custom Vexriscv configuration is not exactly 'full+cfu'
     # but the differences don't matter to Litex.
@@ -355,7 +362,7 @@ def main():
     soc = HpsSoC(
         platform=Platform(parallel_nextpnr=args.parallel_nextpnr),
         variant=variant,
-        cpu_cfu=args.cpu_cfu)
+        cpu_cfu=cfu_verilog_filename)
 
     cpu_verilog_path = os.path.join(
         SOC_DIR,
