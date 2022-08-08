@@ -5,9 +5,17 @@
 """Multiply Accumulate Blocks for a systolic array"""
 
 
-from amaranth import Mux, Signal, unsigned, Const, Instance, ClockSignal, ResetSignal, Cat
+from amaranth import Cat
+from amaranth import ClockSignal
+from amaranth import Const
+from amaranth import Instance
+from amaranth import Mux
+from amaranth import ResetSignal
+from amaranth import Signal
+from amaranth import unsigned
 
-from ..util import tree_sum, SimpleElaboratable
+from ..util import SimpleElaboratable
+from ..util import tree_sum
 from .utils import delay
 
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from amaranth import Signal
+
 from ..util import SimpleElaboratable
 
 

@@ -17,8 +17,11 @@ from pathlib import Path
 import pickle
 import sys
 
-from .conv2d_data import Conv2DData, save_data
-from .utils import as_signed_int32_array, as_unsigned_int32_array
+from .conv2d_data import Conv2DData
+from .conv2d_data import save_data
+from .utils import as_signed_int32_array
+from .utils import as_unsigned_int32_array
+
 
 if __name__ != '__main__':
   print('Run as script to produce a data file. Do not import')

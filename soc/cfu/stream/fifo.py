@@ -3,12 +3,17 @@
 # found in the LICENSE file.
 
 
-from amaranth import signed, unsigned, Cat, Signal, Module
-from amaranth.lib.fifo import SyncFIFOBuffered
+from amaranth import Cat
+from amaranth import Module
+from amaranth import Signal
+from amaranth import signed
+from amaranth import unsigned
 from amaranth.hdl.dsl import FSM
+from amaranth.lib.fifo import SyncFIFOBuffered
 
-from .stream import PayloadDefinition, Endpoint
 from ..util import SimpleElaboratable
+from .stream import Endpoint
+from .stream import PayloadDefinition
 
 
 class StreamFifo(SimpleElaboratable):

@@ -6,14 +6,22 @@
 import itertools
 import random
 
-from amaranth import Module, unsigned
-from amaranth.sim import Passive, Delay
+from amaranth import Module
+from amaranth import unsigned
+from amaranth.sim import Delay
+from amaranth.sim import Passive
 
-from .post_process import (
-    SaturatingRoundingDoubleHighMul, RoundingDivideByPowerOfTwo,
-    SaturateActivationPipeline, PostProcessPipeline, ParamWriter, ReadingProducer,
-    AccumulatorReader, StreamLimiter, OutputWordAssembler)
-from ..util import pack_vals, TestBase
+from ..util import pack_vals
+from ..util import TestBase
+from .post_process import AccumulatorReader
+from .post_process import OutputWordAssembler
+from .post_process import ParamWriter
+from .post_process import PostProcessPipeline
+from .post_process import ReadingProducer
+from .post_process import RoundingDivideByPowerOfTwo
+from .post_process import SaturateActivationPipeline
+from .post_process import SaturatingRoundingDoubleHighMul
+from .post_process import StreamLimiter
 
 
 # Test cases generated from original C implementation

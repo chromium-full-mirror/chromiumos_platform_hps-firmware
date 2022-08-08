@@ -13,6 +13,7 @@ from collections import namedtuple
 from pathlib import Path
 import pickle
 
+
 Conv2DData = namedtuple('Conv2DData', [
     'input_dims',
     'output_dims',

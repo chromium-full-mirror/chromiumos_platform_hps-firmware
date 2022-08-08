@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from amaranth import Signal, Shape
+from amaranth import Shape
+from amaranth import Signal
 from amaranth.hdl.dsl import Module
-from amaranth.hdl.rec import Layout, Record
+from amaranth.hdl.rec import Layout
+from amaranth.hdl.rec import Record
 from amaranth.sim.core import Delay
 
-from .stream import Endpoint, connect
-from ..util import SimpleElaboratable, TestBase
+from ..util import SimpleElaboratable
+from ..util import TestBase
+from .stream import connect
+from .stream import Endpoint
 
 
 TEST_PAYLOAD_LAYOUT = Layout([

@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from amaranth import Cat, Signal, Module
+from amaranth import Cat
+from amaranth import Module
+from amaranth import Signal
 
-from .stream import PayloadDefinition, Endpoint
 from ..util import SimpleElaboratable
+from .stream import Endpoint
+from .stream import PayloadDefinition
 
 
 class BinaryActor(SimpleElaboratable):

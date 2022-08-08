@@ -4,10 +4,13 @@
 
 """Tests for uitls.py"""
 
-from amaranth import Signal, Module
+import random
+
+from amaranth import Module
+from amaranth import Signal
+
 from ..util import TestBase
 from .utils import delay
-import random
 
 
 class DelayTest(TestBase):

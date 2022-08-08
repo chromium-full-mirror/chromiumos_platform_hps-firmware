@@ -8,8 +8,10 @@ import random
 
 from amaranth.sim import Delay
 
-from .mem import LoopingAddressGenerator, LoopingCounter, SinglePortMemory
 from ..util import TestBase
+from .mem import LoopingAddressGenerator
+from .mem import LoopingCounter
+from .mem import SinglePortMemory
 
 
 class SinglePortMemoryTest(TestBase):

@@ -2,15 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from amaranth import Cat, Mux, Record, Signal, signed, unsigned
+from amaranth import Cat
+from amaranth import Mux
+from amaranth import Record
+from amaranth import Signal
+from amaranth import signed
+from amaranth import unsigned
 
-from .accelerator import AcceleratorCore, ACCELERATOR_CONFIGURATION_LAYOUT
-from ..cfu import Cfu, InstructionBase
+from ..cfu import Cfu
+from ..cfu import InstructionBase
+from ..stream import connect
+from ..stream import Endpoint
+from ..stream.fifo import StreamFifo
+from .accelerator import ACCELERATOR_CONFIGURATION_LAYOUT
+from .accelerator import AcceleratorCore
 from .constants import Constants
 from .filter import FILTER_WRITE_COMMAND
 from .post_process import POST_PROCESS_PARAMS
-from ..stream import connect, Endpoint
-from ..stream.fifo import StreamFifo
 
 
 class PingInstruction(InstructionBase):

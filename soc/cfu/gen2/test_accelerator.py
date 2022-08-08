@@ -7,13 +7,16 @@
 from functools import reduce
 import random
 
-from amaranth import Module, signed, unsigned
+from amaranth import Module
+from amaranth import signed
+from amaranth import unsigned
 from amaranth.sim import Passive
 
+from ..util import pack_vals
+from ..util import TestBase
 from .accelerator import AcceleratorCore
 from .constants import Constants
 from .conv2d_data import fetch_data
-from ..util import pack_vals, TestBase
 
 
 def group(list_, size):

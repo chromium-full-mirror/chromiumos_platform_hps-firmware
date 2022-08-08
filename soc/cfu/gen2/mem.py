@@ -4,7 +4,10 @@
 
 """Simple memory wrapper"""
 
-from amaranth import Memory, Mux, Signal, unsigned
+from amaranth import Memory
+from amaranth import Mux
+from amaranth import Signal
+from amaranth import unsigned
 
 from ..stream import Endpoint
 from ..util import SimpleElaboratable

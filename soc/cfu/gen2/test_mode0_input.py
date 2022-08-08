@@ -6,15 +6,14 @@
 
 from amaranth import Memory
 
-from .conv2d_data import fetch_data
-from .mode0_input import (
-    EvenPixelAddressGenerator,
-    Mode0InputFetcher,
-    ValueAddressGenerator,
-    ValueReader)
-from .ram_mux import RamMux
-from ..util import TestBase
 from ..util import pack_vals
+from ..util import TestBase
+from .conv2d_data import fetch_data
+from .mode0_input import EvenPixelAddressGenerator
+from .mode0_input import Mode0InputFetcher
+from .mode0_input import ValueAddressGenerator
+from .mode0_input import ValueReader
+from .ram_mux import RamMux
 
 
 class EvenPixelAddressGeneratorTest(TestBase):

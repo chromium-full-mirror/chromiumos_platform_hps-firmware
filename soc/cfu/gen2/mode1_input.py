@@ -58,7 +58,10 @@ which data is to be read, and the `ValueAddressGenerator` generates the
 addresses for all the data for a given output pixel from that start address.
 """
 
-from amaranth import Array, Mux, Signal, unsigned
+from amaranth import Array
+from amaranth import Mux
+from amaranth import Signal
+from amaranth import unsigned
 
 from ..util import SimpleElaboratable
 from .utils import unsigned_upto

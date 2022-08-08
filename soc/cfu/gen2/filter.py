@@ -4,12 +4,15 @@
 
 """Gateware for filter storage."""
 
-from amaranth import Mux, Signal, unsigned
+from amaranth import Mux
+from amaranth import Signal
+from amaranth import unsigned
 
 from ..stream import Endpoint
+from ..util import SequentialMemoryReader
+from ..util import SimpleElaboratable
 from .constants import Constants
 from .mem import SinglePortMemory
-from ..util import SequentialMemoryReader, SimpleElaboratable
 from .utils import unsigned_upto
 
 

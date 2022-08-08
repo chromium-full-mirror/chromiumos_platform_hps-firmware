@@ -4,32 +4,32 @@
 
 """Accelerator Gateware"""
 
-from amaranth import (
-    Const,
-    Memory,
-    Mux,
-    Record,
-    ResetInserter,
-    Signal,
-    signed,
-    unsigned)
+from amaranth import Const
+from amaranth import Memory
+from amaranth import Mux
+from amaranth import Record
+from amaranth import ResetInserter
+from amaranth import Signal
+from amaranth import signed
+from amaranth import unsigned
 
-from ..stream import connect, Endpoint
+from ..stream import connect
+from ..stream import Endpoint
 from ..util import SimpleElaboratable
 from .constants import Constants
-from .filter import FilterStore, FILTER_WRITE_COMMAND
+from .filter import FILTER_WRITE_COMMAND
+from .filter import FilterStore
 from .mem import SinglePortMemory
 from .mode0_input import Mode0InputFetcher
 from .mode1_input import Mode1InputFetcher
-from .post_process import (
-    AccumulatorReader,
-    OutputWordAssembler,
-    ParamWriter,
-    POST_PROCESS_PARAMS,
-    POST_PROCESS_PARAMS_WIDTH,
-    PostProcessPipeline,
-    ReadingProducer,
-    StreamLimiter)
+from .post_process import AccumulatorReader
+from .post_process import OutputWordAssembler
+from .post_process import ParamWriter
+from .post_process import POST_PROCESS_PARAMS
+from .post_process import POST_PROCESS_PARAMS_WIDTH
+from .post_process import PostProcessPipeline
+from .post_process import ReadingProducer
+from .post_process import StreamLimiter
 from .ram_mux import RamMux
 from .sysarray import SystolicArray
 from .utils import unsigned_upto

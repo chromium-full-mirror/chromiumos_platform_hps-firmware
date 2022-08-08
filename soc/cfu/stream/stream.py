@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 from amaranth import Shape
-from amaranth.hdl.rec import Layout, Record
+from amaranth.hdl.rec import Layout
+from amaranth.hdl.rec import Record
+
 
 __all__ = ['PayloadDefinition', 'Endpoint', 'connect']
 

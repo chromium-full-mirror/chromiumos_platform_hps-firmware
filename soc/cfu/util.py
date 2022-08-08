@@ -2,12 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from amaranth import Elaboratable, Module, Mux, Signal, Memory
+import unittest
+
+from amaranth import Elaboratable
+from amaranth import Memory
+from amaranth import Module
+from amaranth import Mux
+from amaranth import Signal
 from amaranth.build import Platform
 from amaranth.hdl.ast import Cat
 from amaranth.sim import Simulator
-
-import unittest
 
 
 def tree_sum(l):

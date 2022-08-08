@@ -4,8 +4,8 @@
 
 """Tests for filter.py"""
 
-from .filter import FilterStore
 from ..util import TestBase
+from .filter import FilterStore
 
 
 class FilterStoreTest(TestBase):

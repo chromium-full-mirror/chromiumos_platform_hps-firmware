@@ -6,11 +6,15 @@
 
 import random
 
-from amaranth import Cat, Const, Module, signed
-from amaranth.sim import Passive, Delay
+from amaranth import Cat
+from amaranth import Const
+from amaranth import Module
+from amaranth import signed
+from amaranth.sim import Delay
+from amaranth.sim import Passive
 
-from .sysarray import SystolicArray
 from ..util import TestBase
+from .sysarray import SystolicArray
 
 
 def randlist(n, r):

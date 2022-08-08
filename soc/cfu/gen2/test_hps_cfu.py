@@ -5,14 +5,17 @@
 """Tests for hps_cfu.py"""
 
 
+from functools import reduce
+
 from amaranth.sim import Passive
 
+from ..cfu import CfuTestBase
+from ..cfu import InstructionTestBase
+from ..util import pack_vals
 from .constants import Constants
 from .conv2d_data import fetch_data
-from .hps_cfu import PoolInstruction, HpsCfu
-from ..util import pack_vals
-from ..cfu import CfuTestBase, InstructionTestBase
-from functools import reduce
+from .hps_cfu import HpsCfu
+from .hps_cfu import PoolInstruction
 
 
 class PoolInstructionTest(InstructionTestBase):

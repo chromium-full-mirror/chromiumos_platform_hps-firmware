@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from amaranth import Array, Signal, signed
-from amaranth.hdl.dsl import Module
-from .util import SimpleElaboratable, TestBase
+from amaranth import Array
+from amaranth import Signal
+from amaranth import signed
 from amaranth.hdl import ResetSignal
+from amaranth.hdl.dsl import Module
+
+from .util import SimpleElaboratable
+from .util import TestBase
 
 
 class InstructionBase(SimpleElaboratable):

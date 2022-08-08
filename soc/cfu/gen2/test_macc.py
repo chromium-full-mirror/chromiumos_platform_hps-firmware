@@ -7,11 +7,12 @@
 from collections import namedtuple
 import random
 
-from amaranth import unsigned, signed
+from amaranth import signed
+from amaranth import unsigned
 from amaranth.sim import Delay
 
-from .macc import StandardMaccBlock
 from ..util import TestBase
+from .macc import StandardMaccBlock
 
 
 class MaccBlockTest(TestBase):
