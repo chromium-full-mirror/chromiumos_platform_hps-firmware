@@ -26,7 +26,7 @@ class FilterStoreTest(TestBase):
                 for store in range(2):
                     expected = 10000 + 1000 * store + (addr - store) % 512
                     self.assertEqual((yield dut.values_out[store]), expected,
-                                        f"store={store}, addr={addr}")
+                                     f'store={store}, addr={addr}')
                 yield
 
     def test_it(self):
@@ -55,6 +55,5 @@ class FilterStoreTest(TestBase):
 
             # Fetch values three more times
             yield from self.read_three_times()
-            
 
         self.run_sim(process, False)

@@ -2,16 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Helpers for defining a CFU as an Amaranth Module."""
+
 from amaranth import Array
 from amaranth import Signal
 from amaranth import signed
 from amaranth.hdl import ResetSignal
-from amaranth.hdl.dsl import Module
 
 from .util import SimpleElaboratable
 from .util import TestBase
 
 
+# pylint: disable=abstract-method
 class InstructionBase(SimpleElaboratable):
     """Custom Instruction.
 
@@ -65,7 +67,8 @@ class InstructionTestBase(TestBase):
 
         Parameters
         ----------
-        data: list of 3-tuples (in0, in1, out) or 4-tuples (funct7, in0, in1, out)
+        data: list of 3-tuples (in0, in1, out) or
+        4-tuples (funct7, in0, in1, out)
         """
         def process():
             for n, values in enumerate(data):
@@ -83,9 +86,9 @@ class InstructionTestBase(TestBase):
                 if expected is not None:
                     self.assertEqual(
                         actual, expected,
-                        f"\n  case {n}:   " +
-                        f"in0={in0:08x}, in1={in1:08x}, " +
-                        f"expected={expected:08x}, actual={actual:08x}")
+                        f'\n  case {n}:   ' +
+                        f'in0={in0:08x}, in1={in1:08x}, ' +
+                        f'expected={expected:08x}, actual={actual:08x}')
                 yield
         self.run_sim(process, trace)
 
@@ -100,17 +103,18 @@ class InstructionTestBase(TestBase):
         an integer.
         """
         def process():
+            # pylint: disable=redefined-builtin
             for input in inputs:
                 if isinstance(input, tuple):
                     in0, in1 = input
                     yield self.dut.in0.eq(in0)
                     yield self.dut.in1.eq(in1)
                     expected = reference_fn(in0, in1)
-                    input_hex = f"0x{in0:08X}, 0x{in1:08X}"
+                    input_hex = f'0x{in0:08X}, 0x{in1:08X}'
                 else:
                     yield self.dut.in0.eq(input)
                     expected = reference_fn(input)
-                    input_hex = f"0x{input:08X}"
+                    input_hex = f'0x{input:08X}'
                 yield self.dut.start.eq(1)
                 yield
                 yield self.dut.start.eq(0)
@@ -119,16 +123,20 @@ class InstructionTestBase(TestBase):
                 actual = (yield self.dut.output)
                 self.assertEqual(
                     actual, expected,
-                    f"\n  HEX: instruction({input_hex}) expected: 0x{expected:08X} actual: 0x{actual:08X}" +
-                    f"\n  DEC: instruction({input}) expected: {expected} actual: {actual}")
+                    f'\n  HEX: instruction({input_hex})' +
+                    f' expected: 0x{expected:08X} actual: 0x{actual:08X}' +
+                    f'\n  DEC: instruction({input})' +
+                    f' expected: {expected} actual: {actual}')
                 yield
         self.run_sim(process, trace)
 
 
 class _FallbackInstruction(InstructionBase):
-    """Executed by CFU when no instruction explicitly defined for a given function id.
+    """Executed by CFU when no instruction explicitly defined for a given
+    function id.
 
-    This does nothing useful, but it does ensure that the CFU does not hang on an unknown functionid.
+    This does nothing useful, but it does ensure that the CFU does not hang on
+    an unknown functionid.
     """
 
     def elab(self, m):
@@ -207,19 +215,19 @@ class Cfu(CfuBase):
         Returns:
           A dictionary with keys in range(8) containing the CFU's instructions.
         """
-        return dict()
+        raise NotImplementedError()
 
     def __build_instructions(self, m):
         """Builds the list of eight instructions"""
         instruction_dict = self.elab_instructions(m)
 
-        assert all(k in range(8) for k in instruction_dict.keys()), \
-            "Instruction IDs must be integers from 0 to 7"
+        assert all(k in range(8) for k in instruction_dict.keys()), (
+            'Instruction IDs must be integers from 0 to 7')
 
         # Add fallback instructions where needed
         for i in range(8):
             if i not in instruction_dict:
-                m.submodules[f"fallback{i}"] = fb = _FallbackInstruction()
+                m.submodules[f'fallback{i}'] = fb = _FallbackInstruction()
                 instruction_dict[i] = fb
 
         return list(instruction_dict[i] for i in range(8))
@@ -252,16 +260,16 @@ class Cfu(CfuBase):
                 m.d.comb += self.rsp_out.eq(
                     instruction_outputs[current_function_id])
                 with m.If(self.rsp_ready):
-                    m.next = "WAIT_CMD"
+                    m.next = 'WAIT_CMD'
                 with m.Else():
                     m.d.sync += stored_output.eq(
                         instruction_outputs[current_function_id])
-                    m.next = "WAIT_TRANSFER"
+                    m.next = 'WAIT_TRANSFER'
             with m.Else():
-                m.next = "WAIT_INSTRUCTION"
+                m.next = 'WAIT_INSTRUCTION'
 
         with m.FSM():
-            with m.State("WAIT_CMD"):
+            with m.State('WAIT_CMD'):
                 # We're waiting for a command from the CPU.
                 m.d.comb += current_function_id.eq(funct3)
                 m.d.comb += current_function_done.eq(
@@ -272,20 +280,20 @@ class Cfu(CfuBase):
                         self.cmd_function_id[:3])
                     m.d.comb += instruction_starts[current_function_id].eq(1)
                     check_instruction_done()
-            with m.State("WAIT_INSTRUCTION"):
+            with m.State('WAIT_INSTRUCTION'):
                 # An instruction is executing on the CFU. We're waiting until it
                 # completes.
                 m.d.comb += current_function_id.eq(stored_function_id)
                 m.d.comb += current_function_done.eq(
                     instruction_dones[current_function_id])
                 check_instruction_done()
-            with m.State("WAIT_TRANSFER"):
+            with m.State('WAIT_TRANSFER'):
                 # Instruction has completed, but the CPU isn't ready to receive
                 # the result.
                 m.d.comb += self.rsp_valid.eq(1)
                 m.d.comb += self.rsp_out.eq(stored_output)
                 with m.If(self.rsp_ready):
-                    m.next = "WAIT_CMD"
+                    m.next = 'WAIT_CMD'
 
         for instruction in instructions:
             m.d.comb += [
@@ -299,6 +307,7 @@ class Cfu(CfuBase):
         m.d.comb += rst.eq(self.reset)
 
 
+# pylint: disable=abstract-method
 class CfuTestBase(TestBase):
     """Tests CFU ops independent of timing and handshaking."""
 
@@ -336,10 +345,12 @@ class CfuTestBase(TestBase):
                 # Ensure no errors, and output as expected
                 if expected is not None:
                     actual = (yield self.dut.rsp_out)
-                    self.assertEqual(actual, expected & 0xffff_ffff,
-                                     f"output {hex(actual)} != {hex(expected & 0xffff_ffff)} ::: " +
-                                     f"function_id={function_id}, funct7={funct7}, " +
-                                     f" in0={in0} {hex(in0)}, in1={in1} {hex(in1)} (n={n})")
+                    msg = (f'output {hex(actual)} != ' +
+                           f'{hex(expected & 0xffff_ffff)} ::: ' +
+                           f'function_id={function_id}, funct7={funct7}, ' +
+                           f' in0={in0} {hex(in0)}, in1={in1} {hex(in1)} ' +
+                           f'(n={n})')
+                    self.assertEqual(actual, expected & 0xffff_ffff, msg)
                 yield
 
         self.run_sim(process, write_trace)

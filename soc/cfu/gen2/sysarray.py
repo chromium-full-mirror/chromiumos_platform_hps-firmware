@@ -83,9 +83,9 @@ class SystolicArray(SimpleElaboratable):
         self._b_shape = b_shape
         self._accumulator_shape = accumulator_shape
 
-        self.input_a = [Signal(unsigned(n * a_shape.width), name=f"input_a{i}")
+        self.input_a = [Signal(unsigned(n * a_shape.width), name=f'input_a{i}')
                         for i in range(a_size)]
-        self.input_b = [Signal(unsigned(n * b_shape.width), name=f"input_b{i}")
+        self.input_b = [Signal(unsigned(n * b_shape.width), name=f'input_b{i}')
                         for i in range(b_size)]
 
         self.first = Signal()
@@ -97,12 +97,12 @@ class SystolicArray(SimpleElaboratable):
 
     def elab(self, m):
         maccs = [[None for _ in range(self._b_size)]
-                  for _ in range(self._a_size)]
+                 for _ in range(self._a_size)]
         for i in range(self._a_size):
             for j in range(self._b_size):
                 klass = get_macc_block_class(self._specialize_nx)
                 macc = klass(self._n, self._a_shape, self._b_shape,
-                                 self._accumulator_shape)
+                             self._accumulator_shape)
                 maccs[i][j] = macc
 
         for i in range(self._a_size):

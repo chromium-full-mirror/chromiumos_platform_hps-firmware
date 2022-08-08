@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Top-level CFU module for HPS gen2 accelerator."""
+
 from amaranth import Cat
 from amaranth import Mux
 from amaranth import Record
@@ -69,12 +71,12 @@ class GetInstruction(InstructionBase):
             with m.If(self.output_words.is_transferring()):
                 m.d.sync += self.output.eq(self.output_words.payload)
                 m.d.sync += self.done.eq(1)
-                m.next = "WAIT_START"
+                m.next = 'WAIT_START'
             with m.Else():
-                m.next = "WAIT_OUTPUT"
+                m.next = 'WAIT_OUTPUT'
 
         with m.FSM():
-            with m.State("WAIT_START"):
+            with m.State('WAIT_START'):
                 with m.If(self.start):
                     with m.If(self.funct7 == Constants.REG_VERIFY):
                         m.d.sync += self.output.eq(self.reg_verify_value)
@@ -84,7 +86,7 @@ class GetInstruction(InstructionBase):
                         m.d.sync += self.done.eq(1)
                     with m.Elif(self.funct7 == Constants.REG_OUTPUT_WORD):
                         get_output()
-            with m.State("WAIT_OUTPUT"):
+            with m.State('WAIT_OUTPUT'):
                 get_output()
 
 
@@ -199,7 +201,7 @@ class PoolInstruction(InstructionBase):
 
     def elab(self, m):
         def max_(word0, word1):
-            result = [Signal(8, name=f"result{i}") for i in range(4)]
+            result = [Signal(8, name=f'result{i}') for i in range(4)]
             bytes0 = [word0[i:i + 8] for i in range(0, 32, 8)]
             bytes1 = [word1[i:i + 8] for i in range(0, 32, 8)]
             for r, b0, b1 in zip(result, bytes0, bytes1):
@@ -221,13 +223,13 @@ class PoolInstruction(InstructionBase):
 
 
 class HpsCfu(Cfu):
-    """Gen2 accelerator CFU.
-    """
+    """Gen2 accelerator CFU."""
+
     def __init__(self, specialize_nx=False):
         """Constructor
 
         Args:
-           specialize_nx: generate code for the Crosslink/NX-17.
+            specialize_nx: generate code for the Crosslink/NX-17.
         """
         super().__init__()
         self._specialize_nx = specialize_nx

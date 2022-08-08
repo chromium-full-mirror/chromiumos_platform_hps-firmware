@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Actor abstractions for streams."""
+
 from amaranth import Cat
 from amaranth import Module
 from amaranth import Signal
@@ -47,7 +49,7 @@ class BinaryActor(SimpleElaboratable):
     def control(self, m):
         """Adds flow control to sink and source."""
         raise NotImplementedError(
-            "BinaryActor subclass must implement control()")
+            'BinaryActor subclass must implement control()')
 
     def transform(self, m, in_value, out_value):
         """Transforms input to output.
@@ -60,7 +62,7 @@ class BinaryActor(SimpleElaboratable):
           The transformed value
         """
         raise NotImplementedError(
-            "BinaryActor subclass must implement transform()")
+            'BinaryActor subclass must implement transform()')
 
 
 class BinaryCombinatorialActor(BinaryActor):
@@ -77,9 +79,6 @@ class BinaryCombinatorialActor(BinaryActor):
     output_type: The Shape or Layout for the source.
     """
 
-    def __init__(self, input_type, output_type):
-        super().__init__(input_type, output_type)
-
     def control(self, m: Module):
         m.d.comb += self.input.ready.eq(self.output.ready)
         m.d.comb += self.output.valid.eq(self.input.valid)
@@ -90,7 +89,7 @@ class BinaryCombinatorialActor(BinaryActor):
         input: self.input_type, in
         output: self.output_type, out
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class BinaryPipelineActor(BinaryActor):
@@ -122,8 +121,8 @@ class BinaryPipelineActor(BinaryActor):
 
     def control(self, m: Module):
         m.d.comb += self.input.ready.eq(self.output.ready)
-        m.d.comb += self.output.valid.eq(self.delay(m,
-                                         self.pipeline_cycles, self.input.valid))
+        m.d.comb += self.output.valid.eq(
+            self.delay(m, self.pipeline_cycles, self.input.valid))
 
     def transform(self, m, in_value, out_value):
         """Transforms input to output.
@@ -131,4 +130,4 @@ class BinaryPipelineActor(BinaryActor):
         input: self.input_type, in
         output: self.output_type, out
         """
-        raise NotImplemented()
+        raise NotImplementedError()

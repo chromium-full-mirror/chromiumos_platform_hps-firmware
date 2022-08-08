@@ -92,7 +92,6 @@ class LoopingCounter(SimpleElaboratable):
     max_count: int
         Maximum value of the count attribute.
 
-
     Attributes
     ----------
 

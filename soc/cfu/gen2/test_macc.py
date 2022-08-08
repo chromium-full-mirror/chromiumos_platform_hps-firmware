@@ -64,13 +64,19 @@ class MaccBlockTest(TestBase):
                 yield self.dut.input_last.eq(data.last)
                 yield Delay(0.1)
                 # check inputs correctly passed onward
-                self.assertEqual((yield self.dut.output_a), data_prev.a & 0xffff_ffff)
-                self.assertEqual((yield self.dut.output_b), data_prev.b & 0xffff_ffff)
-                self.assertEqual((yield self.dut.output_first), data_prev.first)
-                self.assertEqual((yield self.dut.output_last), data_prev.last)
+                self.assertEqual(
+                    (yield self.dut.output_a), data_prev.a & 0xffff_ffff)
+                self.assertEqual(
+                    (yield self.dut.output_b), data_prev.b & 0xffff_ffff)
+                self.assertEqual(
+                    (yield self.dut.output_first), data_prev.first)
+                self.assertEqual(
+                    (yield self.dut.output_last), data_prev.last)
                 # Check output is as expected
-                self.assertEqual((yield self.dut.output_accumulator), data_prev3.expected)
-                self.assertEqual((yield self.dut.output_accumulator_new), data_prev3.last)
+                self.assertEqual(
+                    (yield self.dut.output_accumulator), data_prev3.expected)
+                self.assertEqual(
+                    (yield self.dut.output_accumulator_new), data_prev3.last)
                 yield
         self.run_sim(process, False)
 
@@ -107,7 +113,8 @@ class MaccBlockTest(TestBase):
             self.assertFalse((yield self.dut.output_accumulator_new))
             yield
             self.assertTrue((yield self.dut.output_accumulator_new))
-            self.assertEqual((yield self.dut.output_accumulator), expected_result)
+            self.assertEqual(
+                (yield self.dut.output_accumulator), expected_result)
             yield
             self.assertFalse((yield self.dut.output_accumulator_new))
 
@@ -151,6 +158,7 @@ class MaccBlockTest(TestBase):
             0, 0, 0, 19, 0, 0, 0, 0, 18, 0, 0, 0, 46, 0, 37, 56, 0, 0, 0, 49, 0,
             135, 0, 0, 59
         ]
+        # pylint: disable=line-too-long
         b_list = [
             -16, 3, 2, -23, -4, 11, 31, 5, 15, 11, 36, 27, 10, 22, 30, 28, -37,
             3, 6, -22, 18, -2, 25, 9, 7, 47, 17, 10, 54, 0, 70, 28, -12, -13, 6,

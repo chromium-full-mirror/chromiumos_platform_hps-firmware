@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Base stream interfaces."""
+
 from amaranth import Shape
 from amaranth.hdl.rec import Layout
 from amaranth.hdl.rec import Record
@@ -26,7 +28,7 @@ class PayloadDefinition:
     @staticmethod
     def cast(obj, *, src_loc_at=0):
         """Returns a definition.
-        
+
         Arguments
         ---------
         obj:
@@ -48,12 +50,10 @@ class PayloadDefinition:
         """
         self.payload_type = payload_type
         self.stream_layout = Layout([
-            ("valid", Shape()),
-            ("ready", Shape()),
-            ("payload", payload_type),
-        ],
-            src_loc_at=1 + src_loc_at
-        )
+            ('valid', Shape()),
+            ('ready', Shape()),
+            ('payload', payload_type),
+        ], src_loc_at=1 + src_loc_at)
 
 
 class Endpoint:
@@ -64,7 +64,6 @@ class Endpoint:
 
     definition: StreamDefintion
       Specifies the payload type and other parameters of this type.
-
     """
 
     def __init__(self, definition=None, *, name=None, src_loc_at=0):

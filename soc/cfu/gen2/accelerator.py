@@ -19,7 +19,6 @@ from ..util import SimpleElaboratable
 from .constants import Constants
 from .filter import FILTER_WRITE_COMMAND
 from .filter import FilterStore
-from .mem import SinglePortMemory
 from .mode0_input import Mode0InputFetcher
 from .mode1_input import Mode1InputFetcher
 from .post_process import AccumulatorReader
@@ -123,8 +122,8 @@ class AcceleratorCore(SimpleElaboratable):
         self.config = Record(ACCELERATOR_CONFIGURATION_LAYOUT)
 
         self.write_filter_input = Endpoint(FILTER_WRITE_COMMAND)
-        self.lram_addr = [Signal(14, name=f"lram_addr{i}") for i in range(4)]
-        self.lram_data = [Signal(32, name=f"lram_data{i}") for i in range(4)]
+        self.lram_addr = [Signal(14, name=f'lram_addr{i}') for i in range(4)]
+        self.lram_data = [Signal(32, name=f'lram_data{i}') for i in range(4)]
         self.post_process_params = Endpoint(POST_PROCESS_PARAMS)
         self.output = Endpoint(unsigned(32))
 
@@ -250,9 +249,9 @@ class AcceleratorCore(SimpleElaboratable):
         for j, (in_a, activation) in enumerate(zip(sa.input_a, activations)):
             # Assign activation values with input offset
             for i in range(4):
-                raw_val = Signal(signed(8), name=f"raw_{j}_{i}")
+                raw_val = Signal(signed(8), name=f'raw_{j}_{i}')
                 m.d.comb += raw_val.eq(activation[i * 8:i * 8 + 8])
-                with_offset = Signal(signed(9), name=f"val_{j}_{i}")
+                with_offset = Signal(signed(9), name=f'val_{j}_{i}')
                 m.d.sync += with_offset.eq(raw_val + self.config.input_offset)
                 m.d.comb += in_a[i * 9:i * 9 + 9].eq(with_offset)
         for in_b, value in zip(sa.input_b, filter_values):

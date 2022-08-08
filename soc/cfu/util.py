@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Utility functions for Amaranth logic."""
+
+import abc
 import unittest
 
 from amaranth import Elaboratable
-from amaranth import Memory
 from amaranth import Module
 from amaranth import Mux
 from amaranth import Signal
 from amaranth.build import Platform
-from amaranth.hdl.ast import Cat
 from amaranth.sim import Simulator
 
 
@@ -39,7 +40,7 @@ def pack_vals(*values, offset=0, bits=8):
     return result
 
 
-class SimpleElaboratable(Elaboratable):
+class SimpleElaboratable(Elaboratable, abc.ABC):
     """Simplified Elaboratable interface
     Widely, but not generally applicable. Suitable for use with
     straight-forward blocks of logic in a single domain.
@@ -54,12 +55,15 @@ class SimpleElaboratable(Elaboratable):
 
     """
 
+    @abc.abstractmethod
     def elab(self, m: Module):
         """Alternate elaborate interface"""
         return NotImplementedError()
 
     def elaborate(self, platform: Platform):
+        # pylint: disable=attribute-defined-outside-init
         self.m = Module()
+        # pylint: disable=attribute-defined-outside-init
         self.platform = platform
         self.elab(self.m)
         return self.m
@@ -68,8 +72,9 @@ class SimpleElaboratable(Elaboratable):
 class _PlaceholderSyncModule(SimpleElaboratable):
     """A module that does something arbirarty with synchronous logic
 
-    This is used by TestBase to stop Amaranth from complaining if our DUT doesn't
-    contain any synchronous logic."""
+    This is used by TestBase to stop Amaranth from complaining if our DUT
+    doesn't contain any synchronous logic.
+    """
 
     def elab(self, m):
         state = Signal(1)
@@ -99,19 +104,18 @@ class TestBase(unittest.TestCase):
         self.sim.add_sync_process(process)
 
     def add_sim_clocks(self):
-        """Add clocks as required by sim.
-        """
+        """Add clocks as required by sim."""
         self.sim.add_clock(1, domain='sync')
 
     def run_sim(self, process, write_trace=False):
         self.add_process(process)
         self.add_sim_clocks()
         if write_trace:
-            with self.sim.write_vcd("zz.vcd", "zz.gtkw"):
+            with self.sim.write_vcd('zz.vcd', 'zz.gtkw'):
                 self.sim.run()
             # Discourage commiting code with tracing active
-            self.fail("Simulation tracing active. "
-                      "Turn off after debugging complete.")
+            self.fail('Simulation tracing active. '
+                      'Turn off after debugging complete.')
         else:
             self.sim.run()
 
@@ -167,8 +171,8 @@ class SequentialMemoryReader(SimpleElaboratable):
         last_mem_addr = Signal.like(self.mem_addr)
         m.d.sync += last_mem_addr.eq(self.mem_addr)
         incremented_addr = Signal.like(self.limit)
-        m.d.comb += incremented_addr.eq(Mux(last_mem_addr ==
-                                            self.limit - 1, 0, last_mem_addr + 1))
+        m.d.comb += incremented_addr.eq(
+            Mux(last_mem_addr == self.limit - 1, 0, last_mem_addr + 1))
         with m.If(self.restart):
             m.d.comb += self.mem_addr.eq(0)
         with m.Elif(was_next | was_restart):

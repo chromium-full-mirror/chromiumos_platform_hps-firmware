@@ -3,13 +3,10 @@
 # found in the LICENSE file.
 
 """Tests for post_process.py"""
-import itertools
 import random
 
-from amaranth import Module
 from amaranth import unsigned
 from amaranth.sim import Delay
-from amaranth.sim import Passive
 
 from ..util import pack_vals
 from ..util import TestBase
@@ -420,7 +417,6 @@ class ParamWriterTest(TestBase):
             yield
 
     def test_it(self):
-        dut = self.dut
         depth = 10
 
         def check_expected():
@@ -653,8 +649,6 @@ class OutputWordAssemblerTest(TestBase):
         self.run_sim(lambda: (yield from self.check_expected(expected)), False)
 
     def test_it_does_more(self):
-        dut = self.dut
-
         # Make random inputs
         inputs = [random.randrange(256) for _ in range(25 * 16)]
 
@@ -663,6 +657,7 @@ class OutputWordAssemblerTest(TestBase):
             return [lst[i:i + size] for i in range(0, len(lst), size)]
         expected = []
         for sixteen_bytes in group(inputs, 16):
+            # pylint: disable=zip-builtin-not-iterating
             expected_words_as_bytes = zip(*group(sixteen_bytes, 4))
             expected_words = [pack_vals(*word)
                               for word in expected_words_as_bytes]

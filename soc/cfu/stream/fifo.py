@@ -2,18 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""FIFO with stream interfaces."""
 
-from amaranth import Cat
 from amaranth import Module
 from amaranth import Signal
-from amaranth import signed
-from amaranth import unsigned
-from amaranth.hdl.dsl import FSM
 from amaranth.lib.fifo import SyncFIFOBuffered
 
 from ..util import SimpleElaboratable
 from .stream import Endpoint
-from .stream import PayloadDefinition
 
 
 class StreamFifo(SimpleElaboratable):
@@ -27,7 +23,6 @@ class StreamFifo(SimpleElaboratable):
     depth:
       The number of items contained by the fifo
 
-
     Attributes:
     ----------
 
@@ -37,9 +32,9 @@ class StreamFifo(SimpleElaboratable):
       Outgoing stream of items
     r_level: Signal(depth.bit_length())
       Number of items available for reading
-
     """
 
+    # pylint: disable=redefined-builtin
     def __init__(self, *, type, depth):
         self.depth = depth
         self.input = Endpoint(type)

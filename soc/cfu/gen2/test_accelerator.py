@@ -5,17 +5,11 @@
 """Tests for accelerator.py"""
 
 from functools import reduce
-import random
 
-from amaranth import Module
-from amaranth import signed
-from amaranth import unsigned
 from amaranth.sim import Passive
 
-from ..util import pack_vals
 from ..util import TestBase
 from .accelerator import AcceleratorCore
-from .constants import Constants
 from .conv2d_data import fetch_data
 
 
@@ -83,7 +77,8 @@ class AcceleratorCoreTest(TestBase):
         yield dut.config.pixel_advance_y.eq((input_depth // 16) * in_x_dim)
         yield dut.config.input_channel_depth.eq(input_depth)
         yield dut.config.output_channel_depth.eq(output_depth)
-        yield dut.config.num_output_values.eq(self.NUM_OUTPUT_PIXELS * output_depth)
+        yield dut.config.num_output_values.eq(
+            self.NUM_OUTPUT_PIXELS * output_depth)
 
         yield from self.reset_dut()
 
@@ -129,7 +124,7 @@ class AcceleratorCoreTest(TestBase):
         # Collects output from dut
         yield self.dut.output.ready.eq(1)
         collected = []
-        for i in range(self.NUM_OUTPUT_PIXELS * data.output_dims[3] // 4):
+        for _ in range(self.NUM_OUTPUT_PIXELS * data.output_dims[3] // 4):
             while not (yield self.dut.output.valid):
                 yield
             collected.append((yield self.dut.output.payload) & 0xffff_ffff)
@@ -145,8 +140,8 @@ class AcceleratorCoreTest(TestBase):
         for i, (actual, expected) in enumerate(
                 zip(collected_data, data.expected_output_data)):
             self.assertEqual(
-                actual, expected, f" word {i}: " +
-                f"actual {actual:08x} != expected {expected:08x} ")
+                actual, expected, f' word {i}: ' +
+                f'actual {actual:08x} != expected {expected:08x} ')
 
 
     def test_convolution_05(self):
@@ -184,7 +179,7 @@ class AcceleratorCoreTest(TestBase):
             # Reorder output words to match tflite expected order
             reordered_actual = []
             for two_pixels in group(actual_outputs, 8):
-                reordered_actual += two_pixels [::2]
-                reordered_actual += two_pixels [1::2]
+                reordered_actual += two_pixels[::2]
+                reordered_actual += two_pixels[1::2]
             self.check_output(data, reordered_actual)
         self.run_sim(run, False)

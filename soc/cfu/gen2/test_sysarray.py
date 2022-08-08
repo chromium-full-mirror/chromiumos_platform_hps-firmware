@@ -8,10 +8,7 @@ import random
 
 from amaranth import Cat
 from amaranth import Const
-from amaranth import Module
 from amaranth import signed
-from amaranth.sim import Delay
-from amaranth.sim import Passive
 
 from ..util import TestBase
 from .sysarray import SystolicArray
@@ -88,7 +85,7 @@ class SystolicArrayTest(TestBase):
                 for acc_idx in range(8):
                     if (yield dut.accumulator_new[acc_idx]):
                         self.assertFalse(new_value_found[acc_idx],
-                                         "should not get new value twice")
+                                         'should not get new value twice')
                         new_value_found[acc_idx] = True
                         self.assertEqual((yield dut.accumulator[acc_idx]),
                                          expected_outputs[acc_idx])

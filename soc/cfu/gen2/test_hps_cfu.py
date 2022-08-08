@@ -4,9 +4,6 @@
 
 """Tests for hps_cfu.py"""
 
-
-from functools import reduce
-
 from amaranth.sim import Passive
 
 from ..cfu import CfuTestBase
@@ -25,7 +22,8 @@ class PoolInstructionTest(InstructionTestBase):
         return PoolInstruction()
 
     def test_it(self):
-        def p(a, b, c, d): return pack_vals(a, b, c, d, offset=-128)
+        def p(a, b, c, d):
+            return pack_vals(a, b, c, d, offset=-128)
         DATA = [
             (0, 0, 0),
             # min case
@@ -33,13 +31,14 @@ class PoolInstructionTest(InstructionTestBase):
             (p(0, 0, 0, 0), p(0, 0, 0, 0), p(0, 0, 0, 0)),
             # Max case
             (p(255, 255, 255, 255), p(255, 255, 255, 255), None),
-            (p(255, 255, 255, 255), p(255, 255, 255, 255), p(255, 255, 255, 255)),
+            (p(255, 255, 255, 255), p(255, 255, 255, 255),
+             p(255, 255, 255, 255)),
             # Arbitrary values
             (p(10, 20, 30, 40), p(50, 60, 70, 80), p(255, 255, 255, 255)),
             (p(10, 20, 30, 40), p(50, 60, 70, 80), p(50, 60, 70, 80)),
             (p(52, 37, 30, 40), p(12, 13, 34, 95), p(52, 60, 70, 95)),
-            (p(51, 33, 30, 98), p(12, 13, 26, 90), p(52, 37, 34, 98)),            
-            (p(251, 33, 30, 98), p(12, 13, 26, 90), p(251, 33, 30, 98)),            
+            (p(51, 33, 30, 98), p(12, 13, 26, 90), p(52, 37, 34, 98)),
+            (p(251, 33, 30, 98), p(12, 13, 26, 90), p(251, 33, 30, 98)),
             (p(0, 200, 0, 0), p(0, 0, 200, 0), p(251, 200, 200, 98)),
         ]
 
@@ -64,7 +63,7 @@ class HpsCfuTest(CfuTestBase):
         return ((Constants.INS_GET, Constants.REG_OUTPUT_WORD, 0, 0), expected)
 
     def load_filter_data(self, data, chan_start, chan_count):
-        """ Loads filter data for a range of output channels."""
+        """Loads filter data for a range of output channels."""
         dims = data.filter_dims
         filter_data = data.filter_data
         num_filter_words_per_output = dims[1] * dims[2] * dims[3] // 4
@@ -74,7 +73,7 @@ class HpsCfuTest(CfuTestBase):
         for _ in range(0, chan_count, 2):
             for store in range(2):
                 addr = addr_base
-                for index in range(num_filter_words_per_output):
+                for _ in range(num_filter_words_per_output):
                     value = filter_data[chan_data_index]
                     chan_data_index += 1
                     yield self.do_set(Constants.REG_FILTER_WRITE,
@@ -89,7 +88,6 @@ class HpsCfuTest(CfuTestBase):
         input_depth = data.input_dims[3]
         in_x_dim = data.input_dims[2]
         out_x_dim = data.output_dims[2]
-        output_depth = data.output_dims[3]
         num_filter_values = (
             output_chan_count *
             data.filter_dims[1] *
@@ -146,7 +144,6 @@ class HpsCfuTest(CfuTestBase):
 
     def test_simple_05(self):
         """Tests a 4x4 convolution producing 16 channels per start."""
-        dut = self.dut
         data = fetch_data('sample_conv_05')
 
         self.add_ram_process(data)
@@ -174,7 +171,6 @@ class HpsCfuTest(CfuTestBase):
 
     def test_simple_06(self):
         """Tests a 4x4 convolution over an input layer."""
-        dut = self.dut
         data = fetch_data('sample_conv_06')
 
         self.add_ram_process(data)
@@ -203,7 +199,6 @@ class HpsCfuTest(CfuTestBase):
 
     def test_groups_of_four(self):
         """Tests a 4x4 convolution producing 4 channels per start."""
-        dut = self.dut
         data = fetch_data('sample_conv_05')
 
         self.add_ram_process(data)
@@ -219,7 +214,7 @@ class HpsCfuTest(CfuTestBase):
                 words_per_pixel = output_depth // 4
                 num_output_words = self.NUM_OUTPUT_PIXELS
                 addr = channel // 4
-                for word in range(num_output_words):
+                for _ in range(num_output_words):
                     expected = data.expected_output_data[addr]
                     addr += words_per_pixel
                     yield self.do_get(expected)

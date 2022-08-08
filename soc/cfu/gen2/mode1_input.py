@@ -61,7 +61,6 @@ addresses for all the data for a given output pixel from that start address.
 from amaranth import Array
 from amaranth import Mux
 from amaranth import Signal
-from amaranth import unsigned
 
 from ..util import SimpleElaboratable
 from .utils import unsigned_upto
@@ -169,7 +168,6 @@ class PixelAddressRepeater(SimpleElaboratable):
 
     gen_addr: Signal(14), in
         Input from the PixelAddressGenerator
-
     """
 
     def __init__(self):
@@ -183,7 +181,7 @@ class PixelAddressRepeater(SimpleElaboratable):
     def elab(self, m):
         group = Signal(range(4))
         repeat_count = Signal.like(self.repeats)
-        mem = Array([Signal(14, name=f"mem{i}") for i in range(4)])
+        mem = Array([Signal(14, name=f'mem{i}') for i in range(4)])
 
         with m.If(repeat_count == 0):
             # On first repeat - pass through next and addr and record addresses
@@ -343,18 +341,18 @@ class Mode1InputFetcher(SimpleElaboratable):
         self.depth = Signal(3)
         self.num_repeats = Signal(unsigned_upto(64))
         self.ram_mux_phase = Signal(range(4))
-        self.ram_mux_addr = [Signal(14, name=f"rm_addr{i}") for i in range(4)]
-        self.ram_mux_data = [Signal(32, name=f"rm_data{i}") for i in range(4)]
-        self.data_out = [Signal(32, name=f"data_out{i}") for i in range(4)]
+        self.ram_mux_addr = [Signal(14, name=f'rm_addr{i}') for i in range(4)]
+        self.ram_mux_data = [Signal(32, name=f'rm_data{i}') for i in range(4)]
+        self.data_out = [Signal(32, name=f'data_out{i}') for i in range(4)]
         self.first = Signal()
         self.last = Signal()
 
     def elab(self, m):
-        m.submodules["pixel_ag"] = pixel_ag = PixelAddressGenerator()
-        m.submodules["repeater"] = repeater = PixelAddressRepeater()
+        m.submodules['pixel_ag'] = pixel_ag = PixelAddressGenerator()
+        m.submodules['repeater'] = repeater = PixelAddressRepeater()
         value_ags = [ValueAddressGenerator() for _ in range(4)]
         for i, v in enumerate(value_ags):
-            m.submodules[f"value_ag{i}"] = v
+            m.submodules[f'value_ag{i}'] = v
 
         # Connect pixel address generator and repeater
         m.d.comb += [

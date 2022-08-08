@@ -145,8 +145,7 @@ class MaccBlock(SimpleElaboratable):
 
 
 class StandardMaccBlock(MaccBlock):
-    """A Macc block contructed from standard Amaranth.
-    """
+    """A Macc block contructed from standard Amaranth."""
 
     def build_multipliers(self, m, accumulator):
         # Pipeline cycle 0: calculate products
@@ -154,8 +153,8 @@ class StandardMaccBlock(MaccBlock):
         for i in range(self._n):
             a_bits = self.input_a.word_select(i, self._a_shape.width)
             b_bits = self.input_b.word_select(i, self._b_shape.width)
-            a = Signal(self._a_shape, name=f"a_{i}")
-            b = Signal(self._b_shape, name=f"b_{i}")
+            a = Signal(self._a_shape, name=f'a_{i}')
+            b = Signal(self._b_shape, name=f'b_{i}')
             m.d.comb += [
                 a.eq(a_bits),
                 b.eq(b_bits),
@@ -173,8 +172,7 @@ class StandardMaccBlock(MaccBlock):
 
 
 class NXMaccBlock(MaccBlock):
-    """A Macc block specialized for the CrossLink/NX-17.
-    """
+    """A Macc block specialized for the CrossLink/NX-17."""
 
     def build_multipliers(self, m, accumulator):
         a0 = self.input_a.word_select(0, self._a_shape.width)
@@ -188,7 +186,7 @@ class NXMaccBlock(MaccBlock):
 
         # Explicitly instantiate the DSP macro
         m.submodules.dsp = Instance(
-            "MULTADDSUB9X9WIDE",
+            'MULTADDSUB9X9WIDE',
 
             i_CLK=ClockSignal(),
             i_CEA0A1=Const(1),
@@ -226,18 +224,18 @@ class NXMaccBlock(MaccBlock):
 
             o_Z=accumulator,
 
-            p_REGINPUTAB0="BYPASS",
-            p_REGINPUTAB1="BYPASS",
-            p_REGINPUTAB2="BYPASS",
-            p_REGINPUTAB3="BYPASS",
-            p_REGINPUTC="BYPASS",
-            p_REGADDSUB="BYPASS",
-            p_REGLOADC="BYPASS",
-            p_REGLOADC2="REGISTER",
-            p_REGPIPELINE="REGISTER",
-            p_REGOUTPUT="REGISTER",
-            p_RESETMODE="SYNC",
-            p_GSR="ENABLED",
+            p_REGINPUTAB0='BYPASS',
+            p_REGINPUTAB1='BYPASS',
+            p_REGINPUTAB2='BYPASS',
+            p_REGINPUTAB3='BYPASS',
+            p_REGINPUTC='BYPASS',
+            p_REGADDSUB='BYPASS',
+            p_REGLOADC='BYPASS',
+            p_REGLOADC2='REGISTER',
+            p_REGPIPELINE='REGISTER',
+            p_REGOUTPUT='REGISTER',
+            p_RESETMODE='SYNC',
+            p_GSR='ENABLED',
         )
 
 def get_macc_block_class(specialize_nx):

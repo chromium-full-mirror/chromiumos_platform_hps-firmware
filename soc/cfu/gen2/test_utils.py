@@ -18,7 +18,9 @@ class DelayTest(TestBase):
 
     def create_dut(self):
         module = Module()
+        # pylint: disable=attribute-defined-outside-init
         self.in_ = Signal(8)
+        # pylint: disable=attribute-defined-outside-init
         self.outs_ = delay(module, self.in_, 3)
         return module
 
@@ -27,6 +29,7 @@ class DelayTest(TestBase):
         data = [random.randrange(256) for _ in range(20)] + [0] * 3
 
         def process():
+            # pylint: disable=consider-using-enumerate
             for i in range(len(data)):
                 yield self.in_.eq(data[i])
                 yield

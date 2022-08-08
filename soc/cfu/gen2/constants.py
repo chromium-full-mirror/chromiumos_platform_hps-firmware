@@ -9,7 +9,8 @@ import sys
 
 
 class Constants:
-    ###########################################################################
+    """Constants"""
+
     # Funct3 codes - used to route CFU to instructions
     INS_SET = 0
     INS_GET = 1
@@ -94,7 +95,6 @@ CC_FILE_TAIL = """#endif"""
 def main():
     parser = argparse.ArgumentParser(
         description='Write C header file with constants')
-    'outfile',
     parser.add_argument('output', metavar='FILE', nargs='?',
                         type=argparse.FileType('w'), default=sys.stdout,
                         help='Where to send output')
@@ -104,9 +104,9 @@ def main():
         print(CC_FILE_HEADER, file=f)
         for name, value in vars(Constants).items():
             if not name.startswith('_'):
-                print(f"#define {name} {value}", file=f)
+                print(f'#define {name} {value}', file=f)
         print(CC_FILE_TAIL, file=f)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

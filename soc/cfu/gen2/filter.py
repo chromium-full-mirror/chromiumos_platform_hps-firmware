@@ -9,7 +9,6 @@ from amaranth import Signal
 from amaranth import unsigned
 
 from ..stream import Endpoint
-from ..util import SequentialMemoryReader
 from ..util import SimpleElaboratable
 from .constants import Constants
 from .mem import SinglePortMemory
@@ -48,7 +47,7 @@ class FilterStore(SimpleElaboratable):
     def __init__(self):
         self.write_input = Endpoint(FILTER_WRITE_COMMAND)
         self.size = Signal(unsigned_upto(Constants.FILTER_WORDS_PER_STORE))
-        self.values_out = [Signal(32, name=f"out_{i}")
+        self.values_out = [Signal(32, name=f'out_{i}')
                            for i in range(Constants.NUM_FILTER_STORES)]
         self.start = Signal()
 
@@ -66,7 +65,7 @@ class FilterStore(SimpleElaboratable):
 
         # set up each memory
         for i in range(Constants.NUM_FILTER_STORES):
-            m.submodules[f"mem{i}"] = mem = SinglePortMemory(
+            m.submodules[f'mem{i}'] = mem = SinglePortMemory(
                 data_width=32, depth=Constants.FILTER_WORDS_PER_STORE)
             # Handle writes to memory
             inp = self.write_input
@@ -82,7 +81,7 @@ class FilterStore(SimpleElaboratable):
                 m.d.comb += mem.read_addr.eq(read_index)
             else:
                 addr = Signal(range(-i, Constants.FILTER_WORDS_PER_STORE),
-                              name=f"addr_{i}")
+                              name=f'addr_{i}')
                 m.d.comb += addr.eq(read_index - i)
                 m.d.comb += mem.read_addr.eq(Mux(addr >= 0,
                                                  addr, addr + self.size))

@@ -38,7 +38,7 @@ def fetch_data(name):
 
     Data is stored in a file namemed name.pickle in the current directory.
     """
-    filename = Path(__file__).parent / (name + ".pickle")
+    filename = Path(__file__).parent / (name + '.pickle')
     with open(filename, 'rb') as f:
         return pickle.load(f)
 

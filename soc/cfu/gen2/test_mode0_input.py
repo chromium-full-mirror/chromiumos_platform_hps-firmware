@@ -105,12 +105,12 @@ class ValueReaderTest(TestBase):
         # Create a value reader connected via a RamMux to memories simulating
         # LRAMs with each byte is set to the value of its byte address
         reader = ValueReader()
-        self.m.submodules["ram_mux"] = ram_mux = RamMux()
+        self.m.submodules['ram_mux'] = ram_mux = RamMux()
         self.m.d.comb += ram_mux.phase.eq(reader.ram_mux_phase)
 
         def make_ram(n, init):
             mem = Memory(width=32, depth=4, init=init)
-            self.m.submodules[f"rp{n}"] = rp = mem.read_port(transparent=False)
+            self.m.submodules[f'rp{n}'] = rp = mem.read_port(transparent=False)
             self.m.d.comb += [
                 ram_mux.lram_data[n].eq(rp.data),
                 rp.addr.eq(ram_mux.lram_addr[n]),
@@ -170,7 +170,7 @@ class Mode0InputFetcherTest(TestBase):
     def create_dut(self):
         fetcher = Mode0InputFetcher()
         # Connect RAM Mux with simulated LRAMs containing data
-        self.m.submodules["ram_mux"] = ram_mux = RamMux()
+        self.m.submodules['ram_mux'] = ram_mux = RamMux()
         self.m.d.comb += ram_mux.phase.eq(fetcher.ram_mux_phase)
         for i in range(4):
             pad = [0] * (self.BASE_ADDR // 16)
@@ -184,7 +184,7 @@ class Mode0InputFetcherTest(TestBase):
                 ram_mux.addr_in[i].eq(fetcher.ram_mux_addr[i]),
                 fetcher.ram_mux_data[i].eq(ram_mux.data_out[i]),
             ]
-            self.m.submodules[f"rp{i}"] = rp
+            self.m.submodules[f'rp{i}'] = rp
         return fetcher
 
     def setUp(self):
@@ -243,7 +243,7 @@ class Mode0InputFetcherTest(TestBase):
                     if cycle == last_seen + i:
                         expected = self.expected_values(pixel)
                         self.assertEqual(
-                            actual[i], expected, msg=f"differ at pixel {pixel}")
+                            actual[i], expected, msg=f'differ at pixel {pixel}')
                         pixel += 1
                 cycle += 1
                 yield

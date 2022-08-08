@@ -191,7 +191,7 @@ def delay(m, signal, cycles):
     """
     name = signal.name
     for i in range(cycles):
-        delayed = Signal.like(signal, name=f"{name}_delay_{i}")
+        delayed = Signal.like(signal, name=f'{name}_delay_{i}')
         m.d.sync += delayed.eq(signal)
         signal = delayed
     return signal
@@ -450,8 +450,8 @@ class AccumulatorReader(SimpleElaboratable):
 
     def __init__(self, accumulator_shape=signed(32)):
         self.accumulator = [Signal(accumulator_shape,
-                                   name=f"acc_{i}") for i in range(8)]
-        self.accumulator_new = [Signal(name=f"acc_new_{i}") for i in range(8)]
+                                   name=f'acc_{i}') for i in range(8)]
+        self.accumulator_new = [Signal(name=f'acc_new_{i}') for i in range(8)]
         self.half_mode = Signal()
         self.output = Endpoint(accumulator_shape)
 
@@ -461,7 +461,7 @@ class AccumulatorReader(SimpleElaboratable):
             m.d.sync += self.output.valid.eq(0)
 
         # Set flag to remember that value is available
-        flags = Array(Signal(name=f"flag_{i}") for i in range(8))
+        flags = Array(Signal(name=f'flag_{i}') for i in range(8))
         for i in range(8):
             with m.If(self.accumulator_new[i]):
                 m.d.sync += flags[i].eq(1)
@@ -593,7 +593,7 @@ class OutputWordAssembler(SimpleElaboratable):
         pixel_index = Signal(range(self._num_pixels))
         # shift registers to buffer 3 incoming values
         shift_registers = Array(
-            [Signal(24, name=f"sr_{i}") for i in range(self._num_pixels)])
+            [Signal(24, name=f'sr_{i}') for i in range(self._num_pixels)])
 
         last_pixel_index = Signal.like(pixel_index)
         m.d.sync += last_pixel_index.eq(Mux(self.half_mode,

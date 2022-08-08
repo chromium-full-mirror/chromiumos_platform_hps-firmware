@@ -54,6 +54,11 @@ docstring-quote = double
 #   using this future import everywhere.
 # round-builtin: We omit this as all our usage of round() is OK with either
 #   Python 2 or 3 behavior (and probably leans towards 3 anyways).
+#
+# HPS-specific things:
+# range-builtin-not-iterating: Amaranth (ab)uses range() with Signal and Layout
+#   to describe bit widths. We don't enable this check because it causes too
+#   many false positives in Amaranth code.
 enable=
     cros-logging-import,
     apply-builtin,
@@ -103,7 +108,6 @@ enable=
     parameter-unpacking,
     print-statement,
     raising-string,
-    range-builtin-not-iterating,
     raw_input-builtin,
     rdiv-method,
     reduce-builtin,

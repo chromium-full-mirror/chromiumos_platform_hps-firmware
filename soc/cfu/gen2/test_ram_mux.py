@@ -4,13 +4,7 @@
 
 """Tests for ram_mux.py"""
 
-import itertools
-
-from amaranth import unsigned
-from amaranth.sim import Passive
-
 from ..util import TestBase
-from .conv2d_data import fetch_data
 from .ram_mux import RamMux
 
 
@@ -34,8 +28,6 @@ class RamMuxTest(TestBase):
             self.assertEqual((yield self.dut.data_out[i]), expected[i])
 
     def test_it(self):
-        dut = self.dut
-
         # Tests correct data for each phase, one cycle later
         # Checks in cases where phase changes and does not change
         DATA = [

@@ -13,8 +13,6 @@ cd proj/hps_accel
 ../../scripts/pyrun -m gateware.gen2.build_sample_conv_05_pickle
 ```
 """
-from pathlib import Path
-import pickle
 import sys
 
 from .conv2d_data import Conv2DData
@@ -24,9 +22,10 @@ from .utils import as_unsigned_int32_array
 
 
 if __name__ != '__main__':
-  print('Run as script to produce a data file. Do not import')
-  sys.exit(1)
+    print('Run as script to produce a data file. Do not import')
+    sys.exit(1)
 
+# pylint: disable=line-too-long,bad-continuation,bad-whitespace
 
 output_multipliers_raw = [
   0x07,0xb8,0x69,0x4e,0x70,0x73,0xe3,0x54,0x2a,0x8c,0xc9,0x40,0x2a,0xea,0xb8,0x63,

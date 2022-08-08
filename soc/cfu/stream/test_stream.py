@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unit tests for base stream interfaces."""
+
 from amaranth import Shape
 from amaranth import Signal
 from amaranth.hdl.dsl import Module
@@ -16,8 +18,8 @@ from .stream import Endpoint
 
 
 TEST_PAYLOAD_LAYOUT = Layout([
-    ("one", Shape(32)),
-    ("two", Shape(32)),
+    ('one', Shape(32)),
+    ('two', Shape(32)),
 ])
 
 
@@ -42,7 +44,7 @@ class DataProducer(SimpleElaboratable):
             m.d.sync += data_waiting_to_send.eq(0)
 
         m.d.comb += self.output.valid.eq(self.next | data_waiting_to_send)
-        
+
 
 class DataConsumer(SimpleElaboratable):
     """Consumer for test purposes."""
@@ -75,14 +77,17 @@ class TestSinkSource(TestBase):
 
     def create_dut(self):
         m = Module()
-        m.submodules["producer"] = self.producer = DataProducer()
-        m.submodules["consumer"] = self.consumer = DataConsumer()
+        # pylint: disable=attribute-defined-outside-init
+        m.submodules['producer'] = self.producer = DataProducer()
+        # pylint: disable=attribute-defined-outside-init
+        m.submodules['consumer'] = self.consumer = DataConsumer()
         m.d.comb += connect(self.producer.output, self.consumer.input)
         return m
 
     def test(self):
         DATA = [
-            # Format is: (next, one_in, two_in, ready) (transfered, one_out, two_out)
+            # Format is:
+            # (next, one_in, two_in, ready) (transfered, one_out, two_out)
             ((0, 0, 0, 0), (0, 0, 0)),
             ((1, 10, 20, 0), (0, 0, 0)),
             ((0, 10, 20, 1), (1, 0, 0)),
@@ -94,6 +99,7 @@ class TestSinkSource(TestBase):
 
         def process():
             for n, (inputs, outputs) in enumerate(DATA):
+                # pylint: disable=redefined-builtin
                 next, one_in, two_in, ready = inputs
                 yield self.producer.next.eq(next)
                 yield self.producer.test_data.one.eq(one_in)
@@ -101,8 +107,17 @@ class TestSinkSource(TestBase):
                 yield self.consumer.ready.eq(ready)
                 yield Delay(0.1)
                 transferred, one_out, two_out = outputs
-                self.assertEqual((yield self.consumer.transferred), transferred, f"cycle={n}")
-                self.assertEqual((yield self.consumer.one_out), one_out, f"cycle={n}")
-                self.assertEqual((yield self.consumer.two_out), two_out, f"cycle={n}")
+                self.assertEqual(
+                    (yield self.consumer.transferred),
+                    transferred,
+                    f'cycle={n}')
+                self.assertEqual(
+                    (yield self.consumer.one_out),
+                    one_out,
+                    f'cycle={n}')
+                self.assertEqual(
+                    (yield self.consumer.two_out),
+                    two_out,
+                    f'cycle={n}')
                 yield
         self.run_sim(process, False)
