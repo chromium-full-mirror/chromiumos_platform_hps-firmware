@@ -28,20 +28,19 @@ class FilterStore(SimpleElaboratable):
     The filter store contains multiple SinglePortMemories, each of which is
     written separately with values in the order required by the SystolicArray.
 
-    Attributes
-    ----------
+    Attributes:
 
-    write_input: Endpoint(FILTER_WRITE_COMMAND), in
-        Commands to write to the filter store. Always ready.
+        write_input (Endpoint(FILTER_WRITE_COMMAND), in):
+            Commands to write to the filter store. Always ready.
 
-    size: Signal(unsigned_upto(depth)), in
-        Number of words held in each filter store
+        size (Signal(unsigned_upto(depth)), in):
+            Number of words held in each filter store
 
-    values_out[i]: [Signal(32) * num_memories], out
-        Filter values output in the correct manner for a Systolic Array
+        values_out ([Signal(32) * num_memories], out):
+            Filter values output in the correct manner for a Systolic Array
 
-    start: Signal(), in
-        Causes filter output to begin with addr(0), on cycle after next.
+        start (Signal(), in):
+            Causes filter output to begin with addr(0), on cycle after next.
     """
 
     def __init__(self):

@@ -46,14 +46,13 @@ class SaturatingRoundingDoubleHighMul(BinaryPipelineActor):
     * 'b' in the range 0x4000_0000 to 0x7000_0000 as this appears to be
       the range used the hps model.
 
-    Attributes
-    ----------
+    Attributes:
 
-    input: Endpoint(SRDHM_INPUT_LAYOUT), in
-      The calculation to perform.
+        input (Endpoint(SRDHM_INPUT_LAYOUT), in):
+          The calculation to perform.
 
-    output: Endpoint(signed(32)), out
-      The result.
+        output (Endpoint(signed(32)), out):
+          The result.
 
     This pipeline neither provides nor respects back pressure.
     """
@@ -93,14 +92,13 @@ RDBPOT_INPUT_LAYOUT = [
 class RoundingDivideByPowerOfTwo(BinaryPipelineActor):
     """Divides its input by a power of two, rounding appropriately.
 
-    Attributes
-    ----------
+    Attributes:
 
-    input: Endpoint(RDBPOT_INPUT_LAYOUT), in
-      The calculation to perform.
+        input (Endpoint(RDBPOT_INPUT_LAYOUT), in):
+          The calculation to perform.
 
-    output: Endpoint(signed(32)), out
-      The result.
+        output (Endpoint(signed(32)), out):
+          The result.
 
     This pipeline neither provides nor respects back pressure.
     """
@@ -142,20 +140,22 @@ class RoundingDivideByPowerOfTwo(BinaryPipelineActor):
 class SaturateActivationPipeline(BinaryPipelineActor):
     """Fixes final result into signed(8) range.
 
-    Attributes
-    ----------
+    Attributes:
 
-    input: Endpoint(signed(32)), in
-      The input accumulator value.
-    output: Endpoint(signed(8)), out
-      The output 8 bit number.
+        input (Endpoint(signed(32)), in):
+            The input accumulator value.
 
-    offset: signed(16), in
-      The output_offset
-    max: signed(8), in
-      Maximum allowed value
-    min: signed(8), in
-      Minimum allowed input value
+        output (Endpoint(signed(8)), out):
+          The output 8 bit number.
+
+        offset (signed(16), in):
+          The output_offset
+
+        max (signed(8), in):
+          Maximum allowed value
+
+        min (signed(8), in):
+          Minimum allowed input value
     """
 
     PIPELINE_CYCLES = 1
@@ -181,13 +181,10 @@ class SaturateActivationPipeline(BinaryPipelineActor):
 def delay(m, signal, cycles):
     """Delays a signal by a number cycles.
 
-    Parameters:
-      m: Module
-        The module to work in.
-      signal: Signal(?)
-        The signal to delay
-      cycles: int
-        The number of cycles to delay
+    Args:
+        m (Module): The module to work in.
+        signal (Signal): The signal to delay.
+        cycles (int): The number of cycles to delay.
     """
     name = signal.name
     for i in range(cycles):
@@ -209,26 +206,25 @@ POST_PROCESS_PARAMS_WIDTH = len(Record(POST_PROCESS_PARAMS))
 class PostProcessPipeline(SimpleElaboratable):
     """Converts an accumulator into an 8-bit value
 
-    Attributes
-    ----------
+    Attributes:
 
-    input: Endpoint(signed(32)), in
-      The accumulated value to convert
+        input (Endpoint(signed(32)), in):
+          The accumulated value to convert
 
-    params: Endpoint(POST_PROCESS_PARAMS), in
-      Parameters assumed always ready and then read on input
+        params (Endpoint(POST_PROCESS_PARAMS), in):
+          Parameters assumed always ready and then read on input
 
-    output: Endpoint(signed(8)), out
-      The 8-bit quantized version of the accumulator
+        output (Endpoint(signed(8)), out):
+          The 8-bit quantized version of the accumulator
 
-    offset: signed(9), in
-       The output offset
+        offset (signed(9), in):
+           The output offset
 
-    activation_min: signed(8), out
-        The minimum output value
+        activation_min (signed(8), out):
+            The minimum output value
 
-    activation_max: signed(8), out
-        The maximum output value
+        activation_max (signed(8), out):
+            The maximum output value
     """
 
     PIPELINE_CYCLES = (
@@ -298,29 +294,27 @@ class ParamWriter(SimpleElaboratable):
 
     To write a new set of parameters, first reset the writer.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     max_depth: int
         The maximum depth required for writes. Determines addr_width.
 
-    Attributes
-    ----------
+    Attributes:
 
-    reset: Signal(), in
-        Initiates a reset, resets write position to start of memory
+        reset (Signal(), in):
+            Initiates a reset, resets write position to start of memory
 
-    input_data: Endpoint(POST_PROCESS_PARAMS), out
-        Stream of data to write to memory.
+        input_data (Endpoint(POST_PROCESS_PARAMS), out):
+            Stream of data to write to memory.
 
-    mem_we: Signal(), out
-        Memory write enable
+        mem_we (Signal(), out):
+            Memory write enable
 
-    mem_addr: Signal(addr_width), out
-        Address sent to memory.
+        mem_addr (Signal(addr_width), out):
+            Address sent to memory.
 
-    mem_data: Signal(POST_PROCESS_PARAMS_WIDTH)), out
-        Data sent to memory
+        mem_data (Signal(POST_PROCESS_PARAMS_WIDTH)), out):
+            Data sent to memory
     """
 
     def __init__(self, max_depth=Constants.MAX_CHANNEL_DEPTH):
@@ -352,24 +346,23 @@ class ReadingProducer(SimpleElaboratable):
     that produces on each cycle without back pressure, but is
     conceptually simpler.
 
-    Attributes
-    ----------
+    Attributes:
 
-    sizes: Record(POST_PROCESS_SIZES), in
-        Depth and repeat count for producing values.
+        sizes (Record(POST_PROCESS_SIZES), in):
+            Depth and repeat count for producing values.
 
-    reset: Signal(1), in
-        Initiates a reset, beginning reads from memory
-        with new repeat and depth count.
+        reset (Signal(1), in):
+            Initiates a reset, beginning reads from memory
+            with new repeat and depth count.
 
-    output_data: Endpoint(POST_PROCESS_PARAMS), out
-        Stream of data read from memory
+        output_data (Endpoint(POST_PROCESS_PARAMS), out):
+            Stream of data read from memory
 
-    mem_addr: Signal(addr_width), out
-        Address sent to memory.
+        mem_addr (Signal(addr_width), out):
+            Address sent to memory.
 
-    mem_data: Signal(POST_PROCESS_PARAMS_WIDTH)), in
-        Data received from memory
+        mem_data (Signal(POST_PROCESS_PARAMS_WIDTH)), in):
+            Data received from memory
     """
 
     def __init__(self):
@@ -425,27 +418,25 @@ class AccumulatorReader(SimpleElaboratable):
     In normal mode, reads all 8 accumulators. In half_mode, reads
     just accumulators 0, 1, 4 and 5.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     accumulator_shape: Shape
         Defaults to signed(32)
 
-    Attributes
-    ----------
+    Attributes:
 
-    accumulator: [Signal(accumulator_shape)] * 8, in
-      The value to select.
+        accumulator ([Signal(accumulator_shape)] * 8, in):
+          The value to select.
 
-    accumulator_new: [Signal()] * 8, in
-      Strobes when new value available in accumulator.
+        accumulator_new ([Signal()] * 8, in):
+          Strobes when new value available in accumulator.
 
-    half_mode: Signal(), in
-      When True, reads only half of the accumulators
+        half_mode (Signal(), in):
+          When True, reads only half of the accumulators
 
-    output: Endpoint(accumulator_shape), in
-      The accumulated values to convert. Values not read before new values
-      are available are lost.
+        output (Endpoint(accumulator_shape), in):
+          The accumulated values to convert. Values not read before new values
+          are available are lost.
     """
 
     def __init__(self, accumulator_shape=signed(32)):
@@ -495,32 +486,31 @@ class StreamLimiter(SimpleElaboratable):
 
     Counts a given number of items, then signals that it is done.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     payload_type:
         The type carried by the stream
 
-    Attributes
-    ----------
+    Attributes:
 
-    stream_in: Endpoint(payload_type), in
-        The incoming stream. Will always be ready after start and
-        until done.
-    stream_out: Endpoint(payload_type), out
-        The outgoing stream. Does not respect back pressure.
+        stream_in (Endpoint(payload_type), in):
+            The incoming stream. Will always be ready after start and
+            until done.
 
-    num_allowed: Signal(18), in
-        The number of items allowed to pass.
+        stream_out (Endpoint(payload_type), out):
+            The outgoing stream. Does not respect back pressure.
 
-    start: Signal(), in
-        Pulse high to allow items beginning next cycle.
+        num_allowed (Signal(18), in):
+            The number of items allowed to pass.
 
-    running: Signal(), out
-        Indicates that items are being allowed to pass
+        start (Signal(), in):
+            Pulse high to allow items beginning next cycle.
 
-    finished: Signal(), out
-        Indicates that last item has been handled.
+        running (Signal(), out):
+            Indicates that items are being allowed to pass
+
+        finished (Signal(), out):
+            Indicates that last item has been handled.
     """
 
     def __init__(self, payload_type=signed(32)):
@@ -560,24 +550,22 @@ class OutputWordAssembler(SimpleElaboratable):
     TODO: add a reset signal to ensure output always synchronized
     TODO: add an error signal to catch output buffer overflow
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     num_pixels: int
         The maximum depth required for writes. Determines addr_width.
 
-    Attributes
-    ----------
+    Attributes:
 
-    half_mode: Signal, in
-      In normal mode, buffers data over four pixels. In half mode only buffers
-      data over two pixels.
+        half_mode (Signal, in):
+          In normal mode, buffers data over four pixels. In half mode only
+          buffers data over two pixels.
 
-    input: Endpoint(signed(8)), in
-      The 8-bit quantized versions of the accumulator. Always ready.
+        input (Endpoint(signed(8)), in):
+          The 8-bit quantized versions of the accumulator. Always ready.
 
-    output: Endpoint(unsigned(32)), out
-      The assembled 32 bit words. Assumes always ready.
+        output (Endpoint(unsigned(32)), out):
+          The assembled 32 bit words. Assumes always ready.
     """
 
     def __init__(self, num_pixels=Constants.SYS_ARRAY_HEIGHT):

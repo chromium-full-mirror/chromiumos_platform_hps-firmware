@@ -41,8 +41,7 @@ class MaccBlock(SimpleElaboratable):
 
     This logic is intended to map to the Crosslink/NX SysDSP block.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     n: int
         The number of multipliers. Four is the usual value.
@@ -64,30 +63,28 @@ class MaccBlock(SimpleElaboratable):
         accumulator may be sufficient, and will make more efficient
         use of the FPGA fabric.
 
-    Attributes
-    ----------
-
-    input_a: unsigned(n * a_shape.width), in
-        The input data containing A values.
-    output_a: unsigned(n * a_shape.width), out
-        The value of input_a, delayed by one cycle.
-    input_b: unsigned(n * b_shape.width), in
-        The input data containing B values.
-    output_b: unsigned(n * b_shape.width), out
-        The value of input_b, delayed by one cycle.
-    input_first: Signal(1), in
-        Indicates that this is the first value passed, and the
-        accumulator should be assumed zero.
-    output_first: Signal(1), out
-        The value of input_first, delayed by one cycle
-    output_last: Signal(1), out
-        The value of output_last, delayed by one cycle
-    output_accumulator: accumulator_shape, out
-        Holds the output value. Since there is no flow control, this
-        value must be read before it is updated again.
-    output_accumulator_new: Signal(1), out
-        Pulsed to indicate that a new value has been placed in
-        output_accumulator.
+    Attributes:
+        input_a (unsigned(n * a_shape.width), in):
+            The input data containing A values.
+        output_a (unsigned(n * a_shape.width), out):
+            The value of input_a, delayed by one cycle.
+        input_b (unsigned(n * b_shape.width), in):
+            The input data containing B values.
+        output_b (unsigned(n * b_shape.width), out):
+            The value of input_b, delayed by one cycle.
+        input_first (Signal(1), in):
+            Indicates that this is the first value passed, and the
+            accumulator should be assumed zero.
+        output_first (Signal(1), out):
+            The value of input_first, delayed by one cycle
+        output_last (Signal(1), out):
+            The value of output_last, delayed by one cycle
+        output_accumulator (Signal(accumulator_shape), out):
+            Holds the output value. Since there is no flow control, this
+            value must be read before it is updated again.
+        output_accumulator_new (Signal(1), out):
+            Pulsed to indicate that a new value has been placed in
+            output_accumulator.
     """
 
     # The latency from input_received to accumulator being updated

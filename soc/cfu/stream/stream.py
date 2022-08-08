@@ -15,25 +15,25 @@ __all__ = ['PayloadDefinition', 'Endpoint', 'connect']
 class PayloadDefinition:
     """Defines a stream's payload
 
-    Attributes
-    ----------
+    Attributes:
 
-    payload_type: Shape or Layout
-        The type of the payload.
+        payload_type (Shape or Layout):
+            The type of the payload.
 
-    stream_layout: Layout
-        A record Layout for a stream containing the given payload.
+        stream_layout (Layout):
+            A record Layout for a stream containing the given payload.
     """
 
     @staticmethod
     def cast(obj, *, src_loc_at=0):
         """Returns a definition.
 
-        Arguments
-        ---------
-        obj:
-          PayloadDefinition or something that can be used in Layout - a
-          Shape, a Layout or an iterable of tuples
+        Args:
+            obj:
+                PayloadDefinition or something that can be used in Layout -
+                a Shape, a Layout or an iterable of tuples.
+            src_loc_at:
+                Number of stack frames to look upwards for source location.
         """
         if isinstance(obj, PayloadDefinition):
             return obj
@@ -42,11 +42,11 @@ class PayloadDefinition:
     def __init__(self, *, payload_type, src_loc_at=0):
         """Constructor.
 
-        Arguments
-        ---------
-
-        payload_type: Shape or Layout
-            The type of the payload.
+        Args:
+            payload_type (Shape or Layout):
+                The type of the payload.
+            src_loc_at:
+                Number of stack frames to look upwards for source location.
         """
         self.payload_type = payload_type
         self.stream_layout = Layout([
@@ -57,16 +57,19 @@ class PayloadDefinition:
 
 
 class Endpoint:
-    """One endpoint of a stream
-
-    Parameters
-    ----------
-
-    definition: StreamDefintion
-      Specifies the payload type and other parameters of this type.
-    """
+    """One endpoint of a stream."""
 
     def __init__(self, definition=None, *, name=None, src_loc_at=0):
+        """Inits Endpoint.
+
+        Args:
+            definition (StreamDefintion):
+                Specifies the payload type and other parameters of this type.
+            name:
+                Name to use for derived signals.
+            src_loc_at:
+                Number of stack frames to look upwards for source location.
+        """
         self.definition = PayloadDefinition.cast(definition)
         self._record = Record(
             self.definition.stream_layout,
@@ -99,16 +102,14 @@ def connect(from_endpoint, to_endpoint):
     m.d.comb += connect(one_components_output, another_components_input)
     m.d.comb += connect(my_input, child_input)
 
-    Arguments
-    ---------
-    from_endpoint:
-        The upstream side of the stream. Presents payload and valid.
-    to_endpoint:
-        The downstream side of the stream. Presents ready.
+    Args:
+        from_endpoint:
+            The upstream side of the stream. Presents payload and valid.
+        to_endpoint:
+            The downstream side of the stream. Presents ready.
 
-    Result
-    ------
-    A list of assignment statements to be used combinatorially.
+    Returns:
+        A list of assignment statements to be used combinatorially.
     """
     return [
         to_endpoint.valid.eq(from_endpoint.valid),

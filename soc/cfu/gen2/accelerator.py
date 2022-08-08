@@ -81,41 +81,41 @@ class AcceleratorCore(SimpleElaboratable):
     -   Post Process Parameter Write
     -   FIFO for output values
 
-    Arguments
-    ---------
-    specialize_nx: bool
-        Whether to generate specialized code for the Crosslink/NX-17.
+    Attributes:
 
-    Attributes
-    ----------
+        reset (Signal(), in):
+            Resets internal logic ready for configuration.
 
-    reset: Signal(), in
-        Resets internal logic ready for configuration.
+        start (Signal(), in):
+            Starts accelerator working.
 
-    start: Signal(), in
-        Starts accelerator working.
+        config (Record(ACCELERATOR_CONFIGURATION_LAYOUT), in):
+            Configuration values for this component.
 
-    config: Record(ACCELERATOR_CONFIGURATION_LAYOUT), in
-        Configuration values for this component.
+        write_filter_input (Endpoint(FILTER_WRITE_COMMAND), in):
+            Commands to write to the filter store.
 
-    write_filter_input: Endpoint(FILTER_WRITE_COMMAND), in
-        Commands to write to the filter store.
+        lram_addr ([Signal(14)] * 4, out):
+            Address for each LRAM bank.
 
-    lram_addr: [Signal(14)] * 4, out
-        Address for each LRAM bank
+        lram_data ([Signal(32)] * 4, in):
+            Data as read from addresses provided at previous cycle.
 
-    lram_data: [Signal(32)] * 4, in
-        Data as read from addresses provided at previous cycle.
+        post_process_params (Endpoint(POST_PROCESS_PARAMS), out):
+            Stream of data to write to post_process memory.
 
-    post_process_params: Endpoint(POST_PROCESS_PARAMS), out
-        Stream of data to write to post_process memory.
-
-    output: Endpoint(unsigned(32)), out
-      The 8 bit output values as 4 byte words. Values are produced in an
-      algorithm dependent order.
+        output (Endpoint(unsigned(32)), out):
+            The 8 bit output values as 4 byte words.
+            Values are produced in an algorithm dependent order.
     """
 
     def __init__(self, specialize_nx=False):
+        """Inits AcceleratorCore.
+
+        Args:
+            specialize_nx (bool):
+                Whether to generate specialized code for the Crosslink/NX-17.
+        """
         self._specialize_nx = specialize_nx
         self.reset = Signal()
         self.start = Signal()

@@ -28,10 +28,14 @@ def tree_sum(l):
     return tree_sum(l[:half]) + tree_sum(l[half:])
 
 
+# pylint: disable=docstring-misnamed-args
 def pack_vals(*values, offset=0, bits=8):
     """Packs single values into a word in little endian order.
-    offset is added to the values before packing
-    bits is the number of bits in each value
+
+    Args:
+        values: individual values to be packed
+        offset: added to each value before packing
+        bits: number of bits in each value
     """
     mask = (1 << bits) - 1
     result = 0
@@ -42,17 +46,15 @@ def pack_vals(*values, offset=0, bits=8):
 
 class SimpleElaboratable(Elaboratable, abc.ABC):
     """Simplified Elaboratable interface
+
     Widely, but not generally applicable. Suitable for use with
     straight-forward blocks of logic in a single domain.
 
-    Attributes
-    ----------
-
-    m: Module
-        The resulting module
-    platform:
-        The platform for this elaboration
-
+    Attributes:
+        m (Module):
+            The resulting module
+        platform:
+            The platform for this elaboration
     """
 
     @abc.abstractmethod
@@ -122,32 +124,32 @@ class TestBase(unittest.TestCase):
 
 class SequentialMemoryReader(SimpleElaboratable):
     """A sequentially reading wrapper for a memory.
+
     Buffers inputs in such a way that the next input can be obtained next
     cycle, even though reads to the memory take a cycle.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
+
     max_depth:
         Maximum number of items stored in memory
     width:
         bits in each word of memory
 
-    Public Interface
-    ----------------
-    limit: Signal(range(max_depth+1)) input
-        The number of items to read
-    mem_addr: Signal(range(max_depth)) output
-        The address to send to the memory read port
-    mem_data: Signal(32) input
-        The data from memory
-    data: Signal(32) output
-        The current piece of data
-    next: Signal() input
-        Indicates the current piece of data has been read, and want
-        the next word, please
-    restart: Signal() input
-        Indicates that reader should be reset to address zero. Data
-        is ready at next cycle.
+    Attributes:
+        limit (Signal(range(max_depth+1)), in):
+            The number of items to read
+        mem_addr (Signal(range(max_depth)), out):
+            The address to send to the memory read port
+        mem_data (Signal(32), in):
+            The data from memory
+        data (Signal(32), out):
+            The current piece of data
+        next (Signal(), in):
+            Indicates the current piece of data has been read, and want
+            the next word, please
+        restart (Signal(), in):
+            Indicates that reader should be reset to address zero. Data
+            is ready at next cycle.
     """
 
     def __init__(self, *, width, max_depth):

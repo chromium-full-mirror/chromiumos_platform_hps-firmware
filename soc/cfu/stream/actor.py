@@ -19,21 +19,15 @@ class BinaryActor(SimpleElaboratable):
     It has one input stream and one output stream. Each packet received
     at the input has a corresponding packet sent from the output.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     input_type: Defines input stream
 
     output_type: Defines output stream
 
-    Attributes
-    ----------
-
-    sink: Sink(input_type), in
-      Sink for incoming data
-
-    source: Source(source_type), out
-      Source for outgoing data
+    Attributes:
+        sink (Sink(input_type), in): Sink for incoming data.
+        source (Source(source_type), out): Source for outgoing data.
     """
 
     def __init__(self, input_type, output_type):
@@ -71,8 +65,7 @@ class BinaryCombinatorialActor(BinaryActor):
     Performs a combinatorial operation on a input payload to transform
     it to an output.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     input_type: The Shape or Layout for the sink
 
@@ -99,8 +92,7 @@ class BinaryPipelineActor(BinaryActor):
 
     Does not provide or respect backpressure over its streams.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     input_type: The Shape or Layout for the sink
 

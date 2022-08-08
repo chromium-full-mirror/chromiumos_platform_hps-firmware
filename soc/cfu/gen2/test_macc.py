@@ -84,8 +84,8 @@ class MaccBlockTest(TestBase):
         """Checks a given calculation:
 
         Args:
-          a_list: first operands. Size is a multiple of 4.
-          b_list: second operands. List of integers the same size as a_list.
+            a_list: first operands. Size is a multiple of 4.
+            b_list: second operands. List of integers the same size as a_list.
         """
         expected_result = sum(a * b for a, b in zip(a_list, b_list))
 
@@ -124,8 +124,8 @@ class MaccBlockTest(TestBase):
         """Checks a randomly generated calculation.
 
         Args:
-          size - number of arguments must be divisble by 4
-          seed - used to seed the generator.
+            size: number of arguments must be divisble by 4
+            seed: used to seed the generator.
         """
         random.seed(seed)
         a_list = [random.randrange(0, 256) for _ in range(size)]

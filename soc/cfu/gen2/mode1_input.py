@@ -75,31 +75,30 @@ class PixelAddressGenerator(SimpleElaboratable):
     Intended to be used in the case where each pixel has a depth that is a
     multiple of 16.
 
-    Attributes
-    ----------
+    Attributes:
 
-    base_addr: Signal(14), in
-        A base number, added to all results
+        base_addr (Signal(14), in):
+            A base number, added to all results
 
-    num_pixels_x: Signal(9), in
-        How many pixels in a row
+        num_pixels_x (Signal(9), in):
+            How many pixels in a row
 
-    num_blocks_x: Signal(4), in
-        Number of RAM blocks to advance to move to new pixel in X direction
+        num_blocks_x (Signal(4), in):
+            Number of RAM blocks to advance to move to new pixel in X direction
 
-    num_blocks_y: Signal(8), in
-        Number of RAM blocks to advance between pixels in Y direction
+        num_blocks_y (Signal(8), in):
+            Number of RAM blocks to advance between pixels in Y direction
 
-    addr: Signal(14), out
-        The output block address for the current pixel.
+        addr (Signal(14), out):
+            The output block address for the current pixel.
 
-    start: Signal(), in
-        Starts address generation. Addr will be updated to base_addr on next
-        cycle.
+        start (Signal(), in):
+            Starts address generation. Addr will be updated to base_addr on next
+            cycle.
 
-    next: Signal(), in
-        Indicates current address has been used. Address will be updated on next
-        cycle with next row address.
+        next (Signal(), in):
+            Indicates current address has been used. Address will be updated on
+            next cycle with next row address.
     """
 
     def __init__(self):
@@ -147,27 +146,27 @@ class PixelAddressRepeater(SimpleElaboratable):
     Pixel addresses are repeated in groups of four, which matches the
     number of outputs of the InputFetcher and inputs to the systolic array.
 
-    Attributes
-    ----------
+    Attributes:
 
-    repeats: Signal(unsigned_upto(64)), in
-        The number of times each stream of input pixel data is to be repeated.
+        repeats (Signal(unsigned_upto(64)), in):
+            The number of times each stream of input pixel data is to be
+            repeated.
 
-    next: Signal(), in
-        Indicates current address has been used. Address will be updated on next
-        cycle with next row address.
+        next (Signal(), in):
+            Indicates current address has been used. Address will be updated on
+            next cycle with next row address.
 
-    addr: Signal(14), out
-        Output address
+        addr (Signal(14), out):
+            Output address
 
-    start: Signal(), in
-        Starts address generation. Addr will be updated on next cycle.
+        start (Signal(), in):
+            Starts address generation. Addr will be updated on next cycle.
 
-    gen_next: Signal(), out
-        Indicates that a new pixel address is required.
+        gen_next (Signal(), out):
+            Indicates that a new pixel address is required.
 
-    gen_addr: Signal(14), in
-        Input from the PixelAddressGenerator
+        gen_addr (Signal(14), in):
+            Input from the PixelAddressGenerator
     """
 
     def __init__(self):
@@ -214,24 +213,23 @@ class ValueAddressGenerator(SimpleElaboratable):
     then moves down and repeats this. An external counter re-starts the
     generator once it has read 4 complete rows of input.
 
-    Attributes
-    ----------
+    Attributes:
 
-    start: Signal, in
-        Begin generating addresses from the start_addr.
+        start (Signal, in):
+            Begin generating addresses from the start_addr.
 
-    start_addr: Signal(14), in
-        Address of start of first pixel, from a PixelAddressGenerator.
+        start_addr (Signal(14), in):
+            Address of start of first pixel, from a PixelAddressGenerator.
 
-    depth: Signal(3), in
-        Number of 16-byte blocks to read per pixel. Max depth is 7 which is 112
-        values/pixel).
+        depth (Signal(3), in):
+            Number of 16-byte blocks to read per pixel. Max depth is 7 which is
+            112 values/pixel).
 
-    num_blocks_y: Signal(10), in
-        Number of blocks per row.
+        num_blocks_y (Signal(10), in):
+            Number of blocks per row.
 
-    addr_out: Signal(14), out
-        Current output address
+        addr_out (Signal(14), out):
+            Current output address
     """
 
     def __init__(self):
@@ -278,57 +276,57 @@ class Mode1InputFetcher(SimpleElaboratable):
     Coordinates a "normal mode" input fetch, where input data depth is a
     multiple of 16.
 
-    Attributes
-    ----------
+    Attributes:
 
-    reset: Signal, in
-        Pulsed to stop producing values. This ensures that invalid first
-        and last signals are not produced.
+        reset (Signal, in):
+            Pulsed to stop producing values. This ensures that invalid first
+            and last signals are not produced.
 
-    start: Signal, in
-        Pulsed to begin producing data. There is a delay of 2 cycles between
-        the start signal and the first valid data being produced.
+        start (Signal, in):
+            Pulsed to begin producing data. There is a delay of 2 cycles between
+            the start signal and the first valid data being produced.
 
-    base_addr: Signal(18), in
-        A base address, in bytes. Assumed to be a multiple of 16
+        base_addr (Signal(18), in):
+            A base address, in bytes. Assumed to be a multiple of 16
 
-    num_pixels_x: Signal(9), in
-        How many pixels in a row
+        num_pixels_x (Signal(9), in):
+            How many pixels in a row
 
-    pixel_advance_x: Signal(4), in
-        Number of RAM blocks to advance to move to new pixel in X direction
+        pixel_advance_x (Signal(4), in):
+            Number of RAM blocks to advance to move to new pixel in X direction
 
-    pixel_advance_y: Signal(8), in
-        Number of RAM blocks  to advance between pixels in Y direction
+        pixel_advance_y (Signal(8), in):
+            Number of RAM blocks  to advance between pixels in Y direction
 
-    depth: Signal(3), in
-        Number of 16-byte blocks to read per pixel. Max depth is 7 which is 112
-        values/pixel). Total number of cycles per output pixel is
-        depth * (4 cycles/block) * 4 (x dim) * 4 (y dim) = 64 * depth.
+        depth (Signal(3), in):
+            Number of 16-byte blocks to read per pixel. Max depth is 7 which is
+            112 values/pixel). Total number of cycles per output pixel is
+            depth * (4 cycles/block) * 4 (x dim) * 4 (y dim) = 64 * depth.
 
-    repeats: Signal(unsigned_upto(64)), in
-        The number of times each stream of input pixel data is to be repeated.
+        repeats (Signal(unsigned_upto(64)), in):
+            The number of times each stream of input pixel data is to be
+            repeated.
 
-    ram_mux_phase: Signal(range(4)), out
-        The phase provided to the RamMux
+        ram_mux_phase (Signal(range(4)), out):
+            The phase provided to the RamMux
 
-    ram_mux_addr: [Signal(14)] * 4, out
-        Addresses to send to the RAM Mux
+        ram_mux_addr ([Signal(14)] * 4, out):
+            Addresses to send to the RAM Mux
 
-    ram_mux_data: [Signal(32)] * 4, in
-        Data as read from addresses provided at previous cycle.
+        ram_mux_data ([Signal(32)] * 4, in):
+            Data as read from addresses provided at previous cycle.
 
-    data_out: [Signal(32)] * 4, out
-        Data for each of four pixels.
+        data_out ([Signal(32)] * 4, out):
+            Data for each of four pixels.
 
-    first: Signal(), out
-        Indicates first data for a pixel available at data_out[0]. First data
-        will arrive at data_out[1] a cycle later and so on. This signal is not
-        valid until 2 cycles after start.
+        first (Signal(), out):
+            Indicates first data for a pixel available at data_out[0].
+            First data will arrive at data_out[1] a cycle later and so on.
+            This signal is not valid until 2 cycles after start.
 
-    last: Signal(), out
-        Indicates last data for a pixel available at data_out[0]. Last data
-        will arrive at data_out[1] a cycle later and so on.
+        last (Signal(), out):
+            Indicates last data for a pixel available at data_out[0].
+            Last data will arrive at data_out[1] a cycle later and so on.
     """
 
     def __init__(self):

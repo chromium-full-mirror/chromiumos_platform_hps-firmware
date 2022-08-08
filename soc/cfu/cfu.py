@@ -17,24 +17,25 @@ from .util import TestBase
 class InstructionBase(SimpleElaboratable):
     """Custom Instruction.
 
-    Attributes
-    ----------
-    start: Signal input
-        When to start executing this instruction. Set only for one cycle.
-    in0: Signal(32) input
-        The first operand. Only available when `start` is signalled.
-    in1: Signal(32) input
-        The second operand. Only available when `start` is signalled.
-    funct7: Signal(7) input
-        The funct(7) value from the instruction.
-    done: Signal() output
-        Single cycle signal to indicate that processing has finished.
-    output: Signal(32) output
-        The result. Must be valid when `done` is signalled.
-    in0s: Signal(signed(32)) output
-        in0 as a signed value. Use in0s rather than in0 if the input is signed.
-    in1s: Signal(32) output
-        in1 as a signed value. Use in1s rather than in1 if the input is signed.
+    Attributes:
+        start (Signal, in):
+            When to start executing this instruction. Set only for one cycle.
+        in0 (Signal(32), in):
+            The first operand. Only available when `start` is signalled.
+        in1 (Signal(32), in):
+            The second operand. Only available when `start` is signalled.
+        funct7 (Signal(7), in):
+            The funct(7) value from the instruction.
+        done (Signal(), out):
+            Single cycle signal to indicate that processing has finished.
+        output (Signal(32), out):
+            The result. Must be valid when `done` is signalled.
+        in0s (Signal(signed(32)), out):
+            in0 as a signed value. Use in0s rather than in0
+            if the input is signed.
+        in1s (Signal(32), out):
+            in1 as a signed value. Use in1s rather than in1 if
+            the input is signed.
     """
 
     def __init__(self):
@@ -65,10 +66,10 @@ class InstructionTestBase(TestBase):
     def verify(self, data, trace=False):
         """Verifies instruction given explicit lists of inputs and outputs
 
-        Parameters
-        ----------
-        data: list of 3-tuples (in0, in1, out) or
-        4-tuples (funct7, in0, in1, out)
+        Args:
+            data: list of 3-tuples (in0, in1, out) or
+                4-tuples (funct7, in0, in1, out)
+            trace: Whether to write a trace file to the cwd.
         """
         def process():
             for n, values in enumerate(data):
@@ -93,14 +94,13 @@ class InstructionTestBase(TestBase):
         self.run_sim(process, trace)
 
     def verify_against_reference(self, inputs, reference_fn, trace=False):
-        """Verifies that our instruction behaves the same as a reference
-        implementation.
+        """Verifies that our instruction behaves the same as a reference.
 
-        Parameters
-        ----------
-        inputs: An iterable of either integers or pairs of integers.
-        reference_fn: A function that accepts either 1 or 2 integers and returns
-        an integer.
+        Args:
+            inputs: An iterable of either integers or pairs of integers.
+            reference_fn: A function that accepts either 1 or 2 integers and
+                returns an integer.
+            trace: Whether to write a trace file to the cwd.
         """
         def process():
             # pylint: disable=redefined-builtin
@@ -132,11 +132,11 @@ class InstructionTestBase(TestBase):
 
 
 class _FallbackInstruction(InstructionBase):
-    """Executed by CFU when no instruction explicitly defined for a given
-    function id.
+    """Fallback instruction implementation.
 
-    This does nothing useful, but it does ensure that the CFU does not hang on
-    an unknown functionid.
+    This is executed by the CFU when no instruction is explicitly defined for
+    a given function id. It does nothing useful, but it does ensure that the
+    CFU does not hang on an unknown functionid.
     """
 
     def elab(self, m):
@@ -153,8 +153,6 @@ class CfuBase(SimpleElaboratable):
 
     This class contains interface only, without any implementation.
 
-    Attributes
-    ----------
     Attribute public names and types form the Verilog module interface:
 
         input               cmd_valid,
@@ -213,7 +211,8 @@ class Cfu(CfuBase):
         """Make instructions this CFU will execute.
 
         Returns:
-          A dictionary with keys in range(8) containing the CFU's instructions.
+            A dictionary with keys in range(8) containing the CFU's
+            instructions.
         """
         raise NotImplementedError()
 
@@ -318,11 +317,14 @@ class CfuTestBase(TestBase):
     def run_ops(self, data, write_trace=False):
         """Runs the given ops through the CFU, checking results.
 
-        Arguments:
-            data: [(input, expected_output)...]
-                  if expected_output is None, it is ignored.
-                  input is either a 3-tuple (function_id, in0, in1) or
-                  a 4-tuple (function_id, funct7, in0, in1)
+        Args:
+            data:
+                List of (input, expected_output) pairs.
+                If expected_output is None, it is ignored.
+                input is either a 3-tuple (function_id, in0, in1) or
+                a 4-tuple (function_id, funct7, in0, in1).
+            write_trace:
+                Whether to write a trace file to the cwd.
         """
         def process():
             for n, (inputs, expected) in enumerate(data):

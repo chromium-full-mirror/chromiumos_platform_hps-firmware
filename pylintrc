@@ -147,6 +147,7 @@ enable=
 # TODO: Re-enable try-except-raise.
 # TODO: Re-enable chained-comparison.
 # TODO: Enable import-error when pylint can use CrOS site-packages.
+# TODO: Use the typing module and then enable docstring-deprecated-annotations.
 disable=
     broad-except,
     chained-comparison,
@@ -154,6 +155,7 @@ disable=
     consider-using-dict-comprehension,
     consider-using-in,
     consider-using-set-comprehension,
+    docstring-deprecated-annotations,
     fixme,
     file-ignored,
     keyword-arg-before-vararg,

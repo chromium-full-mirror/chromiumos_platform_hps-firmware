@@ -15,8 +15,7 @@ from .stream import Endpoint
 class StreamFifo(SimpleElaboratable):
     """A FIFO with stream interfaces.
 
-    Parameters:
-    -----------
+    This module can be parametrized as follows:
 
     type: PayloadDefinition
       The type of the item that will be passed through the FIFO
@@ -24,14 +23,12 @@ class StreamFifo(SimpleElaboratable):
       The number of items contained by the fifo
 
     Attributes:
-    ----------
-
-    input: Endpoint(type), in
-      Incoming stream of items
-    output: Endpoint(type), out
-      Outgoing stream of items
-    r_level: Signal(depth.bit_length())
-      Number of items available for reading
+        input (Endpoint(type), in):
+            Incoming stream of items
+        output (Endpoint(type), out):
+            Outgoing stream of items
+        r_level (Signal(depth.bit_length())):
+            Number of items available for reading
     """
 
     # pylint: disable=redefined-builtin

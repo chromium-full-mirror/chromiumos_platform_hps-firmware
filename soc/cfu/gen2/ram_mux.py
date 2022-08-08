@@ -50,24 +50,23 @@ class RamMux(SimpleElaboratable):
     Data for a given address is available at the data output corresponding to
     the address input, one cycle later.
 
-    Attributes
-    ----------
+    Attributes:
 
-    phase: Signal(range(4)), in
-        The current phase, indicating which signal is connected to
-        which output.
+        phase (Signal(range(4)), in):
+            The current phase, indicating which signal is connected to
+            which output.
 
-    addr_in: [Signal(14)] * 4, in
-        Address to look up in each LRAM.
+        addr_in ([Signal(14)] * 4, in):
+            Address to look up in each LRAM.
 
-    data_out: [Signal(32)] * 4, out
-        Data retrieved from LRAMs.
+        data_out ([Signal(32)] * 4, out):
+            Data retrieved from LRAMs.
 
-    lram_addr: [Signal(14)] * 4, out
-        Address for each LRAM bank.
+        lram_addr ([Signal(14)] * 4, out):
+            Address for each LRAM bank.
 
-    lram_data: [Signal(32)] * 4, in
-        Data as read from addresses provided at previous cycle.
+        lram_data ([Signal(32)] * 4, in):
+            Data as read from addresses provided at previous cycle.
     """
 
     def __init__(self):

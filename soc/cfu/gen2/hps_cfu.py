@@ -45,16 +45,16 @@ class PingInstruction(InstructionBase):
 class GetInstruction(InstructionBase):
     """Handles sending values from CFU to CPU.
 
-    Attributes
-    ----------
+    Attributes:
 
-    reg_fifo_items_value: Signal(32), in
-        The value to return for the fifo item count register.
-    reg_verify_value: Signal(32), in
-        The value to return for the verify register.
+        reg_fifo_items_value (Signal(32), in):
+            The value to return for the fifo item count register.
 
-    output_words: Endpoint(unsigned(32)), in
-        Stream of output words from accelerator.
+        reg_verify_value (Signal(32), in):
+            The value to return for the verify register.
+
+        output_words (Endpoint(unsigned(32)), in):
+            Stream of output words from accelerator.
     """
 
     def __init__(self):
@@ -93,27 +93,26 @@ class GetInstruction(InstructionBase):
 class SetInstruction(InstructionBase):
     """Handles sending values from CPU to CFU
 
-    Attributes
-    ----------
+    Attributes:
 
-    reg_verify_value: Signal(32), out
-       The value last set into the verify register
+        reg_verify_value (Signal(32), out):
+           The value last set into the verify register
 
-    accelerator_start: Signal(), out
-       Toggles when start register written
+        accelerator_start (Signal(), out):
+           Toggles when start register written
 
-    accelerator_reset: Signal(), out
-       Toggles when reset register written
+        accelerator_reset (Signal(), out):
+           Toggles when reset register written
 
-    config: Record(ACCELERATOR_CONFIGURATION_LAYOUT), out
-       Configuration values for accelerator core, as received
-       from set instructions.
+        config (Record(ACCELERATOR_CONFIGURATION_LAYOUT), out):
+           Configuration values for accelerator core, as received
+           from set instructions.
 
-    filter_output: Endpoint(FILTER_WRITE_COMMAND), out
-        Write command for filter store
+        filter_output (Endpoint(FILTER_WRITE_COMMAND), out):
+            Write command for filter store
 
-    post_process_params: Endpoint(POST_PROCESS_PARAMS), out
-        Stream of data to write to post_process memory.
+        post_process_params (Endpoint(POST_PROCESS_PARAMS), out):
+            Stream of data to write to post_process memory.
     """
 
     def __init__(self):

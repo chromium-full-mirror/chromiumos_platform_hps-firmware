@@ -25,8 +25,7 @@ class SinglePortMemory(SimpleElaboratable):
     may be replaced with an implementation based on FPGA-specific
     primitives.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     data_width: int
         Number of bits in each memory word.
@@ -35,26 +34,25 @@ class SinglePortMemory(SimpleElaboratable):
         Number of words in the memory. There will be ceil(log2(depth))
         bits in the memories address.
 
-    Attributes
-    ----------
+    Attributes:
 
-    write_addr: Signal(addr_width), in
-        The address to which to write data. As noted above, addr_width is
-        ceil(log2(depth)).
+        write_addr (Signal(addr_width), in):
+            The address to which to write data. As noted above, addr_width is
+            ceil(log2(depth)).
 
-    write_data: Signal(data_width), in
-        The data to be written.
+        write_data (Signal(data_width), in):
+            The data to be written.
 
-    write_enable: Signal(1), in
-        When asserted, write_data is written to write_addr. When not
-        asserted data is read.
+        write_enable (Signal(1), in):
+            When asserted, write_data is written to write_addr. When not
+            asserted data is read.
 
-    read_addr: Signal(addr_width), in
-        The address to read from.
+        read_addr (Signal(addr_width), in):
+            The address to read from.
 
-    read_data: Signal(word_width), out
-        The data corresponding to the read_addr on the previous cycle.
-        Only valid if write_enable was not asserted.
+        read_data (Signal(data_width), out):
+            The data corresponding to the read_addr on the previous cycle.
+            Only valid if write_enable was not asserted.
     """
 
     def __init__(self, data_width, depth):
@@ -86,29 +84,27 @@ class SinglePortMemory(SimpleElaboratable):
 class LoopingCounter(SimpleElaboratable):
     """Loops over values from 0 to (count-1).
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     max_count: int
         Maximum value of the count attribute.
 
-    Attributes
-    ----------
+    Attributes:
 
-    count: Signal(max=max_count), in
-        Number of items to count.
+        count (Signal(max=max_count), in):
+            Number of items to count.
 
-    reset: Signal(), in
-        Pulse to cause value to go back to zero on next cycle.
+        reset (Signal(), in):
+            Pulse to cause value to go back to zero on next cycle.
 
-    value: Signal(max=max_count-1), out
-        Current value of count.
+        value (Signal(max=max_count-1), out):
+            Current value of count.
 
-    next: Signal(), in
-        Causes count to increment on next cycle
+        next (Signal(), in):
+            Causes count to increment on next cycle
 
-    last: Signal(), out
-        High when counter is about to loop
+        last (Signal(), out):
+            High when counter is about to loop
     """
 
     def __init__(self, max_count):
@@ -149,8 +145,7 @@ class LoopingAddressGenerator(SimpleElaboratable):
     Loops from address zero for a given count, with configurable
     number of repeats.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     depth: int
         Number of words in the memory being addressed. Maximum
@@ -159,19 +154,18 @@ class LoopingAddressGenerator(SimpleElaboratable):
     max_repeats: int
         Maximum value for repeats.
 
-    Attributes
-    ----------
+    Attributes:
 
-    params: Endpoint(LDR_PARAMS_LAYOUT)), in
-        Sets the maximum count of addresses and number of repeats
-        required. Always ready to receive a value. When new parameters
-        are set, the output reset to first value in memory.
+        params (Endpoint(LDR_PARAMS_LAYOUT)), in):
+            Sets the maximum count of addresses and number of repeats
+            required. Always ready to receive a value. When new parameters
+            are set, the output reset to first value in memory.
 
-    next: Signal(), in
-        Indicates next value should be presented on next cycle.
+        next (Signal(), in):
+            Indicates next value should be presented on next cycle.
 
-    addr: Signal(addr_width), out
-        Output read address.
+        addr (Signal(addr_width), out):
+            Output read address.
     """
 
     def __init__(self, *, depth, max_repeats):

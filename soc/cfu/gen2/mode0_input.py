@@ -32,22 +32,21 @@ class EvenPixelAddressGenerator(SimpleElaboratable):
     In practice all addresses produced will be a multiple of words offset from
     base_addr.
 
-    Attributes
-    ----------
+    Attributes:
 
-    base_addr: Signal(18), in
-        A base number, added to all results
+        base_addr (Signal(18), in):
+            A base number, added to all results
 
-    addr: Signal(18), out
-        The byte address for the current pixel.
+        addr (Signal(18), out):
+            The byte address for the current pixel.
 
-    start: Signal(), in
-        Starts address generation. Addr will be updated on next cycle.
+        start (Signal(), in):
+            Starts address generation. Addr will be updated on next cycle.
 
-    next: Signal(), in
-        Indicates current address has been used. Address will be produced a
-        total of eight times each. On the eighth next toggle, a new address
-        will be available on the following cycle.
+        next (Signal(), in):
+            Indicates current address has been used. Address will be produced a
+            total of eight times each. On the eighth next toggle, a new address
+            will be available on the following cycle.
     """
 
     # Number of addresses to generate for each row. There 160 output pixels
@@ -100,27 +99,26 @@ class ValueAddressGenerator(SimpleElaboratable):
 
     The values of odd pixels are at the same address but offset by two bytes.
 
-    Attributes
-    ----------
+    Attributes:
 
-    reset: Signal, in
-        Stops the address generator.
+        reset (Signal, in):
+            Stops the address generator.
 
-    start: Signal, in
-        Begin generating addresses from the start_addr.
+        start (Signal, in):
+            Begin generating addresses from the start_addr.
 
-    start_addr: Signal(18), in
-        Address of start of first pixel, from an EvenPixelAddressGenerator.
+        start_addr (Signal(18), in):
+            Address of start of first pixel, from an EvenPixelAddressGenerator.
 
-    first: Signal, out
-        Indicates that first address in cycle is being produced.
+        first (Signal, out):
+            Indicates that first address in cycle is being produced.
 
-    last: Signal, out
-        Indicates that the last address is being produced and a new start
-        address is required on the following cycle.
+        last (Signal, out):
+            Indicates that the last address is being produced and a new start
+            address is required on the following cycle.
 
-    addr_out: Signal(14), out
-        Current output address
+        addr_out (Signal(14), out):
+            Current output address
     """
 
     # Bytes per row
@@ -160,24 +158,23 @@ class ValueReader(SimpleElaboratable):
 
     Reads six bytes, returning the values as two, 32 bit words.
 
-    Attributes
-    ----------
+    Attributes:
 
-    addr: Signal(18), in
-        Address from which to read two values. Expected to be an even number
+        addr (Signal(18), in):
+            Address from which to read two values. Expected to be an even number
 
-    ram_mux_phase: Signal(range(4)), out
-        The phase provided to the RamMux
+        ram_mux_phase (Signal(range(4)), out):
+            The phase provided to the RamMux
 
-    ram_mux_addr: [Signal(14)] * 4, out
-        Addresses to send to the RAM Mux
+        ram_mux_addr ([Signal(14)] * 4, out):
+            Addresses to send to the RAM Mux
 
-    ram_mux_data: [Signal(32)] * 4, in
-        Data as read from addresses provided at previous cycle.
+        ram_mux_data ([Signal(32)] * 4, in):
+            Data as read from addresses provided at previous cycle.
 
-    data_out: [Signal(32)] * 2, out
-        Data for each of two output pixels. The second word is delayed by one
-        cycle to match expected timing of the SystolicArray.
+        data_out ([Signal(32)] * 2, out):
+            Data for each of two output pixels. The second word is delayed by
+            one cycle to match expected timing of the SystolicArray.
     """
 
     def __init__(self):
@@ -230,40 +227,39 @@ class ValueReader(SimpleElaboratable):
 class Mode0InputFetcher(SimpleElaboratable):
     """Fetches input vectors for Mode0 Conv2D.
 
-    Attributes
-    ----------
+    Attributes:
 
-    reset: Signal, in
-        Pulsed to stop producing values. This ensures that invalid first
-        and last signals are not produced.
+        reset (Signal, in):
+            Pulsed to stop producing values. This ensures that invalid first
+            and last signals are not produced.
 
-    start: Signal, in
-        Pulsed to begin producing data. There is a delay of 2 cycles between
-        the start signal and the first valid data being produced.
+        start (Signal, in):
+            Pulsed to begin producing data. There is a delay of 2 cycles between
+            the start signal and the first valid data being produced.
 
-    base_addr: Signal(18), in
-        A base byte address, added to all results
+        base_addr (Signal(18), in):
+            A base byte address, added to all results
 
-    ram_mux_phase: Signal(range(4)), out
-        The phase provided to the RamMux
+        ram_mux_phase (Signal(range(4)), out):
+            The phase provided to the RamMux
 
-    ram_mux_addr: [Signal(14)] * 4, out
-        Addresses to send to the RAM Mux
+        ram_mux_addr ([Signal(14)] * 4, out):
+            Addresses to send to the RAM Mux
 
-    ram_mux_data: [Signal(32)] * 4, in
-        Data as read from addresses provided at previous cycle.
+        ram_mux_data ([Signal(32)] * 4, in):
+            Data as read from addresses provided at previous cycle.
 
-    data_out: [Signal(32)] * 2, out
-        Data for each of two pixels.
+        data_out ([Signal(32)] * 2, out):
+            Data for each of two pixels.
 
-    first: Signal(), out
-        Indicates first data for a pixel available at data_out[0]. First data
-        will arrive at data_out[1] a cycle later and so on. This signal is not
-        valid until 2 cycles after start.
+        first (Signal(), out):
+            Indicates first data for a pixel available at data_out[0].
+            First data will arrive at data_out[1] a cycle later and so on.
+            This signal is not valid until 2 cycles after start.
 
-    last: Signal(), out
-        Indicates last data for a pixel available at data_out[0]. Last data
-        will arrive at data_out[1] a cycle later and so on.
+        last (Signal(), out):
+            Indicates last data for a pixel available at data_out[0].
+            Last data will arrive at data_out[1] a cycle later and so on.
     """
 
     def __init__(self):

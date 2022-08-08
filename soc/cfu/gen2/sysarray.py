@@ -16,8 +16,7 @@ from .macc import get_macc_block_class
 class SystolicArray(SimpleElaboratable):
     """A systolic array of multiply-accumulators.
 
-    Parameters
-    ----------
+    This module can be parametrized as follows:
 
     specialize_nx: bool
       True to explicitly use Crosslink/NX DSP blocks, otherwise use regular
@@ -49,26 +48,25 @@ class SystolicArray(SimpleElaboratable):
         accumulator may be sufficient, and will make more efficient
         use of the FPGA fabric.
 
-    Attributes
-    ----------
+    Attributes:
 
-    a_inputs: [Signal(n * a_shape.width)], in
-      List of words forming the A inputs
+        a_inputs ([Signal(n * a_shape.width)], in):
+            List of words forming the A inputs
 
-    b_inputs: [Signal(n * b_shape.width)], in
-      List of words forming the B inputs
+        b_inputs ([Signal(n * b_shape.width)], in):
+            List of words forming the B inputs
 
-    first: Signal, in
-      Indicates first word being processed at top left of array
+        first (Signal, in):
+            Indicates first word being processed at top left of array
 
-    last: Signal, in
-      Indicates last word being processed at top left of array
+        last (Signal, in):
+            Indicates last word being processed at top left of array
 
-    accumulator: [Signal(accumulator_shape)] * (a_size * b_size), out
-      The accumulator result from each macc unit
+        accumulator ([Signal(accumulator_shape)] * (a_size * b_size), out):
+            The accumulator result from each macc unit
 
-    accumulator_new: [Signal()] * (a_size * b_size), out
-      The accumulator update strobe from each macc unit
+        accumulator_new ([Signal()] * (a_size * b_size), out):
+            The accumulator update strobe from each macc unit
     """
 
     def __init__(self, specialize_nx=False, a_size=Constants.SYS_ARRAY_HEIGHT,
