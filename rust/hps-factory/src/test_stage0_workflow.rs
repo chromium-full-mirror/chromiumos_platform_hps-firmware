@@ -66,7 +66,7 @@ where
         hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)
             .unwrap();
         hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
+        assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
 
         // Try 1 double-word less than u32::MAX in an attempt to get an integer
         // overflow when the address is added to the slot start address. Also
@@ -75,7 +75,7 @@ where
         hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)
             .unwrap();
         hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
+        assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
 
         // Try a write that starts in a valid location, but extends beyond the
         // end of flash.
@@ -83,7 +83,7 @@ where
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)
             .unwrap();
         hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::McuFlashWriteError);
+        assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
     }
 
     fn test_write_to_end(&mut self) {
@@ -96,25 +96,25 @@ where
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)
             .unwrap();
         hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::None);
+        assert_eq!(hps.error().unwrap(), Error::None);
     }
 
     fn test_write_invalid_register(&mut self) {
         let mut hps = self.reset_hps().unwrap();
         hps.write_register(0x79, 10).unwrap();
-        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
     fn test_invalid_command(&mut self) {
         let mut hps = self.reset_hps().unwrap();
         hps.write_register(registers::COMMAND, 12345).unwrap();
-        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
     fn test_unsupported_command(&mut self) {
         let mut hps = self.reset_hps().unwrap();
         hps.perform_command(Command::LaunchApp).unwrap();
-        assert!(hps.error().unwrap() == Error::HostI2cBadRequest);
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
     fn test_erase_stage1(&mut self) {
@@ -123,7 +123,7 @@ where
         let mut hps = self.i2c.open_hps().unwrap();
         hps.perform_command(Command::Launch1).unwrap();
         let mut hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::Stage1NotFound);
+        assert_eq!(hps.error().unwrap(), Error::Stage1NotFound);
     }
 
     fn test_load_dev_signed_stage1(&mut self) {
@@ -140,7 +140,7 @@ where
         // it's performing the signature check.
         assert!(hps.status().is_err());
         let mut hps = self.i2c.open_hps().unwrap();
-        assert!(hps.error().unwrap() == Error::Stage1InvalidSignature);
+        assert_eq!(hps.error().unwrap(), Error::Stage1InvalidSignature);
         info!("Signature check time {}ms", start.elapsed().as_millis());
     }
 
