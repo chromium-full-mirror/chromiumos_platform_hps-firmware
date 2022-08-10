@@ -38,4 +38,16 @@ impl Hps for FakeHps {
     fn write_memory(&mut self, _bank: u8, _address: u32, _values: &[u8]) -> anyhow::Result<()> {
         Ok(())
     }
+
+    fn write_unchecked(&mut self, _bytes: &[u8]) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    fn write_read_unchecked(
+        &mut self,
+        _bytes: &[u8],
+        _read_length: usize,
+    ) -> anyhow::Result<Vec<u8>> {
+        Ok(vec![])
+    }
 }

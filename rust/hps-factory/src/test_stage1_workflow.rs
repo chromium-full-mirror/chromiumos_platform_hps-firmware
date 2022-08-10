@@ -32,6 +32,10 @@ where
         let mut tester = Stage1Tester { i2c };
 
         tester.test_panic_handling();
+        tester.test_read_invalid_register();
+        tester.test_write_invalid_register();
+        tester.test_read_with_invalid_first_byte();
+        tester.test_write_with_invalid_first_byte();
         tester.test_unsupported_command();
         tester.test_write_beyond_end_of_spi_flash();
 
@@ -49,6 +53,37 @@ where
         let report = hps.crash_report().unwrap();
         assert!(report.contains("Intentional panic"));
         hps = self.reset_to_stage1().unwrap();
+        assert_eq!(hps.error().unwrap(), Error::None);
+    }
+
+    fn test_read_invalid_register(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        let response = hps.read_register_bytes(0x79, 64).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::None);
+        assert_eq!(response, [0; 64]);
+    }
+
+    fn test_write_invalid_register(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        hps.write_register(0x79, 10).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
+    }
+
+    fn test_read_with_invalid_first_byte(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        // First byte 0b01xxxxxx is neither a register access nor a memory bank access.
+        let command = [0b01000000];
+        let response = hps.write_read_unchecked(&command, 64).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::None);
+        assert_eq!(response, [0; 64]);
+    }
+
+    fn test_write_with_invalid_first_byte(&mut self) {
+        let mut hps = self.reset_to_stage1().unwrap();
+        // First byte 0b01xxxxxx is neither a register access nor a memory bank access.
+        let bytes = [0b01000000, 0x12, 0x34, 0x56, 0x78];
+        hps.write_unchecked(&bytes).unwrap();
+        // TODO(dcallagh): this should be HostI2cBadRequest
         assert_eq!(hps.error().unwrap(), Error::None);
     }
 

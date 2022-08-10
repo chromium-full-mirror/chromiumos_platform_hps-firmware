@@ -42,6 +42,11 @@ pub trait Hps {
     fn write_register(&mut self, reg: u8, value: u16) -> Result<()>;
     fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()>;
 
+    /// Sends an arbitrary write. Only used for testing invalid writes.
+    fn write_unchecked(&mut self, bytes: &[u8]) -> Result<()>;
+    /// Sends an arbitrary write-then-read. Only used for testing invalid requests.
+    fn write_read_unchecked(&mut self, bytes: &[u8], read_length: usize) -> Result<Vec<u8>>;
+
     /// Reads the "magic" register which always contains a particular value if
     /// the device is a HPS. Returns an error on communication failure or if the
     /// returned value isn't what's expected.
@@ -316,6 +321,16 @@ where
         buffer.extend_from_slice(&address.to_be_bytes());
         buffer.extend_from_slice(values);
         Ok(self.sink.write(HPS_ADDRESS, &buffer)?)
+    }
+
+    fn write_unchecked(&mut self, bytes: &[u8]) -> Result<()> {
+        Ok(self.sink.write(HPS_ADDRESS, bytes)?)
+    }
+
+    fn write_read_unchecked(&mut self, bytes: &[u8], read_length: usize) -> Result<Vec<u8>> {
+        let mut buffer = vec![0u8; read_length];
+        self.sink.write_read(HPS_ADDRESS, bytes, &mut buffer)?;
+        Ok(buffer)
     }
 }
 

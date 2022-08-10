@@ -49,7 +49,10 @@ where
         // Note, test_write_to_end assumes flash is blank, so needs to be after
         // test_erase_stage1.
         tester.test_write_to_end();
+        tester.test_read_invalid_register();
         tester.test_write_invalid_register();
+        tester.test_read_with_invalid_first_byte();
+        tester.test_write_with_invalid_first_byte();
         tester.test_invalid_command();
         tester.test_unsupported_command();
         tester.test_load_dev_signed_stage1();
@@ -99,9 +102,33 @@ where
         assert_eq!(hps.error().unwrap(), Error::None);
     }
 
+    fn test_read_invalid_register(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        let response = hps.read_register_bytes(0x79, 64).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::None);
+        assert_eq!(response, [0; 64]);
+    }
+
     fn test_write_invalid_register(&mut self) {
         let mut hps = self.reset_hps().unwrap();
         hps.write_register(0x79, 10).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
+    }
+
+    fn test_read_with_invalid_first_byte(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        // First byte 0b01xxxxxx is neither a register access nor a memory bank access.
+        let command = [0b01000000];
+        let response = hps.write_read_unchecked(&command, 64).unwrap();
+        assert_eq!(hps.error().unwrap(), Error::None);
+        assert_eq!(response, [0; 64]);
+    }
+
+    fn test_write_with_invalid_first_byte(&mut self) {
+        let mut hps = self.reset_hps().unwrap();
+        // First byte 0b01xxxxxx is neither a register access nor a memory bank access.
+        let bytes = [0b01000000, 0x12, 0x34, 0x56, 0x78];
+        hps.write_unchecked(&bytes).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
