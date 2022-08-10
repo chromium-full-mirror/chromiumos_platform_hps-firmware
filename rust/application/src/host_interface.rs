@@ -95,13 +95,18 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     // both at once by just writing a concatenated bistream +
                     // padding + SOC ROM to the bitstream's memory bank -
                     // however doing so is wasteful, so not recommended.
-                    if event.bank == memory_banks::FPGA_BITSTREAM {
-                        return Some(Event::WriteSpiFlash(event));
-                    }
-                    if event.bank == memory_banks::SOC_ROM {
-                        event.address += mcu_common::SOC_ROM_OFFSET;
-                        return Some(Event::WriteSpiFlash(event));
-                    }
+                    match event.bank {
+                        memory_banks::FPGA_BITSTREAM => {
+                            return Some(Event::WriteSpiFlash(event));
+                        }
+                        memory_banks::SOC_ROM => {
+                            event.address += mcu_common::SOC_ROM_OFFSET;
+                            return Some(Event::WriteSpiFlash(event));
+                        }
+                        _ => {
+                            self.common_interface.report_error(Error::HostI2cBadRequest);
+                        }
+                    };
                 }
                 Err(error) => {
                     self.common_interface.report_error(error);
@@ -300,6 +305,24 @@ mod tests {
             &HEADER,
         );
         interface.handle_interrupt(&mut state);
+    }
+
+    #[test]
+    fn test_write_nonexistent_memory_bank() {
+        let mut state = ApplicationState::default();
+        let mut interface = HostInterface::new(
+            FakeI2cPeripheral::new(|device| {
+                let mut hps = HpsAdapter::without_magic_check(device);
+                hps.write_memory(3, 0, &[0xaa; 64]).unwrap();
+            }),
+            &HEADER,
+        );
+        interface.supply_mem_block(MemBlock::with_capacity(64));
+        interface.handle_interrupt(&mut state);
+        assert_eq!(
+            interface.common_interface.get_error(),
+            Error::HostI2cBadRequest
+        );
     }
 
     #[test]

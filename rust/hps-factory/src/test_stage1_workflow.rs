@@ -83,8 +83,7 @@ where
         // First byte 0b01xxxxxx is neither a register access nor a memory bank access.
         let bytes = [0b01000000, 0x12, 0x34, 0x56, 0x78];
         hps.write_unchecked(&bytes).unwrap();
-        // TODO(dcallagh): this should be HostI2cBadRequest
-        assert_eq!(hps.error().unwrap(), Error::None);
+        assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
     fn test_unsupported_command(&mut self) {
