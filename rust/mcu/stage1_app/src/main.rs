@@ -25,7 +25,6 @@ use application::fpga;
 use application::ApplicationState;
 use application::HostInterface;
 use core::convert::TryFrom;
-use delayed_i2c::DelayedI2c;
 use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::time::MicroSecond;
@@ -291,14 +290,7 @@ mod app {
             }
         };
 
-        // We insert a small delay between I2C requests. If we don't do this, then
-        // if the camera is not present, we end up blocking indefinitely. If
-        // removing this delay, be sure to test with camera disconnected.
-        let mut camera_i2c = DelayedI2c {
-            i2c: board.camera_i2c,
-            delay,
-            duration_us: 10,
-        };
+        let mut camera_i2c = board.camera_i2c;
         let mut frame_timer = p.TIM14.timer(&mut rcc);
         frame_timer.listen();
 
