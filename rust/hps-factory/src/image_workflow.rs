@@ -15,7 +15,7 @@ use fpga_app::Features;
 use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use hps_interface::Hps;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 
 const IMAGE_DATA_PACKET_LENGTH: usize = 63;
 
@@ -37,10 +37,10 @@ where
 
     // Configure enabled features.
     let enabled_features = Features::IMAGE_TRANSFER;
-    hps.write_register(registers::ENABLED_FEATURES, enabled_features.bits())?;
+    hps.write_register(Register::EnabledFeatures, enabled_features.bits())?;
 
     hps.write_register(
-        registers::CAMERA_CONFIG,
+        Register::CameraConfig,
         capture_images_config.rotation.into(),
     )?;
 
@@ -59,9 +59,8 @@ where
     output_dir.set_wait_parent_dir_exists(capture_images_config.wait_parent_dir_exists);
 
     loop {
-        if hps.read_register(registers::IMAGE_DATA_AVAILABLE)? == 1 {
-            let packet =
-                hps.read_register_bytes(registers::IMAGE_DATA, IMAGE_DATA_PACKET_LENGTH)?;
+        if hps.read_register(Register::ImageDataAvailable)? == 1 {
+            let packet = hps.read_register_bytes(Register::ImageData, IMAGE_DATA_PACKET_LENGTH)?;
             buffer.extend_from_slice(&packet);
             output_dir.process_images_from_buffer(&mut buffer)?;
         } else if let Some(timeout) = capture_images_config.timeout_seconds {

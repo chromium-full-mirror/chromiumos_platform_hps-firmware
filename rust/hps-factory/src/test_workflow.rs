@@ -23,7 +23,7 @@ use factory_tester_common::TEST_STATUS_SIZE;
 use hps_interface::Hps;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Status;
 use std::convert::TryFrom;
 use std::time::Duration;
@@ -51,7 +51,7 @@ where
     let mut stage0_present = false;
     if let Ok(mut hps) = i2c.open_hps() {
         stage0_present = true;
-        if hps.read_register(registers::HARDWARE_VERSION)? == 0 {
+        if hps.read_register(Register::HardwareVersion)? == 0 {
             bail!("HPS is running firmware, but it's not stage0 - cannot perform test");
         }
         if hps.status()?.contains(Status::WPON) {

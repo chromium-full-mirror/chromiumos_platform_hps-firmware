@@ -13,7 +13,7 @@ use hps_interface::HpsAdapter;
 use hps_util::monitor;
 use hps_util::print_status;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use std::path::PathBuf;
 
 #[derive(Clap)]
@@ -141,32 +141,50 @@ fn access_registers(hps: &mut dyn Hps, flags: &AccessRegisters) -> Result<()> {
     for reg in &flags.values {
         if let Some((register, length)) = parse_long_reg_spec(reg) {
             let bytes = hps.read_register_bytes(register, length)?;
-            println!("Register {} = {:x?}", register, bytes);
+            println!(
+                "Register {:?} (0x{:02x?}) = {:x?}",
+                register, register as u8, bytes
+            );
             continue;
         }
-        let mut parts = reg.split('=');
-        match (
-            parts.next().map(|part| part.parse::<u8>()),
-            parts.next().map(|part| part.parse::<u16>()),
-        ) {
-            (Some(Ok(reg)), None) => println!("Register {} = {}", reg, hps.read_register(reg)?),
-            (Some(Ok(reg)), Some(Ok(value))) => {
-                hps.write_register(reg, value)?;
-                println!("Wrote register {}={}", reg, value)
-            }
-            _ => {
-                bail!("Expected u8 or u8=16, but found `{}`", reg)
-            }
+        if let Some((reg, value)) = parse_reg_write(reg) {
+            hps.write_register(reg, value)?;
+            println!("Wrote register {:?}={}", reg, value);
+            continue;
         }
+        if let Some(reg) = parse_reg(reg) {
+            println!(
+                "Register {:?} (0x{:02x?}) = {}",
+                reg,
+                reg as u8,
+                hps.read_register(reg)?
+            );
+            continue;
+        }
+        bail!(
+            "Expected REG or REG[READLEN] or REG=VALUE, but found `{}`",
+            reg
+        )
     }
     Ok(())
 }
 
-fn parse_long_reg_spec(spec: &str) -> Option<(u8, usize)> {
+fn parse_long_reg_spec(spec: &str) -> Option<(Register, usize)> {
     let mut parts = spec.split('[');
-    let register = parts.next()?.parse::<u8>().ok()?;
+    let register = parse_reg(parts.next()?)?;
     let length = parts.next()?.split(']').next()?.parse::<usize>().ok()?;
     Some((register, length))
+}
+
+fn parse_reg_write(s: &str) -> Option<(Register, u16)> {
+    let mut parts = s.split('=');
+    let register = parse_reg(parts.next()?)?;
+    let value = parts.next()?.parse::<u16>().ok()?;
+    Some((register, value))
+}
+
+fn parse_reg(s: &str) -> Option<Register> {
+    s.parse::<u8>().ok()?.try_into().ok()
 }
 
 fn stress_test(hps: &mut dyn Hps, config: &StressTest) -> Result<()> {
@@ -189,7 +207,7 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         // TODO(quasisec): Allow parsing a slice of tuples of (reg, val) pairs.
         if let Some(reg) = &flags.fake_reg {
             let v = reg.parse::<i16>()?;
-            fhps.write_register(registers::USER_PRESENT_STATUS, v as u16)?;
+            fhps.write_register(Register::UserPresentStatus, v as u16)?;
         };
         return Ok(Box::new(fhps));
     }

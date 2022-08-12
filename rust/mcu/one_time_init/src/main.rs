@@ -16,7 +16,7 @@ use hal::stm32::RTC;
 use i2c_protocol::Event;
 use i2c_protocol::I2cProtocolHandler;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
 use mcu_common::OptionBytesConfigRequest;
@@ -140,8 +140,8 @@ impl State {
                     .read_register(event.register)
                     .unwrap_or(0);
                 let result = match event.register {
-                    registers::SYSTEM_STATUS => common_value | Status::ONE_TIME_INIT.bits(),
-                    registers::CONFIGURE_OPTION_BYTES => {
+                    Register::SystemStatus => common_value | Status::ONE_TIME_INIT.bits(),
+                    Register::ConfigurationOptionBytes => {
                         self.read_applied_option_byte_settings().bits()
                     }
                     _ => common_value,
@@ -149,7 +149,7 @@ impl State {
                 event.respond_u16(result, &mut self.protocol_handler);
             }
             Event::WriteRegister(event) => match event.register {
-                registers::CONFIGURE_OPTION_BYTES => {
+                Register::ConfigurationOptionBytes => {
                     let request = OptionBytesConfigRequest::from_bits(event.value)
                         .ok_or(Error::HostI2cBadRequest)?;
                     configure_option_bytes(&mut self.flash, request)?;
@@ -157,7 +157,7 @@ impl State {
                         reset_reloading_option_bytes(&mut self.rtc, &mut self.pwr, &mut self.scb);
                     }
                 }
-                registers::COMMAND => match Command::try_from(event.value) {
+                Register::Command => match Command::try_from(event.value) {
                     Ok(Command::Reset) => cortex_m::peripheral::SCB::sys_reset(),
                     _ => return Err(Error::HostI2cBadRequest),
                 },

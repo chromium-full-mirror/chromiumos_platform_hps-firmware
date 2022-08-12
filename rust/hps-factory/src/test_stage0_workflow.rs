@@ -16,7 +16,7 @@ use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Error;
 use mcu_common::Status;
 use mcu_common::FLASH_WRITE_SZ;
@@ -104,14 +104,20 @@ where
 
     fn test_read_invalid_register(&mut self) {
         let mut hps = self.reset_hps().unwrap();
-        let response = hps.read_register_bytes(0x79, 64).unwrap();
+        let command = [0x79 | 0x80]; // non-existent register 0x79
+        let response = hps.write_read_unchecked(&command, 64).unwrap();
         assert_eq!(hps.error().unwrap(), Error::None);
         assert_eq!(response, [0; 64]);
     }
 
     fn test_write_invalid_register(&mut self) {
         let mut hps = self.reset_hps().unwrap();
-        hps.write_register(0x79, 10).unwrap();
+        let bytes = [
+            0x79 | 0x80, // non-existent register 0x79
+            0x00,
+            0x0a,
+        ];
+        hps.write_unchecked(&bytes).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
@@ -134,7 +140,7 @@ where
 
     fn test_invalid_command(&mut self) {
         let mut hps = self.reset_hps().unwrap();
-        hps.write_register(registers::COMMAND, 12345).unwrap();
+        hps.write_register(Register::Command, 12345).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 

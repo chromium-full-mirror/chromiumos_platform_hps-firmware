@@ -10,7 +10,7 @@ use anyhow::Result;
 pub use fake_hps::FakeHps;
 use fpga_app::Features;
 use hps_interface::Hps;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::OptionBytesConfigRequest;
 pub use send_i2c::SendI2c;
 
@@ -27,7 +27,7 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
         hps_interface::Stage::Stage0 => {
             println!(
                 "Stage0 version: 0x{:x}",
-                hps.read_register(registers::HARDWARE_VERSION)?
+                hps.read_register(Register::HardwareVersion)?
             );
         }
         hps_interface::Stage::Stage1 => {
@@ -37,32 +37,32 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
             }
             println!(
                 "Stage1 version: 0x{:x}",
-                ((hps.read_register(registers::FIRMWARE_VERSION_HIGH)? as u32) << 16)
-                    | hps.read_register(registers::FIRMWARE_VERSION_LOW)? as u32
+                ((hps.read_register(Register::FirmwareVersionHigh)? as u32) << 16)
+                    | hps.read_register(Register::FirmwareVersionLow)? as u32
             );
             println!("{}", hps.read_part_ids()?);
         }
         hps_interface::Stage::Application => {
             println!(
                 "FPGA boot count: {}",
-                hps.read_register(registers::FPGA_BOOT_COUNT)?
+                hps.read_register(Register::FpgaBootCount)?
             );
             println!(
                 "FPGA loop count: {}",
-                hps.read_register(registers::FPGA_LOOP_COUNT)?
+                hps.read_register(Register::FpgaLoopCount)?
             );
             println!(
                 "Enabled features: {:?}",
-                Features::from_bits_truncate(hps.read_register(registers::ENABLED_FEATURES)?)
+                Features::from_bits_truncate(hps.read_register(Register::EnabledFeatures)?)
             );
-            print_model_score(hps, registers::USER_PRESENT_STATUS, "Presence status")?;
-            print_model_score(hps, registers::SECOND_PERSON_STATUS, "SPA status")?;
+            print_model_score(hps, Register::UserPresentStatus, "Presence status")?;
+            print_model_score(hps, Register::SecondPersonStatus, "SPA status")?;
         }
         hps_interface::Stage::OneTimeInit => {
             println!(
                 "Configured options: {:?}",
                 OptionBytesConfigRequest::from_bits_truncate(
-                    hps.read_register(registers::CONFIGURE_OPTION_BYTES)?
+                    hps.read_register(Register::ConfigurationOptionBytes)?
                 )
             );
         }
@@ -70,7 +70,7 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
     Ok(())
 }
 
-fn print_model_score(hps: &mut dyn Hps, register: u8, description: &str) -> Result<()> {
+fn print_model_score(hps: &mut dyn Hps, register: Register, description: &str) -> Result<()> {
     let raw_value = hps.read_register(register)?;
     print!("{}: 0x{:04x} (", description, raw_value);
     if raw_value & 0x8000 == 0 {

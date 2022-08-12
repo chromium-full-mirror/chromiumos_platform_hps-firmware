@@ -12,7 +12,7 @@ use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::Hps;
 use log::info;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::OptionBytesConfigRequest;
 use mcu_common::Status;
 use std::fmt::Display;
@@ -40,7 +40,7 @@ where
         return Ok(());
     }
 
-    let stage0_version = i2c.open_hps()?.read_register(registers::HARDWARE_VERSION)?;
+    let stage0_version = i2c.open_hps()?.read_register(Register::HardwareVersion)?;
     let one_time_init_bytes = if stage0_version == 0x0101 {
         info!("Old version of stage0. Loading legacy one_time_init_loader.");
         crate::firmware::ONE_TIME_INIT_LOADER_LEGACY_BYTES
@@ -76,7 +76,7 @@ where
     let mut hps = i2c.open_hps()?;
     hps.check_errors()?;
     let current_options = OptionBytesConfigRequest::from_bits_truncate(
-        hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
+        hps.read_register(Register::ConfigurationOptionBytes)?,
     );
     if current_options.contains(OptionBytesConfigRequest::RDP2) {
         info!("Stage0 is permanently locked and cannot be erased.");
@@ -90,7 +90,7 @@ where
         // special remove-write-protection command in one_time_init.
         info!("Stage0 is write protected with no RDP. Temporarily applying RDP1.");
         hps.write_register(
-            registers::CONFIGURE_OPTION_BYTES,
+            Register::ConfigurationOptionBytes,
             (OptionBytesConfigRequest::RDP1 | OptionBytesConfigRequest::RELOAD).bits(),
         )?;
         i2c.execute_non_i2c_stage1()
@@ -98,7 +98,7 @@ where
         hps = i2c.open_hps()?;
     }
     hps.write_register(
-        registers::CONFIGURE_OPTION_BYTES,
+        Register::ConfigurationOptionBytes,
         (OptionBytesConfigRequest::ERASE | OptionBytesConfigRequest::RELOAD).bits(),
     )?;
     i2c.open_bootloader()

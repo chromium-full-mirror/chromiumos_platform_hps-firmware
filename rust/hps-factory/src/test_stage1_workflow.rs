@@ -15,7 +15,7 @@ use hps_interface::Stage;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Error;
 
 pub(crate) struct Stage1Tester<'a, I> {
@@ -58,14 +58,19 @@ where
 
     fn test_read_invalid_register(&mut self) {
         let mut hps = self.reset_to_stage1().unwrap();
-        let response = hps.read_register_bytes(0x79, 64).unwrap();
+        let command = [0x79 | 0x80]; // non-existent register 0x79
+        let response = hps.write_read_unchecked(&command, 64).unwrap();
         assert_eq!(hps.error().unwrap(), Error::None);
         assert_eq!(response, [0; 64]);
     }
 
     fn test_write_invalid_register(&mut self) {
         let mut hps = self.reset_to_stage1().unwrap();
-        hps.write_register(0x79, 10).unwrap();
+        let bytes = [
+            0x79 | 0x80, // non-existent register 0x79
+            10,
+        ];
+        hps.write_unchecked(&bytes).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 
@@ -92,7 +97,7 @@ where
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
 
         let mut hps = self.reset_to_stage1().unwrap();
-        hps.write_register(registers::COMMAND, 255).unwrap();
+        hps.write_register(Register::Command, 255).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
     }
 

@@ -20,7 +20,7 @@ use linux_embedded_hal::Delay;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::APPLICATION_START_ADDRESS;
 use mcu_common::APPLICATION_VECTOR_TABLE_ADDRESS;
 use mcu_common::HPS_ADDRESS;
@@ -252,7 +252,7 @@ where
         }
         let start = Instant::now();
         loop {
-            if hps.read_register(registers::FPGA_BOOT_COUNT)? > 0 {
+            if hps.read_register(Register::FpgaBootCount)? > 0 {
                 break;
             }
             if start.elapsed() > FPGA_START_TIMEOUT {

@@ -7,6 +7,7 @@
 use i2c_peripheral::I2cError;
 use i2c_peripheral::I2cEvent;
 use i2c_peripheral::I2cPeripheral;
+use mcu_common::registers::Register;
 use mcu_common::Buffer;
 use mcu_common::Error;
 use mcu_common::MemBlock;
@@ -23,12 +24,12 @@ pub enum Event {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct ReadRegisterEvent {
-    pub register: u8,
+    pub register: Register,
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct WriteRegisterEvent {
-    pub register: u8,
+    pub register: Register,
     pub value: u16,
 }
 
@@ -65,7 +66,7 @@ enum State {
     Initial,
     /// In this state, we've received a register number. We don't yet know if
     /// we'll be reading or writing the register.
-    AccessingRegister(u8),
+    AccessingRegister(Register),
     /// We special-case there being a single byte to send, since it allows us to
     /// send 16 bit registers without needing a buffer.
     SendByteQueued(u8),
@@ -102,7 +103,7 @@ struct MemoryBankWriteState {
 }
 
 struct WriteRegisterState {
-    register: u8,
+    register: Register,
     /// The first byte of the value. Once we get the second byte, we're done, so
     /// exit this state.
     first_value_byte: u8,
@@ -188,7 +189,12 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                         // We've received our first byte. Determine if it's a
                         // register access or a memory bank access.
                         if (byte & 0x80) == 0x80 {
-                            self.state = State::AccessingRegister(byte & 0x7f);
+                            if let Ok(reg) = (byte & 0x7f).try_into() {
+                                self.state = State::AccessingRegister(reg);
+                            } else {
+                                // Non-existent register
+                                self.state = State::Invalid;
+                            }
                         } else if (byte & 0xc0) == 0x40 {
                             // Invalid bit pattern
                             self.state = State::Invalid;
@@ -337,7 +343,7 @@ mod tests {
         assert_eq!(
             protocol_handler.next_event(),
             Ok(Event::WriteRegister(WriteRegisterEvent {
-                register: 0x9,
+                register: Register::SecondPersonStatus,
                 value: 0x5ab,
             }))
         );
@@ -348,13 +354,13 @@ mod tests {
     fn test_read_register() {
         let i2c = FakeI2cPeripheral::new(|mut device| {
             let mut out = [0u8; 2];
-            device.write_read(1, &[0xff], &mut out).unwrap();
+            device.write_read(1, &[0x82], &mut out).unwrap();
             assert_eq!(out, [0x12, 0x34])
         });
         let mut protocol_handler = I2cProtocolHandler::new(i2c);
         match protocol_handler.next_event() {
             Ok(Event::ReadRegister(event)) => {
-                assert_eq!(event.register, 0x7f);
+                assert_eq!(event.register, Register::SystemStatus);
                 event.respond_u16(0x1234, &mut protocol_handler);
             }
             x => panic!("Unexpected event {:?}", x),

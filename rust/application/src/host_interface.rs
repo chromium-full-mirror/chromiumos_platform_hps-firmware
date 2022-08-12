@@ -10,7 +10,7 @@ use i2c_protocol::WriteMemoryEvent;
 use log::error;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Buffer;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
@@ -144,22 +144,22 @@ impl<I: I2cPeripheral> HostInterface<I> {
             .read_register(event.register)
             .unwrap_or(0);
         let result = match event.register {
-            registers::SYSTEM_STATUS => common_value | self.status().bits(),
-            registers::USER_PRESENT_STATUS => state.status.person_status,
-            registers::SECOND_PERSON_STATUS => state.status.second_person_status,
-            registers::MEMORY_BANK_AVAILABLE => {
+            Register::SystemStatus => common_value | self.status().bits(),
+            Register::UserPresentStatus => state.status.person_status,
+            Register::SecondPersonStatus => state.status.second_person_status,
+            Register::MemoryBankAvailable => {
                 if !self.spi_flash_erasing && self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)
                 } else {
                     0
                 }
             }
-            registers::ENABLED_FEATURES => state.status.enabled_features,
-            registers::FPGA_BOOT_COUNT => state.fpga_boot_count.0,
-            registers::FPGA_LOOP_COUNT => state.status.loop_count,
-            registers::FPGA_ROM_VERSION => state.fpga_rom_version as u16,
-            registers::SPI_FLASH_STATUS => self.spi_flash_status,
-            registers::PART_IDS => {
+            Register::EnabledFeatures => state.status.enabled_features,
+            Register::FpgaBootCount => state.fpga_boot_count.0,
+            Register::FpgaLoopCount => state.status.loop_count,
+            Register::FpgaRomVersion => state.fpga_rom_version as u16,
+            Register::SpiFlashStatus => self.spi_flash_status,
+            Register::PartIds => {
                 if let Some(mem_block) = self.protocol_handler.take_mem_block() {
                     let mut buffer = Buffer::new(mem_block);
                     if self.part_ids.write_to_buffer(&mut buffer).is_ok() {
@@ -171,10 +171,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 // flash write in progress, then we return 0.
                 0
             }
-            registers::DEBUG_IDX_REG => self.trace.get_idx(),
-            registers::DEBUG_VAL_REG => self.trace.get_val(),
+            Register::DebugIndex => self.trace.get_idx(),
+            Register::DebugValue => self.trace.get_val(),
             #[cfg(feature = "image-transfer")]
-            registers::IMAGE_DATA_AVAILABLE => {
+            Register::ImageDataAvailable => {
                 if self.outgoing_image_data.is_some() {
                     1
                 } else {
@@ -182,17 +182,17 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 }
             }
             #[cfg(feature = "image-transfer")]
-            registers::IMAGE_DATA => {
+            Register::ImageData => {
                 if let Some(data) = self.outgoing_image_data.take() {
                     event.respond(data, &mut self.protocol_handler);
                     return;
                 }
                 0
             }
-            registers::CAMERA_TEST_ITERATIONS => state.camera_test_iterations,
-            registers::FIRMWARE_VERSION_HIGH => self.get_version_part(0),
-            registers::FIRMWARE_VERSION_LOW => self.get_version_part(2),
-            registers::PREVIOUS_CRASH => {
+            Register::CameraTestIterations => state.camera_test_iterations,
+            Register::FirmwareVersionHigh => self.get_version_part(0),
+            Register::FirmwareVersionLow => self.get_version_part(2),
+            Register::PreviousCrash => {
                 if let Some(report) = self.previous_crash.take() {
                     event.respond(report, &mut self.protocol_handler);
                     return;
@@ -206,12 +206,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
 
     fn write_register(
         &mut self,
-        register: u8,
+        register: Register,
         value: u16,
         state: &mut ApplicationState,
     ) -> Option<Event> {
         match register {
-            registers::COMMAND => {
+            Register::Command => {
                 if let Ok(command) = Command::try_from(value) {
                     self.command_triggered();
                     return Some(Event::Command(command));
@@ -219,13 +219,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     self.report_error(Error::HostI2cBadRequest);
                 }
             }
-            registers::ENABLED_FEATURES => {
+            Register::EnabledFeatures => {
                 state.configuration.enabled_features = value;
             }
-            registers::CAMERA_CONFIG => {
+            Register::CameraConfig => {
                 state.configuration.camera_config = value;
             }
-            registers::CAMERA_TEST_ITERATIONS => {
+            Register::CameraTestIterations => {
                 state.camera_test_iterations = value;
                 return Some(Event::TestCameraI2c);
             }
@@ -332,7 +332,7 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::SYSTEM_STATUS).unwrap(),
+                    hps.read_register(Register::SystemStatus).unwrap(),
                     (Status::OK | Status::STAGE1).bits()
                 );
             }),
@@ -379,8 +379,7 @@ mod tests {
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
-                hps.write_register(registers::ENABLED_FEATURES, 1234)
-                    .unwrap();
+                hps.write_register(Register::EnabledFeatures, 1234).unwrap();
             }),
             &HEADER,
         );
@@ -396,7 +395,7 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x8055
                 );
             }),
@@ -413,7 +412,7 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x80AB
                 );
             }),
@@ -430,7 +429,7 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::USER_PRESENT_STATUS).unwrap() as u16,
+                    hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x00AB
                 );
             }),
@@ -447,7 +446,7 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::SECOND_PERSON_STATUS).unwrap() as u16,
+                    hps.read_register(Register::SecondPersonStatus).unwrap() as u16,
                     0x807A
                 );
             }),
@@ -463,11 +462,11 @@ mod tests {
             FakeI2cPeripheral::new(|device| {
                 let mut hps = HpsAdapter::without_magic_check(device);
                 assert_eq!(
-                    hps.read_register(registers::FIRMWARE_VERSION_LOW).unwrap() as u16,
+                    hps.read_register(Register::FirmwareVersionLow).unwrap() as u16,
                     0x0304
                 );
                 assert_eq!(
-                    hps.read_register(registers::FIRMWARE_VERSION_HIGH).unwrap() as u16,
+                    hps.read_register(Register::FirmwareVersionHigh).unwrap() as u16,
                     0x0102
                 );
             }),

@@ -2,92 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/// RO: A magic value that can help to confirm that the device is a HPS.
-pub const MAGIC: u8 = 0;
+use num_enum::TryFromPrimitive;
 
-/// RO: Hardware + stage0 version.
-pub const HARDWARE_VERSION: u8 = 1;
+#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive)]
+#[repr(u8)]
+pub enum Register {
+    /// RO: A magic value that can help to confirm that the device is a HPS.
+    Magic = 0,
 
-/// RO: System status.
-pub const SYSTEM_STATUS: u8 = 2;
+    /// RO: Hardware + stage0 version.
+    HardwareVersion = 1,
 
-/// WO: Performs a system command.
-pub const COMMAND: u8 = 3;
+    /// RO: System status.
+    SystemStatus = 2,
 
-/// RO: Application version
-pub const APPLICATION_VERSION: u8 = 4;
+    /// WO: Performs a system command.
+    Command = 3,
 
-/// RO: Which memory banks can currently be written.
-pub const MEMORY_BANK_AVAILABLE: u8 = 5;
+    /// RO: Application version
+    ApplicationVersion = 4,
 
-/// RO: The first error that has occurred, if any. See errors.rs for values.
-pub const ERROR: u8 = 6;
+    /// RO: Which memory banks can currently be written.
+    MemoryBankAvailable = 5,
 
-/// WO: Which application features are enabled.
-pub const ENABLED_FEATURES: u8 = 7;
+    /// RO: The first error that has occurred, if any. See errors.rs for values.
+    Error = 6,
 
-/// RO: Person detection status. See docs/host_device_i2c_protocol.md for
-/// breakdown of individual bits.
-pub const USER_PRESENT_STATUS: u8 = 8;
+    /// WO: Which application features are enabled.
+    EnabledFeatures = 7,
 
-/// RO: Second person detection status. See docs/host_device_i2c_protocol.md for
-/// breakdown of individual bits.
-pub const SECOND_PERSON_STATUS: u8 = 9;
+    /// RO: Person detection status. See docs/host_device_i2c_protocol.md for
+    /// breakdown of individual bits.
+    UserPresentStatus = 8,
 
-/// RO: Version register for hpsd.
-pub const FIRMWARE_VERSION_HIGH: u8 = 10;
-pub const FIRMWARE_VERSION_LOW: u8 = 11;
+    /// RO: Second person detection status. See docs/host_device_i2c_protocol.md for
+    /// breakdown of individual bits.
+    SecondPersonStatus = 9,
 
-/// RO: Number of times the FPGA soft CPU has reported to us that it's starting.
-pub const FPGA_BOOT_COUNT: u8 = 12;
+    /// RO: Version register for hpsd.
+    FirmwareVersionHigh = 10,
+    FirmwareVersionLow = 11,
 
-/// RO: Number of times the FPGA soft CPU has run its main loop (since it last
-/// booted).
-pub const FPGA_LOOP_COUNT: u8 = 13;
+    /// RO: Number of times the FPGA soft CPU has reported to us that it's starting.
+    FpgaBootCount = 12,
 
-/// RO: FPGA ROM version. This version has no semantic meaning. It is
-/// incremented at the whim of developers and is mostly for debugging purposes.
-pub const FPGA_ROM_VERSION: u8 = 14;
+    /// RO: Number of times the FPGA soft CPU has run its main loop (since it last
+    /// booted).
+    FpgaLoopCount = 13,
 
-/// RO: SPI flash status registers as read at startup.
-pub const SPI_FLASH_STATUS: u8 = 15;
+    /// RO: FPGA ROM version. This version has no semantic meaning. It is
+    /// incremented at the whim of developers and is mostly for debugging purposes.
+    FpgaRomVersion = 14,
 
-/// RO: Debug tracing registers.
-pub const DEBUG_IDX_REG: u8 = 16;
-pub const DEBUG_VAL_REG: u8 = 17;
+    /// RO: SPI flash status registers as read at startup.
+    SpiFlashStatus = 15,
 
-/// RO: Configuration bits for camera.
-pub const CAMERA_CONFIG: u8 = 18;
+    /// RO: Debug tracing registers.
+    DebugIndex = 16,
+    DebugValue = 17,
 
-/// RW: Number of camera communication test iterations to perform. Write a
-/// non-zero value then wait until the value read reaches zero. If any
-/// communication errors occur, the camera error bit will be set.
-pub const CAMERA_TEST_ITERATIONS: u8 = 19;
+    /// RO: Configuration bits for camera.
+    CameraConfig = 18,
 
-/// RW: Encoded OptionBytesConfigRequest. Supported by the one_time_init binary.
-/// Writing a request to this register initializes the flash option bytes.
-/// Reading this register, returns which configuration options have already been
-/// applied.
-pub const CONFIGURE_OPTION_BYTES: u8 = 20;
+    /// RW: Number of camera communication test iterations to perform. Write a
+    /// non-zero value then wait until the value read reaches zero. If any
+    /// communication errors occur, the camera error bit will be set.
+    CameraTestIterations = 19,
 
-/// RO: Part IDs. This register contains the content of the PartIds struct.
-pub const PART_IDS: u8 = 21;
+    /// RW: Encoded OptionBytesConfigRequest. Supported by the one_time_init binary.
+    /// Writing a request to this register initializes the flash option bytes.
+    /// Reading this register, returns which configuration options have already been
+    /// applied.
+    ConfigurationOptionBytes = 20,
 
-/// RO: A crash report from the previous boot. Maximum length is 256 bytes.
-/// Payload is everything prior to the first null byte. Reading this register
-/// clears it.
-pub const PREVIOUS_CRASH: u8 = 22;
+    /// RO: Part IDs. This register contains the content of the PartIds struct.
+    PartIds = 21,
 
-#[cfg(feature = "dev")]
-pub mod dev {
+    /// RO: A crash report from the previous boot. Maximum length is 256 bytes.
+    /// Payload is everything prior to the first null byte. Reading this register
+    /// clears it.
+    PreviousCrash = 22,
+
     /// RO: Reads will be sufficiently slow to cause an underrun.
-    pub const SLOW_READ: u8 = 100;
+    #[cfg(feature = "dev")]
+    SlowRead = 100,
+
+    /// RO: Whether there's a block of image data available to read.
+    #[cfg(feature = "image-transfer")]
+    ImageDataAvailable = 101,
+
+    /// RO: Image data. Always 63 bytes.
+    #[cfg(feature = "image-transfer")]
+    ImageData = 102,
 }
-
-/// RO: Whether there's a block of image data available to read.
-#[cfg(feature = "image-transfer")]
-pub const IMAGE_DATA_AVAILABLE: u8 = 101;
-
-/// RO: Image data. Always 63 bytes.
-#[cfg(feature = "image-transfer")]
-pub const IMAGE_DATA: u8 = 102;

@@ -5,7 +5,7 @@
 use anyhow::Result;
 use fpga_app::Features;
 use hps_interface::Hps;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use std::fmt::Display;
 use std::io::Write;
 use std::time::Instant;
@@ -15,7 +15,7 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
 
     // Configure enabled features.
     let enabled_features = Features::MODEL1 | Features::MODEL2;
-    hps.write_register(registers::ENABLED_FEATURES, enabled_features.bits())?;
+    hps.write_register(Register::EnabledFeatures, enabled_features.bits())?;
 
     let mut last_loop_counter = 0;
 
@@ -28,7 +28,7 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
         // Wait until the FPGA completes a loop.
         let start = Instant::now();
         loop {
-            let loop_counter = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+            let loop_counter = hps.read_register(Register::FpgaLoopCount)?;
             if loop_counter != last_loop_counter {
                 last_loop_counter = loop_counter;
                 break;
@@ -36,8 +36,8 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
         }
         latencies.push(start.elapsed().as_millis());
 
-        let model1 = ModelOutput::from_u16(hps.read_register(registers::USER_PRESENT_STATUS)?);
-        let model2 = ModelOutput::from_u16(hps.read_register(registers::SECOND_PERSON_STATUS)?);
+        let model1 = ModelOutput::from_u16(hps.read_register(Register::UserPresentStatus)?);
+        let model2 = ModelOutput::from_u16(hps.read_register(Register::SecondPersonStatus)?);
 
         if model1 != prev_model1 {
             prev_model1 = model1;

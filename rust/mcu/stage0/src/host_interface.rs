@@ -8,7 +8,7 @@ use i2c_protocol::I2cProtocolHandler;
 use libstage0::WriteProtectState;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Buffer;
 use mcu_common::CommonHostInterface;
 use mcu_common::Error;
@@ -63,14 +63,14 @@ impl<I: I2cPeripheral> HostInterface<I> {
                     .common_interface
                     .read_register(event.register)
                     .map(|common_value| match event.register {
-                        registers::SYSTEM_STATUS => {
+                        Register::SystemStatus => {
                             common_value | (Status::STAGE0 | self.get_fw_wp_status()).bits()
                         }
                         _ => common_value,
                     })
                     .unwrap_or_else(|| match event.register {
-                        registers::HARDWARE_VERSION => libstage0::COMBINED_VERSION,
-                        registers::MEMORY_BANK_AVAILABLE => {
+                        Register::HardwareVersion => libstage0::COMBINED_VERSION,
+                        Register::MemoryBankAvailable => {
                             if self.i2c.has_receive_buffer() {
                                 1 << memory_banks::MCU_RW
                             } else {
@@ -82,7 +82,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 event.respond_u16(result, &mut self.i2c);
             }
             Ok(i2c_protocol::Event::WriteRegister(event)) => match event.register {
-                registers::COMMAND => {
+                Register::Command => {
                     if let Ok(command) = Command::try_from(event.value) {
                         return Some(HostEvent::Command(command));
                     } else {

@@ -5,7 +5,7 @@
 //! Enable the feature `dev` to get features that are only useful for
 //! development and testing purposes.
 
-use crate::registers;
+use crate::registers::Register;
 use crate::Error;
 use crate::Status;
 use core::cell::UnsafeCell;
@@ -69,11 +69,11 @@ impl CommonHostInterface {
         Self::default()
     }
 
-    pub fn read_register(&self, register: u8) -> Option<u16> {
+    pub fn read_register(&self, register: Register) -> Option<u16> {
         Some(match register {
-            registers::MAGIC => crate::hps_magic_code(),
-            registers::ERROR => self.get_error().into(),
-            registers::SYSTEM_STATUS => {
+            Register::Magic => crate::hps_magic_code(),
+            Register::Error => self.get_error().into(),
+            Register::SystemStatus => {
                 if self.get_error() != Error::None {
                     Status::FAULT.bits()
                 } else {
@@ -102,17 +102,15 @@ impl CommonHostInterface {
     }
 
     #[cfg(feature = "dev")]
-    fn read_dev_register(&self, register: u8) -> Option<u16> {
+    fn read_dev_register(&self, register: Register) -> Option<u16> {
         Some(match register {
-            registers::dev::SLOW_READ => {
-                dev::fib(u16::from(self.get_error()).count_ones() as u16 + 20)
-            }
+            Register::SlowRead => dev::fib(u16::from(self.get_error()).count_ones() as u16 + 20),
             _ => return None,
         })
     }
 
     #[cfg(not(feature = "dev"))]
-    fn read_dev_register(&self, _: u8) -> Option<u16> {
+    fn read_dev_register(&self, _: Register) -> Option<u16> {
         None
     }
 }
@@ -137,21 +135,21 @@ mod tests {
     #[test]
     fn test_error_reporting() {
         let mut interface = CommonHostInterface::new();
-        assert_eq!(interface.read_register(registers::ERROR), Some(0));
+        assert_eq!(interface.read_register(Register::Error), Some(0));
         assert_eq!(
-            interface.read_register(registers::SYSTEM_STATUS),
+            interface.read_register(Register::SystemStatus),
             Some(Status::OK.bits())
         );
         interface.report_error(Error::HostI2cOverrun);
         assert_eq!(
-            interface.read_register(registers::ERROR),
+            interface.read_register(Register::Error),
             Some(u16::from(Error::HostI2cOverrun))
         );
         // Reporting a second error has no effect, since only the first error
         // reported is known.
         interface.report_error(Error::HostI2cUnderrun);
         assert_eq!(
-            interface.read_register(registers::ERROR),
+            interface.read_register(Register::Error),
             Some(u16::from(Error::HostI2cOverrun))
         );
     }
@@ -159,7 +157,7 @@ mod tests {
     #[test]
     fn test_magic() {
         assert_eq!(
-            CommonHostInterface::new().read_register(registers::MAGIC),
+            CommonHostInterface::new().read_register(Register::Magic),
             Some(40434)
         );
     }

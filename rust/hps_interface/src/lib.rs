@@ -13,7 +13,7 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::PartIds;
 use mcu_common::Status;
 use mcu_common::HPS_ADDRESS;
@@ -37,9 +37,9 @@ pub enum Stage {
 }
 
 pub trait Hps {
-    fn read_register(&mut self, reg: u8) -> Result<u16>;
-    fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>>;
-    fn write_register(&mut self, reg: u8, value: u16) -> Result<()>;
+    fn read_register(&mut self, reg: Register) -> Result<u16>;
+    fn read_register_bytes(&mut self, reg: Register, length: usize) -> Result<Vec<u8>>;
+    fn write_register(&mut self, reg: Register, value: u16) -> Result<()>;
     fn write_memory(&mut self, bank: u8, address: u32, values: &[u8]) -> Result<()>;
 
     /// Sends an arbitrary write. Only used for testing invalid writes.
@@ -52,7 +52,7 @@ pub trait Hps {
     /// returned value isn't what's expected.
     fn check_magic(&mut self) -> Result<()> {
         let magic = self
-            .read_register(registers::MAGIC)
+            .read_register(Register::Magic)
             .context("Failed to read magic register")?;
         let expected = mcu_common::hps_magic_code();
         if magic != expected {
@@ -69,7 +69,7 @@ pub trait Hps {
     /// version returned is the software version - e.g. 3 or 4, not the full
     /// version, e.g. 0x0103.
     fn stage0_version(&mut self) -> Result<u8> {
-        let version = self.read_register(registers::HARDWARE_VERSION)?;
+        let version = self.read_register(Register::HardwareVersion)?;
         if version == 0 {
             bail!(
                 "Failed to read stage0 version. Currently in stage: {:?}",
@@ -80,7 +80,7 @@ pub trait Hps {
     }
 
     fn status(&mut self) -> Result<Status> {
-        Status::from_bits(self.read_register(registers::SYSTEM_STATUS)?)
+        Status::from_bits(self.read_register(Register::SystemStatus)?)
             .ok_or_else(|| anyhow!("Invalid status bits"))
     }
 
@@ -101,16 +101,16 @@ pub trait Hps {
 
     fn firmware_version(&mut self) -> Result<[u8; 4]> {
         let low = self
-            .read_register(registers::FIRMWARE_VERSION_LOW)?
+            .read_register(Register::FirmwareVersionLow)?
             .to_be_bytes();
         let high = self
-            .read_register(registers::FIRMWARE_VERSION_HIGH)?
+            .read_register(Register::FirmwareVersionHigh)?
             .to_be_bytes();
         Ok([high[0], high[1], low[0], low[1]])
     }
 
     fn perform_command(&mut self, command: Command) -> Result<()> {
-        self.write_register(registers::COMMAND, command.into())
+        self.write_register(Register::Command, command.into())
     }
 
     fn launch_app(&mut self) -> Result<()> {
@@ -123,7 +123,7 @@ pub trait Hps {
         }
         let start = Instant::now();
         loop {
-            if self.read_register(registers::FPGA_BOOT_COUNT)? > 0 {
+            if self.read_register(Register::FpgaBootCount)? > 0 {
                 break;
             }
             if start.elapsed() > FPGA_START_TIMEOUT {
@@ -138,11 +138,11 @@ pub trait Hps {
     }
 
     fn set_feature_enable(&mut self, value: u16) -> Result<()> {
-        self.write_register(registers::ENABLED_FEATURES, value)
+        self.write_register(Register::EnabledFeatures, value)
     }
 
     fn is_memory_bank_available(&mut self, memory_bank: u8) -> bool {
-        if let Ok(available) = self.read_register(registers::MEMORY_BANK_AVAILABLE) {
+        if let Ok(available) = self.read_register(Register::MemoryBankAvailable) {
             if available & (1 << memory_bank) != 0 {
                 return true;
             }
@@ -151,14 +151,13 @@ pub trait Hps {
     }
 
     fn read_part_ids(&mut self) -> Result<PartIds> {
-        let bytes =
-            self.read_register_bytes(registers::PART_IDS, core::mem::size_of::<PartIds>())?;
+        let bytes = self.read_register_bytes(Register::PartIds, core::mem::size_of::<PartIds>())?;
         Ok(PartIds::from_bytes(&bytes)?)
     }
 
     fn crash_report(&mut self) -> Result<String> {
         let mut bytes =
-            self.read_register_bytes(registers::PREVIOUS_CRASH, mcu_common::MCU_CRASH_RECORD_SIZE)?;
+            self.read_register_bytes(Register::PreviousCrash, mcu_common::MCU_CRASH_RECORD_SIZE)?;
         if let Some(null_offset) = bytes.iter().position(|b| *b == 0) {
             bytes.truncate(null_offset);
         }
@@ -222,12 +221,12 @@ pub trait Hps {
     }
 
     fn error(&mut self) -> Result<mcu_common::Error> {
-        mcu_common::Error::try_from(self.read_register(registers::ERROR)?)
+        mcu_common::Error::try_from(self.read_register(Register::Error)?)
             .map_err(|_| anyhow!("Errors register contained unknown error"))
     }
 
     fn check_errors(&mut self) -> Result<()> {
-        match self.read_register(registers::ERROR)? {
+        match self.read_register(Register::Error)? {
             0 => Ok(()),
             value => match mcu_common::Error::try_from(value) {
                 Ok(errors) => bail!("HPS reports error: {:?}", errors),
@@ -289,21 +288,21 @@ where
     I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
     E: std::error::Error + Send + Sync + 'static,
 {
-    fn read_register(&mut self, reg: u8) -> Result<u16> {
+    fn read_register(&mut self, reg: Register) -> Result<u16> {
         let mut buffer = [0u8; 2];
         self.sink
             .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
         Ok(((buffer[0] as u16) << 8) | (buffer[1] as u16))
     }
 
-    fn read_register_bytes(&mut self, reg: u8, length: usize) -> Result<Vec<u8>> {
+    fn read_register_bytes(&mut self, reg: Register, length: usize) -> Result<Vec<u8>> {
         let mut buffer = vec![0u8; length];
         self.sink
             .write_read(HPS_ADDRESS, &[register_access_command(reg)], &mut buffer)?;
         Ok(buffer)
     }
 
-    fn write_register(&mut self, reg: u8, value: u16) -> Result<()> {
+    fn write_register(&mut self, reg: Register, value: u16) -> Result<()> {
         let buffer = [
             register_access_command(reg),
             (value >> 8) as u8,
@@ -383,8 +382,8 @@ where
     }
 }
 
-fn register_access_command(reg: u8) -> u8 {
-    reg | 0x80
+fn register_access_command(reg: Register) -> u8 {
+    reg as u8 | 0x80
 }
 
 #[cfg(test)]
@@ -398,11 +397,11 @@ mod tests {
     fn read_register() {
         let mut i2c = I2cProtocolHandler::new(FakeI2cPeripheral::new(|dev| {
             let mut hps = HpsAdapter::without_magic_check(dev);
-            assert_eq!(hps.read_register(42).unwrap(), 99);
+            assert_eq!(hps.read_register(Register::EnabledFeatures).unwrap(), 99);
         }));
         match i2c.next_event() {
             Ok(Event::ReadRegister(event)) => {
-                assert_eq!(event.register, 42);
+                assert_eq!(event.register, Register::EnabledFeatures);
                 event.respond_u16(99, &mut i2c);
             }
             event => panic!("Unexpected event {:?}", event),

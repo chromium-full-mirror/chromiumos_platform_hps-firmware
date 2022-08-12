@@ -19,7 +19,7 @@ use hps_interface::Stage;
 use indicatif::ProgressBar;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::OptionBytesConfigRequest;
 use mcu_common::Status;
 use mcu_common::APPLICATION_START_ADDRESS;
@@ -90,7 +90,7 @@ where
             if let Ok(mut hps) = i2c.open_hps() {
                 match hps.stage()? {
                     Stage::Stage0 => {
-                        let version = hps.read_register(registers::HARDWARE_VERSION)?;
+                        let version = hps.read_register(Register::HardwareVersion)?;
                         if self.write_stage0_config.check_version
                             && version == libstage0::COMBINED_VERSION
                         {
@@ -187,7 +187,7 @@ where
         info!("Configuring option bytes");
         let options = self.write_stage0_config.options() | OptionBytesConfigRequest::RELOAD;
 
-        hps.write_register(registers::CONFIGURE_OPTION_BYTES, options.bits())
+        hps.write_register(Register::ConfigurationOptionBytes, options.bits())
             .context("Failed to configure option bytes")?;
         // The configure option bytes request, assuming it succeeded, will have
         // reset the device, so we need to reopen it.
@@ -206,7 +206,7 @@ where
         self.i2c.execute_non_i2c_stage1()?;
         let mut hps = self.i2c.open_hps()?;
         let applied_options = OptionBytesConfigRequest::from_bits(
-            hps.read_register(registers::CONFIGURE_OPTION_BYTES)?,
+            hps.read_register(Register::ConfigurationOptionBytes)?,
         )
         .ok_or_else(|| anyhow!("Got invalid bits when reading applied options"))?;
         let options = self.write_stage0_config.options();

@@ -18,7 +18,7 @@ use hps_interface::Hps;
 use indicatif::ProgressBar;
 use log::info;
 use mcu_common::commands::Command;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::Status;
 
 pub(crate) struct PostInstallTester<'a, I> {
@@ -79,19 +79,19 @@ where
         let mut hps = self.i2c.open_hps()?;
         let bar = ProgressBar::new(self.config.fpga_mcu_iterations.into());
         hps.write_register(
-            registers::ENABLED_FEATURES,
+            Register::EnabledFeatures,
             Features::MCU_FPGA_COMM_TEST.bits(),
         )?;
         // Make sure the fpga_app has finished initializing and has started
         // executing the test loop, otherwise our timing will be out.
-        while hps.read_register(registers::FPGA_LOOP_COUNT)? < 5 {
+        while hps.read_register(Register::FpgaLoopCount)? < 5 {
             std::thread::sleep(Duration::from_millis(100));
         }
         let start = Instant::now();
-        let start_loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+        let start_loop_count = hps.read_register(Register::FpgaLoopCount)?;
         loop {
-            let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
-            let error_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
+            let loop_count = hps.read_register(Register::FpgaLoopCount)?;
+            let error_count = hps.read_register(Register::UserPresentStatus)?;
             if error_count > 0 {
                 bail!(
                     "Got {} errors after {} iterations of FPGA<->MCU comms test",
@@ -105,7 +105,7 @@ where
             }
             std::thread::sleep(Duration::from_millis(100));
         }
-        let final_loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
+        let final_loop_count = hps.read_register(Register::FpgaLoopCount)?;
         // Note, the * 2 is because each buffer gets transferred twice (from
         // FPGA->MCU then MCU->FPGA). There is some time spent by the FPGA
         // setting up the buffer then checking that the returned buffer is
@@ -144,15 +144,15 @@ where
         info!("Testing SPI flash reads from FPGA");
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
-            registers::ENABLED_FEATURES,
+            Register::EnabledFeatures,
             Features::SPI_FLASH_READ_TEST.bits(),
         )?;
         let bar = ProgressBar::new(self.config.fpga_spi_read_iterations.into());
         let mut last_report = Instant::now();
         let mut last_loop_count = 0;
         loop {
-            let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
-            let bad_byte_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
+            let loop_count = hps.read_register(Register::FpgaLoopCount)?;
+            let bad_byte_count = hps.read_register(Register::UserPresentStatus)?;
             if bad_byte_count > 0 {
                 bail!(
                     "FPGA got {} bad reads of SPI flash after {} iterations",
@@ -190,12 +190,12 @@ where
             .context("Failed to execute stage1")?;
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
-            registers::CAMERA_TEST_ITERATIONS,
+            Register::CameraTestIterations,
             self.config.camera_i2c_iterations,
         )?;
         let bar = ProgressBar::new(self.config.camera_i2c_iterations as u64);
         loop {
-            let remaining = hps.read_register(registers::CAMERA_TEST_ITERATIONS)?;
+            let remaining = hps.read_register(Register::CameraTestIterations)?;
             hps.check_errors()?;
             bar.set_position((self.config.camera_i2c_iterations - remaining) as u64);
             if remaining == 0 {
@@ -218,13 +218,10 @@ where
             .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
         let bar = ProgressBar::new(self.config.camera_data_bus_iterations.into());
-        hps.write_register(
-            registers::ENABLED_FEATURES,
-            Features::CAMERA_DATA_TEST.bits(),
-        )?;
+        hps.write_register(Register::EnabledFeatures, Features::CAMERA_DATA_TEST.bits())?;
         loop {
-            let loop_count = hps.read_register(registers::FPGA_LOOP_COUNT)?;
-            let error_count = hps.read_register(registers::USER_PRESENT_STATUS)?;
+            let loop_count = hps.read_register(Register::FpgaLoopCount)?;
+            let error_count = hps.read_register(Register::UserPresentStatus)?;
             if error_count > 0 {
                 bail!(
                     "Got {} errors after {} iterations of camera data test",

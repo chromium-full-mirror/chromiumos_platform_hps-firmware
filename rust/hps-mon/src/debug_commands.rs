@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 use mcu_common::commands;
-use mcu_common::registers;
+use mcu_common::registers::Register;
 use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
@@ -60,7 +60,7 @@ pub(crate) enum LocalOperation {
     I2cCommand(mcu_common::commands::Command),
     SetFeatureEnable,
     SleepMilliseconds,
-    SetI2cRegister(u8),
+    SetI2cRegister(Register),
 }
 
 #[derive(Clone, Copy)]
@@ -116,7 +116,7 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         keyword: "set_camera_config",
         help_text: "Set the camera configuration bits. e.g. 0=no rotation, 1=rotate clockwise",
         command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(
-            registers::CAMERA_CONFIG,
+            Register::CameraConfig,
         )),
         arg_parser: U16_ARG,
     },

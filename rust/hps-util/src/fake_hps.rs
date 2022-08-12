@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 use hps_interface::Hps;
+use mcu_common::registers::Register;
 use mcu_common::CommonHostInterface;
 
 #[derive(Default)]
 pub struct FakeHps {
     common: CommonHostInterface,
-    reg: Option<(u8, u16)>, // (reg, val).
+    reg: Option<(Register, u16)>, // (reg, val).
 }
 
 impl Hps for FakeHps {
-    fn read_register(&mut self, reg: u8) -> anyhow::Result<u16> {
+    fn read_register(&mut self, reg: Register) -> anyhow::Result<u16> {
         let ret = match self.reg {
             Some((r, v)) => {
                 if r == reg {
@@ -26,11 +27,11 @@ impl Hps for FakeHps {
         Ok(ret)
     }
 
-    fn read_register_bytes(&mut self, _reg: u8, _length: usize) -> anyhow::Result<Vec<u8>> {
+    fn read_register_bytes(&mut self, _reg: Register, _length: usize) -> anyhow::Result<Vec<u8>> {
         Ok(vec![])
     }
 
-    fn write_register(&mut self, reg: u8, value: u16) -> anyhow::Result<()> {
+    fn write_register(&mut self, reg: Register, value: u16) -> anyhow::Result<()> {
         self.reg = Some((reg, value));
         Ok(())
     }
