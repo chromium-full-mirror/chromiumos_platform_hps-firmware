@@ -64,7 +64,7 @@ fn transpose_320_240(arr: &mut [i8]) {
     }
 }
 
-/// Rotates a 240x320 image to produce a 320x230 image. The resulting image will
+/// Rotates a 240x320 image to produce a 320x240 image. The resulting image will
 /// be mirror-imaged, so it's recommended that input image be flipped vertically
 /// in hardware prior to passing to this function so that the output ends up the
 /// right way around.
