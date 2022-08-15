@@ -32,7 +32,10 @@ const _: () = {
     }
 };
 
-pub fn report_error(error: Error) {
+/// Store an error in the global error state. This is intended to be called from the NMI handler
+/// context, where there is no way to access normal RTIC-managed resources. Prefer to call
+/// CommonHostInterface::report_error() instead.
+pub fn report_global_error(error: Error) {
     // We only keep track of the first error reported. This is quite likely
     // to be the cause of any subsequent errors, so is the most important
     // one to track.
@@ -50,14 +53,16 @@ pub fn report_error(error: Error) {
     }
 }
 
-fn get_error() -> Error {
-    // Safety: reading the ERROR value compiles to a single load instruction, so we are guaranteed
-    // to always read a valid value even in the presence of preemption.
-    unsafe { *ERROR.0.get() }
+pub struct CommonHostInterface {
+    error: Error,
 }
 
-#[derive(Default)]
-pub struct CommonHostInterface {}
+// TODO(dcallagh): put #[default] on Error after Rust 1.62
+impl Default for CommonHostInterface {
+    fn default() -> Self {
+        CommonHostInterface { error: Error::None }
+    }
+}
 
 impl CommonHostInterface {
     pub fn new() -> Self {
@@ -67,9 +72,9 @@ impl CommonHostInterface {
     pub fn read_register(&self, register: u8) -> Option<u16> {
         Some(match register {
             registers::MAGIC => crate::hps_magic_code(),
-            registers::ERROR => get_error().into(),
+            registers::ERROR => self.get_error().into(),
             registers::SYSTEM_STATUS => {
-                if get_error() != Error::None {
+                if self.get_error() != Error::None {
                     Status::FAULT.bits()
                 } else {
                     Status::OK.bits()
@@ -80,17 +85,28 @@ impl CommonHostInterface {
     }
 
     pub fn report_error(&mut self, error: Error) {
-        report_error(error);
+        if self.error == Error::None {
+            self.error = error;
+        }
     }
 
     pub fn get_error(&self) -> Error {
-        get_error()
+        // Safety: reading the ERROR value compiles to a single load instruction, so we
+        // are guaranteed to always read a valid value even in the presence of preemption.
+        let global_error = unsafe { *ERROR.0.get() };
+        if global_error != Error::None {
+            global_error
+        } else {
+            self.error
+        }
     }
 
     #[cfg(feature = "dev")]
     fn read_dev_register(&self, register: u8) -> Option<u16> {
         Some(match register {
-            registers::dev::SLOW_READ => dev::fib(u16::from(get_error()).count_ones() as u16 + 20),
+            registers::dev::SLOW_READ => {
+                dev::fib(u16::from(self.get_error()).count_ones() as u16 + 20)
+            }
             _ => return None,
         })
     }
