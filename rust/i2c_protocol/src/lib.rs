@@ -79,11 +79,14 @@ enum State {
     /// We enter this state once we've receive the address and are receiving
     /// bytes to store into the memory bank.
     MemoryBankWrite(MemoryBankWriteState),
-    /// Once we've finished sending or writing the value of a register, or if we
-    /// get some invalid access, such as an attempt to read from a memory bank,
+    /// Once we've finished sending or writing the value of a register,
     /// we enter this state and just send zeros, while ignoring everything sent
     /// to us.
     Done,
+    /// If we receive some bytes that don't fit the protocol, we enter this state.
+    /// We will send zeroes, and ignore everything sent to us.
+    /// This also triggers a fault bit if we are sent any more bytes in this state.
+    Invalid,
 }
 
 struct MemoryBankAccessState {
@@ -146,6 +149,9 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     if let State::AccessingRegister(register) = self.state {
                         return Ok(Event::ReadRegister(ReadRegisterEvent { register }));
                     }
+                    // We need to send a byte back in response to StartRead. In any unexpected
+                    // state, just send zeroes.
+                    self.i2c.write_byte(0);
                 }
                 Ok(I2cEvent::StartWrite) => {
                     self.state = State::Initial;
@@ -181,11 +187,14 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                     State::Initial => {
                         // We've received our first byte. Determine if it's a
                         // register access or a memory bank access.
-                        if let Some(register) = register_from_byte(byte) {
-                            self.state = State::AccessingRegister(register);
-                        } else {
+                        if (byte & 0x80) == 0x80 {
+                            self.state = State::AccessingRegister(byte & 0x7f);
+                        } else if (byte & 0xc0) == 0x40 {
+                            // Invalid bit pattern
+                            self.state = State::Invalid;
+                        } else if (byte & 0xc0) == 0x00 {
                             self.state = State::MemoryBankAccess(MemoryBankAccessState {
-                                bank: byte,
+                                bank: byte & 0x3f,
                                 address_bytes: [0u8; 4],
                                 address_bytes_received: 0,
                             })
@@ -240,6 +249,10 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
                             return Err(Error::BufferOverrun);
                         }
                     }
+                    State::Invalid => {
+                        self.state = State::Done;
+                        return Err(Error::HostI2cBadRequest);
+                    }
                     _ => {}
                 },
                 Err(nb::Error::WouldBlock) => return Ok(Event::None),
@@ -271,21 +284,45 @@ impl<I: I2cPeripheral> I2cProtocolHandler<I> {
     }
 }
 
-/// Returns the register number represented by `byte` or None if the byte does
-/// not represent a register number.
-fn register_from_byte(byte: u8) -> Option<u8> {
-    if (byte & 0x80) != 0 {
-        Some(byte & 0x7f)
-    } else {
-        None
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use embedded_hal::blocking::i2c::WriteRead;
     use fake_i2c::FakeI2cPeripheral;
+
+    #[test]
+    fn test_write_with_invalid_first_byte() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            device
+                .write_read(1, &[0x40, 0x00, 0x01, 0x02, 0x03], &mut [])
+                .unwrap()
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert_eq!(protocol_handler.next_event(), Err(Error::HostI2cBadRequest));
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
+    }
+
+    #[test]
+    fn test_read_with_invalid_first_byte() {
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            device.write_read(1, &[0x40], &mut out).unwrap();
+            assert_eq!(out, [0, 0])
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
+
+        // Slightly different variation... This represents a more "normal" I2C register access,
+        // writing two bytes followed by read.
+        let i2c = FakeI2cPeripheral::new(|mut device| {
+            let mut out = [0u8; 2];
+            device.write_read(1, &[0x40, 0x00], &mut out).unwrap();
+            assert_eq!(out, [0, 0])
+        });
+        let mut protocol_handler = I2cProtocolHandler::new(i2c);
+        assert_eq!(protocol_handler.next_event(), Err(Error::HostI2cBadRequest));
+        assert_eq!(protocol_handler.next_event(), Ok(Event::None));
+    }
 
     #[test]
     fn test_write_register() {
