@@ -41,6 +41,9 @@ pub enum Error {
     /// The camera reported an unexpected ID.
     CameraUnexpectedId = 0x0022,
 
+    /// The camera unexpectedly reset its configuration.
+    CameraUnexpectedReset = 0x0023,
+
     /// Something is wrong with the SPI flash.
     SpiFlash = 0x0040,
 
@@ -101,6 +104,7 @@ impl From<hm01b0::Error> for Error {
         match error {
             hm01b0::Error::I2cError => Self::CameraI2c,
             hm01b0::Error::InvalidValues => Self::Internal,
+            hm01b0::Error::PartialReset => Self::CameraUnexpectedReset,
         }
     }
 }

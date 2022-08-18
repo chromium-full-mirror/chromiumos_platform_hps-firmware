@@ -500,6 +500,7 @@ fn check_heartbeat(heartbeat: &PA3<Input<PullUp>>) -> Result<(), Error> {
 fn convert_camera_error(e: hm01b0::Error) -> Error {
     match e {
         hm01b0::Error::I2cError => Error::CameraI2c,
+        hm01b0::Error::PartialReset => Error::CameraI2c,
         hm01b0::Error::InvalidValues => Error::Internal,
     }
 }

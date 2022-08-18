@@ -8,7 +8,7 @@ pub(crate) const INIT_SCRIPT: &[(u16, u8)] = &[
     // Analog configuration.
     (0x1003, 0x08),
     (0x1007, 0x08),
-    (0x3044, 0x0A),
+    (0x3044, 0x0A), // Note, we verify this value in has_init_script_run
     (0x3045, 0x00),
     (0x3047, 0x0A),
     (0x3050, 0xC0),

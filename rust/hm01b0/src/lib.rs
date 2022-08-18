@@ -19,6 +19,7 @@ pub struct Camera<'a, I: i2c::Write + i2c::WriteRead> {
 pub enum Error {
     I2cError,
     InvalidValues,
+    PartialReset,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -136,6 +137,19 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         match value {
             0x00 | 0x10 | 0x20 | 0x30 => self.write_reg(0x0205, low_byte(value)),
             _ => Err(Error::InvalidValues),
+        }
+    }
+
+    /// Checks that the first 0x3*** series register that the init script wrote
+    /// is still correct. If we don't have a long enough delay between
+    /// performing a software reset and running the init script, a partial reset
+    /// can sometimes occur. When a partial reset occurs, all 0x3*** series and
+    /// 0x0*** series registers get reverted to their reset values.
+    pub fn check_for_partial_reset(&mut self) -> Result<()> {
+        if self.read_reg(0x3044)? == 0x0A {
+            Ok(())
+        } else {
+            Err(Error::PartialReset)
         }
     }
 
@@ -321,7 +335,7 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         for (register, value) in init_script::INIT_SCRIPT {
             self.write_reg(*register, *value)?;
         }
-        Ok(())
+        self.check_for_partial_reset()
     }
 }
 
