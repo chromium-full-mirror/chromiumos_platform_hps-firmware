@@ -29,6 +29,7 @@ use hal::prelude::*;
 use hal::rcc::Rcc;
 use hal::time::MicroSecond;
 use hal::timer::delay::Delay;
+use hal::timer::pwm::PwmPin;
 use hal::timer::stopwatch::Stopwatch;
 use log::error;
 use log::info;
@@ -81,6 +82,8 @@ mod app {
         rcc: Rcc,
         #[lock_free]
         frame_timer: hal::timer::Timer<hal::stm32::TIM14>,
+        #[lock_free]
+        pwm_channel: PwmPin<hal::stm32::TIM3, hal::timer::Channel4>,
     }
 
     #[local]
@@ -201,7 +204,6 @@ mod app {
         let pwm = board.camera_mclk_tim.pwm(6.mhz(), &mut rcc);
         let mut pwm_channel = pwm.bind_pin(board.camera_mclk.set_speed(hal::gpio::Speed::VeryHigh));
         pwm_channel.set_duty((pwm_channel.get_max_duty() + 1) / 2);
-        pwm_channel.enable();
 
         // Power off the FPGA, since if there is non-standard gateware loaded, it
         // may ignore reset.
@@ -290,17 +292,9 @@ mod app {
             }
         };
 
-        let mut camera_i2c = board.camera_i2c;
+        let camera_i2c = board.camera_i2c;
         let mut frame_timer = p.TIM14.timer(&mut rcc);
         frame_timer.listen();
-
-        match initialize_camera(&mut camera_i2c) {
-            Ok(id) => part_ids.camera_id = id.into(),
-            Err(error) => {
-                error!("Failed to initialize camera: {error:?}");
-                host_interface.report_error(error);
-            }
-        }
 
         info!(
             "MCU application started. CPU is running at {}MHz",
@@ -339,6 +333,7 @@ mod app {
             stopwatch,
             tick_count: 0,
             rcc,
+            pwm_channel,
         };
         let local = LocalResources {
             interrupt_pin: board.interrupt_pin,
@@ -643,7 +638,7 @@ mod app {
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(shared = [fpga_device, host_interface, state, rcc])]
+    #[task(shared = [fpga_device, host_interface, state, rcc, pwm_channel, camera_i2c])]
     fn try_start_fpga(ctx: try_start_fpga::Context) {
         let mut host_interface = ctx.shared.host_interface;
         // Switch System Clock to HSI (required to reconfigure PLL).
@@ -664,6 +659,17 @@ mod app {
         let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
         raw_rcc.cfgr.write(|w| w);
         raw_rcc.freeze(rcc_low_freq_config());
+
+        // Now that we're done messing with clock frequencies, we can turn on
+        // the camera MCLK then configure the camera.
+        ctx.shared.pwm_channel.enable();
+        match initialize_camera(ctx.shared.camera_i2c) {
+            Ok(id) => host_interface.lock(|h| h.part_ids.camera_id = id.into()),
+            Err(error) => {
+                error!("Failed to initialize camera: {error:?}");
+                host_interface.lock(|h| h.report_error(error));
+            }
+        }
 
         host_interface.lock(|h| h.command_completed());
     }
