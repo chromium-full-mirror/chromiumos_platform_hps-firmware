@@ -275,6 +275,14 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         arg_parser: NO_ARG,
     },
     AvailableDebugCommand {
+        keyword: "mcu_panic",
+        help_text: "Trigger a panic on the MCU",
+        command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
+            mcu_common::commands::Command::TriggerMcuPanic,
+        )),
+        arg_parser: NO_ARG,
+    },
+    AvailableDebugCommand {
         keyword: "read_spi_flash",
         help_text: "Ask the MCU to read part of the spi flash and print it",
         command_type: CommandType::McuCommand(McuDebugCommand::ReadSpiFlash),
