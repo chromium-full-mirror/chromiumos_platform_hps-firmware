@@ -305,19 +305,22 @@ mod app {
         match camera.get_camera_id() {
             Err(e) => {
                 host_interface.report_error(mcu_common::Error::CameraI2c);
-                info!("Failed to read camera ID: {e:?}");
+                error!("Failed to read camera ID: {e:?}");
             }
             Ok(id) => {
                 part_ids.camera_id = id as u32;
                 if id != CAMERA_ID {
                     host_interface.report_error(mcu_common::Error::CameraI2c);
-                    info!("Camera reported unexpected ID: {}", id);
+                    error!("Camera reported unexpected ID: {}", id);
                 }
             }
         }
         match camera.run_init_script() {
             Ok(_) => info!("Default HM01B0 configuration applied"),
-            Err(_) => info!("Failed to apply HM01B0 init config"),
+            Err(e) => {
+                host_interface.report_error(mcu_common::Error::CameraI2c);
+                error!("Failed to apply HM01B0 init config: {e:?}");
+            }
         };
 
         info!(
