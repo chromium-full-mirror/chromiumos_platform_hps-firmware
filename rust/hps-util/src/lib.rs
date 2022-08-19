@@ -57,6 +57,9 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
             );
             print_model_score(hps, Register::UserPresentStatus, "Presence status")?;
             print_model_score(hps, Register::SecondPersonStatus, "SPA status")?;
+            println!("Debug1: 0x{:04x}", hps.read_register(Register::Debug1)?);
+            println!("Debug2: 0x{:04x}", hps.read_register(Register::Debug2)?);
+            println!("Debug3: 0x{:04x}", hps.read_register(Register::Debug3)?);
         }
         hps_interface::Stage::OneTimeInit => {
             println!(

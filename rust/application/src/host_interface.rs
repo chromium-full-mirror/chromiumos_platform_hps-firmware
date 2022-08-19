@@ -37,6 +37,16 @@ pub struct HostInterface<I: I2cPeripheral> {
     pub part_ids: PartIds,
     image_header: &'static ImageHeader,
     previous_crash: Option<mcu_common::Buffer>,
+    #[cfg(feature = "dev")]
+    pub debug: DebugValues,
+}
+
+#[cfg(feature = "dev")]
+#[derive(Default)]
+pub struct DebugValues {
+    pub d1: u16,
+    pub d2: u16,
+    pub d3: u16,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -62,6 +72,8 @@ impl<I: I2cPeripheral> HostInterface<I> {
             part_ids: PartIds::default(),
             image_header,
             previous_crash: None,
+            #[cfg(feature = "dev")]
+            debug: DebugValues::default(),
         }
     }
 
@@ -199,6 +211,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 }
                 0
             }
+            #[cfg(feature = "dev")]
+            Register::Debug1 => self.debug.d1,
+            #[cfg(feature = "dev")]
+            Register::Debug2 => self.debug.d2,
+            #[cfg(feature = "dev")]
+            Register::Debug3 => self.debug.d3,
             _ => common_value,
         };
         event.respond_u16(result, &mut self.protocol_handler);
@@ -229,6 +247,12 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 state.camera_test_iterations = value;
                 return Some(Event::TestCameraI2c);
             }
+            #[cfg(feature = "dev")]
+            Register::Debug1 => self.debug.d1 = value,
+            #[cfg(feature = "dev")]
+            Register::Debug2 => self.debug.d2 = value,
+            #[cfg(feature = "dev")]
+            Register::Debug3 => self.debug.d3 = value,
             _ => self.report_error(Error::HostI2cBadRequest),
         }
         None

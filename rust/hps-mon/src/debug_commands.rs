@@ -350,6 +350,24 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         )),
         arg_parser: NO_ARG,
     },
+    AvailableDebugCommand {
+        keyword: "set_debug1",
+        help_text: "Set debug register 1",
+        command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(Register::Debug1)),
+        arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
+        keyword: "set_debug2",
+        help_text: "Set debug register 2",
+        command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(Register::Debug2)),
+        arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
+        keyword: "set_debug3",
+        help_text: "Set debug register 3",
+        command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(Register::Debug3)),
+        arg_parser: U16_ARG,
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.

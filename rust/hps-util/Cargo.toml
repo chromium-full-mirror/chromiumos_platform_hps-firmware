@@ -13,7 +13,7 @@ hps_interface = { path = "../hps_interface" }
 host_dev_common = { path = "../host_dev_common" }
 linux-embedded-hal = "0.3.1"
 mcp2221 = { path = "../mcp2221", optional = true }
-mcu_common = { path = "../mcu_common" }
+mcu_common = { path = "../mcu_common", features = [ "dev" ] }
 
 [features]
 default = [ "mcp2221" ]

@@ -94,4 +94,16 @@ pub enum Register {
     /// RO: Image data. Always 63 bytes.
     #[cfg(feature = "image-transfer")]
     ImageData = 102,
+
+    /// RW: Doesn't do anything unless you change the code to make it do something.
+    #[cfg(feature = "dev")]
+    Debug1 = 111,
+
+    /// RW: Doesn't do anything unless you change the code to make it do something.
+    #[cfg(feature = "dev")]
+    Debug2 = 112,
+
+    /// RW: Doesn't do anything unless you change the code to make it do something.
+    #[cfg(feature = "dev")]
+    Debug3 = 113,
 }
