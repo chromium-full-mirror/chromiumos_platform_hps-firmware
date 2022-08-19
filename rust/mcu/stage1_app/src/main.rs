@@ -35,6 +35,7 @@ use log::error;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::Buffer;
+use mcu_common::Error;
 use mcu_common::MemBlock;
 use mcu_common::PartIds;
 use mcu_common::Status;
@@ -301,27 +302,13 @@ mod app {
         let mut frame_timer = p.TIM14.timer(&mut rcc);
         frame_timer.listen();
 
-        let mut camera = hm01b0::Camera::new(&mut camera_i2c);
-        match camera.get_camera_id() {
-            Err(e) => {
-                host_interface.report_error(mcu_common::Error::CameraI2c);
-                error!("Failed to read camera ID: {e:?}");
-            }
-            Ok(id) => {
-                part_ids.camera_id = id as u32;
-                if id != CAMERA_ID {
-                    host_interface.report_error(mcu_common::Error::CameraI2c);
-                    error!("Camera reported unexpected ID: {}", id);
-                }
+        match initialize_camera(&mut camera_i2c) {
+            Ok(id) => part_ids.camera_id = id.into(),
+            Err(error) => {
+                error!("Failed to initialize camera: {error:?}");
+                host_interface.report_error(error);
             }
         }
-        match camera.run_init_script() {
-            Ok(_) => info!("Default HM01B0 configuration applied"),
-            Err(e) => {
-                host_interface.report_error(mcu_common::Error::CameraI2c);
-                error!("Failed to apply HM01B0 init config: {e:?}");
-            }
-        };
 
         info!(
             "MCU application started. CPU is running at {}MHz",
@@ -687,6 +674,18 @@ mod app {
         raw_rcc.freeze(rcc_low_freq_config());
 
         host_interface.lock(|h| h.command_completed());
+    }
+
+    /// Initialize the camera, returning the camera's ID if successful.
+    fn initialize_camera(camera_i2c: &mut board::CameraI2c) -> Result<u16, Error> {
+        let mut camera = hm01b0::Camera::new(camera_i2c);
+        let id = camera.get_camera_id()?;
+        if id != CAMERA_ID {
+            info!("Camera reported unexpected ID: {}", id);
+            return Err(Error::CameraUnexpectedId);
+        }
+        camera.run_init_script()?;
+        Ok(id)
     }
 
     #[task(shared = [fpga_device, host_interface])]

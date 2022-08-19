@@ -38,6 +38,9 @@ pub enum Error {
     /// Timeout receiving image data from the camera.
     CameraImageTimeout = 0x0021,
 
+    /// The camera reported an unexpected ID.
+    CameraUnexpectedId = 0x0022,
+
     /// Something is wrong with the SPI flash.
     SpiFlash = 0x0040,
 
