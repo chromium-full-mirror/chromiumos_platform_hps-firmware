@@ -27,6 +27,14 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     write!(&mut out, "{}{}\0", CRASH_MARKER, info).unwrap();
     error!("{}", info);
 
+    // In dev builds, wait a bit before we reset to give the host a chance to
+    // retrieve the error message we logged above.
+    if cfg!(feature = "dev") {
+        // At the time of writing, with the CPU running at 12MHz, 1M cycles was
+        // sufficient. So we give 10x that to be sure.
+        cortex_m::asm::delay(10_000_000);
+    }
+
     cortex_m::peripheral::SCB::sys_reset();
 }
 
