@@ -27,6 +27,7 @@ use application::HostInterface;
 use core::convert::TryFrom;
 use hal::prelude::*;
 use hal::rcc::Rcc;
+use hal::stm32::SYST;
 use hal::time::MicroSecond;
 use hal::timer::delay::Delay;
 use hal::timer::pwm::PwmPin;
@@ -84,6 +85,8 @@ mod app {
         frame_timer: hal::timer::Timer<hal::stm32::TIM14>,
         #[lock_free]
         pwm_channel: PwmPin<hal::stm32::TIM3, hal::timer::Channel4>,
+        #[lock_free]
+        delay: Delay<SYST>,
     }
 
     #[local]
@@ -334,6 +337,7 @@ mod app {
             tick_count: 0,
             rcc,
             pwm_channel,
+            delay,
         };
         let local = LocalResources {
             interrupt_pin: board.interrupt_pin,
@@ -638,7 +642,7 @@ mod app {
             .lock(|host_interface| host_interface.supply_mem_block(request.data.release()));
     }
 
-    #[task(shared = [fpga_device, host_interface, state, rcc, pwm_channel, camera_i2c])]
+    #[task(shared = [fpga_device, host_interface, state, rcc, pwm_channel, camera_i2c, delay])]
     fn try_start_fpga(ctx: try_start_fpga::Context) {
         let mut host_interface = ctx.shared.host_interface;
         // Switch System Clock to HSI (required to reconfigure PLL).
@@ -663,7 +667,7 @@ mod app {
         // Now that we're done messing with clock frequencies, we can turn on
         // the camera MCLK then configure the camera.
         ctx.shared.pwm_channel.enable();
-        match initialize_camera(ctx.shared.camera_i2c) {
+        match initialize_camera(ctx.shared.camera_i2c, ctx.shared.delay) {
             Ok(id) => host_interface.lock(|h| h.part_ids.camera_id = id.into()),
             Err(error) => {
                 error!("Failed to initialize camera: {error:?}");
@@ -675,14 +679,17 @@ mod app {
     }
 
     /// Initialize the camera, returning the camera's ID if successful.
-    fn initialize_camera(camera_i2c: &mut board::CameraI2c) -> Result<u16, Error> {
+    fn initialize_camera(
+        camera_i2c: &mut board::CameraI2c,
+        delay: &mut Delay<SYST>,
+    ) -> Result<u16, Error> {
         let mut camera = hm01b0::Camera::new(camera_i2c);
         let id = camera.get_camera_id()?;
         if id != CAMERA_ID {
             info!("Camera reported unexpected ID: {}", id);
             return Err(Error::CameraUnexpectedId);
         }
-        camera.run_init_script()?;
+        camera.run_init_script(delay)?;
         Ok(id)
     }
 

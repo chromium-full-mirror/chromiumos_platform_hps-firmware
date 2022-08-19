@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 pub(crate) const INIT_SCRIPT: &[(u16, u8)] = &[
-    (0x0103, 0x00), // Software reset.
-    (0x0100, 0x00), // Power up.
+    (0x0100, 0x00), // mode=standby
     // Analog configuration.
     (0x1003, 0x08),
     (0x1007, 0x08),

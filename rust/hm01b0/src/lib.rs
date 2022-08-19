@@ -331,7 +331,16 @@ impl<'a, I: i2c::Write + i2c::WriteRead> Camera<'a, I> {
         self.write_reg(0x0390, 0x00) // Horizontal binning.
     }
 
-    pub fn run_init_script(&mut self) -> Result<()> {
+    pub fn run_init_script<Delay>(&mut self, delay: &mut Delay) -> Result<()>
+    where
+        Delay: embedded_hal::blocking::delay::DelayMs<u32>,
+    {
+        self.reset()?;
+        // We need to wait a bit after we reset the camera, otherwise we can
+        // sometimes have the camera partially reset while we initialize it.
+        // Experimentally, 15ms still results in some partial resets, while 18ms
+        // appears to be fine. We give a few extra ms to be sure.
+        delay.delay_ms(25);
         for (register, value) in init_script::INIT_SCRIPT {
             self.write_reg(*register, *value)?;
         }
