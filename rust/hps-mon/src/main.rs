@@ -393,9 +393,25 @@ fn execute_locally(
                 let mut hps = hps.lock().unwrap();
                 hps.perform_command(command)?;
                 println!("Command {:?} running", command);
-                while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
-                hps.check_errors()?;
-                println!("Command {:?} complete", command);
+                loop {
+                    match hps.status() {
+                        Ok(status) => {
+                            if !status.contains(Status::COMMAND_IN_PROGRESS) {
+                                match hps.check_errors() {
+                                    Ok(_) => println!("Command {command:?} complete"),
+                                    Err(e) => {
+                                        println!("Command {command:?} resulted in error: {e}")
+                                    }
+                                };
+                                break;
+                            }
+                        }
+                        Err(e) => {
+                            println!("HPS no longer responding on I2C: {e}");
+                            break;
+                        }
+                    }
+                }
             } else {
                 eprintln!("Cannot perform command without I2C connection");
             }
