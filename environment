@@ -15,7 +15,7 @@ HPS_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 
 # We completely overwrite any existing PATH. This ensures that we're not getting
 # things from unexpected places.
-PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+PATH="/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 PATH="/opt/hps-sdk/bin:${PATH}"
 PATH="${HPS_ROOT}/scripts:${PATH}"
 export PATH
