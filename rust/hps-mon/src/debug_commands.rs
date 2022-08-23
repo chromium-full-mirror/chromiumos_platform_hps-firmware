@@ -334,6 +334,14 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         command_type: CommandType::McuCommand(McuDebugCommand::FpgaPowerOn),
         arg_parser: NO_ARG,
     },
+    AvailableDebugCommand {
+        keyword: "mlb_interrupt",
+        help_text: "Pulse interrupt signal to MLB",
+        command_type: CommandType::LocalOperation(LocalOperation::I2cCommand(
+            commands::Command::MlbInterrupt,
+        )),
+        arg_parser: NO_ARG,
+    },
 ];
 
 /// Locks stdin and emits debug commands based on keys that get pressed.
