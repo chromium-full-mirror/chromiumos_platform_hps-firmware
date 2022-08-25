@@ -167,6 +167,29 @@ scripts/proto2-term
 This script wraps the Litex terminal interface. Press Control-C twice in quick
 succession to disconnect.
 
+## Observing the interrupt line
+
+On proto2 the MLB interrupt line (signal from HPS to the main logic board to
+request its attention) is connected to an ATmega16u4 USB-capable MCU. Its UART
+is connected to FT4232H port D and its USB interface is connected to proto2's
+USB hub.
+
+In order to observe the interrupt line, you need to program the ATmega16u4:
+
+```
+scripts/avr-prog
+```
+
+You can then run the helper script to watch the UART output from the
+ATmega16u4:
+
+```
+scripts/avr-term
+```
+
+The UART output will show `!` when the interrupt line goes high and
+`.` when it goes low.
+
 ## Unlocking RDP (flash protection in the MCU)
 
 If you use `hps-factory` to write stage0 to proto2, it will also configure

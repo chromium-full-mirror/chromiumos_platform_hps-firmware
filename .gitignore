@@ -7,3 +7,5 @@ target
 third_party/installed
 .env
 Cargo.lock
+avr/intlisten
+avr/intlisten.bin

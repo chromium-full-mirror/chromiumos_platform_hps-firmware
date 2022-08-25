@@ -64,3 +64,20 @@ EOF
         sudo udevadm trigger --action=add --attr-match=idVendor=0403 --attr-match=idProduct=6011
     fi
 fi
+
+AVR_UDEV_RULES=/etc/udev/rules.d/60-avr-dfu.rules
+if [ ! -f "${AVR_UDEV_RULES}" ]; then
+    echo -n "OK to create ${AVR_UDEV_RULES} [y]/n? " >&2
+    read -r answer
+    if [ "${answer}" == "y" ] || [ -z "${answer}" ]; then
+        (
+            cat <<'EOF'
+# atmega16u4 DFU bootloader
+SUBSYSTEM=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2ff3", MODE="660", GROUP="plugdev", TAG+="uaccess"
+EOF
+        ) | sudo tee "${AVR_UDEV_RULES}"
+
+        # Trigger the rule to avoid replugging.
+        sudo udevadm trigger --action=add --attr-match=idVendor=03eb --attr-match=idProduct=2ff3
+    fi
+fi

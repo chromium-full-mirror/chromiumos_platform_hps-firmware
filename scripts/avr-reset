@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Resets the AVR on proto2.
+
+Because the HWB line is pulled low, the AVR will always enter its DFU
+bootloader mode. Use `dfu-programmer` to interact with it in this mode.
+`dfu-programmer atmega16u4 start` will tell it to launch the user code.
+"""
+
+import time
+
+from pyftdi.gpio import GpioAsyncController
+
+
+def main():
+    # Pin 4 is reset, pin 5 is HWB.
+    gpio = GpioAsyncController()
+    gpio.open_from_url('ftdi://ftdi:4232h/4', direction=0b00010001)
+    port = gpio.get_gpio()
+    port.write(0b00000000)
+    time.sleep(0.000001)  # 40ns minimum reset pulse
+    port.write(0b00010000)
+
+
+if __name__ == '__main__':
+    main()

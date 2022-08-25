@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -e
+
+if ! command -v dfu-programmer >/dev/null ; then
+    echo "Missing dfu-programmer" >&2
+    echo "Hint: sudo apt install dfu-programmer" >&2
+    exit 1
+fi
+
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+
+cd "${PROJECT_ROOT}/avr"
+if [ -f intlisten.hex ] && ! command -v avr-gcc >/dev/null ; then
+    echo "Missing avr-gcc, using precompiled AVR firmware" >&2
+else
+    make intlisten.hex
+fi
+"${PROJECT_ROOT}/scripts/avr-reset"
+# It takes some time for the kernel to probe the USB device after reset.
+sleep 0.7
+dfu-programmer atmega16u4 erase
+dfu-programmer atmega16u4 flash intlisten.hex
+dfu-programmer atmega16u4 start
