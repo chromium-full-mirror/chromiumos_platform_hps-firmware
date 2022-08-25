@@ -236,27 +236,53 @@ pub trait Hps {
     }
 }
 
-pub struct HpsAdapter<I> {
-    sink: I,
+/// This trait just wraps the embedded-hal I2C traits but with the error type converted to
+/// anyhow:Error. This makes it object-safe so we can box it in HpsAdapter.
+pub trait HpsI2c: Send {
+    fn read(&mut self, address: i2c::SevenBitAddress, buffer: &mut [u8]) -> Result<()>;
+    fn write_read(
+        &mut self,
+        address: i2c::SevenBitAddress,
+        bytes: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<()>;
+    fn write(&mut self, address: i2c::SevenBitAddress, bytes: &[u8]) -> Result<()>;
 }
 
-impl<I, E> HpsAdapter<I>
+impl<I, E> HpsI2c for I
 where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + i2c::Read<Error = E>,
+    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E> + i2c::Read<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
-    pub fn new(sink: I) -> Result<Self> {
+    fn read(&mut self, address: i2c::SevenBitAddress, buffer: &mut [u8]) -> Result<()> {
+        Ok(I::read(self, address, buffer)?)
+    }
+    fn write_read(
+        &mut self,
+        address: i2c::SevenBitAddress,
+        bytes: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<()> {
+        Ok(I::write_read(self, address, bytes, buffer)?)
+    }
+    fn write(&mut self, address: i2c::SevenBitAddress, bytes: &[u8]) -> Result<()> {
+        Ok(I::write(self, address, bytes)?)
+    }
+}
+
+pub struct HpsAdapter<'a> {
+    sink: Box<dyn HpsI2c + 'a>,
+}
+
+impl<'a> HpsAdapter<'a> {
+    pub fn new(sink: Box<dyn HpsI2c + 'a>) -> Result<Self> {
         let mut hps = Self::without_magic_check(sink);
         hps.wait_ready()?;
         hps.check_magic()?;
         Ok(hps)
     }
 
-    pub fn from_ref(sink: &mut I) -> Result<HpsAdapter<BorrowedI2c<I>>> {
-        HpsAdapter::new(BorrowedI2c { i2c: sink })
-    }
-
-    pub fn without_magic_check(sink: I) -> Self {
+    pub fn without_magic_check(sink: Box<dyn HpsI2c + 'a>) -> Self {
         Self { sink }
     }
 
@@ -283,11 +309,7 @@ where
     }
 }
 
-impl<I, E> Hps for HpsAdapter<I>
-where
-    I: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
-    E: std::error::Error + Send + Sync + 'static,
-{
+impl<'a> Hps for HpsAdapter<'a> {
     fn read_register(&mut self, reg: Register) -> Result<u16> {
         let mut buffer = [0u8; 2];
         self.sink
@@ -337,13 +359,13 @@ where
 /// implements the I2C traits. This won't be necessary once we're using
 /// embedded-hal 1.0 (not yet released), since it has blanket implementations of
 /// the I2C traits for references.
-pub struct BorrowedI2c<'a, I> {
-    i2c: &'a mut I,
+pub struct BorrowedI2c<'a, I: Send> {
+    pub i2c: &'a mut I,
 }
 
 impl<'a, I, E> i2c::WriteRead for BorrowedI2c<'a, I>
 where
-    I: i2c::WriteRead<Error = E>,
+    I: i2c::WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     type Error = E;
@@ -360,7 +382,7 @@ where
 
 impl<'a, I, E> i2c::Write for BorrowedI2c<'a, I>
 where
-    I: i2c::Write<Error = E>,
+    I: i2c::Write<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     type Error = E;
@@ -372,7 +394,7 @@ where
 
 impl<'a, I, E> i2c::Read for BorrowedI2c<'a, I>
 where
-    I: i2c::Read<Error = E>,
+    I: i2c::Read<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     type Error = E;
@@ -396,7 +418,7 @@ mod tests {
     #[test]
     fn read_register() {
         let mut i2c = I2cProtocolHandler::new(FakeI2cPeripheral::new(|dev| {
-            let mut hps = HpsAdapter::without_magic_check(dev);
+            let mut hps = HpsAdapter::without_magic_check(Box::new(dev));
             assert_eq!(hps.read_register(Register::EnabledFeatures).unwrap(), 99);
         }));
         match i2c.next_event() {

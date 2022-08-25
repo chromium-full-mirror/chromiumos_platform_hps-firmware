@@ -312,7 +312,7 @@ fn is_hpsd_running() -> Result<bool> {
 
 pub(crate) fn run_workflow<E, I>(i2c: &mut I, config: Config) -> Result<()>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     match &config.command {

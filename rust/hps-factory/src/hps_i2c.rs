@@ -43,7 +43,7 @@ const FPGA_START_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// An I2C interface to the HPS. Allows access to both the system bootloader and
 /// HPS functionality.
-pub(crate) struct HpsI2c<'a, I> {
+pub(crate) struct HpsI2c<'a, I: Send> {
     pub(crate) i2c: &'a mut I,
     pub(crate) config: Config,
     pub(crate) erase_stage1_allowed: bool,
@@ -51,7 +51,7 @@ pub(crate) struct HpsI2c<'a, I> {
 
 impl<'a, I, E> HpsI2c<'a, I>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + 'a,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + 'a + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn new(i2c: &'a mut I, config: Config) -> Self {
@@ -153,7 +153,7 @@ where
     }
 
     pub(crate) fn write_memory_bank(
-        hps: &mut HpsAdapter<BorrowedI2c<I>>,
+        hps: &mut HpsAdapter,
         section_name: &str,
         bank: u8,
         start_address: u32,
@@ -289,9 +289,9 @@ where
         Ok(stm32)
     }
 
-    pub(crate) fn open_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
+    pub(crate) fn open_hps(&mut self) -> Result<HpsAdapter> {
         self.wait_i2c_ready(HPS_ADDRESS, "HPS I2C")?;
-        HpsAdapter::from_ref(self.i2c)
+        HpsAdapter::new(Box::new(BorrowedI2c { i2c: self.i2c }))
     }
 
     /// Waits until the specified I2C address starts responding or until the

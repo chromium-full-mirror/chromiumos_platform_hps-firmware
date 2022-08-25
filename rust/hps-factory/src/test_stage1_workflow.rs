@@ -8,7 +8,6 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
-use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_interface::Stage;
@@ -18,13 +17,13 @@ use mcu_common::memory_banks;
 use mcu_common::registers::Register;
 use mcu_common::Error;
 
-pub(crate) struct Stage1Tester<'a, I> {
+pub(crate) struct Stage1Tester<'a, I: Send> {
     i2c: HpsI2c<'a, I>,
 }
 
 impl<'a, I, E> Stage1Tester<'a, I>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn run(i2c: &mut I, global_config: &Config) -> Result<()> {
@@ -111,7 +110,7 @@ where
     }
 
     /// Resets the HPS, launches to stage1 then waits for it start.
-    fn reset_to_stage1(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
+    fn reset_to_stage1(&mut self) -> Result<HpsAdapter> {
         let mut hps = self.i2c.open_hps()?;
         hps.perform_command(Command::Reset)?;
         Self::ensure_stage1(&mut hps)?;
@@ -120,7 +119,7 @@ where
 
     /// Launches stage1 and waits for it to start. If stage1 is already running,
     /// does nothing.
-    fn ensure_stage1(hps: &mut HpsAdapter<BorrowedI2c<I>>) -> Result<()> {
+    fn ensure_stage1(hps: &mut HpsAdapter) -> Result<()> {
         hps.wait_ready()?;
         if hps.stage()? == Stage::Stage0 {
             hps.perform_command(Command::Launch1)?;

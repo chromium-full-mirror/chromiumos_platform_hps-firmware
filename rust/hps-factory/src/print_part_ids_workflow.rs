@@ -13,7 +13,7 @@ use hps_interface::Hps;
 
 pub(crate) fn run<I, E>(i2c: &mut I, config: &Config) -> Result<()>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(i2c, config.clone());

@@ -21,14 +21,14 @@ use mcu_common::commands::Command;
 use mcu_common::registers::Register;
 use mcu_common::Status;
 
-pub(crate) struct PostInstallTester<'a, I> {
+pub(crate) struct PostInstallTester<'a, I: Send> {
     i2c: HpsI2c<'a, I>,
     config: crate::PostInstallTestConfig,
 }
 
 impl<'a, I, E> PostInstallTester<'a, I>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn run(

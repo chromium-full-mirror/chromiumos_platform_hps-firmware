@@ -225,14 +225,14 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         gpio_config.set_value(0, true);
         dev.configure_gpio(&gpio_config)?;
 
-        return Ok(Box::new(HpsAdapter::new(dev)?));
+        return Ok(Box::new(HpsAdapter::new(Box::new(dev))?));
     }
     if kernel_driver::power_state() == kernel_driver::PowerState::Suspended {
         bail!("Device currently suspended by kernel driver. Try unbind command first.");
     }
     let i2c = linux_embedded_hal::I2cdev::new(&flags.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", flags.dev.display()))?;
-    Ok(Box::new(HpsAdapter::new(i2c)?))
+    Ok(Box::new(HpsAdapter::new(Box::new(i2c))?))
 }
 
 fn main() -> Result<()> {

@@ -11,7 +11,6 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
-use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use log::info;
@@ -22,13 +21,13 @@ use mcu_common::Status;
 use mcu_common::FLASH_WRITE_SZ;
 use mcu_common::STAGE1_SLOT_LENGTH;
 
-pub(crate) struct Stage0Tester<'a, I> {
+pub(crate) struct Stage0Tester<'a, I: Send> {
     i2c: HpsI2c<'a, I>,
 }
 
 impl<'a, I, E> Stage0Tester<'a, I>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn run(i2c: &mut I, global_config: &Config) -> Result<()> {
@@ -182,7 +181,7 @@ where
 
     /// Resets the HPS then waits for stage0 to start and returns an interface
     /// to it.
-    fn reset_hps(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
+    fn reset_hps(&mut self) -> Result<HpsAdapter> {
         self.i2c
             .open_hps()
             .unwrap()

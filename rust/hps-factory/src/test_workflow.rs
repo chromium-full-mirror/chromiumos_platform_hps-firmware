@@ -35,7 +35,7 @@ const TIMEOUT: Duration = Duration::from_secs(20);
 
 pub(crate) fn run<E, I>(raw_i2c: &mut I, config: &TestConfig, global_config: &Config) -> Result<()>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     let mut i2c = HpsI2c::new(raw_i2c, global_config.clone());

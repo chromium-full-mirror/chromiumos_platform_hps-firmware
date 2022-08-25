@@ -29,7 +29,7 @@ use stm32_bootloader_client::MAX_READ_WRITE_SIZE;
 
 const ROW_SIZE: usize = 256;
 
-pub(crate) struct Stage0Writer<'a, I> {
+pub(crate) struct Stage0Writer<'a, I: Send> {
     i2c: HpsI2c<'a, I>,
     config: Config,
     write_stage0_config: WriteStage0Config,
@@ -43,7 +43,7 @@ enum WriteKind {
 
 impl<'a, I, E> Stage0Writer<'a, I>
 where
-    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E>,
+    I: Read<Error = E> + Write<Error = E> + WriteRead<Error = E> + Send,
     E: std::error::Error + Send + Sync + 'static,
 {
     pub(crate) fn run(

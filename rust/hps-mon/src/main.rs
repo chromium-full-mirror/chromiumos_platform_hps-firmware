@@ -217,7 +217,7 @@ fn open_hps_i2c(reset: bool) -> Result<Arc<Mutex<dyn Hps + Send>>> {
     gpio_config.set_value(0, true);
     dev.configure_gpio(&gpio_config)?;
 
-    let hps = HpsAdapter::new(dev)?;
+    let hps = HpsAdapter::new(Box::new(dev))?;
     Ok(Arc::new(Mutex::new(hps)))
 }
 
