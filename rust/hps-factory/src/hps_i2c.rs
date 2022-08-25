@@ -98,7 +98,7 @@ where
             if stage0_version >= 4 {
                 // Try to load stage1 so that we can check its version.
                 hps.perform_command(Command::Launch1)?;
-                hps = self.open_hps()?;
+                hps.wait_ready()?;
             }
             if hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4] {
                 info!("Stage1 is already the expected version, skipping write");
@@ -107,7 +107,7 @@ where
             if stage0_version >= 4 {
                 // Reset back to stage0 so that we can update stage1.
                 hps.perform_command(Command::Reset)?;
-                hps = self.open_hps()?;
+                hps.wait_ready()?;
             }
         }
         // Old versions of stage0 don't support the EraseStage1 command. In that
@@ -209,10 +209,13 @@ where
     /// Executes a stage1, but doesn't attempt to check that it's running. Can
     /// be used for stage1 binaries that don't support I2C.
     pub(crate) fn execute_non_i2c_stage1(&mut self) -> Result<()> {
-        let mut hps = self.open_hps()?;
-        // If we're not currently running stage0, or if our stage0 is one that
-        // needs to be reset in order to validate stage1, then reset.
-        if hps.stage()? != Stage::Stage0 || hps.stage0_version()? < 4 {
+        let need_reset = {
+            let mut hps = self.open_hps()?;
+            // If we're not currently running stage0, or if our stage0 is one that
+            // needs to be reset in order to validate stage1, then reset.
+            hps.stage()? != Stage::Stage0 || hps.stage0_version()? < 4
+        };
+        if need_reset {
             self.reset_to_bootloader()?;
         }
         if let Ok(mut stm32) = self.open_bootloader() {

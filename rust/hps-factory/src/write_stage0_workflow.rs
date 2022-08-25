@@ -85,9 +85,10 @@ where
         if self.write_stage0_config.check_version && self.write_stage0_config.permanent_lock {
             bail!("When using --permanent-lock, --check-version is not permitted.");
         }
-        if let Ok(mut hps) = i2c.open_hps() {
-            hps.perform_command(Command::Reset)?;
+        let erase_required = {
             if let Ok(mut hps) = i2c.open_hps() {
+                hps.perform_command(Command::Reset)?;
+                hps.wait_ready()?;
                 match hps.stage()? {
                     Stage::Stage0 => {
                         let version = hps.read_register(Register::HardwareVersion)?;
@@ -96,23 +97,28 @@ where
                         {
                             info!("Stage0 already has correct version: 0x{:x}", version);
                             return Ok(WriteKind::ExistingVersionMatched);
-                        }
-                        info!("Stage0 already present on device, erasing.");
-                        match crate::erase_stage0_workflow::run(i2c.i2c, self.config.clone()) {
-                            Ok(_) => {}
-                            Err(EraseError::PermanentlyLocked) => {
-                                // We always consider a permanently locked stage0 to be a success.
-                                info!("Stage0 already permanently locked. Nothing more to do.");
-                                return Ok(WriteKind::PermanentlyLocked);
-                            }
-                            Err(EraseError::Other(other)) => return Err(other),
+                        } else {
+                            info!("Stage0 already present on device, erasing.");
+                            true
                         }
                     }
                     other => bail!("HPS firmware is present, but found {:?} not stage0", other),
                 }
+            } else {
+                // We're probably back to the system bootloader, no need to erase.
+                false
             }
-            // We've probably back to the system bootloader, fall through with
-            // regular flashing procedure.
+        };
+        if erase_required {
+            match crate::erase_stage0_workflow::run(i2c.i2c, self.config.clone()) {
+                Ok(_) => {}
+                Err(EraseError::PermanentlyLocked) => {
+                    // We always consider a permanently locked stage0 to be a success.
+                    info!("Stage0 already permanently locked. Nothing more to do.");
+                    return Ok(WriteKind::PermanentlyLocked);
+                }
+                Err(EraseError::Other(other)) => return Err(other),
+            }
         }
         let mut stm32 = i2c.open_bootloader()?;
 
@@ -191,8 +197,7 @@ where
             .context("Failed to configure option bytes")?;
         // The configure option bytes request, assuming it succeeded, will have
         // reset the device, so we need to reopen it.
-        let mut hps = i2c
-            .open_hps()
+        hps.wait_ready()
             .context("HPS lost after updating option bytes")?;
         hps.check_errors()?;
         let stage = hps.stage()?;

@@ -64,15 +64,16 @@ where
             .context("Failed to read status after writing test program")?;
         if hps.stage0_version()? < 4 {
             info!("Write complete, resetting HPS");
-            i2c.reset_to_bootloader()
-                .context("Failed to reset to stage0")?;
-            hps = i2c.open_hps()?;
+            hps.perform_command(Command::Reset)
+                .context("Failed to send reset command")?;
+            hps.wait_ready().context("Failed after reset to stage0")?;
             info!("Launching test program");
         } else {
             info!("Write complete, launching test program");
         }
         hps.perform_command(Command::Launch1)?;
-    } else {
+    }
+    if !stage0_present {
         let mut stm32 = i2c.open_bootloader()?;
 
         info!("Checking STM32 chip ID");

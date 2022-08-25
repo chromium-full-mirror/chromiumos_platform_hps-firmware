@@ -43,6 +43,7 @@ where
         if hps.status()?.contains(Status::WPOFF) {
             bail!("This test needs firmware write-protect on");
         }
+        drop(hps);
 
         tester.test_erase_stage1();
         tester.test_write_invalid_offset();
@@ -68,8 +69,9 @@ where
         let mut hps = self.reset_hps().unwrap();
         hps.write_memory(0, (STAGE1_SLOT_LENGTH + FLASH_WRITE_SZ) as u32, &data)
             .unwrap();
-        hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
+        drop(hps);
 
         // Try 1 double-word less than u32::MAX in an attempt to get an integer
         // overflow when the address is added to the slot start address. Also
@@ -77,15 +79,16 @@ where
         let mut hps = self.reset_hps().unwrap();
         hps.write_memory(0, u32::MAX - (FLASH_WRITE_SZ as u32), &data)
             .unwrap();
-        hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
+        drop(hps);
 
         // Try a write that starts in a valid location, but extends beyond the
         // end of flash.
         let mut hps = self.reset_hps().unwrap();
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - FLASH_WRITE_SZ) as u32, &data)
             .unwrap();
-        hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::McuFlashWriteError);
     }
 
@@ -98,7 +101,7 @@ where
         let mut hps = self.reset_hps().unwrap();
         hps.write_memory(0, (STAGE1_SLOT_LENGTH - data.len()) as u32, &data)
             .unwrap();
-        hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::None);
     }
 
@@ -153,9 +156,9 @@ where
     fn test_erase_stage1(&mut self) {
         let mut hps = self.reset_hps().unwrap();
         hps.perform_command(Command::EraseStage1).unwrap();
-        let mut hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         hps.perform_command(Command::Launch1).unwrap();
-        let mut hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::Stage1NotFound);
     }
 
@@ -172,7 +175,7 @@ where
         // disable I2C, preventing us from sending any further requests while
         // it's performing the signature check.
         assert!(hps.status().is_err());
-        let mut hps = self.i2c.open_hps().unwrap();
+        hps.wait_ready().unwrap();
         assert_eq!(hps.error().unwrap(), Error::Stage1InvalidSignature);
         info!("Signature check time {}ms", start.elapsed().as_millis());
     }

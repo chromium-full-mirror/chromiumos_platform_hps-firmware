@@ -73,11 +73,11 @@ where
     i2c.execute_non_i2c_stage1()
         .context("Failed to execute one_time_init")?;
 
-    let mut hps = i2c.open_hps()?;
-    hps.check_errors()?;
-    let current_options = OptionBytesConfigRequest::from_bits_truncate(
-        hps.read_register(Register::ConfigurationOptionBytes)?,
-    );
+    let current_options = OptionBytesConfigRequest::from_bits_truncate({
+        let mut hps = i2c.open_hps()?;
+        hps.check_errors()?;
+        hps.read_register(Register::ConfigurationOptionBytes)?
+    });
     if current_options.contains(OptionBytesConfigRequest::RDP2) {
         info!("Stage0 is permanently locked and cannot be erased.");
         return Err(EraseError::PermanentlyLocked);
@@ -89,15 +89,14 @@ where
         // then switch temporarily to RDP1. This avoids the need to implement a
         // special remove-write-protection command in one_time_init.
         info!("Stage0 is write protected with no RDP. Temporarily applying RDP1.");
-        hps.write_register(
+        i2c.open_hps()?.write_register(
             Register::ConfigurationOptionBytes,
             (OptionBytesConfigRequest::RDP1 | OptionBytesConfigRequest::RELOAD).bits(),
         )?;
         i2c.execute_non_i2c_stage1()
             .context("Failed to restart one_time_init after temporary RDP1 setting")?;
-        hps = i2c.open_hps()?;
     }
-    hps.write_register(
+    i2c.open_hps()?.write_register(
         Register::ConfigurationOptionBytes,
         (OptionBytesConfigRequest::ERASE | OptionBytesConfigRequest::RELOAD).bits(),
     )?;

@@ -48,11 +48,12 @@ where
         assert_eq!(hps.stage().unwrap(), Stage::Stage1);
         hps.check_errors().unwrap();
         hps.perform_command(Command::TriggerMcuPanic).unwrap();
-        hps = self.launch_stage1().unwrap();
+        Self::ensure_stage1(&mut hps).unwrap();
         assert_eq!(hps.error().unwrap(), Error::Panic);
         let report = hps.crash_report().unwrap();
         assert!(report.contains("Intentional panic"));
-        hps = self.reset_to_stage1().unwrap();
+        drop(hps);
+        let mut hps = self.reset_to_stage1().unwrap();
         assert_eq!(hps.error().unwrap(), Error::None);
     }
 
@@ -95,6 +96,7 @@ where
         let mut hps = self.reset_to_stage1().unwrap();
         hps.perform_command(Command::Launch1).unwrap();
         assert_eq!(hps.error().unwrap(), Error::HostI2cBadRequest);
+        drop(hps);
 
         let mut hps = self.reset_to_stage1().unwrap();
         hps.write_register(Register::Command, 255).unwrap();
@@ -110,23 +112,21 @@ where
 
     /// Resets the HPS, launches to stage1 then waits for it start.
     fn reset_to_stage1(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
-        self.i2c
-            .open_hps()
-            .unwrap()
-            .perform_command(Command::Reset)
-            .unwrap();
-        self.launch_stage1()
+        let mut hps = self.i2c.open_hps()?;
+        hps.perform_command(Command::Reset)?;
+        Self::ensure_stage1(&mut hps)?;
+        Ok(hps)
     }
 
     /// Launches stage1 and waits for it to start. If stage1 is already running,
     /// does nothing.
-    fn launch_stage1(&mut self) -> Result<HpsAdapter<BorrowedI2c<I>>> {
-        let mut hps = self.i2c.open_hps()?;
+    fn ensure_stage1(hps: &mut HpsAdapter<BorrowedI2c<I>>) -> Result<()> {
+        hps.wait_ready()?;
         if hps.stage()? == Stage::Stage0 {
             hps.perform_command(Command::Launch1)?;
         }
-        let mut hps = self.i2c.open_hps()?;
+        hps.wait_ready()?;
         assert_eq!(hps.stage().unwrap(), Stage::Stage1);
-        Ok(hps)
+        Ok(())
     }
 }

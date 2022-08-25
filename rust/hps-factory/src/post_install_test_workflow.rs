@@ -137,6 +137,7 @@ where
         while hps.status()?.contains(Status::COMMAND_IN_PROGRESS) {}
         hps.check_errors()?;
         info!("Test data written/verified");
+        drop(hps);
 
         self.i2c
             .execute_application()
