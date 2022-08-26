@@ -20,14 +20,11 @@ use mcu_common::PartIds;
 use mcu_common::Status;
 
 use crate::application_state::ApplicationState;
-use crate::trace::Subsystem;
-use crate::trace::Trace;
 
 pub struct HostInterface<I: I2cPeripheral> {
     protocol_handler: I2cProtocolHandler<I>,
     common_interface: CommonHostInterface,
     pub spi_flash_status: u16,
-    trace: Trace,
     #[cfg(feature = "image-transfer")]
     outgoing_image_data: Option<mcu_common::Buffer>,
     application_running: bool,
@@ -62,7 +59,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
             protocol_handler: I2cProtocolHandler::new(i2c),
             common_interface: CommonHostInterface::new(),
             spi_flash_status: 0xdead,
-            trace: Trace::new(),
             #[cfg(feature = "image-transfer")]
             outgoing_image_data: None,
             application_running: false,
@@ -79,10 +75,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
 
     pub fn reset_bus(&mut self) {
         self.protocol_handler.i2c_mut().reset();
-    }
-
-    pub fn trace(&mut self, ss: Subsystem, device: u8, value: u16) {
-        self.trace.trace(ss, device, value)
     }
 
     /// Supply (or return) a memory block for the purpose of receiving data.
@@ -183,8 +175,6 @@ impl<I: I2cPeripheral> HostInterface<I> {
                 // flash write in progress, then we return 0.
                 0
             }
-            Register::DebugIndex => self.trace.get_idx(),
-            Register::DebugValue => self.trace.get_val(),
             #[cfg(feature = "image-transfer")]
             Register::ImageDataAvailable => {
                 if self.outgoing_image_data.is_some() {

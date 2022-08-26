@@ -57,10 +57,6 @@ pub enum Register {
     /// RO: SPI flash status registers as read at startup.
     SpiFlashStatus = 15,
 
-    /// RO: Debug tracing registers.
-    DebugIndex = 16,
-    DebugValue = 17,
-
     /// RO: Configuration bits for camera.
     CameraConfig = 18,
 

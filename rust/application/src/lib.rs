@@ -7,7 +7,6 @@
 mod application_state;
 pub mod fpga;
 mod host_interface;
-pub mod trace;
 
 pub use application_state::ApplicationState;
 pub use application_state::Configuration;
