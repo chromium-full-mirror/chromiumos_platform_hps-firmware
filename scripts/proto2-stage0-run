@@ -4,12 +4,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Runs stage0 on a proto2 board. By default, the production version of stage0 is
+# run. If you'd like to build stage0 from source with an insecure dev key, then
+# add the "--dev" flag.
+
 set -e
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-cd "${PROJECT_ROOT}/rust/mcu"
-cargo build --release -p stage0 --no-default-features --features insecure-dev-key
-BINARY="target/thumbv6m-none-eabi/release/stage0"
+if [ "$1" = "--dev" ]; then
+    cd "${PROJECT_ROOT}/rust/mcu"
+    cargo build \
+        --release \
+        -p stage0 \
+        --no-default-features \
+        --features insecure-dev-key
+    BINARY="target/thumbv6m-none-eabi/release/stage0"
+    ADDRESS=
+else
+    BINARY="${PROJECT_ROOT}/bin/stage0/v4.bin"
+    ADDRESS=0x08000000
+fi
 "${PROJECT_ROOT}/scripts/proto2-openocd" \
-    -c "program $BINARY verify reset"
+    -c "program ${BINARY} verify reset ${ADDRESS}"
