@@ -684,6 +684,8 @@ mod app {
         delay: &mut Delay<SYST>,
     ) -> Result<u16, Error> {
         let mut camera = hm01b0::Camera::new(camera_i2c);
+        // Occasionally the first read from the camera fails, so we ignore it.
+        let _ = camera.get_camera_id();
         let id = camera.get_camera_id()?;
         if id != CAMERA_ID {
             info!("Camera reported unexpected ID: {}", id);
