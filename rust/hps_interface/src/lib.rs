@@ -37,6 +37,9 @@ pub enum Stage {
 }
 
 pub trait Hps {
+    fn is_interrupt_asserted(&mut self) -> Result<bool>;
+    fn wait_for_interrupt(&mut self) -> Result<()>;
+
     fn read_register(&mut self, reg: Register) -> Result<u16>;
     fn read_register_bytes(&mut self, reg: Register, length: usize) -> Result<Vec<u8>>;
     fn write_register(&mut self, reg: Register, value: u16) -> Result<()>;
@@ -279,20 +282,33 @@ where
     }
 }
 
+pub trait InterruptLine: Send {
+    /// Returns true if the interrupt is currently asserted. Note that the HPS interrupt line is
+    /// active-low which means this returns true when the line has logical 0 value.
+    fn is_interrupt_asserted(&self) -> Result<bool>;
+
+    /// Returns as soon as the interrupt line has been asserted.
+    fn wait_for_interrupt(&self) -> Result<()>;
+}
+
 pub struct HpsAdapter<'a> {
     sink: Box<dyn HpsI2c + 'a>,
+    interrupt: Box<dyn InterruptLine + 'a>,
 }
 
 impl<'a> HpsAdapter<'a> {
-    pub fn new(sink: Box<dyn HpsI2c + 'a>) -> Result<Self> {
-        let mut hps = Self::without_magic_check(sink);
+    pub fn new(sink: Box<dyn HpsI2c + 'a>, interrupt: Box<dyn InterruptLine + 'a>) -> Result<Self> {
+        let mut hps = Self::without_magic_check(sink, interrupt);
         hps.wait_ready()?;
         hps.check_magic()?;
         Ok(hps)
     }
 
-    pub fn without_magic_check(sink: Box<dyn HpsI2c + 'a>) -> Self {
-        Self { sink }
+    pub fn without_magic_check(
+        sink: Box<dyn HpsI2c + 'a>,
+        interrupt: Box<dyn InterruptLine + 'a>,
+    ) -> Self {
+        Self { sink, interrupt }
     }
 
     /// Tries reading from the HPS until either we get several successful reads
@@ -319,6 +335,14 @@ impl<'a> HpsAdapter<'a> {
 }
 
 impl<'a> Hps for HpsAdapter<'a> {
+    fn is_interrupt_asserted(&mut self) -> Result<bool> {
+        self.interrupt.is_interrupt_asserted()
+    }
+
+    fn wait_for_interrupt(&mut self) -> Result<()> {
+        self.interrupt.wait_for_interrupt()
+    }
+
     fn read_register(&mut self, reg: Register) -> Result<u16> {
         let mut buffer = [0u8; 2];
         self.sink
@@ -413,6 +437,21 @@ where
     }
 }
 
+/// No-op implementation of InterruptLine that is never asserted.
+/// We only have this as a convenience in case someone wants to use proto2 and doesn't want to
+/// bother setting up the AVR→FTDI proxy mess because they don't care about interrupts.
+pub struct NoopInterruptLine {}
+
+impl InterruptLine for NoopInterruptLine {
+    fn is_interrupt_asserted(&self) -> Result<bool> {
+        Ok(false)
+    }
+
+    fn wait_for_interrupt(&self) -> Result<()> {
+        bail!("Tried to wait for an interrupt that will never come");
+    }
+}
+
 fn register_access_command(reg: Register) -> u8 {
     reg as u8 | 0x80
 }
@@ -427,7 +466,8 @@ mod tests {
     #[test]
     fn read_register() {
         let mut i2c = I2cProtocolHandler::new(FakeI2cPeripheral::new(|dev| {
-            let mut hps = HpsAdapter::without_magic_check(Box::new(dev));
+            let mut hps =
+                HpsAdapter::without_magic_check(Box::new(dev), Box::new(NoopInterruptLine {}));
             assert_eq!(hps.read_register(Register::EnabledFeatures).unwrap(), 99);
         }));
         match i2c.next_event() {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use anyhow::bail;
 use hps_interface::Hps;
 use mcu_common::registers::Register;
 use mcu_common::CommonHostInterface;
@@ -13,6 +14,14 @@ pub struct FakeHps {
 }
 
 impl Hps for FakeHps {
+    fn is_interrupt_asserted(&mut self) -> anyhow::Result<bool> {
+        Ok(false)
+    }
+
+    fn wait_for_interrupt(&mut self) -> anyhow::Result<()> {
+        bail!("Tried to wait for an interrupt that will never come");
+    }
+
     fn read_register(&mut self, reg: Register) -> anyhow::Result<u16> {
         let ret = match self.reg {
             Some((r, v)) => {

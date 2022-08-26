@@ -320,6 +320,7 @@ mod tests {
     use fake_i2c::FakeI2cPeripheral;
     use hps_interface::Hps;
     use hps_interface::HpsAdapter;
+    use hps_interface::NoopInterruptLine;
 
     static HEADER: ImageHeader = create_test_header();
 
@@ -328,7 +329,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 hps.check_magic().unwrap();
                 hps.check_magic().unwrap();
             }),
@@ -342,7 +346,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 hps.write_memory(3, 0, &[0xaa; 64]).unwrap();
             }),
             &HEADER,
@@ -360,7 +367,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::SystemStatus).unwrap(),
                     (Status::OK | Status::STAGE1).bits()
@@ -376,7 +386,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 hps.perform_command(Command::Reset).unwrap();
             }),
             &HEADER,
@@ -392,7 +405,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 hps.perform_command(Command::LaunchApp).unwrap();
             }),
             &HEADER,
@@ -408,7 +424,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 hps.write_register(Register::EnabledFeatures, 1234).unwrap();
             }),
             &HEADER,
@@ -423,7 +442,10 @@ mod tests {
         state.status.person_status = 0x8055;
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x8055
@@ -440,7 +462,10 @@ mod tests {
         state.status.person_status = 0x80AB;
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x80AB
@@ -457,7 +482,10 @@ mod tests {
         state.status.person_status = 0x00AB;
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::UserPresentStatus).unwrap() as u16,
                     0x00AB
@@ -474,7 +502,10 @@ mod tests {
         state.status.second_person_status = 0x807A;
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::SecondPersonStatus).unwrap() as u16,
                     0x807A
@@ -490,7 +521,10 @@ mod tests {
         let mut state = ApplicationState::default();
         let mut interface = HostInterface::new(
             FakeI2cPeripheral::new(|device| {
-                let mut hps = HpsAdapter::without_magic_check(Box::new(device));
+                let mut hps = HpsAdapter::without_magic_check(
+                    Box::new(device),
+                    Box::new(NoopInterruptLine {}),
+                );
                 assert_eq!(
                     hps.read_register(Register::FirmwareVersionLow).unwrap() as u16,
                     0x0304

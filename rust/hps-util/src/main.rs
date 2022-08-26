@@ -10,11 +10,21 @@ use clap::Subcommand;
 use host_dev_common::kernel_driver;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_interface::InterruptLine;
+use hps_interface::NoopInterruptLine;
 use hps_util::monitor;
 use hps_util::print_status;
+use interrupt_proxy::FtdiInterruptListener;
 use mcu_common::commands::Command;
 use mcu_common::registers::Register;
 use std::path::PathBuf;
+
+/// Which mechanism are we using to observe the interrupt line?
+#[derive(clap::ArgEnum, PartialEq, Debug)]
+enum InterruptInterface {
+    None,
+    AvrFtdiProxy,
+}
 
 #[derive(Clap)]
 /// Communicates with the HPS.
@@ -42,6 +52,10 @@ struct Flags {
     #[clap(long)]
     /// whether to reset MCP2221
     reset_mcp: bool,
+
+    #[clap(long, arg_enum, default_value = "none")]
+    /// which interface to use for observing the HPS→MLB interrupt line
+    interrupt: InterruptInterface,
 }
 
 #[derive(Subcommand, PartialEq, Debug)]
@@ -62,6 +76,9 @@ enum SubCommand {
     Unbind,
     Bind,
     Monitor,
+    /// Wait for HPS to assert its interrupt line
+    #[clap(name = "wfi")]
+    WaitForInterrupt,
 }
 
 #[derive(Clap, PartialEq, Debug)]
@@ -230,14 +247,20 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         gpio_config.set_value(0, true);
         dev.configure_gpio(&gpio_config)?;
 
-        return Ok(Box::new(HpsAdapter::new(Box::new(dev))?));
+        let interrupt: Box<dyn InterruptLine> = match flags.interrupt {
+            InterruptInterface::None => Box::new(NoopInterruptLine {}),
+            InterruptInterface::AvrFtdiProxy => Box::new(FtdiInterruptListener::open()?),
+        };
+
+        return Ok(Box::new(HpsAdapter::new(Box::new(dev), interrupt)?));
     }
     if kernel_driver::power_state() == kernel_driver::PowerState::Suspended {
         bail!("Device currently suspended by kernel driver. Try unbind command first.");
     }
     let i2c = linux_embedded_hal::I2cdev::new(&flags.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", flags.dev.display()))?;
-    Ok(Box::new(HpsAdapter::new(Box::new(i2c))?))
+    let interrupt = Box::new(NoopInterruptLine {});
+    Ok(Box::new(HpsAdapter::new(Box::new(i2c), interrupt)?))
 }
 
 fn main() -> Result<()> {
@@ -284,6 +307,7 @@ fn main() -> Result<()> {
         SubCommand::Unbind => unreachable!(),
         SubCommand::Bind => unreachable!(),
         SubCommand::Monitor => monitor::run(&mut *hps),
+        SubCommand::WaitForInterrupt => hps.wait_for_interrupt(),
     }
 }
 

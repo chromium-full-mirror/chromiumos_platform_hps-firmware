@@ -1,0 +1,13 @@
+[package]
+name = "interrupt_proxy"
+description = "Host-side support for observing the HPS interrupt line via AVR on proto2"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+
+[dependencies]
+anyhow = "1.0.38"
+ftdi = "0.1.3"
+hps_interface = { path = "../hps_interface" }
+
+[dev-dependencies]

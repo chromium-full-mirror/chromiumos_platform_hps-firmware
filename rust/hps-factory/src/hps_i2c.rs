@@ -12,6 +12,7 @@ use embedded_hal::blocking::i2c::WriteRead;
 use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_interface::NoopInterruptLine;
 use hps_interface::Stage;
 use indicatif::ProgressBar;
 use log::info;
@@ -296,7 +297,10 @@ where
 
     pub(crate) fn open_hps(&mut self) -> Result<HpsAdapter> {
         self.wait_i2c_ready(HPS_ADDRESS, "HPS I2C")?;
-        HpsAdapter::new(Box::new(BorrowedI2c { i2c: self.i2c }))
+        HpsAdapter::new(
+            Box::new(BorrowedI2c { i2c: self.i2c }),
+            Box::new(NoopInterruptLine {}),
+        )
     }
 
     /// Waits until the specified I2C address starts responding or until the

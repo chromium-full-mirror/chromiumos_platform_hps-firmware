@@ -19,6 +19,9 @@ use host_dev_common::images::image_type_from_str;
 use host_dev_common::images::ImageType;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
+use hps_interface::InterruptLine;
+use hps_interface::NoopInterruptLine;
+use interrupt_proxy::FtdiInterruptListener;
 use mcu_common::Status;
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -102,6 +105,13 @@ struct RttChannels {
     to_device: Vec<Box<dyn DataSink>>,
 }
 
+/// Which mechanism are we using to observe the interrupt line?
+#[derive(clap::ArgEnum, PartialEq, Debug)]
+enum InterruptInterface {
+    None,
+    AvrFtdiProxy,
+}
+
 #[derive(Clap)]
 /// Monitors the HPS for debug output via SWD.
 struct Flags {
@@ -155,6 +165,10 @@ struct Flags {
     #[clap(long)]
     /// whether to reset MCP2221
     reset_mcp: bool,
+
+    #[clap(long, arg_enum, default_value = "none")]
+    /// which interface to use for observing the HPS→MLB interrupt line
+    interrupt: InterruptInterface,
 }
 
 fn main() -> Result<()> {
@@ -168,7 +182,14 @@ fn main() -> Result<()> {
     let hps = if flags.no_mcp_i2c {
         None
     } else {
-        Some(open_hps_i2c(flags.reset_mcp)?)
+        let i2c = open_hps_i2c(flags.reset_mcp)?;
+        let interrupt: Box<dyn InterruptLine> = match flags.interrupt {
+            InterruptInterface::None => Box::new(NoopInterruptLine {}),
+            InterruptInterface::AvrFtdiProxy => Box::new(FtdiInterruptListener::open()?),
+        };
+        let hps: Arc<Mutex<(dyn Hps + Send)>> =
+            Arc::new(Mutex::new(HpsAdapter::new(Box::new(i2c), interrupt)?));
+        Some(hps)
     };
 
     let console_controller = ConsoleController::new();
@@ -206,7 +227,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn open_hps_i2c(reset: bool) -> Result<Arc<Mutex<dyn Hps + Send>>> {
+fn open_hps_i2c(reset: bool) -> Result<mcp2221::Handle> {
     let mut config = mcp2221::Config::default();
     config.reset_on_open = reset;
     config.i2c_speed_hz = 400_000;
@@ -216,9 +237,7 @@ fn open_hps_i2c(reset: bool) -> Result<Arc<Mutex<dyn Hps + Send>>> {
     gpio_config.set_direction(0, mcp2221::Direction::Output);
     gpio_config.set_value(0, true);
     dev.configure_gpio(&gpio_config)?;
-
-    let hps = HpsAdapter::new(Box::new(dev))?;
-    Ok(Arc::new(Mutex::new(hps)))
+    Ok(dev)
 }
 
 /// Create channels. The channels here must match the channel definitions in

@@ -11,6 +11,7 @@ embedded-hal = "0.2.4"
 fpga_app = { path = "../fpga_app" }
 hps_interface = { path = "../hps_interface" }
 host_dev_common = { path = "../host_dev_common" }
+interrupt_proxy = { path = "../interrupt_proxy" }
 linux-embedded-hal = "0.3.1"
 mcp2221 = { path = "../mcp2221", optional = true }
 mcu_common = { path = "../mcu_common", features = [ "dev" ] }

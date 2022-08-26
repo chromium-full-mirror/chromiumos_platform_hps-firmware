@@ -190,6 +190,9 @@ scripts/avr-term
 The UART output will show `!` when the interrupt line goes high and
 `.` when it goes low.
 
+The `hps-mon` and `hps-util` tools can also monitor the interrupt line state
+via the ATmega16U4 UART. Pass `--interrupt=avr-ftdi-proxy` to enable support.
+
 ## Unlocking RDP (flash protection in the MCU)
 
 If you use `hps-factory` to write stage0 to proto2, it will also configure
