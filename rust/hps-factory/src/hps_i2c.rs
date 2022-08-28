@@ -93,14 +93,18 @@ where
             return self.write("stage1", APPLICATION_START_ADDRESS, program_bytes);
         }
         let mut hps = self.open_hps()?;
-        if !force_firmware_update {
+        // Provided the target version is non-zero and we're not forcing an
+        // update, try loading stage1 to see if it's already the desired
+        // version.
+        let target_version = &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4];
+        if !force_firmware_update && target_version != &[0, 0, 0, 0] {
             let stage0_version = hps.stage0_version()?;
             if stage0_version >= 4 {
                 // Try to load stage1 so that we can check its version.
                 hps.perform_command(Command::Launch1)?;
                 hps.wait_ready()?;
             }
-            if hps.firmware_version()? == &program_bytes[SIGNATURE_OFFSET..SIGNATURE_OFFSET + 4] {
+            if hps.stage()? == Stage::Stage1 && hps.firmware_version()? == target_version {
                 info!("Stage1 is already the expected version, skipping write");
                 return Ok(());
             }
