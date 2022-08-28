@@ -92,7 +92,10 @@ fn write_application_bin() -> Result<()> {
         out_dir.join("nested-build/thumbv6m-none-eabi/release/stage1_app"),
         &bin_file,
     )?;
-    Ok(())
+    // We need to write a non-zero version into our stage1 binary so that
+    // hps-factory can skip writing when the version is up-to-date, but rewrite
+    // it when it's not.
+    write_version_to_stage1_binary(&bin_file)
 }
 
 fn build_one_time_init_loader(name: &str, features: &str) -> Result<()> {
@@ -186,6 +189,23 @@ fn get_env_var(var: &str) -> String {
         Ok(x) => x,
         Err(_) => panic!("Environment variable {} undefined", var),
     }
+}
+
+/// Hashes `bin_file`, then writes the first 4 bytes of the hash into the start
+/// of the signature area so that they can be used as a version.
+fn write_version_to_stage1_binary(bin_file: &Path) -> Result<()> {
+    let mut file_bytes = std::fs::read(bin_file)
+        .with_context(|| format!("Failed to open {}", bin_file.display()))?;
+    sign_rom::zero_signature(&mut file_bytes)?;
+    // Which hash function we use here is irrelevant, so we just use one that we
+    // already have a dependency on.
+    let mut hasher = hmac_sha256::Hash::new();
+    hasher.update(&file_bytes);
+    let hash = hasher.finalize();
+    file_bytes[mcu_common::SIGNATURE_OFFSET..mcu_common::SIGNATURE_OFFSET + 4]
+        .copy_from_slice(&hash[..4]);
+    std::fs::write(bin_file, file_bytes)?;
+    Ok(())
 }
 
 fn sign_stage1_binary(bin_file: &Path) -> Result<()> {

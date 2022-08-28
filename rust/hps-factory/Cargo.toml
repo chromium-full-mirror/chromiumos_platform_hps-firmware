@@ -30,6 +30,7 @@ unix_socket = { path = "../unix_socket"}
 [build-dependencies]
 anyhow = "1.0.38"
 clap_derive = "=3.0.0-beta.2"
+hmac-sha256 = "0.1.6"
 mcu_common = { path = "../mcu_common", features = [ "dev" ] }
 sign-rom = { path = "../sign-rom" }
 
