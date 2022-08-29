@@ -275,6 +275,7 @@ fn main() -> Result<()> {
         let mut i2c_config = mcp2221::Config::default();
         i2c_config.reset_on_open = config.reset_mcp;
         i2c_config.i2c_speed_hz = 400_000;
+        i2c_config.timeout = std::time::Duration::from_millis(500);
         // This timeout needs to be shorter than the STARTUP_TIMEOUT in
         // hps_i2c.rs. If both are 1 second, then we'll send a request which the
         // device won't see because it isn't ready, we'll then wait 1 second and

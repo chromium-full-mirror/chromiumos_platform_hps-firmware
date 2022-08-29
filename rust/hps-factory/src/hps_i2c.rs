@@ -303,10 +303,14 @@ where
     fn wait_i2c_ready(&mut self, address: u8, name: &str) -> Result<()> {
         let start = Instant::now();
         loop {
+            // We count elapsed time as the time until the start of the request,
+            // not the end of the request, otherwise if the underlying I2C bus
+            // has a long timeout, we might not wait long enough.
+            let elapsed = start.elapsed();
             match self.i2c.read(address, &mut [0]) {
                 Ok(_) => return Ok(()),
                 Err(error) => {
-                    if start.elapsed() > STARTUP_TIMOUT {
+                    if elapsed > STARTUP_TIMOUT {
                         bail!("{} is not running: {}", name, error)
                     }
                 }
