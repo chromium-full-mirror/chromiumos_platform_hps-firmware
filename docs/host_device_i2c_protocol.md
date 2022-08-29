@@ -38,34 +38,33 @@ and then the data.
 
 7 bit Parameter specifies the register number. The host either requests data
 from the register (write_read operation), or data to be written to the register
-follows the command (write operation). All writes are 16 bits. All documented
-reads are 16 bits. Registers larger than 16 bits are supported but are currently
-only used for development and debugging purposes.
+follows the command (write operation).
 
-| Register | Access | Stage       | Description                  |
-|:---------|:-------|:------------|:-----------------------------|
-| 0        | RO     | All         | Magic number                 |
-| 1        | RO     | Stage0      | Hardware version             |
-| 2        | RO     | All         | System status                |
-| 3        | WO     | All         | System commands              |
-| 4        | RO     | ---         | Application version (unused) |
-| 5        | RO     | All         | Memory bank available        |
-| 6        | RO     | All         | Error                        |
-| 7        | RW     | Appl        | Enabled features             |
-| 8        | RO     | Appl        | Feature 0                    |
-| 9        | RO     | Appl        | Feature 1                    |
-| 10       | RO     | Stage1/Appl | Firmware version (high)      |
-| 11       | RO     | Stage1/Appl | Firmware version (low)       |
-| 12       | RO     | Appl        | FPGA boot count              |
-| 13       | RO     | Appl        | FPGA loop count              |
-| 14       | RO     | Appl        | FPGA ROM version             |
-| 15       | RO     | Appl        | SPI flash status bits        |
-| 16       | RO     | ---         | (unused)                     |
-| 17       | RO     | ---         | (unused)                     |
-| 18       | RO     | Appl        | Camera configuration         |
-| 19       | WO     | Appl        | Start camera test            |
-| 20       | RW     | OneTimeInit | Option bytes configuration   |
-| 21       | RO     | Appl        | Part IDs                     |
+| Register | Access | Stage       | Description                  | Length |
+|:---------|:-------|:------------|:-----------------------------|-------:|
+| 0        | RO     | All         | Magic number                 | 2      |
+| 1        | RO     | Stage0      | Hardware version             | 2      |
+| 2        | RO     | All         | System status                | 2      |
+| 3        | WO     | All         | System commands              | 2      |
+| 4        | RO     | ---         | Application version (unused) | 2      |
+| 5        | RO     | All         | Memory bank available        | 2      |
+| 6        | RO     | All         | Error                        | 2      |
+| 7        | RW     | Appl        | Enabled features             | 2      |
+| 8        | RO     | Appl        | Feature 0                    | 2      |
+| 9        | RO     | Appl        | Feature 1                    | 2      |
+| 10       | RO     | Stage1/Appl | Firmware version (high)      | 2      |
+| 11       | RO     | Stage1/Appl | Firmware version (low)       | 2      |
+| 12       | RO     | Appl        | FPGA boot count              | 2      |
+| 13       | RO     | Appl        | FPGA loop count              | 2      |
+| 14       | RO     | Appl        | FPGA ROM version             | 2      |
+| 15       | RO     | Appl        | SPI flash status bits        | 2      |
+| 16       | RO     | ---         | (unused)                     | 2      |
+| 17       | RO     | ---         | (unused)                     | 2      |
+| 18       | RO     | Appl        | Camera configuration         | 2      |
+| 19       | WO     | Appl        | Start camera test            | 2      |
+| 20       | RW     | OneTimeInit | Option bytes configuration   | 2      |
+| 21       | RO     | Appl        | Part IDs                     | 20     |
+| 22       | RO     | Appl        | Previous crash message       | 256    |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.
