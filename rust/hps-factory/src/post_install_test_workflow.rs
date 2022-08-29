@@ -187,8 +187,8 @@ where
         info!("Testing MCU<->camera I2C communication");
         self.i2c.reset_to_bootloader()?;
         self.i2c
-            .execute_stage1()
-            .context("Failed to execute stage1")?;
+            .execute_application()
+            .context("Failed to execute application")?;
         let mut hps = self.i2c.open_hps()?;
         hps.write_register(
             Register::CameraTestIterations,
