@@ -88,20 +88,29 @@ impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
         scl: impl SCLPin<I2C>,
         config: Config,
     ) -> Self {
-        I2C::enable_power(rcc);
-        I2C::reset_peripheral(rcc);
-
         // Configure pins.
         sda.setup();
         scl.setup();
 
+        let mut peripheral = Self { i2c };
+        peripheral.reinitialize(rcc, config);
+        peripheral
+    }
+
+    /// Reinitializes the peripheral. Can be used if you've changed the clock
+    /// configuration.
+    pub fn reinitialize(&mut self, rcc: &mut Rcc, config: Config) {
+        I2C::enable_power(rcc);
+        I2C::reset_peripheral(rcc);
+
         // The I2C unit needs to be disabled while we configure it. Set CR1 to
         // default value.
-        i2c.cr1.write(|w| w);
+        self.i2c.cr1.write(|w| w);
         // Configure timing.
-        i2c.timingr
+        self.i2c
+            .timingr
             .write(|w| unsafe { w.bits(config.timing.raw_timing_bits) });
-        i2c.cr1.modify(|_, w| {
+        self.i2c.cr1.modify(|_, w| {
             // Get an interrupt when we're addressed.
             w.addrie().set_bit();
             // Get an interrupt when we receive a byte.
@@ -116,17 +125,16 @@ impl<I2C: I2cBusController> Stm32g0I2cPeripheral<I2C> {
             w.nostretch().bit(!config.clock_stretching)
         });
         // Enable the I2C unit
-        i2c.cr1.modify(|_, w| w.pe().set_bit());
+        self.i2c.cr1.modify(|_, w| w.pe().set_bit());
 
         // Set our I2C address. oa1en need to be clear while we set the address.
-        i2c.oar1.modify(|_, w| w.oa1en().clear_bit());
-        i2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
-        i2c.oar1
+        self.i2c.oar1.modify(|_, w| w.oa1en().clear_bit());
+        self.i2c.oar1.modify(|_, w| w.oa1mode().clear_bit()); // 7bit addr
+        self.i2c
+            .oar1
             .modify(|_, w| unsafe { w.oa1_7_1().bits(config.address.address) });
         // Enable automatic ACK of our address.
-        i2c.oar1.modify(|_, w| w.oa1en().set_bit());
-
-        Self { i2c }
+        self.i2c.oar1.modify(|_, w| w.oa1en().set_bit());
     }
 
     pub fn enable_interupts(&mut self) {

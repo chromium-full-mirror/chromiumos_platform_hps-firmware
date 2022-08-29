@@ -77,6 +77,10 @@ impl<I: I2cPeripheral> HostInterface<I> {
         self.protocol_handler.i2c_mut().reset();
     }
 
+    pub fn i2c_mut(&mut self) -> &mut I {
+        self.protocol_handler.i2c_mut()
+    }
+
     /// Supply (or return) a memory block for the purpose of receiving data.
     pub fn supply_mem_block(&mut self, mem_block: MemBlock) {
         self.protocol_handler.supply_mem_block(mem_block);

@@ -653,7 +653,10 @@ mod app {
         // Switch System Clock to HSI (required to reconfigure PLL).
         let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
         raw_rcc.cfgr.write(|w| w);
-        raw_rcc.freeze(rcc_high_freq_config());
+        let mut rcc = raw_rcc.freeze(rcc_high_freq_config());
+        // Reconfigure host I2C, since we've changed the clock configuration.
+        let i2c_config = create_i2c_config(&rcc);
+        host_interface.lock(|h| h.i2c_mut().reinitialize(&mut rcc, i2c_config));
         match ctx.shared.fpga_device.start_fpga(ctx.shared.rcc) {
             Ok(_) => {
                 host_interface.lock(|h| h.set_application_running(true));
@@ -667,7 +670,10 @@ mod app {
         // Switch System Clock to HSI (required to reconfigure PLL).
         let raw_rcc = unsafe { hal::stm32::Peripherals::steal().RCC };
         raw_rcc.cfgr.write(|w| w);
-        raw_rcc.freeze(rcc_low_freq_config());
+        let mut rcc = raw_rcc.freeze(rcc_low_freq_config());
+        // Reconfigure host I2C, since we've changed the clock configuration.
+        let i2c_config = create_i2c_config(&rcc);
+        host_interface.lock(|h| h.i2c_mut().reinitialize(&mut rcc, i2c_config));
 
         // Now that we're done messing with clock frequencies, we can turn on
         // the camera MCLK then configure the camera.
