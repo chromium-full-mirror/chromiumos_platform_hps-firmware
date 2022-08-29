@@ -141,11 +141,7 @@ mod app {
         rcc.clocks.apb_tim_clk = 12.mhz();
         let mut delay = Delay::syst(cp.SYST, &rcc);
 
-        let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
-            stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
-            stm32g0_i2c_peripheral::Timing::from_speed(&mut rcc, 400.khz()),
-        );
-        i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
+        let i2c_config = create_i2c_config(&rcc);
 
         let mut board = board::Board::new(
             p.GPIOA.split(&mut rcc),
@@ -344,6 +340,15 @@ mod app {
         };
 
         (shared, local, init::Monotonics())
+    }
+
+    fn create_i2c_config(rcc: &Rcc) -> stm32g0_i2c_peripheral::Config {
+        let mut i2c_config = stm32g0_i2c_peripheral::Config::new(
+            stm32g0_i2c_peripheral::Address::new_7bit(mcu_common::HPS_ADDRESS),
+            stm32g0_i2c_peripheral::Timing::from_speed(rcc, 400.khz()),
+        );
+        i2c_config.clock_stretching = !cfg!(feature = "no-i2c-clock-stretching");
+        i2c_config
     }
 
     #[task(binds = I2C1, shared = [host_interface, state],

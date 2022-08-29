@@ -66,7 +66,7 @@ impl Address {
 impl Timing {
     /// Compute timing bits based on a requested I2C bus speed, taking into
     /// account the current system clock configuration.
-    pub fn from_speed(rcc: &mut Rcc, speed: Hertz) -> Self {
+    pub fn from_speed(rcc: &Rcc, speed: Hertz) -> Self {
         Self {
             raw_timing_bits: timing(rcc, speed),
         }
@@ -204,7 +204,7 @@ impl<I2C: I2cBusController> I2cPeripheral for Stm32g0I2cPeripheral<I2C> {
 }
 
 /// Returns the timing configuration in order to run i2c at the specified speed.
-fn timing(rcc: &mut Rcc, i2c_speed: Hertz) -> u32 {
+fn timing(rcc: &Rcc, i2c_speed: Hertz) -> u32 {
     // The examples in RM0444 section 32.4.11 divide the APB clock by different
     // values in order to achieve 8MHz, so we do the same.
     const TARGET_CLOCK: u32 = 8_000_000;
