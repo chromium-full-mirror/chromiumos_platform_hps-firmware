@@ -60,8 +60,8 @@ only used for development and debugging purposes.
 | 13       | RO     | Appl        | FPGA loop count              |
 | 14       | RO     | Appl        | FPGA ROM version             |
 | 15       | RO     | Appl        | SPI flash status bits        |
-| 16       | RO     | Appl        | Debug idx reg                |
-| 17       | RO     | Appl        | Debug val reg                |
+| 16       | RO     | ---         | (unused)                     |
+| 17       | RO     | ---         | (unused)                     |
 | 18       | RO     | Appl        | Camera configuration         |
 | 19       | WO     | Appl        | Start camera test            |
 | 20       | RW     | OneTimeInit | Option bytes configuration   |
