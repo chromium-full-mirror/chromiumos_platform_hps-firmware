@@ -32,13 +32,6 @@ cd "${PROJECT_ROOT}/rust/mcu"
 # non-release builds due to size constraints.
 cargo build --release
 
-echo "===== Release build of factory_tester_mcu ====="
-cargo build -p factory_tester_mcu --no-default-features --release
-echo "===== Dev build of factory_tester_mcu ====="
-cargo build -p factory_tester_mcu --no-default-features --features dev
-echo "===== Stage1 build of factory_tester_mcu ====="
-cargo build -p factory_tester_mcu --no-default-features --features stage1
-
 echo "===== RISCV default ====="
 cd "${PROJECT_ROOT}/rust/riscv"
 cargo build

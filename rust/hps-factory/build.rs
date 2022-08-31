@@ -10,10 +10,6 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn main() -> Result<()> {
-    if cfg!(feature = "test-workflow") {
-        build_mcu_test_program("factory_tester_mcu.bin", "")?;
-        build_mcu_test_program("factory_tester_mcu_stage1.bin", "stage1")?;
-    }
     copy_fpga_bitstream()?;
     build_fpga_rom()?;
     write_application_bin()?;
@@ -21,25 +17,6 @@ fn main() -> Result<()> {
     build_one_time_init_loader("one_time_init_loader.bin", "")?;
     build_one_time_init_loader("one_time_init_loader_legacy.bin", "legacy-stage0")?;
     Ok(())
-}
-
-fn build_mcu_test_program(bin_name: &str, features: &str) -> Result<()> {
-    let out_dir = PathBuf::from(get_env_var("OUT_DIR"));
-    let bin_file = out_dir.join(bin_name);
-    Command::new("cargo")
-        .current_dir("../mcu/factory_tester_mcu")
-        .env_remove("CARGO_ENCODED_RUSTFLAGS")
-        .env("CARGO_TARGET_DIR", out_dir.join("nested-build"))
-        .arg("build")
-        .arg("--release")
-        .arg("--no-default-features")
-        .arg("--features")
-        .arg(features)
-        .run()?;
-    convert_elf_to_bin(
-        out_dir.join("nested-build/thumbv6m-none-eabi/release/factory_tester_mcu"),
-        &bin_file,
-    )
 }
 
 fn write_stage0_bin(bin_name: &str, features: &str) -> Result<()> {

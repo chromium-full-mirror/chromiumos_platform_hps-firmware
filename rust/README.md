@@ -38,10 +38,6 @@ that it violates the timing in the I2C spec.
 
 A library for using the MCP2221 USB. Supports i2c and GPIO.
 
-### Crate: factory_tester_mcu
-
-Code that runs on the MCU for the purposes of factory testing.
-
 ### Crate: fake_i2c
 
 The `fake_i2c` crate provides an implementation of the I2C bus that allows tests

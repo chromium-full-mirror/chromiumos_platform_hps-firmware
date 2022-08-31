@@ -9,7 +9,6 @@ anyhow = "1.0.38"
 clap = "=3.0.0-beta.2"
 crc = "2.0"
 colored = "2.0.0"
-factory_tester_common = { path = "../factory_tester_common" }
 fpga_app = { path = "../fpga_app" }
 host_dev_common = { path = "../host_dev_common" }
 hps_interface = { path = "../hps_interface" }

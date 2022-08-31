@@ -18,18 +18,6 @@ pub(crate) const ONE_TIME_INIT_LOADER_BYTES: &[u8] =
 pub(crate) const ONE_TIME_INIT_LOADER_LEGACY_BYTES: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/one_time_init_loader_legacy.bin"));
 
-/// Pre-install tester MCU program. This version is used when the system
-/// bootloader is active and is loaded into RAM.
-#[cfg(feature = "test-workflow")]
-pub(crate) const PRE_INSTALL_TESTER_MCU_CODE: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu.bin"));
-
-/// Pre-install tester MCU program. This version is used when stage0 is present
-/// and is written to MCU flash.
-#[cfg(feature = "test-workflow")]
-pub(crate) const PRE_INSTALL_TESTER_MCU_CODE_STAGE1: &[u8] =
-    include_bytes!(concat!(env!("OUT_DIR"), "/factory_tester_mcu_stage1.bin"));
-
 impl crate::Config {
     pub(crate) fn fpga_bitstream(&self) -> Result<Cow<'static, [u8]>> {
         read_file_or_default(
@@ -116,16 +104,6 @@ impl crate::Config {
         std::fs::write(
             out.join("one_time_init_loader_legacy.bin"),
             ONE_TIME_INIT_LOADER_LEGACY_BYTES,
-        )?;
-        #[cfg(feature = "test-workflow")]
-        std::fs::write(
-            out.join("pre_install_tester_mcu.bin"),
-            PRE_INSTALL_TESTER_MCU_CODE,
-        )?;
-        #[cfg(feature = "test-workflow")]
-        std::fs::write(
-            out.join("pre_install_tester_mcu_stage1.bin"),
-            PRE_INSTALL_TESTER_MCU_CODE_STAGE1,
         )?;
         Ok(())
     }

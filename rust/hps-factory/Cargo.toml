@@ -11,7 +11,6 @@ anyhow = "1.0.38"
 clap = "=3.0.0-beta.2"
 ed25519-compact = { version = "1", default-features = false, features = [ "pem", "std" ] }
 embedded-hal = "0.2.6"
-factory_tester_common = { path = "../factory_tester_common" }
 fpga_app = { path = "../fpga_app" }
 host_dev_common = { path = "../host_dev_common" }
 hps_interface = { path = "../hps_interface" }
@@ -39,7 +38,6 @@ default = [
     "image-transfer",
     "mcp2221",
     "all-embedded-firmware",
-    "test-workflow",
 ]
 
 image-transfer = [ "mcu_common/image-transfer", "fpga_app/image-transfer" ]
@@ -52,6 +50,3 @@ built-in-fpga-bitstream = []
 built-in-fpga-rom = []
 built-in-mcu-rom = []
 stage0-from-source = []
-
-# Enables support for 'hps-factory test' (the pre-install test workflow).
-test-workflow = []

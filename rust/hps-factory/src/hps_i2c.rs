@@ -9,8 +9,6 @@ use anyhow::Result;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
 use embedded_hal::blocking::i2c::WriteRead;
-use factory_tester_common::EXPECTED_CHIP_ID;
-use factory_tester_common::FACTORY_BOOTLOADER_I2C_ADDRESS;
 use hps_interface::BorrowedI2c;
 use hps_interface::Hps;
 use hps_interface::HpsAdapter;
@@ -28,6 +26,12 @@ use mcu_common::SIGNATURE_OFFSET;
 use std::time::Duration;
 use std::time::Instant;
 use stm32_bootloader_client::Stm32;
+
+const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
+
+/// The ID of the MCU used in the HPS. STM32G07xxx/08xxx - see AN2606 rev 49,
+/// table 152.
+const EXPECTED_CHIP_ID: u16 = 0x460;
 
 const FPGA_ROM_START_ADDRESS: u32 = 2 * 1024 * 1024;
 

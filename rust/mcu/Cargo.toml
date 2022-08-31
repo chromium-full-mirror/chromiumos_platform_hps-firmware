@@ -2,7 +2,6 @@
 resolver = "2"
 
 members = [
-    "factory_tester_mcu",
     "one_time_init",
     "one_time_init_loader",
     "stage0",

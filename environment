@@ -32,7 +32,6 @@ export PYTHONPATH
 # List of directories with Rust source
 export HPS_RUST_DIRS=(
     rust
-    rust/factory_tester
     rust/mcu
     rust/riscv
 )

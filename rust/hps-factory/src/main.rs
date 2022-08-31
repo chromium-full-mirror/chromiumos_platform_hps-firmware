@@ -12,8 +12,6 @@ mod post_install_test_workflow;
 mod print_part_ids_workflow;
 mod test_stage0_workflow;
 mod test_stage1_workflow;
-#[cfg(feature = "test-workflow")]
-mod test_workflow;
 mod write_stage0_workflow;
 
 use anyhow::bail;
@@ -94,11 +92,6 @@ enum Command {
     /// runs the factory workflow
     #[clap(name = "factory")]
     Factory(FactoryConfig),
-
-    /// runs the test workflow
-    #[cfg(feature = "test-workflow")]
-    #[clap(name = "test")]
-    Test(TestConfig),
 
     /// write stage0 at the start of MCU flash
     #[clap(name = "write-stage0")]
@@ -203,14 +196,6 @@ struct CaptureImagesConfig {
     /// number of images to capture. 0 (default) for unlimited.
     #[clap(long, default_value = "0")]
     num_images: u64,
-}
-
-#[cfg(feature = "test-workflow")]
-#[derive(Debug, Clap, Clone)]
-struct TestConfig {
-    /// skip checking SPI flash part number
-    #[clap(long)]
-    skip_spi_flash_id_check: bool,
 }
 
 #[derive(Debug, Clap, Clone)]
@@ -329,17 +314,7 @@ where
         Command::WriteStage0(write_stage0_config) => {
             write_stage0_workflow::Stage0Writer::run(i2c, &config, write_stage0_config)
         }
-        #[cfg(feature = "test-workflow")]
-        Command::Test(test_config) => test_workflow::run(i2c, test_config, &config),
         Command::Factory(factory_config) => {
-            #[cfg(feature = "test-workflow")]
-            test_workflow::run(
-                i2c,
-                &TestConfig {
-                    skip_spi_flash_id_check: false,
-                },
-                &config,
-            )?;
             write_stage0_workflow::Stage0Writer::run(
                 i2c,
                 &config,

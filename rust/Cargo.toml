@@ -6,7 +6,6 @@ members = [
     "application",
     "debug_logger",
     "delayed_i2c",
-    "factory_tester_common",
     "fake_i2c",
     "fpga_app",
     "gateware_compress",
@@ -27,7 +26,6 @@ members = [
 ]
 # Crates/workspaces that can't be compiled for Linux are listed here.
 exclude = [
-    "factory_tester",
     "riscv",
     "mcu",
 ]
