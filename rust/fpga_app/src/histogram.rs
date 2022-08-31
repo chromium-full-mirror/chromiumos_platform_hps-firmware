@@ -120,7 +120,7 @@ impl Histogram {
         // Images with entropy below the threshold are usable.
         // The entropy threshold was defined empirically.
         // For more details, please refer to b/204518775#comment9.
-        const ENTROPY_THRESHOLD: u32 = 270000000;
+        const ENTROPY_THRESHOLD: u32 = 31000000;
         self.entropy() < ENTROPY_THRESHOLD
     }
 
@@ -190,11 +190,11 @@ mod tests {
 
     #[test]
     fn test_calculate_entropy_nomiri() {
-        assert!(!Histogram::new(&png_pixels(images::WHITE).unwrap()).is_usable());
-        assert!(Histogram::new(&png_pixels(images::NOT_PERSON).unwrap()).is_usable());
+        assert!(!Histogram::new_cropped(&png_pixels(images::WHITE).unwrap()).is_usable());
+        assert!(Histogram::new_cropped(&png_pixels(images::NOT_PERSON).unwrap()).is_usable());
 
         // An image with all pixels of the same value is not usable
-        assert!(!Histogram::new(&[25; 76800]).is_usable());
+        assert!(!Histogram::new_cropped(&[25; 76800]).is_usable());
     }
 
     #[test]
