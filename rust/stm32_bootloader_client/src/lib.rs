@@ -305,13 +305,16 @@ impl Config {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
-#[cfg(feature = "defmt")]
-fn log_error<E: core::fmt::Debug>(error: &E) {
-    defmt::error!("I2C error: {:?}", defmt::Debug2Format(error));
+fn log_error<E: core::fmt::Debug>(_error: &E) {
+    #[cfg(feature = "defmt")]
+    {
+        defmt::error!("I2C error: {:?}", defmt::Debug2Format(_error));
+    }
+    #[cfg(feature = "log")]
+    {
+        log::error!("I2C error: {:?}", _error);
+    }
 }
-
-#[cfg(not(feature = "defmt"))]
-fn log_error<E: core::fmt::Debug>(_: &E) {}
 
 #[cfg(test)]
 mod tests {
