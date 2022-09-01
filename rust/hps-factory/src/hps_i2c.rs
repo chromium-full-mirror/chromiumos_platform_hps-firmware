@@ -283,7 +283,7 @@ where
             stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
         // Datasheet for stm32g071 says 41.1ms.
         stm32_config.mass_erase_max_ms = 42;
-        let mut stm32 = Stm32::new(self.i2c, stm32_config);
+        let mut stm32 = Stm32::borrowed(self.i2c, stm32_config);
 
         // Double-check that we've got the device we expected.
         let chip_id = stm32.get_chip_id()?;
