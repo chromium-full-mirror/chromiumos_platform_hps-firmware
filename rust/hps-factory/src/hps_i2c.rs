@@ -14,7 +14,6 @@ use hps_interface::Hps;
 use hps_interface::HpsAdapter;
 use hps_interface::Stage;
 use indicatif::ProgressBar;
-use linux_embedded_hal::Delay;
 use log::info;
 use mcu_common::commands::Command;
 use mcu_common::memory_banks;
@@ -25,6 +24,7 @@ use mcu_common::HPS_ADDRESS;
 use mcu_common::SIGNATURE_OFFSET;
 use std::time::Duration;
 use std::time::Instant;
+use stm32_bootloader_client::StdDelay;
 use stm32_bootloader_client::Stm32;
 
 const FACTORY_BOOTLOADER_I2C_ADDRESS: u8 = 0x51;
@@ -277,16 +277,13 @@ where
         Ok(())
     }
 
-    pub(crate) fn open_bootloader(&mut self) -> Result<Stm32<I, Delay>> {
+    pub(crate) fn open_bootloader(&mut self) -> Result<Stm32<I, StdDelay>> {
         self.wait_i2c_ready(FACTORY_BOOTLOADER_I2C_ADDRESS, "STM32 system bootloader")?;
         let mut stm32_config =
             stm32_bootloader_client::Config::i2c_address(FACTORY_BOOTLOADER_I2C_ADDRESS);
         // Datasheet for stm32g071 says 41.1ms.
         stm32_config.mass_erase_max_ms = 42;
-        // Leaking a zero-sized type is free and saves us passing in a delay.
-        assert!(std::mem::size_of::<Delay>() == 0);
-        let delay = Box::leak(Box::new(Delay));
-        let mut stm32 = Stm32::new(self.i2c, delay, stm32_config);
+        let mut stm32 = Stm32::new(self.i2c, stm32_config);
 
         // Double-check that we've got the device we expected.
         let chip_id = stm32.get_chip_id()?;
@@ -323,7 +320,7 @@ where
     }
 
     fn verify(
-        stm32: &mut Stm32<I, Delay>,
+        stm32: &mut Stm32<I, StdDelay>,
         name: &str,
         address: u32,
         program_bytes: &[u8],

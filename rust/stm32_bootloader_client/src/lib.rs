@@ -72,13 +72,30 @@ pub struct Progress {
     pub bytes_total: usize,
 }
 
+#[cfg(feature = "std")]
+impl<'a, E, I2c> Stm32<'a, I2c, StdDelay>
+where
+    E: core::fmt::Debug,
+    I2c: Write<Error = E> + Read<Error = E>,
+{
+    pub fn new(dev: &'a mut I2c, config: Config) -> Stm32<'a, I2c, StdDelay> {
+        // StdDelay is zero-sized, so this doesn't actually leak any memory.
+        let delay = Box::leak(Box::new(StdDelay));
+        Self::new_with_delay(dev, delay, config)
+    }
+}
+
 impl<'a, E, I2c, Delay> Stm32<'a, I2c, Delay>
 where
     E: core::fmt::Debug,
     I2c: Write<Error = E> + Read<Error = E>,
     Delay: embedded_hal::blocking::delay::DelayMs<u32>,
 {
-    pub fn new(dev: &'a mut I2c, delay: &'a mut Delay, config: Config) -> Stm32<'a, I2c, Delay> {
+    pub fn new_with_delay(
+        dev: &'a mut I2c,
+        delay: &'a mut Delay,
+        config: Config,
+    ) -> Stm32<'a, I2c, Delay> {
         Self { dev, delay, config }
     }
 
@@ -268,6 +285,18 @@ where
     }
 }
 
+/// An implementation of the embedded-hal DelayMs trait that works when std is
+/// available.
+#[cfg(feature = "std")]
+pub struct StdDelay;
+
+#[cfg(feature = "std")]
+impl embedded_hal::blocking::delay::DelayMs<u32> for StdDelay {
+    fn delay_ms(&mut self, ms: u32) {
+        std::thread::sleep(std::time::Duration::from_millis(ms.into()));
+    }
+}
+
 fn checksum(bytes: &[u8]) -> u8 {
     let initial = if bytes.len() == 1 { 0xff } else { 0 };
     bytes
@@ -352,7 +381,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         assert_eq!(stm32.get_chip_id().unwrap(), 0xabcd);
         i2c.done();
     }
@@ -367,7 +396,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         assert_eq!(stm32.get_bootloader_version().unwrap(), 0xef);
         i2c.done();
     }
@@ -385,7 +414,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         let mut out = [0u8; 3];
         stm32.read_memory(0x12345678, &mut out).unwrap();
         assert_eq!(&out, &[0xab, 0xcd, 0xef]);
@@ -404,7 +433,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         stm32
             .write_memory(0x12345678, &[0xab, 0xcd, 0xef, 0x12])
             .unwrap();
@@ -421,7 +450,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         stm32.go(0x12345678).unwrap();
         i2c.done();
     }
@@ -449,7 +478,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         let mut callback_count = 0;
         stm32
             .write_bulk(0x12345678, &to_write, |_| {
@@ -481,7 +510,7 @@ mod tests {
         ];
         let mut i2c = i2c::Mock::new(&expectations);
         let mut delay = Delay;
-        let mut stm32 = Stm32::new(&mut i2c, &mut delay, CONFIG);
+        let mut stm32 = Stm32::new_with_delay(&mut i2c, &mut delay, CONFIG);
         let mut callback_count = 0;
         stm32
             .verify(0x12345678, &to_verify, |_| {
