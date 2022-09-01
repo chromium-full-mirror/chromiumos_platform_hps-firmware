@@ -58,7 +58,7 @@ mod app {
     #[shared]
     struct SharedResources {
         state: ApplicationState,
-        host_interface: HostInterface<board::HostBus>,
+        host_interface: HostInterface<board::HostBus, board::InterruptPin>,
         spi: SpiPeripheral,
         #[lock_free]
         exti: hal::stm32::EXTI,
@@ -90,9 +90,7 @@ mod app {
     }
 
     #[local]
-    struct LocalResources {
-        interrupt_pin: board::InterruptPin,
-    }
+    struct LocalResources {}
 
     #[init(local = [
         i2c_recv_buffer: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
@@ -160,7 +158,8 @@ mod app {
         let dma = p.DMA.split(&mut rcc, p.DMAMUX);
         let mut exti = p.EXTI;
 
-        let mut host_interface = HostInterface::new(board.host_bus, &header::__IMAGE_HDR);
+        let mut host_interface =
+            HostInterface::new(board.host_bus, board.interrupt_pin, &header::__IMAGE_HDR);
         host_interface.init_status = init_status;
 
         // We either use our MemBlock to store a crash that occurred on the previous
@@ -337,9 +336,7 @@ mod app {
             pwm_channel,
             delay,
         };
-        let local = LocalResources {
-            interrupt_pin: board.interrupt_pin,
-        };
+        let local = LocalResources {};
 
         (shared, local, init::Monotonics())
     }
@@ -719,9 +716,11 @@ mod app {
         host_interface.lock(|h| h.command_completed());
     }
 
-    #[task(shared = [host_interface], local = [interrupt_pin])]
+    #[task(shared = [host_interface])]
     fn signal_interrupt(mut ctx: signal_interrupt::Context) {
-        let _ = ctx.local.interrupt_pin.set_low();
+        ctx.shared.host_interface.lock(|h| {
+            h.assert_interrupt();
+        });
         // TODO: If we use signal_interrupt for something other than testing and
         // debugging purposes, we should use a timer rather than a delay so that
         // other tasks at this priory can run concurrently. Also, basing the
@@ -729,8 +728,10 @@ mod app {
         // duration. But this is good enough for testing purposes. If the CPU is
         // running at slow mode (12 MHz), then 100_000 cycles should be about 8ms.
         cortex_m::asm::delay(100_000);
-        let _ = ctx.local.interrupt_pin.set_high();
-        ctx.shared.host_interface.lock(|h| h.command_completed());
+        ctx.shared.host_interface.lock(|h| {
+            h.deassert_interrupt();
+            h.command_completed();
+        });
     }
 }
 

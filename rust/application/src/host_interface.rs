@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use core::convert::TryFrom;
+use embedded_hal::digital::v2::OutputPin;
 use i2c_peripheral::I2cPeripheral;
 use i2c_protocol::I2cProtocolHandler;
 use i2c_protocol::ReadRegisterEvent;
@@ -21,8 +22,9 @@ use mcu_common::Status;
 
 use crate::application_state::ApplicationState;
 
-pub struct HostInterface<I: I2cPeripheral> {
+pub struct HostInterface<I: I2cPeripheral, N: OutputPin> {
     protocol_handler: I2cProtocolHandler<I>,
+    interrupt: N,
     common_interface: CommonHostInterface,
     pub spi_flash_status: u16,
     #[cfg(feature = "image-transfer")]
@@ -54,10 +56,11 @@ pub enum Event {
     TestCameraI2c,
 }
 
-impl<I: I2cPeripheral> HostInterface<I> {
-    pub fn new(i2c: I, image_header: &'static ImageHeader) -> Self {
+impl<I: I2cPeripheral, N: OutputPin> HostInterface<I, N> {
+    pub fn new(i2c: I, interrupt: N, image_header: &'static ImageHeader) -> Self {
         Self {
             protocol_handler: I2cProtocolHandler::new(i2c),
+            interrupt: interrupt,
             common_interface: CommonHostInterface::new(),
             spi_flash_status: 0xdead,
             #[cfg(feature = "image-transfer")]
@@ -81,6 +84,14 @@ impl<I: I2cPeripheral> HostInterface<I> {
 
     pub fn i2c_mut(&mut self) -> &mut I {
         self.protocol_handler.i2c_mut()
+    }
+
+    pub fn assert_interrupt(&mut self) {
+        let _ = self.interrupt.set_low();
+    }
+
+    pub fn deassert_interrupt(&mut self) {
+        let _ = self.interrupt.set_high();
     }
 
     /// Supply (or return) a memory block for the purpose of receiving data.
@@ -322,6 +333,17 @@ mod tests {
     use hps_interface::HpsAdapter;
     use hps_interface::NoopInterruptLine;
 
+    struct FakePin {}
+    impl OutputPin for FakePin {
+        type Error = std::convert::Infallible;
+        fn set_low(&mut self) -> Result<(), Self::Error> {
+            Ok(())
+        }
+        fn set_high(&mut self) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
     static HEADER: ImageHeader = create_test_header();
 
     #[test]
@@ -336,6 +358,7 @@ mod tests {
                 hps.check_magic().unwrap();
                 hps.check_magic().unwrap();
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -352,6 +375,7 @@ mod tests {
                 );
                 hps.write_memory(3, 0, &[0xaa; 64]).unwrap();
             }),
+            FakePin {},
             &HEADER,
         );
         interface.supply_mem_block(MemBlock::with_capacity(64));
@@ -376,6 +400,7 @@ mod tests {
                     (Status::OK | Status::STAGE1).bits()
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -392,6 +417,7 @@ mod tests {
                 );
                 hps.perform_command(Command::Reset).unwrap();
             }),
+            FakePin {},
             &HEADER,
         );
         assert_eq!(
@@ -411,6 +437,7 @@ mod tests {
                 );
                 hps.perform_command(Command::LaunchApp).unwrap();
             }),
+            FakePin {},
             &HEADER,
         );
         assert_eq!(
@@ -430,6 +457,7 @@ mod tests {
                 );
                 hps.write_register(Register::EnabledFeatures, 1234).unwrap();
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -451,6 +479,7 @@ mod tests {
                     0x8055
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -471,6 +500,7 @@ mod tests {
                     0x80AB
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -491,6 +521,7 @@ mod tests {
                     0x00AB
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -511,6 +542,7 @@ mod tests {
                     0x807A
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);
@@ -534,6 +566,7 @@ mod tests {
                     0x0102
                 );
             }),
+            FakePin {},
             &HEADER,
         );
         interface.handle_i2c_events(&mut state);

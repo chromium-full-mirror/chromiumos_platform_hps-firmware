@@ -5,6 +5,7 @@ edition = "2021"
 license = "BSD-3-Clause"
 
 [dependencies]
+embedded-hal = "0.2.4"
 i2c_peripheral = { path = "../i2c_peripheral" }
 i2c_protocol = { path = "../i2c_protocol" }
 log = {version = "0.4.14" }
