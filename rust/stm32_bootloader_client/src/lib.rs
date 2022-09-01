@@ -65,10 +65,11 @@ pub struct Stm32<'a, I2c: Write + Read, DelayMs> {
     config: Config,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
+#[non_exhaustive]
 pub struct Progress {
-    pub percent_complete: u32,
     pub bytes_complete: usize,
+    pub bytes_total: usize,
 }
 
 impl<'a, E, I2c, Delay> Stm32<'a, I2c, Delay>
@@ -141,8 +142,8 @@ where
             complete += chunk.len();
             address += chunk.len() as u32;
             progress_cb(Progress {
-                percent_complete: (complete * 100 / bytes.len()) as u32,
                 bytes_complete: complete,
+                bytes_total: bytes.len(),
             });
         }
         Ok(())
@@ -169,8 +170,8 @@ where
             complete += chunk.len();
             address += chunk.len() as u32;
             progress_cb(Progress {
-                percent_complete: (complete * 100 / bytes.len()) as u32,
                 bytes_complete: complete,
+                bytes_total: bytes.len(),
             });
         }
         Ok(())
