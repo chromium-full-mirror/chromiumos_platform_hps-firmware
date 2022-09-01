@@ -357,7 +357,7 @@ mod app {
         priority = 3)]
     fn i2c1_interrupt(ctx: i2c1_interrupt::Context) {
         let mut host_interface = ctx.shared.host_interface;
-        let event = (&mut host_interface, ctx.shared.state).lock(|h, s| h.handle_interrupt(s));
+        let event = (&mut host_interface, ctx.shared.state).lock(|h, s| h.handle_i2c_events(s));
         match event {
             Some(application::Event::Command(Command::Reset)) => {
                 cortex_m::peripheral::SCB::sys_reset()

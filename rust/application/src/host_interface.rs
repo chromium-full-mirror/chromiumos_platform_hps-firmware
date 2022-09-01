@@ -88,7 +88,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
         self.protocol_handler.supply_mem_block(mem_block);
     }
 
-    pub fn handle_interrupt(&mut self, state: &mut ApplicationState) -> Option<Event> {
+    pub fn handle_i2c_events(&mut self, state: &mut ApplicationState) -> Option<Event> {
         loop {
             match self.protocol_handler.next_event() {
                 Ok(i2c_protocol::Event::ReadRegister(event)) => {
@@ -338,7 +338,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -355,7 +355,7 @@ mod tests {
             &HEADER,
         );
         interface.supply_mem_block(MemBlock::with_capacity(64));
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
         assert_eq!(
             interface.common_interface.get_error(),
             Error::HostI2cBadRequest
@@ -378,7 +378,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -395,7 +395,7 @@ mod tests {
             &HEADER,
         );
         assert_eq!(
-            interface.handle_interrupt(&mut state),
+            interface.handle_i2c_events(&mut state),
             Some(Event::Command(Command::Reset))
         );
     }
@@ -414,7 +414,7 @@ mod tests {
             &HEADER,
         );
         assert_eq!(
-            interface.handle_interrupt(&mut state),
+            interface.handle_i2c_events(&mut state),
             Some(Event::Command(Command::LaunchApp))
         );
     }
@@ -432,7 +432,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
         assert_eq!(state.configuration.enabled_features, 1234);
     }
 
@@ -453,7 +453,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -473,7 +473,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -493,7 +493,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -513,7 +513,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     #[test]
@@ -536,7 +536,7 @@ mod tests {
             }),
             &HEADER,
         );
-        interface.handle_interrupt(&mut state);
+        interface.handle_i2c_events(&mut state);
     }
 
     const fn create_test_header() -> ImageHeader {
