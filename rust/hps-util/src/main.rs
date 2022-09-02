@@ -75,6 +75,7 @@ enum SubCommand {
     Status(Status),
     Unbind,
     Bind,
+    /// Print scores and latency in a loop
     Monitor,
     /// Wait for HPS to assert its interrupt line
     #[clap(name = "wfi")]
@@ -306,7 +307,10 @@ fn main() -> Result<()> {
         SubCommand::Status(_) => print_status(&mut *hps),
         SubCommand::Unbind => unreachable!(),
         SubCommand::Bind => unreachable!(),
-        SubCommand::Monitor => monitor::run(&mut *hps),
+        SubCommand::Monitor => monitor::run(
+            &mut *hps,
+            /* use_interrupt */ flags.interrupt != InterruptInterface::None,
+        ),
         SubCommand::WaitForInterrupt => hps.wait_for_interrupt(),
     }
 }

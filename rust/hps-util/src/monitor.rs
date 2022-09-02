@@ -10,7 +10,7 @@ use std::fmt::Display;
 use std::io::Write;
 use std::time::Instant;
 
-pub fn run(hps: &mut dyn Hps) -> Result<()> {
+pub fn run(hps: &mut dyn Hps, use_interrupt: bool) -> Result<()> {
     hps.launch_app()?;
 
     // Configure enabled features.
@@ -25,13 +25,19 @@ pub fn run(hps: &mut dyn Hps) -> Result<()> {
     let mut latencies = Vec::new();
 
     loop {
-        // Wait until the FPGA completes a loop.
+        // Wait for new scores to be ready.
         let start = Instant::now();
-        loop {
-            let loop_counter = hps.read_register(Register::FpgaLoopCount)?;
-            if loop_counter != last_loop_counter {
-                last_loop_counter = loop_counter;
-                break;
+        if use_interrupt {
+            hps.wait_for_interrupt()?;
+        } else {
+            // Busy-wait until the FPGA loop counter increments, indicating that there should be
+            // a score update.
+            loop {
+                let loop_counter = hps.read_register(Register::FpgaLoopCount)?;
+                if loop_counter != last_loop_counter {
+                    last_loop_counter = loop_counter;
+                    break;
+                }
             }
         }
         latencies.push(start.elapsed().as_millis());
