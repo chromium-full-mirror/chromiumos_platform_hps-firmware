@@ -140,6 +140,11 @@ impl<I: I2cPeripheral, N: OutputPin> HostInterface<I, N> {
         }
     }
 
+    pub fn report_status_update(&mut self, _state: &ApplicationState) {
+        // TODO(dcallagh): only send useful/wanted interrupts to avoid waking the AP unnecessarily.
+        self.assert_interrupt();
+    }
+
     pub fn report_error(&mut self, error: mcu_common::Error) {
         self.common_interface.report_error(error);
     }
@@ -169,8 +174,14 @@ impl<I: I2cPeripheral, N: OutputPin> HostInterface<I, N> {
             .unwrap_or(0);
         let result = match event.register {
             Register::SystemStatus => common_value | self.status().bits(),
-            Register::UserPresentStatus => state.status.person_status,
-            Register::SecondPersonStatus => state.status.second_person_status,
+            Register::UserPresentStatus => {
+                self.deassert_interrupt();
+                state.status.person_status
+            }
+            Register::SecondPersonStatus => {
+                self.deassert_interrupt();
+                state.status.second_person_status
+            }
             Register::MemoryBankAvailable => {
                 if !self.spi_flash_erasing && self.protocol_handler.has_receive_buffer() {
                     (1 << memory_banks::FPGA_BITSTREAM) | (1 << memory_banks::SOC_ROM)

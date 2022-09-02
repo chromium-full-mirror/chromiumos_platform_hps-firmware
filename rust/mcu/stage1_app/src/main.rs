@@ -529,10 +529,14 @@ mod app {
                 .shared
                 .state
                 .lock(|state| fpga::read_config_registers(&mut buffer, state)),
-            fpga::Action::WriteStatusRegisters => ctx
-                .shared
-                .state
-                .lock(|state| fpga::write_status_registers(&buffer, state)),
+            fpga::Action::WriteStatusRegisters => {
+                ctx.shared.state.lock(|state| {
+                    fpga::write_status_registers(&buffer, state);
+                    ctx.shared
+                        .host_interface
+                        .lock(|h| h.report_status_update(state));
+                });
+            }
             fpga::Action::ReportFpgaBoot => {
                 let count = ctx
                     .shared
