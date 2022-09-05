@@ -97,6 +97,7 @@ mod app {
     #[init(local = [
         i2c_recv_buffer: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE],
+        fpga_buffer: [u8; fpga::BUFFER_SIZE] = [0; fpga::BUFFER_SIZE],
         #[cfg(feature = "dev")]
         debug_recv_buffer: [u8; i2c_protocol::RECV_BUFFER_SIZE] =
             [0; i2c_protocol::RECV_BUFFER_SIZE],
@@ -196,6 +197,7 @@ mod app {
             dma.ch1,
             dma.ch2,
             board.spi_ready,
+            MemBlock::new(ctx.local.fpga_buffer),
         );
 
         let stopwatch = p.TIM2.stopwatch(&mut rcc);

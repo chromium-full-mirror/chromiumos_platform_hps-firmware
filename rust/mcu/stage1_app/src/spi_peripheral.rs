@@ -3,15 +3,11 @@
 // found in the LICENSE file.
 
 use crate::board;
-use application::fpga::BUFFER_SIZE;
 use hal::dma::Channel;
 use hal::dma::Event::TransferError;
 use hal::prelude::*;
 use log::error;
 use mcu_common::MemBlock;
-
-/// Main buffer. Used for receiving, then sending, but never at the same time.
-static mut BUFFER: [u8; BUFFER_SIZE] = [0u8; BUFFER_SIZE];
 
 /// The SPI interface with the FPGA. We act as the peripheral on the SPI bus,
 /// with the FPGA as the controller.
@@ -59,6 +55,7 @@ impl SpiPeripheral {
         tx_dma: hal::dma::C1,
         rx_dma: hal::dma::C2,
         spi_ready: board::SpiReady,
+        buffer: MemBlock,
     ) -> SpiPeripheral {
         hal::spi::PinSck::setup(&sck);
         hal::spi::PinMiso::setup(&miso);
@@ -84,12 +81,6 @@ impl SpiPeripheral {
         });
 
         // TODO: Enable interrupts for DMA errors.
-
-        // safety: The following MemBlock takes ownership of its mutable
-        // reference. This is safe provided each it has exactly one owner, which
-        // we can guarantee because we take ownership of `spi`, so cannot be
-        // called more than once.
-        let buffer = MemBlock::new(unsafe { &mut BUFFER });
 
         let mut spi_peripheral = Self {
             spi,
