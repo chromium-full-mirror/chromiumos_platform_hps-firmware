@@ -8,12 +8,7 @@ set -e
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
 
-cd "${PROJECT_ROOT}/rust/mcu"
-cargo build \
-    -p stage1_app \
-    --no-default-features \
-    --features proto2,standalone,dev,image-transfer,no-hash-check \
-    "$@"
-BINARY="target/thumbv6m-none-eabi/debug/stage1_app"
+"${PROJECT_ROOT}/scripts/build-mcu-rom-dev" "$@"
+BINARY="${PROJECT_ROOT}/rust/mcu/target/thumbv6m-none-eabi/debug/stage1_app"
 "${PROJECT_ROOT}/scripts/proto2-openocd" \
     -c "program $BINARY verify reset"
