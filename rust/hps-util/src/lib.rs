@@ -43,6 +43,10 @@ pub fn print_status(hps: &mut dyn Hps) -> Result<()> {
             println!("{}", hps.read_part_ids()?);
         }
         hps_interface::Stage::Application => {
+            let crash_report = hps.fpga_crash_report()?;
+            if !crash_report.is_empty() {
+                println!("FPGA crash: {}", crash_report);
+            }
             println!(
                 "FPGA boot count: {}",
                 hps.read_register(Register::FpgaBootCount)?

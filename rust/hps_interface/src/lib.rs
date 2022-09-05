@@ -164,6 +164,15 @@ pub trait Hps {
         Ok(String::from_utf8(bytes)?)
     }
 
+    fn fpga_crash_report(&mut self) -> Result<String> {
+        let mut bytes =
+            self.read_register_bytes(Register::FpgaCrash, mcu_common::MCU_CRASH_RECORD_SIZE)?;
+        if let Some(null_offset) = bytes.iter().position(|b| *b == 0) {
+            bytes.truncate(null_offset);
+        }
+        Ok(String::from_utf8(bytes)?)
+    }
+
     fn wait_memory_bank_available(&mut self, memory_bank: u8) -> Result<()> {
         // Writing the first page of the SPI flash will trigger a mass erase.
         // The data sheet for GD25LQ128D lists the maximum chip erase time as
