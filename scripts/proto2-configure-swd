@@ -8,7 +8,7 @@
 
 If we don't do this, then software resets performed by the MCU don't work
 correctly. See b/197175065 for details. Note, this is not needed if you're
-already using ./scripts/proto2-run or a similar script, since they already
+already using ./scripts/proto2-openocd or a similar script, since they already
 initialize port B in order to program the device.
 """
 

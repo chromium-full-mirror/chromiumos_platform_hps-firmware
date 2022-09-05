@@ -5,7 +5,7 @@ To update to a newer model:
 * Update model/manifest.txt with the new model's verison information.
 * Update test_data/presence.expected and test_data/second.expected with the new
   expected scores for each of the test images.
-* Run `./scripts/proto2-run` in one terminal.
+* Run `./scripts/proto2-openocd` in one terminal.
 * Run `./scripts/test-models` in a second terminal.
 
 The output from test-models should look something like this:

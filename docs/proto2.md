@@ -52,14 +52,12 @@ Error: Failed to open HPS via I2C: USB error: Access denied (insufficient permis
 
 ## Running the MCU application
 
-Run the helper script:
+Start OpenOCD:
 
 ```
-scripts/proto2-run
+scripts/proto2-openocd
 ```
 
-This helper script builds the MCU application with development features
-enabled, then programs it onto the MCU flash and runs it under OpenOCD.
 Example output:
 
 ```
@@ -73,14 +71,24 @@ Info : Listening on port 4444 for telnet connections
 ```
 
 Leave the script running OpenOCD in one terminal, and continue working in
-another terminal. The proto2 helper scripts interact with OpenOCD over
-port 4444.
+another terminal. Scripts such as `mcu-run` and `fpga-rom-run` interact with
+OpenOCD over port 4444.
+
+To build and run the MCU program, run:
+
+```
+scripts/mcu-run
+```
+
+This helper script builds the MCU application with development features
+enabled, then programs it onto the MCU flash and runs it. It then shows output
+from the MCU program and allows further interaction.
 
 *** note
 **NOTE:** The first time you program the MCU flash (or if you have erased it),
 the STM32 bootloader will not correctly reset into the application. As a
-workaround, kill `scripts/proto2-run`, power cycle the board using
-`scripts/proto2-power-cycle.py`, then run `scripts/proto2-run` again.
+workaround, power cycle the board using `scripts/proto2-power-cycle.py`, then
+run `scripts/mcu-run` again.
 ***
 
 ## Interacting with the MCU application
@@ -89,14 +97,10 @@ When the MCU application is built with development features enabled, it
 accepts debugging commands using the [RTT (Real-Time
 Transfer)](https://docs.rs/rtt-target/latest/rtt_target/) protocol.
 
-Use the monitor program to interact with the MCU over RTT:
-
-```
-scripts/proto2-mon
-```
-
-Press enter to activate the console, then type a command.
-The monitor prints messages it receives over RTT. Example output:
+Use the monitor program to interact with the MCU over RTT. In the terminal
+that's running `scripts/mcu-run`, press enter to activate the console, then
+type a command. The monitor prints messages it receives over RTT. Example
+output:
 
 ```
 >> reset_mcu
@@ -126,8 +130,8 @@ On a real HPS peripheral, the stage0 boot loader is permanently programmed at
 the beginning of flash, and it executes the stage1 application from an offset
 in flash after verifying its signature. When working with proto2, we typically
 skip the stage0 boot loader because it’s not necessary for development. The
-`scripts/proto2-run` helper script mentioned above writes the application to
-the beginning of flash; the stage0 boot loader is not involved.
+`scripts/mcu-run` helper script mentioned above writes the application to the
+beginning of flash; the stage0 boot loader is not involved.
 
 However, if you are testing a change to the stage0 boot loader, you may want
 to run it on proto2. There is a corresponding helper script for stage0:

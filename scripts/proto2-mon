@@ -7,9 +7,12 @@
 set -e
 
 PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")"/..)
+MCU_ROM="${PROJECT_ROOT}/rust/mcu/target/thumbv6m-none-eabi/debug/stage1_app"
 
 "${PROJECT_ROOT}/scripts/hps-mon" \
     --openocd-port 4444 \
+    --mcu-rom "${MCU_ROM}" \
     --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
     --soc-rom "${PROJECT_ROOT}/build/hps_platform/fpga_rom.bin" \
+    --test-data-dir "${PROJECT_ROOT}/test_data" \
     "$@"

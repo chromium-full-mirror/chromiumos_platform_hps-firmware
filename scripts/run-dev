@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Copyright 2022 The ChromiumOS Authors.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Builds and runs the MCU and FPGA applications and shows output from both.
+# scripts/proto2-openocd needs to already be running in a separate terminal.
+#
+# --no-mcu Skip building the MCU application
+# --no-fpga Skip building and running the FPGA application
+
+set -e
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+if [ "$1" = "--nomcu" ]; then
+    shift
+    START_MCU="reset_mcu"
+else
+    "${PROJECT_ROOT}/scripts/build-mcu-rom-dev"
+    START_MCU="write_mcu"
+fi
+if [ "$1" = "--nofpga" ]; then
+    shift
+    START_FPGA=""
+else
+    "${PROJECT_ROOT}/scripts/build-fpga-rom-dev"
+    START_FPGA="; write_gateware; write_soc_rom; launch_app_without_i2c"
+fi
+
+"${PROJECT_ROOT}/scripts/proto2-mon" \
+    --cmd "${START_MCU} ${START_FPGA}" \
+    "$@"

@@ -4,20 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Builds and runs the Rust SOC ROM. ./scripts/proto2-run should already be
-# running in a separate shell.
+# Builds and runs the Rust SOC ROM. ./scripts/proto2-openocd should already be
+# running in a separate shell and the MCU ROM should already be flashed.
 
 set -e
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
-ROM="${PROJECT_ROOT}/build/hps_platform/fpga_rom.bin"
 
-"${PROJECT_ROOT}/scripts/build-fpga-rom-dev"
-
-"${PROJECT_ROOT}/scripts/hps-mon" \
-    --openocd-port 4444 \
-    --gateware "${PROJECT_ROOT}/build/hps_platform/gateware/hps_platform.bit" \
-    --soc-rom "${ROM}" \
-    --test-data-dir "${PROJECT_ROOT}/test_data" \
-    --cmd 'reset_mcu; write_gateware; write_soc_rom; launch_app_without_i2c' \
-    "$@"
+"${PROJECT_ROOT}/scripts/run-dev" --nomcu "$@"

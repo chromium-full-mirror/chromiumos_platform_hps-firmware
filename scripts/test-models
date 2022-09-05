@@ -4,13 +4,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Builds FPGA ROM, uploads to device, uploads test images, then runs model on
-# all test images.
+# Builds MCU and FPGA ROMs, uploads them to the device, uploads test images,
+# then runs model on all test images.
 
 set -e
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 
-"${PROJECT_ROOT}/scripts/fpga-rom-run" \
+"${PROJECT_ROOT}/scripts/run-dev" \
     --cmd 'reset_mcu; write_test_images; launch_app_without_i2c; fpga_self_test' \
     "$@"
