@@ -79,6 +79,11 @@ pub enum Register {
     /// clears it.
     PreviousCrash = 22,
 
+    /// RO: An FPGA crash report. Maximum length is 256 bytes. Payload is
+    /// everything prior to the first null byte. Reading this register clears
+    /// it.
+    FpgaCrash = 23,
+
     /// RO: Reads will be sufficiently slow to cause an underrun.
     #[cfg(feature = "dev")]
     SlowRead = 100,

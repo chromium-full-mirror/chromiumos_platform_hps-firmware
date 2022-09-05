@@ -64,7 +64,8 @@ follows the command (write operation).
 | 19       | WO     | Appl        | Start camera test            | 2      |
 | 20       | RW     | OneTimeInit | Option bytes configuration   | 2      |
 | 21       | RO     | Appl        | Part IDs                     | 20     |
-| 22       | RO     | Appl        | Previous crash message       | 256    |
+| 22       | RO     | Stage1/Appl | Previous crash message       | 256    |
+| 23       | RO     | Appl        | FPGA crash message           | 256    |
 
 Registers numbered 100 and over are reserved for debugging and development use
 and are not documented here.

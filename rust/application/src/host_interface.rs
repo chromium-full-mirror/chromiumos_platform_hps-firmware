@@ -34,6 +34,7 @@ pub struct HostInterface<I: I2cPeripheral> {
     pub part_ids: PartIds,
     image_header: &'static ImageHeader,
     previous_crash: Option<mcu_common::Buffer>,
+    fpga_crash: Option<mcu_common::Buffer>,
     #[cfg(feature = "dev")]
     pub debug: DebugValues,
 }
@@ -68,6 +69,7 @@ impl<I: I2cPeripheral> HostInterface<I> {
             part_ids: PartIds::default(),
             image_header,
             previous_crash: None,
+            fpga_crash: None,
             #[cfg(feature = "dev")]
             debug: DebugValues::default(),
         }
@@ -139,6 +141,9 @@ impl<I: I2cPeripheral> HostInterface<I> {
             error!("FPGA reported panic: {message}");
         }
         self.report_error(mcu_common::Error::FpgaPanic);
+        if let Some(mem_block) = self.protocol_handler.take_mem_block() {
+            self.fpga_crash = Some(Buffer::copied_from(mem_block, bytes));
+        }
     }
 
     pub fn report_previous_crash(&mut self, buffer: Buffer) {
@@ -200,6 +205,13 @@ impl<I: I2cPeripheral> HostInterface<I> {
             Register::FirmwareVersionLow => self.get_version_part(2),
             Register::PreviousCrash => {
                 if let Some(report) = self.previous_crash.take() {
+                    event.respond(report, &mut self.protocol_handler);
+                    return;
+                }
+                0
+            }
+            Register::FpgaCrash => {
+                if let Some(report) = self.fpga_crash.take() {
                     event.respond(report, &mut self.protocol_handler);
                     return;
                 }
