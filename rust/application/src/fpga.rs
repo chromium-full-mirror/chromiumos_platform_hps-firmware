@@ -14,7 +14,7 @@ use mcu_common::MemBlock;
 pub use self::commands::Action;
 
 /// Size of buffer used for SPI communcation between the FPGA and the MCU.
-pub const BUFFER_SIZE: usize = 64;
+pub const BUFFER_SIZE: usize = 256;
 
 pub struct Request {
     /// An action that should be performed before we send the response. Will be
