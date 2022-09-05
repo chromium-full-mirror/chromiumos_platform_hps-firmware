@@ -39,5 +39,8 @@ bitflags! {
         /// will be reported in the person_status register. The number of
         /// iterations will be reported in the loop counter.
         const CAMERA_DATA_TEST = 0x400;
+
+        /// Once enabled, triggers an intentional panic.
+        const PANIC = 0x800;
     }
 }

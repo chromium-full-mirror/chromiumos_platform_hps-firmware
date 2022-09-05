@@ -205,6 +205,9 @@ where
         if features.contains(Features::CAMERA_DATA_TEST) {
             self.camera_data_test();
         }
+        if features.contains(Features::PANIC) {
+            panic!("Intentional FPGA panic");
+        }
 
         #[cfg(feature = "dev")]
         {
