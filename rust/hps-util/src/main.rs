@@ -179,7 +179,12 @@ fn parse_long_reg_spec(spec: &str) -> Option<(Register, usize)> {
 fn parse_reg_write(s: &str) -> Option<(Register, u16)> {
     let mut parts = s.split('=');
     let register = parse_reg(parts.next()?)?;
-    let value = parts.next()?.parse::<u16>().ok()?;
+    let value_str = parts.next()?;
+    let value = if let Some(hex_str) = value_str.strip_prefix("0x") {
+        u16::from_str_radix(hex_str, 16).ok()?
+    } else {
+        value_str.parse::<u16>().ok()?
+    };
     Some((register, value))
 }
 
@@ -279,5 +284,19 @@ fn main() -> Result<()> {
         SubCommand::Unbind => unreachable!(),
         SubCommand::Bind => unreachable!(),
         SubCommand::Monitor => monitor::run(&mut *hps),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use mcu_common::registers::Register;
+
+    use super::parse_reg_write;
+
+    #[test]
+    fn test_parse_reg_write() {
+        assert_eq!(parse_reg_write("3=12"), Some((Register::Command, 12)));
+        assert_eq!(parse_reg_write("3=0xA"), Some((Register::Command, 10)));
+        assert_eq!(parse_reg_write("3=0xa"), Some((Register::Command, 10)));
     }
 }
