@@ -61,6 +61,7 @@ pub(crate) enum LocalOperation {
     SetFeatureEnable,
     SleepMilliseconds,
     SetI2cRegister(Register),
+    WriteMcuProgram,
 }
 
 #[derive(Clone, Copy)]
@@ -367,6 +368,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
         help_text: "Set debug register 3",
         command_type: CommandType::LocalOperation(LocalOperation::SetI2cRegister(Register::Debug3)),
         arg_parser: U16_ARG,
+    },
+    AvailableDebugCommand {
+        keyword: "write_mcu",
+        help_text: "Writes the MCU program",
+        command_type: CommandType::LocalOperation(LocalOperation::WriteMcuProgram),
+        arg_parser: NO_ARG,
     },
 ];
 

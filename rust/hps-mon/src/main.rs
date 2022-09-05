@@ -23,6 +23,7 @@ use hps_interface::InterruptLine;
 use hps_interface::NoopInterruptLine;
 use interrupt_proxy::FtdiInterruptListener;
 use mcu_common::Status;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::mpsc;
 use std::sync::Arc;
@@ -98,6 +99,8 @@ trait Device {
     fn reset(&mut self) -> Result<()>;
 
     fn attach_rtt(&mut self) -> Result<RttChannels>;
+
+    fn write_program(&mut self, filename: &Path) -> Result<()>;
 }
 
 struct RttChannels {
@@ -127,6 +130,11 @@ struct Flags {
     /// filename from which gateware should be read when write_gateware command
     /// is run
     gateware: Option<PathBuf>,
+
+    #[clap(long)]
+    /// path to an ELF file from which MCU program should be read when write_mcu
+    /// command is run
+    mcu_rom: Option<PathBuf>,
 
     #[clap(long)]
     /// directory containing test images
@@ -361,6 +369,13 @@ fn execute_locally(
         LocalOperation::ResetMcu => {
             device.reset()?;
             set_blocking_mode(mcu_command_channel, true)?;
+        }
+        LocalOperation::WriteMcuProgram => {
+            if let Some(path) = &flags.mcu_rom {
+                device.write_program(path)?;
+            } else {
+                eprintln!("--mcu-rom must be specified on startup");
+            }
         }
         LocalOperation::WriteGateware => {
             if let Some(file) = &flags.gateware {

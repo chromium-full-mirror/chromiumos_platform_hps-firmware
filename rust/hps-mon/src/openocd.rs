@@ -14,6 +14,7 @@ use std::io::Read;
 use std::io::Write;
 use std::net::SocketAddr;
 use std::net::TcpStream;
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -90,6 +91,12 @@ impl Device for OpenOcdDevice {
             from_device,
             to_device,
         })
+    }
+
+    fn write_program(&mut self, filename: &Path) -> Result<()> {
+        self.connection
+            .write_all(format!("program {} verify reset\n", filename.display()).as_bytes())?;
+        Ok(())
     }
 }
 
