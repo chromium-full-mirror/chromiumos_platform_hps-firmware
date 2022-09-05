@@ -8,6 +8,7 @@ use crate::Device;
 use crate::RttChannels;
 use anyhow::anyhow;
 use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
 use std::io::ErrorKind;
 use std::io::Read;
@@ -112,8 +113,12 @@ fn connect_local_with_retry(port: u16) -> Result<TcpStream> {
 
 fn connect_local(port: u16) -> Result<TcpStream> {
     let address = SocketAddr::from(([127, 0, 0, 1], port));
-    TcpStream::connect(address)
-        .map_err(|error| anyhow!("Failed to connect to localhost on port {}: {}", port, error))
+    TcpStream::connect(address).with_context(|| {
+        format!(
+            "Failed to connect to localhost on port {port}\n\
+             Perhaps you need to run ./scripts/proto2-openocd"
+        )
+    })
 }
 
 impl DataSource for RttChannel {
