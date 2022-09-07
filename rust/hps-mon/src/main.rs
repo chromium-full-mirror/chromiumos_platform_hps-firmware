@@ -195,8 +195,9 @@ fn main() -> Result<()> {
             InterruptInterface::None => Box::new(NoopInterruptLine {}),
             InterruptInterface::AvrFtdiProxy => Box::new(FtdiInterruptListener::open()?),
         };
-        let hps: Arc<Mutex<(dyn Hps + Send)>> =
-            Arc::new(Mutex::new(HpsAdapter::new(Box::new(i2c), interrupt)?));
+        let hps: Arc<Mutex<(dyn Hps + Send)>> = Arc::new(Mutex::new(
+            HpsAdapter::without_magic_check(Box::new(i2c), interrupt),
+        ));
         Some(hps)
     };
 
