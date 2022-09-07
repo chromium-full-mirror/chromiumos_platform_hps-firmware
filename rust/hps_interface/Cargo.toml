@@ -7,6 +7,7 @@ license = "BSD-3-Clause"
 [dependencies]
 anyhow = "1.0.38"
 embedded-hal = "0.2.4"
+gpio-cdev = "0.5.1"
 mcu_common = { path = "../mcu_common", features = [ "std" ] }
 
 [dev-dependencies]

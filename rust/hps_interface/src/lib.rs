@@ -452,6 +452,24 @@ impl InterruptLine for NoopInterruptLine {
     }
 }
 
+impl InterruptLine for gpio_cdev::LineHandle {
+    fn is_interrupt_asserted(&self) -> Result<bool> {
+        Ok(self.get_value()? == 0)
+    }
+
+    fn wait_for_interrupt(&self) -> Result<()> {
+        // We have no choice but to busy-wait polling for the line to go low.
+        // If we used LineEventHandle we could wait properly for a falling edge event from the
+        // kernel, without a busy loop. But that doesn't work on Taeko because the interrupt line
+        // is connected (by firmware) to the interrupt controller and not to the GPIO subsystem.
+        loop {
+            if self.is_interrupt_asserted()? {
+                return Ok(());
+            }
+        }
+    }
+}
+
 fn register_access_command(reg: Register) -> u8 {
     reg as u8 | 0x80
 }

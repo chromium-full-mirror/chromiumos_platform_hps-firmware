@@ -9,6 +9,7 @@ anyhow = "1.0.38"
 clap = "=3.0.0-beta.2"
 embedded-hal = "0.2.4"
 fpga_app = { path = "../fpga_app" }
+gpio-cdev = "0.5.1"
 hps_interface = { path = "../hps_interface" }
 host_dev_common = { path = "../host_dev_common" }
 interrupt_proxy = { path = "../interrupt_proxy" }

@@ -23,6 +23,7 @@ use std::path::PathBuf;
 #[derive(clap::ArgEnum, PartialEq, Debug)]
 enum InterruptInterface {
     None,
+    LinuxGpio323,
     AvrFtdiProxy,
 }
 
@@ -234,6 +235,28 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         };
         return Ok(Box::new(fhps));
     }
+
+    let interrupt: Box<dyn InterruptLine> = match flags.interrupt {
+        InterruptInterface::None => Box::new(NoopInterruptLine {}),
+        InterruptInterface::AvrFtdiProxy => Box::new(FtdiInterruptListener::open()?),
+        InterruptInterface::LinuxGpio323 => {
+            // gpiochip0 line 323 is the HPS→MLB interrupt line on Taeko.
+            // Currently we have no good way to look this up in ACPI, so just hardcode it for now.
+            let line = gpio_cdev::Chip::new("/dev/gpiochip0")
+                .context("Failed to open GPIO chip")?
+                .get_line(323)
+                .context("Failed to look up GPIO line")?;
+            let handle = line
+                .request(
+                    gpio_cdev::LineRequestFlags::INPUT,
+                    /* default, unused for input */ 0,
+                    "hps-util",
+                )
+                .context("Failed to request GPIO line")?;
+            Box::new(handle)
+        }
+    };
+
     #[cfg(feature = "mcp2221")]
     if flags.mcp {
         let mut config = mcp2221::Config::default();
@@ -248,19 +271,14 @@ fn open_device(flags: &Flags) -> Result<Box<dyn Hps + Send>> {
         gpio_config.set_value(0, true);
         dev.configure_gpio(&gpio_config)?;
 
-        let interrupt: Box<dyn InterruptLine> = match flags.interrupt {
-            InterruptInterface::None => Box::new(NoopInterruptLine {}),
-            InterruptInterface::AvrFtdiProxy => Box::new(FtdiInterruptListener::open()?),
-        };
-
         return Ok(Box::new(HpsAdapter::new(Box::new(dev), interrupt)?));
     }
+
     if kernel_driver::power_state() == kernel_driver::PowerState::Suspended {
         bail!("Device currently suspended by kernel driver. Try unbind command first.");
     }
     let i2c = linux_embedded_hal::I2cdev::new(&flags.dev)
         .with_context(|| format!("Couldn't open HPS I2C device '{}'", flags.dev.display()))?;
-    let interrupt = Box::new(NoopInterruptLine {});
     Ok(Box::new(HpsAdapter::new(Box::new(i2c), interrupt)?))
 }
 
