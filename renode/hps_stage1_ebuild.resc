@@ -16,8 +16,9 @@ machine LoadPlatformDescriptionFromString "gpioPortC: { 15 -> fpgaProgram_led@0 
 emulation AddHPSHostController sysbus.i2c1
 
 # Provide paths to proper ELFs
-$stage0 ?= $CWD/rust/mcu/target/thumbv6m-none-eabi/release/stage0
-$stage1 ?= $CWD/rust/mcu/target/thumbv6m-none-eabi/debug/stage1_app
+# TODO: Dynamically define the path of stage0 and stage1_app based on what script runs it
+$stage0 ?= @/build/brya/tmp/portage/chromeos-base/hps-firmware-9999/work/build/cros-rust/thumbv6m-none-eabi/release/stage0
+$stage1 ?= @/build/brya/tmp/portage/chromeos-base/hps-firmware-9999/work/build/cros-rust/thumbv6m-none-eabi/release/stage1_app
 
 macro reset
 """
@@ -28,12 +29,15 @@ macro reset
 runMacro $reset
 
 echo "Access host.HPSHostController for a list of available commands"
+
 start
 sleep 2
 host.HPSHostController ReadSystemStatus "1.0"
 sleep 1
 host.HPSHostController CommandLaunchStage1
-sleep 1
+sleep 2
 host.HPSHostController ReadSystemStatus "1.0"
 sleep 1
 host.HPSHostController StartSocketServer "2.0"
+sleep 2
+quit
