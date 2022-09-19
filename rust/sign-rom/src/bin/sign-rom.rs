@@ -1,17 +1,17 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 use anyhow::anyhow;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use mcu_common::Signature;
 use mcu_common::SIGNATURE_LENGTH;
 use std::path::PathBuf;
 
 /// Hashes and signs a HPS stage1 binary. This is currently intended for
 /// development use only.
-#[derive(Clap, Debug)]
+#[derive(Debug, Parser)]
 #[clap(name = "config")]
 struct Config {
     /// input filename

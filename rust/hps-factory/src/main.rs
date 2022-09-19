@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ mod write_stage0_workflow;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use clap::Subcommand;
 use embedded_hal::blocking::i2c::Read;
 use embedded_hal::blocking::i2c::Write;
@@ -27,7 +27,7 @@ use log::LevelFilter;
 use std::path::PathBuf;
 
 /// Runs HPS post-install factory workflow
-#[derive(Clap, Debug, Clone)]
+#[derive(Parser, Debug, Clone)]
 #[clap(name = "hps-factory")]
 struct Config {
     /// path to I2C device
@@ -129,21 +129,21 @@ enum Command {
     WriteEmbeddedFirmware(WriteEmbeddedFirmwareConfig),
 }
 
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct BootConfig {
     /// assume that the FPGA bitstream is already up-to-date
     #[clap(long)]
     skip_bitstream_write: bool,
 }
 
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct WriteEmbeddedFirmwareConfig {
     /// directory into which to write firmware files
     #[clap(long)]
     out_dir: PathBuf,
 }
 
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct PostInstallTestConfig {
     /// number of iterations of FPGA SPI flash read test to perform
     #[clap(long, default_value = "50")]
@@ -167,7 +167,7 @@ struct PostInstallTestConfig {
 }
 
 #[cfg(feature = "image-transfer")]
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct CaptureImagesConfig {
     /// directory into which to write captured images
     #[clap(long)]
@@ -198,7 +198,7 @@ struct CaptureImagesConfig {
     num_images: u64,
 }
 
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct WriteStage0Config {
     /// whether to disable the boot0 pin
     #[clap(long)]
@@ -223,7 +223,7 @@ struct WriteStage0Config {
     rdp0: bool,
 }
 
-#[derive(Debug, Clap, Clone)]
+#[derive(Debug, Parser, Clone)]
 struct FactoryConfig {
     /// whether to permanently lock stage0 read-only. Once done, this cannot be
     /// undone.

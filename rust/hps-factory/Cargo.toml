@@ -7,8 +7,7 @@ license = "BSD-3-Clause"
 [dependencies]
 application = { path = "../application" }
 anyhow = "1.0.38"
-# https://github.com/clap-rs/clap/issues/1684
-clap = "=3.0.0-beta.2"
+clap = { version = "3.1.0", features = ["derive"] }
 ed25519-compact = { version = "1", default-features = false, features = [ "pem", "std" ] }
 embedded-hal = "0.2.6"
 fpga_app = { path = "../fpga_app" }
@@ -28,7 +27,7 @@ unix_socket = { path = "../unix_socket"}
 
 [build-dependencies]
 anyhow = "1.0.38"
-clap_derive = "=3.0.0-beta.2"
+clap_derive = "3.1.0"
 hmac-sha256 = "0.1.6"
 mcu_common = { path = "../mcu_common", features = [ "dev" ] }
 sign-rom = { path = "../sign-rom" }

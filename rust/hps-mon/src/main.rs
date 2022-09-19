@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ mod write_spi_flash;
 
 use anyhow::anyhow;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use colored::*;
 use console::Console;
 use console::ConsoleController;
@@ -109,13 +109,13 @@ struct RttChannels {
 }
 
 /// Which mechanism are we using to observe the interrupt line?
-#[derive(clap::ArgEnum, PartialEq, Debug)]
+#[derive(clap::ArgEnum, Clone, PartialEq, Debug)]
 enum InterruptInterface {
     None,
     AvrFtdiProxy,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 /// Monitors the HPS for debug output via SWD.
 struct Flags {
     #[clap(long)]

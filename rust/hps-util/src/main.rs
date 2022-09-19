@@ -1,11 +1,11 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use clap::Subcommand;
 use host_dev_common::kernel_driver;
 use hps_interface::Hps;
@@ -20,14 +20,14 @@ use mcu_common::registers::Register;
 use std::path::PathBuf;
 
 /// Which mechanism are we using to observe the interrupt line?
-#[derive(clap::ArgEnum, PartialEq, Debug)]
+#[derive(clap::ArgEnum, Clone, PartialEq, Debug)]
 enum InterruptInterface {
     None,
     LinuxGpio323,
     AvrFtdiProxy,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 /// Communicates with the HPS.
 struct Flags {
     #[clap(subcommand)]
@@ -83,7 +83,7 @@ enum SubCommand {
     WaitForInterrupt,
 }
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Flash MCU application
 struct FlashMcu {
     #[clap(long)]
@@ -91,7 +91,7 @@ struct FlashMcu {
     file: PathBuf,
 }
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Flash FPGA bitstream and application to SPI flash
 struct FlashSpi {
     #[clap(long)]
@@ -102,38 +102,38 @@ struct FlashSpi {
     application: PathBuf,
 }
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Launch stage1
 struct Launch1 {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Erase stage0
 struct EraseStage0 {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Erase stage1
 struct EraseStage1 {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Launch application
 struct LaunchApp {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Read or write arbitrary registers
 struct AccessRegisters {
     /// registers to read (reg) or write (reg=value)
     values: Vec<String>,
 }
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Reset MCU
 struct Reset {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Query HPS status
 struct Status {}
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Write some values to an arbitrary memory bank
 struct WriteMemoryBank {
     #[clap(long)]
@@ -148,7 +148,7 @@ struct WriteMemoryBank {
     values: Vec<u8>,
 }
 
-#[derive(Clap, PartialEq, Debug)]
+#[derive(Parser, PartialEq, Debug)]
 /// Stress test communication with the HPS
 struct StressTest {
     #[clap(long)]

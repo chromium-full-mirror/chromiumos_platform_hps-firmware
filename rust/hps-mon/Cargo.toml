@@ -6,7 +6,7 @@ license = "BSD-3-Clause"
 
 [dependencies]
 anyhow = "1.0.38"
-clap = "=3.0.0-beta.2"
+clap = { version = "3.1.0", features = ["derive"] }
 crc = "2.0"
 colored = "2.0.0"
 fpga_app = { path = "../fpga_app" }
