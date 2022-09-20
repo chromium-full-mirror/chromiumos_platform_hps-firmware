@@ -16,4 +16,4 @@ interrupt_proxy = { path = "../interrupt_proxy" }
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 mcp2221 = { path = "../mcp2221" }
 mcu_common = { path  = "../mcu_common", features = ["dev"] }
-rustyline = "9"
+rustyline = "10"

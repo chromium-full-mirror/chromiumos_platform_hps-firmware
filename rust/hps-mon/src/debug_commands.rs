@@ -384,7 +384,7 @@ pub(crate) fn create_command_source(
     initial_commands: &str,
 ) -> Result<mpsc::Receiver<Command>> {
     let mut editor = CommandEditor {
-        editor: rustyline::Editor::<CompletionHelper>::new(),
+        editor: rustyline::Editor::<CompletionHelper>::new()?,
         should_exit: false,
     };
     editor.editor.set_helper(Some(CompletionHelper::default()));
