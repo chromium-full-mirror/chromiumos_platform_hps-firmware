@@ -600,13 +600,13 @@ impl ArgumentParser for NoArgument {
     }
 }
 
-pub(crate) fn print_help_text() {
+pub(crate) fn print_help_text(console_output: &ConsoleOutput) {
     for command in COMMANDS {
-        println!(
-            "{:30} {}",
+        console_output.print(format!(
+            "{:30} {}\n",
             format!("{} {}", command.keyword, command.arg_parser.help_text()),
             command.help_text
-        );
+        ));
     }
 }
 

@@ -213,9 +213,10 @@ fn main() -> Result<()> {
 
     let (command_source, console_output) = debug_commands::create_console(&flags.cmd.join(";"))?;
 
-    let channels = create_channels(rtt.from_device, &flags, console_output)?;
+    let channels = create_channels(rtt.from_device, &flags, console_output.clone())?;
     let mut to_device = rtt.to_device.drain(..);
     run_loop(
+        &console_output,
         command_source,
         channels,
         to_device.next(),
@@ -277,6 +278,7 @@ fn create_channels(
 }
 
 fn run_loop(
+    console_output: &ConsoleOutput,
     command_source: mpsc::Receiver<Command>,
     mut channels: Vec<Channel>,
     mut mcu_command_channel: Option<Box<dyn DataSink>>,
@@ -288,7 +290,7 @@ fn run_loop(
 ) -> Result<()> {
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
-    set_blocking_mode(&mut mcu_command_channel, true)?;
+    set_blocking_mode(&mut mcu_command_channel, true, console_output)?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {
@@ -302,9 +304,14 @@ fn run_loop(
         }
         if let Ok(command_kind) = command_source.try_recv() {
             match command_kind {
-                Command::Fpga(c) => send_command_to_device(&c, &mut fpga_command_channel)?,
-                Command::Mcu(c) => send_command_to_device(&c, &mut mcu_command_channel)?,
+                Command::Fpga(c) => {
+                    send_command_to_device(&c, &mut fpga_command_channel, console_output)?
+                }
+                Command::Mcu(c) => {
+                    send_command_to_device(&c, &mut mcu_command_channel, console_output)?
+                }
                 Command::Local(c) => execute_locally(
+                    console_output,
                     &c,
                     &mut mcu_command_channel,
                     &mut cmd_response_channel,
@@ -313,7 +320,7 @@ fn run_loop(
                     &hps,
                 )?,
                 Command::Exit => {
-                    set_blocking_mode(&mut mcu_command_channel, false)?;
+                    set_blocking_mode(&mut mcu_command_channel, false, console_output)?;
                     return Ok(());
                 }
             };
@@ -334,6 +341,7 @@ fn run_loop(
 fn set_blocking_mode(
     mcu_command_channel: &mut Option<Box<dyn DataSink>>,
     blocking: bool,
+    console_output: &ConsoleOutput,
 ) -> Result<()> {
     if mcu_command_channel.is_none() {
         return Ok(());
@@ -344,11 +352,13 @@ fn set_blocking_mode(
             arg: if blocking { 1 } else { 0 },
         },
         mcu_command_channel,
+        console_output,
     )
 }
 
 // Executes the given local command
 fn execute_locally(
+    console_output: &ConsoleOutput,
     c: &LocalCommand,
     mcu_command_channel: &mut Option<Box<dyn DataSink>>,
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
@@ -357,16 +367,16 @@ fn execute_locally(
     hps: &Option<Arc<Mutex<dyn Hps + Send>>>,
 ) -> Result<()> {
     match c.operation {
-        LocalOperation::PrintHelp => debug_commands::print_help_text(),
+        LocalOperation::PrintHelp => debug_commands::print_help_text(console_output),
         LocalOperation::ResetMcu => {
             device.reset()?;
-            set_blocking_mode(mcu_command_channel, true)?;
+            set_blocking_mode(mcu_command_channel, true, console_output)?;
         }
         LocalOperation::WriteMcuProgram => {
             if let Some(path) = &flags.mcu_rom {
                 device.write_program(path)?;
             } else {
-                eprintln!("--mcu-rom must be specified on startup");
+                console_output.print("--mcu-rom must be specified on startup\n");
             }
         }
         LocalOperation::WriteGateware => {
@@ -377,11 +387,12 @@ fn execute_locally(
                     hps.clone(),
                     0,
                     file,
+                    console_output,
                 ) {
-                    eprintln!("{}", error);
+                    console_output.print(format!("{}\n", error));
                 }
             } else {
-                eprintln!("--gateware must be specified on startup");
+                console_output.print("--gateware must be specified on startup\n");
             }
         }
         LocalOperation::WriteTestImages => {
@@ -391,11 +402,12 @@ fn execute_locally(
                     cmd_response_channel,
                     hps.clone(),
                     test_data_dir,
+                    console_output,
                 ) {
-                    eprintln!("{}", error);
+                    console_output.print(format!("{}\n", error));
                 }
             } else {
-                eprintln!("--test-data-dir must be specified on startup");
+                console_output.print("--test-data-dir must be specified on startup\n");
             }
         }
         LocalOperation::WriteSocRom => {
@@ -406,11 +418,12 @@ fn execute_locally(
                     hps.clone(),
                     SOC_ROM_OFFSET,
                     file,
+                    console_output,
                 ) {
-                    eprintln!("{}", error);
+                    console_output.print(format!("{}\n", error));
                 }
             } else {
-                eprintln!("--soc-rom must be specified on startup");
+                console_output.print("--soc-rom must be specified on startup\n");
             }
         }
 
@@ -418,28 +431,29 @@ fn execute_locally(
             if let Some(hps) = &hps {
                 let mut hps = hps.lock().unwrap();
                 hps.perform_command(command)?;
-                println!("Command {:?} running", command);
+                console_output.print(format!("Command {:?} running\n", command));
                 loop {
                     match hps.status() {
                         Ok(status) => {
                             if !status.contains(Status::COMMAND_IN_PROGRESS) {
                                 match hps.check_errors() {
-                                    Ok(_) => println!("Command {command:?} complete"),
-                                    Err(e) => {
-                                        println!("Command {command:?} resulted in error: {e}")
-                                    }
+                                    Ok(_) => console_output
+                                        .print(format!("Command {command:?} complete\n")),
+                                    Err(e) => console_output.print(format!(
+                                        "Command {command:?} resulted in error: {e}\n"
+                                    )),
                                 };
                                 break;
                             }
                         }
                         Err(e) => {
-                            println!("HPS no longer responding on I2C: {e}");
+                            console_output.print(format!("HPS no longer responding on I2C: {e}\n"));
                             break;
                         }
                     }
                 }
             } else {
-                eprintln!("Cannot perform command without I2C connection");
+                console_output.print("Cannot perform command without I2C connection\n");
             }
         }
         LocalOperation::SetFeatureEnable => {
@@ -447,7 +461,7 @@ fn execute_locally(
                 let mut hps = hps.lock().unwrap();
                 hps.set_feature_enable(c.arg)?;
             } else {
-                eprintln!("Cannot perform command without I2C connection");
+                console_output.print("Cannot perform command without I2C connection\n");
             }
         }
         LocalOperation::SetI2cRegister(register) => {
@@ -455,7 +469,7 @@ fn execute_locally(
                 let mut hps = hps.lock().unwrap();
                 hps.write_register(register, c.arg)?;
             } else {
-                eprintln!("Cannot perform command without I2C connection");
+                console_output.print("Cannot perform command without I2C connection\n");
             }
         }
         LocalOperation::SleepMilliseconds => {
@@ -468,11 +482,12 @@ fn execute_locally(
 fn send_command_to_device(
     command: &debug_commands::DebugCommand,
     command_channel: &mut Option<Box<dyn DataSink>>,
+    console_output: &ConsoleOutput,
 ) -> Result<()> {
     if let Some(command_channel) = command_channel.as_mut() {
         command_channel.write(&command.to_bytes())?;
     } else {
-        eprintln!("No command channel available, command not sent.");
+        console_output.print("No command channel available, command not sent.\n");
     }
     Ok(())
 }

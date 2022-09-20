@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 use crate::debug_commands;
+use crate::debug_commands::ConsoleOutput;
 use crate::DataSink;
 use crate::DataSource;
 use anyhow::anyhow;
@@ -36,6 +37,7 @@ pub(crate) fn write_file_to_spi_flash(
     hps: Option<Arc<Mutex<dyn Hps + Send>>>,
     start_offset: usize,
     spi_flash_file: &Path,
+    console_output: &ConsoleOutput,
 ) -> Result<()> {
     write_spi_flash(
         command_channel,
@@ -43,6 +45,7 @@ pub(crate) fn write_file_to_spi_flash(
         hps,
         start_offset,
         std::fs::read(spi_flash_file)?,
+        console_output,
     )
 }
 
@@ -52,6 +55,7 @@ fn write_spi_flash(
     hps: Option<Arc<Mutex<dyn Hps + Send>>>,
     start_offset: usize,
     mut file_bytes: Vec<u8>,
+    console_output: &ConsoleOutput,
 ) -> Result<()> {
     assert!(start_offset % BLOCK_SIZE == 0);
     let mut hps_writer = hps.map(HpsWriter::new);
@@ -83,17 +87,18 @@ fn write_spi_flash(
             command_channel,
             start_offset / BLOCK_SIZE,
             cmd_response_channel,
+            console_output,
         )?;
         if blocks_to_write.is_empty() {
-            println!("All blocks already up-to-date. Nothing to write.");
+            console_output.print("All blocks already up-to-date. Nothing to write.\n");
             return Ok(());
         }
         let total_blocks = file_bytes.len() / BLOCK_SIZE;
-        println!(
-            "Need to write {} of {} blocks",
+        console_output.print(format!(
+            "Need to write {} of {} blocks\n",
             blocks_to_write.len(),
             total_blocks
-        );
+        ));
 
         let start = std::time::Instant::now();
         let mut pages_written = 0;
@@ -146,21 +151,21 @@ fn write_spi_flash(
                 }
                 pages_written += 1;
                 if pages_written % 100 == 0 {
-                    println!(
-                        "{:0.1}% of {}KiB complete. {:0.1}KiB/s",
+                    console_output.print(format!(
+                        "{:0.1}% of {}KiB complete. {:0.1}KiB/s\n",
                         pages_written as f64 * 100f64 / total_pages as f64,
                         total_pages * PAGE_SIZE / 1024,
                         ((pages_written * PAGE_SIZE) as f64 / start.elapsed().as_secs_f64())
                             / 1024f64
-                    );
+                    ));
                 }
             }
         }
 
-        println!(
-            "Finished sending data, waiting for last {} writes to complete",
+        console_output.print(format!(
+            "Finished sending data, waiting for last {} writes to complete\n",
             outstanding_commands
-        );
+        ));
 
         if let Some(hps) = hps_writer.take() {
             hps.wait_done()?;
@@ -171,13 +176,13 @@ fn write_spi_flash(
         }
 
         let seconds = start.elapsed().as_secs_f64();
-        println!(
-            "Wrote {} pages to SPI flash in {:0.1} seconds ({:0.1}KiB/s). {} pages via I2C",
+        console_output.print(format!(
+            "Wrote {} pages to SPI flash in {:0.1} seconds ({:0.1}KiB/s). {} pages via I2C\n",
             pages_written,
             seconds,
             ((total_pages * PAGE_SIZE) as f64 / seconds) / 1024f64,
             i2c_pages,
-        );
+        ));
     } else {
         bail!("No command channel available, command not sent.");
     }
@@ -189,6 +194,7 @@ pub(crate) fn write_test_data(
     cmd_response_channel: &mut Option<Box<dyn DataSource>>,
     hps: Option<Arc<Mutex<dyn Hps + Send>>>,
     test_data_dir: &Path,
+    console_output: &ConsoleOutput,
 ) -> Result<()> {
     let mut address = fpga_app::TEST_IMAGES_OFFSET as usize;
     let mut filenames = Vec::new();
@@ -203,7 +209,7 @@ pub(crate) fn write_test_data(
     filenames.sort();
 
     for path in &filenames {
-        println!("Writing test image {}", path.display());
+        console_output.print(format!("Writing test image {}\n", path.display()));
         if address as u32 >= fpga_app::TEST_IMAGES_OFFSET + fpga_app::TEST_IMAGES_MAX_SIZE {
             bail!("Test image area is full");
         }
@@ -224,6 +230,7 @@ pub(crate) fn write_test_data(
             hps.clone(),
             address,
             image.into_raw(),
+            console_output,
         )?;
         address += fpga_app::TEST_IMAGE_BLOCK_SIZE;
     }
@@ -301,6 +308,7 @@ fn get_blocks_to_write<'a>(
     command_channel: &mut Box<dyn DataSink>,
     start_block: usize,
     cmd_response_channel: &mut Box<dyn DataSource>,
+    console_output: &ConsoleOutput,
 ) -> Result<Vec<BlockInfo<'a>>> {
     let mut need_to_write = Vec::new();
     let mut outstanding_blocks = VecDeque::new();
@@ -335,7 +343,9 @@ fn get_blocks_to_write<'a>(
             blocks_checked += 1;
             if let Some(info) = outstanding_blocks.pop_front() {
                 if blocks_checked % 10 == 0 || blocks_checked == total_blocks {
-                    println!("CRC checked {} of {} blocks", blocks_checked, total_blocks,);
+                    console_output.print(format!(
+                        "CRC checked {blocks_checked} of {total_blocks} blocks\n"
+                    ));
                 }
                 if crc != info.desired_crc {
                     need_to_write.push(info);
