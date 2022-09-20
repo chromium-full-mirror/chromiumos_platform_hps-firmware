@@ -11,8 +11,8 @@ use mcu_common::McuDebugCommand;
 use mcu_common::DEBUG_BYTES_PER_COMMAND;
 use rustyline::config::Configurer;
 use std::sync::mpsc;
-
-use crate::console::Console;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 #[derive(Clone, Copy)]
 pub(crate) struct DebugCommand {
@@ -80,6 +80,20 @@ pub(crate) enum Command {
 struct CommandEditor {
     editor: rustyline::Editor<CompletionHelper>,
     should_exit: bool,
+}
+
+#[derive(Clone)]
+pub(crate) struct ConsoleOutput {
+    external_printer: Arc<Mutex<dyn rustyline::ExternalPrinter>>,
+}
+
+impl ConsoleOutput {
+    pub(crate) fn print<T: Into<String>>(&self, out: T) {
+        // This will probably only fail if stdout gets closed. If that happens,
+        // then we don't have any useful way to report the error, so we ignore
+        // it.
+        let _ = self.external_printer.lock().unwrap().print(out.into());
+    }
 }
 
 #[derive(Default)]
@@ -377,12 +391,12 @@ const COMMANDS: &[AvailableDebugCommand] = &[
     },
 ];
 
-/// Locks stdin and emits debug commands based on keys that get pressed.
-/// Terminates when the returned receiver gets closed.
-pub(crate) fn create_command_source(
-    console: Console,
+/// Sets up console input and output. Returned values are a source of commands
+/// and a way to send output to the console. Terminates when the returned
+/// command receiver gets closed.
+pub(crate) fn create_console(
     initial_commands: &str,
-) -> Result<mpsc::Receiver<Command>> {
+) -> Result<(mpsc::Receiver<Command>, ConsoleOutput)> {
     let mut editor = CommandEditor {
         editor: rustyline::Editor::<CompletionHelper>::new()?,
         should_exit: false,
@@ -392,20 +406,22 @@ pub(crate) fn create_command_source(
         .editor
         .set_completion_type(rustyline::CompletionType::List);
     let (tx, rx) = mpsc::channel();
+    let console_output = ConsoleOutput {
+        external_printer: Arc::new(Mutex::new(editor.editor.create_external_printer()?)),
+    };
+    let outputs = (rx, console_output);
     if let Ok(commands) = parse_commands(initial_commands) {
         for command in commands {
             let is_exit = matches!(command, Command::Exit);
             if tx.send(command).is_err() || is_exit {
-                return Ok(rx);
+                return Ok(outputs);
             }
         }
     }
     std::thread::spawn(move || {
-        println!("Welcome to hps-mon. Press enter to activate console.");
+        println!("Welcome to hps-mon.");
         loop {
-            editor.wait_for_enter();
-            let mut commands = vec![];
-            console.pause_output_while(|| commands = editor.get_commands());
+            let commands = editor.get_commands();
             for command in commands {
                 let is_exit = matches!(command, Command::Exit);
                 if tx.send(command).is_err() {
@@ -422,7 +438,7 @@ pub(crate) fn create_command_source(
             }
         }
     });
-    Ok(rx)
+    Ok(outputs)
 }
 
 impl DebugCommand {
@@ -465,12 +481,6 @@ impl CommandEditor {
             Err(_) => {}
         }
         None
-    }
-
-    fn wait_for_enter(&mut self) {
-        if !self.should_exit {
-            self.readline("");
-        }
     }
 }
 

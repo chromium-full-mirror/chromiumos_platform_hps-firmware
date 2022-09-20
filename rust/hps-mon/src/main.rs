@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-mod console;
 mod debug_commands;
 mod image_channel;
 mod openocd;
@@ -13,8 +12,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use clap::Parser;
 use colored::*;
-use console::Console;
-use console::ConsoleController;
+use debug_commands::ConsoleOutput;
 use host_dev_common::images::image_type_from_str;
 use host_dev_common::images::ImageType;
 use hps_interface::Hps;
@@ -201,38 +199,32 @@ fn main() -> Result<()> {
         Some(hps)
     };
 
-    let console_controller = ConsoleController::new();
-    // Probably not strictly necessary, but we have an explicit scope to make
-    // sure that `console` goes out of scope before we call `shutdown` on
-    // `console_controller`.
-    {
-        let console = console_controller.console();
-        let mut rtt = device.attach_rtt()?;
-        let mut cmd_response_channel = None;
-        if rtt.from_device.len() >= 4 {
-            cmd_response_channel = rtt.from_device.drain(3..=3).next().and_then(|mut channel| {
-                if channel.set_read_blocking(true).is_ok() {
-                    Some(channel)
-                } else {
-                    None
-                }
-            });
-        }
-
-        let channels = create_channels(rtt.from_device, &flags, console.new_line_sink())?;
-        let mut to_device = rtt.to_device.drain(..);
-        run_loop(
-            console,
-            channels,
-            to_device.next(),
-            to_device.next(),
-            cmd_response_channel,
-            &flags,
-            &mut *device,
-            hps,
-        )?;
+    let mut rtt = device.attach_rtt()?;
+    let mut cmd_response_channel = None;
+    if rtt.from_device.len() >= 4 {
+        cmd_response_channel = rtt.from_device.drain(3..=3).next().and_then(|mut channel| {
+            if channel.set_read_blocking(true).is_ok() {
+                Some(channel)
+            } else {
+                None
+            }
+        });
     }
-    console_controller.shutdown();
+
+    let (command_source, console_output) = debug_commands::create_console(&flags.cmd.join(";"))?;
+
+    let channels = create_channels(rtt.from_device, &flags, console_output)?;
+    let mut to_device = rtt.to_device.drain(..);
+    run_loop(
+        command_source,
+        channels,
+        to_device.next(),
+        to_device.next(),
+        cmd_response_channel,
+        &flags,
+        &mut *device,
+        hps,
+    )?;
     Ok(())
 }
 
@@ -255,20 +247,20 @@ fn open_hps_i2c(reset: bool) -> Result<mcp2221::Handle> {
 fn create_channels(
     mut from_device: Vec<Box<dyn DataSource>>,
     flags: &Flags,
-    line_sink: mpsc::Sender<String>,
+    console_output: ConsoleOutput,
 ) -> Result<Vec<Channel>> {
     let mut raw_channels = from_device.drain(..);
     let mut channels = Vec::new();
     if let Some(up_channel) = raw_channels.next() {
         channels.push(Channel::new(
             up_channel,
-            Box::new(TextChannel::new("MCU> ".yellow(), line_sink.clone())),
+            Box::new(TextChannel::new("MCU> ".yellow(), console_output.clone())),
         )?);
     }
     if let Some(up_channel) = raw_channels.next() {
         channels.push(Channel::new(
             up_channel,
-            Box::new(TextChannel::new("FPGA> ".green(), line_sink.clone())),
+            Box::new(TextChannel::new("FPGA> ".green(), console_output.clone())),
         )?);
     }
     if let (Some(image_out), Some(up_channel)) = (&flags.image_out, raw_channels.next()) {
@@ -277,7 +269,7 @@ fn create_channels(
             Box::new(image_channel::ImageChannel::new(
                 image_out,
                 flags.image_type,
-                line_sink,
+                console_output,
             )?),
         )?);
     }
@@ -285,7 +277,7 @@ fn create_channels(
 }
 
 fn run_loop(
-    console: Console,
+    command_source: mpsc::Receiver<Command>,
     mut channels: Vec<Channel>,
     mut mcu_command_channel: Option<Box<dyn DataSink>>,
     mut fpga_command_channel: Option<Box<dyn DataSink>>,
@@ -297,7 +289,6 @@ fn run_loop(
     let mut backoff_ms = 0;
     let mut buffer = vec![0; 1024];
     set_blocking_mode(&mut mcu_command_channel, true)?;
-    let command_source = debug_commands::create_command_source(console, &flags.cmd.join(";"))?;
     loop {
         let mut got_data = false;
         for channel in &mut channels {

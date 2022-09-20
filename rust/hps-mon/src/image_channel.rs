@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use crate::debug_commands::ConsoleOutput;
 use crate::ChannelHandler;
-use anyhow::anyhow;
 use anyhow::Result;
 use host_dev_common::images::ImageType;
 use host_dev_common::images::OutputDir;
 use std::path::Path;
-use std::sync::mpsc;
 
 /// Receives images and writes them out to disk in RAW format and PNG.
 pub(crate) struct ImageChannel {
@@ -20,14 +19,17 @@ impl ImageChannel {
     pub(crate) fn new(
         out_dir: &Path,
         image_type: ImageType,
-        line_sink: mpsc::Sender<String>,
+        console_output: ConsoleOutput,
     ) -> Result<Self> {
         Ok(Self {
             received: Vec::new(),
             output_dir: OutputDir::new(
                 out_dir.to_owned(),
                 image_type,
-                Box::new(move |log_line| line_sink.send(log_line).map_err(|e| anyhow!("{}", e))),
+                Box::new(move |log_line| {
+                    console_output.print(log_line);
+                    Ok(())
+                }),
             )?,
         })
     }
