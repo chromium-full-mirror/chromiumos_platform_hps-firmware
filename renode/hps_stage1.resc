@@ -15,11 +15,6 @@ machine LoadPlatformDescriptionFromString "gpioPortC: { 15 -> fpgaProgram_led@0 
 
 emulation AddHPSHostController sysbus.i2c1
 
-# Provide paths to proper ELFs
-# TODO: Dynamically define the path of stage0 and stage1_app based on what script runs it
-$stage0 ?= @/build/brya/tmp/portage/chromeos-base/hps-firmware-9999/work/build/cros-rust/thumbv6m-none-eabi/release/stage0
-$stage1 ?= @/build/brya/tmp/portage/chromeos-base/hps-firmware-9999/work/build/cros-rust/thumbv6m-none-eabi/release/stage1_app
-
 macro reset
 """
     sysbus LoadELF $stage1

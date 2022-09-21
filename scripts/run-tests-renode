@@ -18,8 +18,14 @@ echo -e "\n\n${RED}=======================================${NORMAL}"
 echo -e "${GREEN}Running Renode tests${NORMAL}"
 echo -e "${RED}=======================================${NORMAL}"
 
+release_path="rust/mcu/target/thumbv6m-none-eabi/release"
+
+stage0_path="\$stage0?=\$CWD/${release_path}/stage0"
+stage1_path="\$stage1?=\$CWD/${release_path}/stage1_app"
+resc_path="renode/hps_stage1_tests.resc"
 cd "${PROJECT_ROOT}/"
-renode --console renode/hps_stage1_tests.resc &
+
+renode --console -e "${stage0_path}; ${stage1_path}; include @${resc_path}" &
 renode_PID=$!
 
 {
