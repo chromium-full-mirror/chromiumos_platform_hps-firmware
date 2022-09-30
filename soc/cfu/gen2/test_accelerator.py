@@ -111,6 +111,7 @@ class AcceleratorCoreTest(TestBase):
         # Simulates LRAM holding input data
         def ram():
             yield Passive()
+            next_out = [0] * 4
             while True:
                 for i in range(4):
                     block = (yield self.dut.lram_addr[i]) - self.BASE_ADDR // 16
@@ -118,7 +119,8 @@ class AcceleratorCoreTest(TestBase):
                     data_value = data.input_data[
                         data_addr % len(data.input_data)
                     ]
-                    yield self.dut.lram_data[i].eq(data_value)
+                    yield self.dut.lram_data[i].eq(next_out[i])
+                    next_out[i] = data_value
                 yield
 
         self.add_process(ram)

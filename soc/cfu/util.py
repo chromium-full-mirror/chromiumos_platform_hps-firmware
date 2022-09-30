@@ -121,3 +121,30 @@ class TestBase(unittest.TestCase):
             )
         else:
             self.sim.run()
+
+
+class RegisteredReadPort(SimpleElaboratable):
+    """Wraps a ReadPort and delays data output by one cycle.
+
+    This then behaves like RAM with registered outputs.
+
+    Attributes:
+        addr (Signal(range(max_depth)), out):
+            The address to send to the memory read port
+        data (Signal(32), out):
+            The data from memory
+        en (Signal or Const, in):
+            Whether the read port is enabled
+    """
+
+    def __init__(self, inner):
+        self.inner = inner
+        self.addr = Signal(self.inner.addr.shape())
+        self.en = Signal()
+        self.data = Signal(self.inner.data.shape())
+
+    def elab(self, m):
+        m.submodules += self.inner
+        m.d.comb += self.inner.en.eq(self.en)
+        m.d.comb += self.inner.addr.eq(self.addr)
+        m.d.sync += self.data.eq(self.inner.data)

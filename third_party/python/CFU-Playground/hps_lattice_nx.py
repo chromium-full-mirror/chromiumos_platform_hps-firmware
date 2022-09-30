@@ -168,6 +168,7 @@ class NXLRAM(Module):
                     b_clk_en = Signal(reset=1)
                     b_addr = Signal(14)
                     b_dout = Signal(32)
+                    b_dout_delayed = Signal(32)
                     lram_block = Instance('DPSC512K',
                                           p_ECC_BYTE_SEL='BYTE_EN',
                                           i_DIA=datain,
@@ -189,9 +190,13 @@ class NXLRAM(Module):
                                           i_RSTB=0b0,
                                           i_CEOUTB=0b0
                                           )
+                    # TODO(b/243330750): Use registered outputs in LRAM. For
+                    # now, this extra delay simulates the effect of using
+                    # registered outputs.
+                    self.sync += If(b_clk_en, b_dout_delayed.eq(b_dout))
                     self.b_clk_ens.append(b_clk_en)
                     self.b_addrs.append(b_addr)
-                    self.b_douts.append(b_dout)
+                    self.b_douts.append(b_dout_delayed)
 
                 else:
                     a_clk_en = Signal(reset=1)

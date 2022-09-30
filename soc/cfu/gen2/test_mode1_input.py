@@ -7,6 +7,7 @@
 from amaranth import Memory
 from amaranth.sim import Passive
 
+from ..util import RegisteredReadPort
 from ..util import TestBase
 from .conv2d_data import fetch_data
 from .mode1_input import Mode1InputFetcher
@@ -184,7 +185,7 @@ class Mode1InputFetcherTest(TestBase):
             padding = [0] * (self.BASE_ADDR // 16)
             init = (padding + self.data.input_data[i::4])[:1024]
             mem = Memory(width=32, depth=1024, init=init)
-            rp = mem.read_port(transparent=False)
+            rp = RegisteredReadPort(mem.read_port(transparent=False))
             self.m.d.comb += [
                 ram_mux.lram_data[i].eq(rp.data),
                 rp.addr.eq(ram_mux.lram_addr[i]),

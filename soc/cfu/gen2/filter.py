@@ -40,7 +40,7 @@ class FilterStore(SimpleElaboratable):
             Filter values output in the correct manner for a Systolic Array
 
         start (Signal(), in):
-            Causes filter output to begin with addr(0), on cycle after next.
+            Causes filter output to begin with addr(0), 3 cycles from now.
     """
 
     def __init__(self):
@@ -91,7 +91,7 @@ class FilterStore(SimpleElaboratable):
                 m.d.comb += mem.read_addr.eq(
                     Mux(addr >= 0, addr, addr + self.size)
                 )
-            m.d.comb += self.values_out[i].eq(mem.read_data)
+            m.d.sync += self.values_out[i].eq(mem.read_data)
 
         # Always ready to receive more data
         m.d.comb += self.write_input.ready.eq(1)

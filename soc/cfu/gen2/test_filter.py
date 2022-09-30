@@ -21,6 +21,7 @@ class FilterStoreTest(TestBase):
         yield dut.start.eq(0)
         yield
         yield
+        yield
         for _ in range(3):
             for addr in range(512):
                 for store in range(2):

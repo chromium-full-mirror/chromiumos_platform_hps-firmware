@@ -7,6 +7,7 @@
 from amaranth import Memory
 
 from ..util import pack_vals
+from ..util import RegisteredReadPort
 from ..util import TestBase
 from .conv2d_data import fetch_data
 from .mode0_input import EvenPixelAddressGenerator
@@ -110,7 +111,9 @@ class ValueReaderTest(TestBase):
 
         def make_ram(n, init):
             mem = Memory(width=32, depth=4, init=init)
-            self.m.submodules[f"rp{n}"] = rp = mem.read_port(transparent=False)
+            self.m.submodules[f"rp{n}"] = rp = RegisteredReadPort(
+                mem.read_port(transparent=False)
+            )
             self.m.d.comb += [
                 ram_mux.lram_data[n].eq(rp.data),
                 rp.addr.eq(ram_mux.lram_addr[n]),
@@ -180,18 +183,30 @@ class ValueReaderTest(TestBase):
         ]
 
         def process():
-            val1_delayed = 0
-            for i in range(len(DATA) + 1):
+            for i in range(len(DATA) + 2):
+                # Output address on cycle i
                 if i < len(DATA):
                     addr, _, _ = DATA[i]
                 yield dut.addr.eq(addr)
                 yield
-                if i > 1:
-                    self.assertEqual((yield dut.data_out[1]), val1_delayed)
-                if i > 0:
-                    _, val0, val1 = DATA[i - 1]
-                    self.assertEqual((yield dut.data_out[0]), val0)
-                    val1_delayed = val1
+                # Check first output 2 cycles later
+                if i > 2:
+                    actual = yield dut.data_out[0]
+                    expected = DATA[i - 2][1]
+                    self.assertEqual(
+                        actual,
+                        expected,
+                        f"{i}: 0x{actual:08X} != 0x{expected:08X}",
+                    )
+                # Check second output 3 cycles later
+                if i > 3:
+                    actual = yield dut.data_out[1]
+                    expected = DATA[i - 3][2]
+                    self.assertEqual(
+                        actual,
+                        expected,
+                        f"{i}: 0x{actual:08X} != 0x{expected:08X}",
+                    )
 
         self.run_sim(process, False)
 
@@ -210,7 +225,7 @@ class Mode0InputFetcherTest(TestBase):
             pad = [0] * (self.BASE_ADDR // 16)
             init = (pad + self.data.input_data[i::4])[:1024]
             mem = Memory(width=32, depth=1024, init=init)
-            rp = mem.read_port(transparent=False)
+            rp = RegisteredReadPort(mem.read_port(transparent=False))
             self.m.d.comb += [
                 ram_mux.lram_data[i].eq(rp.data),
                 rp.addr.eq(ram_mux.lram_addr[i]),

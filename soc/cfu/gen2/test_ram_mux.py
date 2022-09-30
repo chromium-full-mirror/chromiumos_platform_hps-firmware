@@ -4,6 +4,8 @@
 
 """Tests for ram_mux.py"""
 
+from amaranth import Signal
+
 from ..util import TestBase
 from .ram_mux import RamMux
 
@@ -13,9 +15,11 @@ class RamMuxTest(TestBase):
 
     def create_dut(self):
         mux = RamMux()
-        # Simulate LRAMs
+        # Simulate LRAMs with registered outputs
         for i in range(4):
-            self.m.d.sync += mux.lram_data[i].eq(mux.lram_addr[i] + i)
+            next_data = Signal(32)
+            self.m.d.sync += next_data.eq(mux.lram_addr[i] + i)
+            self.m.d.sync += mux.lram_data[i].eq(next_data)
         return mux
 
     def set_inputs(self, phase, addr_in):
@@ -28,16 +32,17 @@ class RamMuxTest(TestBase):
             self.assertEqual((yield self.dut.data_out[i]), expected[i])
 
     def test_it(self):
-        # Tests correct data for each phase, one cycle later
+        # Tests correct data for each phase, two cycles later
         # Checks in cases where phase changes and does not change
         DATA = [
             (0, [10, 20, 30, 40], None),
-            (1, [50, 60, 70, 80], [10, 23, 32, 41]),
-            (2, [90, 0, 10, 20], [51, 60, 73, 82]),
-            (3, [30, 40, 50, 60], [92, 1, 10, 23]),
-            (3, [70, 80, 90, 0], [33, 42, 51, 60]),
-            (2, [10, 20, 30, 40], [73, 82, 91, 0]),
-            (2, [50, 60, 70, 80], [12, 21, 30, 43]),
+            (1, [50, 60, 70, 80], None),
+            (2, [90, 0, 10, 20], [10, 23, 32, 41]),
+            (3, [30, 40, 50, 60], [51, 60, 73, 82]),
+            (3, [70, 80, 90, 0], [92, 1, 10, 23]),
+            (2, [10, 20, 30, 40], [33, 42, 51, 60]),
+            (2, [50, 60, 70, 80], [73, 82, 91, 0]),
+            (0, [0, 0, 0, 0], [12, 21, 30, 43]),
             (0, [0, 0, 0, 0], [52, 61, 70, 83]),
         ]
 

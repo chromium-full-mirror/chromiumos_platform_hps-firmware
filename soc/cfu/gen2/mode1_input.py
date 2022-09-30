@@ -323,7 +323,7 @@ class Mode1InputFetcher(SimpleElaboratable):
         first (Signal(), out):
             Indicates first data for a pixel available at data_out[0].
             First data will arrive at data_out[1] a cycle later and so on.
-            This signal is not valid until 2 cycles after start.
+            This signal is not valid until 3 cycles after start.
 
         last (Signal(), out):
             Indicates last data for a pixel available at data_out[0].
@@ -401,9 +401,13 @@ class Mode1InputFetcher(SimpleElaboratable):
         m.d.comb += repeater.next.eq(next_pixel)
 
         # Generate first and last signals
+        delayed_first = Signal()
+        delayed_last = Signal()
         m.d.sync += [
-            self.first.eq(running & (cycle_counter == 0)),
-            self.last.eq(running & (cycle_counter == max_cycle_counter)),
+            delayed_first.eq(running & (cycle_counter == 0)),
+            delayed_last.eq(running & (cycle_counter == max_cycle_counter)),
+            self.first.eq(delayed_first),
+            self.last.eq(delayed_last),
         ]
 
         # Connect to RamMux

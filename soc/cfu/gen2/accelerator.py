@@ -97,7 +97,7 @@ class AcceleratorCore(SimpleElaboratable):
             Address for each LRAM bank.
 
         lram_data ([Signal(32)] * 4, in):
-            Data as read from addresses provided at previous cycle.
+            Data as read from addresses provided two cycles ago.
 
         post_process_params (Endpoint(POST_PROCESS_PARAMS), out):
             Stream of data to write to post_process memory.

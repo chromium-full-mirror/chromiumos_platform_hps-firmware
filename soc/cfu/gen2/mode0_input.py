@@ -170,7 +170,7 @@ class ValueReader(SimpleElaboratable):
             Addresses to send to the RAM Mux
 
         ram_mux_data ([Signal(32)] * 4, in):
-            Data as read from addresses provided at previous cycle.
+            Data as read from addresses provided 2 cycles ago.
 
         data_out ([Signal(32)] * 2, out):
             Data for each of two output pixels. The second word is delayed by
@@ -209,10 +209,12 @@ class ValueReader(SimpleElaboratable):
         # Use phase to select the two required words to channels 0 & 3
         m.d.comb += self.ram_mux_phase.eq(self.addr[2:4])
 
-        # Select correct three half words when data is available, on cycle after
-        # address received.
+        # Select correct three half words when data is available, two cycles
+        # after address received.
+        next_byte_sel = Signal(1)
         byte_sel = Signal(1)
-        m.d.sync += byte_sel.eq(self.addr[1])
+        m.d.sync += next_byte_sel.eq(self.addr[1])
+        m.d.sync += byte_sel.eq(next_byte_sel)
         d0 = self.ram_mux_data[0]
         d3 = self.ram_mux_data[3]
         dmix = Signal(32)
@@ -235,7 +237,7 @@ class Mode0InputFetcher(SimpleElaboratable):
             and last signals are not produced.
 
         start (Signal, in):
-            Pulsed to begin producing data. There is a delay of 2 cycles between
+            Pulsed to begin producing data. There is a delay of 3 cycles between
             the start signal and the first valid data being produced.
 
         base_addr (Signal(18), in):
@@ -256,7 +258,7 @@ class Mode0InputFetcher(SimpleElaboratable):
         first (Signal(), out):
             Indicates first data for a pixel available at data_out[0].
             First data will arrive at data_out[1] a cycle later and so on.
-            This signal is not valid until 2 cycles after start.
+            This signal is not valid until 3 cycles after start.
 
         last (Signal(), out):
             Indicates last data for a pixel available at data_out[0].
@@ -299,6 +301,10 @@ class Mode0InputFetcher(SimpleElaboratable):
         m.d.comb += self.data_out[2].eq(0)
         m.d.comb += self.data_out[3].eq(0)
 
-        # Delay first and last by one cycle to match data output
-        m.d.sync += self.first.eq(value_ag.first)
-        m.d.sync += self.last.eq(value_ag.last)
+        # Delay first and last by two cycles to match data output
+        delayed_first = Signal()
+        delayed_last = Signal()
+        m.d.sync += delayed_first.eq(value_ag.first)
+        m.d.sync += delayed_last.eq(value_ag.last)
+        m.d.sync += self.first.eq(delayed_first)
+        m.d.sync += self.last.eq(delayed_last)

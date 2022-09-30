@@ -48,7 +48,7 @@ class RamMux(SimpleElaboratable):
     +-------+--------+--------+--------+--------+
 
     Data for a given address is available at the data output corresponding to
-    the address input, one cycle later.
+    the address input, two cycles later.
 
     Attributes:
 
@@ -66,7 +66,7 @@ class RamMux(SimpleElaboratable):
             Address for each LRAM bank.
 
         lram_data ([Signal(32)] * 4, in):
-            Data as read from addresses provided at previous cycle.
+            Data as read from addresses provided two cycles ago.
     """
 
     def __init__(self):
@@ -103,5 +103,7 @@ class RamMux(SimpleElaboratable):
     def elab(self, m):
         last_phase = Signal(range(4))
         m.d.sync += last_phase.eq(self.phase)
+        second_last_phase = Signal(range(4))
+        m.d.sync += second_last_phase.eq(last_phase)
         self.connect(m, self.phase, self.addr_in, self.lram_addr)
-        self.connect(m, last_phase, self.lram_data, self.data_out)
+        self.connect(m, second_last_phase, self.lram_data, self.data_out)

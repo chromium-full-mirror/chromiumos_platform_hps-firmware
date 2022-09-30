@@ -288,7 +288,7 @@ def hps_soc_args(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--nextpnr-seed",
         metavar="NUMBER",
-        default=33,
+        default=21,
         type=int,
         help="Use random seed NUMBER for nextpnr",
     )
