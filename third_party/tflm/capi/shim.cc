@@ -1,5 +1,5 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
-   Copyright 2021 The ChromiumOS Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors
+   Copyright 2021 The ChromiumOS Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_allocator.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
+
+#include "third_party/tflm/hps_accel/playground_util/conv2d_00.h"
+#include "third_party/tflm/hps_accel/playground_util/conv2d_call.h"
 
 // Globals
 namespace {
@@ -167,4 +170,8 @@ bool tflite_classify(int8_t* score1, int8_t* score2) {
   *score2 = output->data.int8[1];
 
   return true;
+}
+
+bool tflite_layer_test() {
+  return test_conv2d(&conv2d_layer_00_data);
 }

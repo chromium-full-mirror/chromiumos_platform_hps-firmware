@@ -18,21 +18,19 @@
 
 #include <cstdio>
 
-#include "playground_util/dump.h"
 #include "tensorflow/lite/kernels/internal/reference/integer_ops/conv.h"
-#include "tflite.h"
+#include "third_party/tflm/capi/shim.h"
+#include "third_party/tflm/hps_accel/playground_util/dump.h"
 
-void test_conv2d(const Conv2DData* data) {
-  printf("Testing Conv2D %s\n", data->name);
+bool test_conv2d(const Conv2DData* data) {
   // Copy input arena
-  int8_t* arena_input = reinterpret_cast<int8_t*>(tflite_tensor_arena);
+  int8_t* arena_input = tflite_get_input();
   auto input_shape =
       *(reinterpret_cast<const tflite::RuntimeShape*>(data->input_shape));
   for (int i = 0; i < input_shape.FlatSize(); i++) {
     arena_input[i] = data->input_data[i];
   }
-  int8_t* arena_output =
-      reinterpret_cast<int8_t*>(tflite_tensor_arena) + 128 * 1024;
+  int8_t* arena_output = arena_input + 128 * 1024;
 
   const tflite::RuntimeShape& output_shape =
       *(reinterpret_cast<const tflite::RuntimeShape*>(data->output_shape));
@@ -48,28 +46,14 @@ void test_conv2d(const Conv2DData* data) {
       arena_output);
 
   // Check for differences with output
-  int diff_count = 0;
-  int first_diff = 0;
   int num_words = output_shape.FlatSize() / 4;
   const int32_t* arena_words = reinterpret_cast<const int32_t*>(arena_output);
   const int32_t* expected_words =
       reinterpret_cast<const int32_t*>(data->output_data);
   for (int i = 0; i < num_words; i++) {
     if (arena_words[i] != expected_words[i]) {
-      diff_count++;
-      if (diff_count == 1) {
-        first_diff = i;
-      }
+      return false;
     }
   }
-
-  if (diff_count == 0) {
-    printf("OK - output identical to golden output\n");
-  } else {
-    printf("FAIL - %d differences, first at word %d\n", diff_count, first_diff);
-    printf("actual:\n");
-    dump_hex(arena_words + first_diff, 16);
-    printf("expected:\n");
-    dump_hex(expected_words + first_diff, 16);
-  }
+  return true;
 }

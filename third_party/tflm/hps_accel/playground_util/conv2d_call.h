@@ -37,6 +37,6 @@ struct Conv2DData {
 };
 
 // Tests Conv2D with the data in the given structure
-void test_conv2d(const Conv2DData* data);
+bool test_conv2d(const Conv2DData* data);
 
 #endif  // _CONV2D_CALL_H

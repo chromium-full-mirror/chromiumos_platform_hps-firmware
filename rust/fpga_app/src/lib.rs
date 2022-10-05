@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,6 +161,10 @@ where
         info!("Classifier status: {:?}", status);
         if status != TfLiteInitStatus::InitOk {
             self.mcu.report_error(Error::TfliteFailure);
+        }
+        if let Err(error) = self.classifier.layer_test() {
+            info!("Classifier self-test error: {:?}", error);
+            self.mcu.report_error(error);
         }
         if let Err(error) = self.camera_setup() {
             info!("Camera error: {:?}", error);

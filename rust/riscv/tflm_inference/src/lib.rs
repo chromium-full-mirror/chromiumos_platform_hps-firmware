@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium OS Authors. All rights reserved.
+// Copyright 2021 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ extern "C" {
     fn tflite_init(model_bytes: *const u8) -> i32;
     fn tflite_get_input() -> *mut i8;
     fn tflite_classify(score1_out: *mut i8, score2_out: *mut i8) -> bool;
+    fn tflite_layer_test() -> bool;
 }
 
 const MODEL_SIZE: usize = include_bytes!("../../../../models/shared.tflite").len();
@@ -74,5 +75,13 @@ impl fpga_app::Classifier for TflmClassifier {
 
     fn init_status(&self) -> TfLiteInitStatus {
         self.init_status
+    }
+
+    fn layer_test(&mut self) -> Result<()> {
+        if unsafe { tflite_layer_test() } == false {
+            Err(Error::SelfTestFailed)
+        } else {
+            Ok(())
+        }
     }
 }

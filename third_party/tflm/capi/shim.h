@@ -1,4 +1,4 @@
-/* Copyright 2021 The ChromiumOS Authors. All Rights Reserved.
+/* Copyright 2021 The ChromiumOS Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,6 +45,9 @@ int8_t* tflite_get_input();
 // Run a classification and write the results into `score1` and `score2`.
 // Returns true on successful model run, false if error detected.
 bool tflite_classify(int8_t* score1, int8_t* score2);
+
+// Execute custom layer test for accelerator correctness.
+bool tflite_layer_test();
 
 #ifdef __cplusplus
 }

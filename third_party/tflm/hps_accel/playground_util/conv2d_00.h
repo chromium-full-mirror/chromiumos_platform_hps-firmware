@@ -19,7 +19,7 @@
 
 #include <cstdint>
 
-#include "conv2d_call.h"
+#include "third_party/tflm/hps_accel/playground_util/conv2d_call.h"
 
 extern Conv2DData conv2d_layer_00_data;
 
