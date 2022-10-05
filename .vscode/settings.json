@@ -4,5 +4,8 @@
         "rust/mcu/Cargo.toml",
         "rust/riscv/Cargo.toml"
     ],
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/../chromiumos/chroot/usr/lib64/python3.6/site-packages"
+    ]
 }
