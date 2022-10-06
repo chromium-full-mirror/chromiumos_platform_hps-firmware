@@ -23,6 +23,7 @@
 #include "third_party/tflm/hps_accel/playground_util/dump.h"
 
 bool test_conv2d(const Conv2DData* data) {
+  printf("Testing Conv2D %s\n", data->name);
   // Copy input arena
   int8_t* arena_input = tflite_get_input();
   auto input_shape =
@@ -45,15 +46,10 @@ bool test_conv2d(const Conv2DData* data) {
       reinterpret_cast<const int32_t*>(data->bias_data), output_shape,
       arena_output);
 
-  // Check for differences with output
-  int num_words = output_shape.FlatSize() / 4;
   const int32_t* arena_words = reinterpret_cast<const int32_t*>(arena_output);
-  const int32_t* expected_words =
-      reinterpret_cast<const int32_t*>(data->output_data);
-  for (int i = 0; i < num_words; i++) {
-    if (arena_words[i] != expected_words[i]) {
-      return false;
-    }
-  }
-  return true;
+  const int32_t arena_hash =
+      murmurhash3_32(reinterpret_cast<const uint8_t*>(arena_words),
+                     output_shape.FlatSize());
+
+  return arena_hash == data->output_data_hash;
 }

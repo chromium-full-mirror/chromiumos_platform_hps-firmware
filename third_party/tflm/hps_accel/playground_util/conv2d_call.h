@@ -33,7 +33,7 @@ struct Conv2DData {
   const uint8_t* bias_shape;
   const uint8_t* bias_data;
   const uint8_t* output_shape;
-  const uint8_t* output_data;
+  const int32_t output_data_hash;
 };
 
 // Tests Conv2D with the data in the given structure
