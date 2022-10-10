@@ -290,7 +290,7 @@ where
             );
         }
 
-        self.status.loop_count += 1;
+        self.status.loop_count = self.status.loop_count.wrapping_add(1);
         self.status.enabled_features = config.enabled_features;
         self.mcu.report_status(&self.status)?;
 
