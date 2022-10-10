@@ -70,9 +70,7 @@ class AcceleratorCore(SimpleElaboratable):
     Sequence of use:
     1. Set filter and post process param sizes
     2. reset
-    3. Add filter an post process param data
-
-    This is a work in progress.
+    3. Add filter and post process param data
 
     The current version includes:
     -   input_offset adjustment

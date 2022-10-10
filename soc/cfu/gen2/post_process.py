@@ -491,11 +491,11 @@ class AccumulatorReader(SimpleElaboratable):
 
 
 class StreamLimiter(SimpleElaboratable):
-    """Allows only a certain number of elements to apss through stream.
+    """Allows only a certain number of elements to pass through stream.
 
     Counts a given number of items, then signals that it is done.
 
-    This module can be parametrized as follows:
+    This module can be parameterized as follows:
 
     payload_type:
         The type carried by the stream

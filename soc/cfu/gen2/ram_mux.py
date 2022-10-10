@@ -32,7 +32,7 @@ class RamMux(SimpleElaboratable):
     +--------+--------+--------+--------+
 
     Since words are stored in individually readable LRAMs, it is possible to
-    ftech four per cycle.
+    fetch four per cycle.
 
     This mux Connects the four address inputs to the four LRAMs in one of four
     configurations, as directed by the `phase`. The following table shows for
