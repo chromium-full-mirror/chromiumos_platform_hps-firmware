@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,8 @@ PROG="$(basename "$0")"
 if [[ "${PROG}" = "rustc" && "$1" = "--print" && "$2" = "sysroot" ]]; then
     echo -n "${CHROOT}"
 fi
+
+mkdir -p "${CHROOT}/home/${USER}/.cargo" "${HOME}/.cargo"
 
 function run_command {
     bwrap \
