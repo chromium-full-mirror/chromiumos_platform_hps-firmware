@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/third_party/tflm/hps_accel",
+                "${workspaceFolder}/third_party/tflm/tflite-micro",
+                "${workspaceFolder}/third_party/tflm/tflite-micro/third_party/gemmlowp",
+                "${workspaceFolder}"
+            ],
+            "defines": [
+                "ACCEL_CONV",
+                "GATEWARE_GEN=2"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
