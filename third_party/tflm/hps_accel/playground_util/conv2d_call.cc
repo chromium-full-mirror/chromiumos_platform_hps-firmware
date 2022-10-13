@@ -23,7 +23,6 @@
 #include "third_party/tflm/hps_accel/playground_util/dump.h"
 
 bool test_conv2d(const Conv2DData* data) {
-  printf("Testing Conv2D %s\n", data->name);
   // Copy input arena
   int8_t* arena_input = tflite_get_input();
   auto input_shape =

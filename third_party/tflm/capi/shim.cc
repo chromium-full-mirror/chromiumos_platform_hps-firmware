@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
 #include "third_party/tflm/hps_accel/playground_util/conv2d_00.h"
+#include "third_party/tflm/hps_accel/playground_util/conv2d_23.h"
 #include "third_party/tflm/hps_accel/playground_util/conv2d_call.h"
 
 // Globals
@@ -173,5 +174,6 @@ bool tflite_classify(int8_t* score1, int8_t* score2) {
 }
 
 bool tflite_layer_test() {
-  return test_conv2d(&conv2d_layer_00_data);
+  return (test_conv2d(&conv2d_layer_00_data) &&
+          test_conv2d(&conv2d_layer_23_data));
 }
