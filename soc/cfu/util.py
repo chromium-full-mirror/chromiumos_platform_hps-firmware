@@ -9,7 +9,6 @@ import unittest
 
 from amaranth import Elaboratable
 from amaranth import Module
-from amaranth import Mux
 from amaranth import Signal
 from amaranth.build import Platform
 from amaranth.sim import Simulator
@@ -122,73 +121,3 @@ class TestBase(unittest.TestCase):
             )
         else:
             self.sim.run()
-
-
-class SequentialMemoryReader(SimpleElaboratable):
-    """A sequentially reading wrapper for a memory.
-
-    Buffers inputs in such a way that the next input can be obtained next
-    cycle, even though reads to the memory take a cycle.
-
-    This module can be parametrized as follows:
-
-    max_depth:
-        Maximum number of items stored in memory
-    width:
-        bits in each word of memory
-
-    Attributes:
-        limit (Signal(range(max_depth+1)), in):
-            The number of items to read
-        mem_addr (Signal(range(max_depth)), out):
-            The address to send to the memory read port
-        mem_data (Signal(32), in):
-            The data from memory
-        data (Signal(32), out):
-            The current piece of data
-        next (Signal(), in):
-            Indicates the current piece of data has been read, and want
-            the next word, please
-        restart (Signal(), in):
-            Indicates that reader should be reset to address zero. Data
-            is ready at next cycle.
-    """
-
-    def __init__(self, *, width, max_depth):
-        self.width = width
-        self.max_depth = max_depth
-        self.limit = Signal(range(max_depth + 1))
-        self.mem_addr = Signal(range(max_depth))
-        self.mem_data = Signal(32)
-        self.data = Signal(32)
-        self.next = Signal()
-        self.restart = Signal()
-
-    def elab(self, m):
-        # Track previous restart, next
-        was_restart = Signal()
-        m.d.sync += was_restart.eq(self.restart)
-        was_next = Signal()
-        m.d.sync += was_next.eq(self.next)
-
-        # Decide address to be output (determines data available next cycle)
-        last_mem_addr = Signal.like(self.mem_addr)
-        m.d.sync += last_mem_addr.eq(self.mem_addr)
-        incremented_addr = Signal.like(self.limit)
-        m.d.comb += incremented_addr.eq(
-            Mux(last_mem_addr == self.limit - 1, 0, last_mem_addr + 1)
-        )
-        with m.If(self.restart):
-            m.d.comb += self.mem_addr.eq(0)
-        with m.Elif(was_next | was_restart):
-            m.d.comb += self.mem_addr.eq(incremented_addr)
-        with m.Else():
-            m.d.comb += self.mem_addr.eq(last_mem_addr)
-
-        # Decide data to be output
-        last_data = Signal.like(self.data)
-        m.d.sync += last_data.eq(self.data)
-        with m.If(was_restart | was_next):
-            m.d.comb += self.data.eq(self.mem_data)
-        with m.Else():
-            m.d.comb += self.data.eq(last_data)
