@@ -171,6 +171,7 @@ class NXLRAM(Module):
                     b_dout_delayed = Signal(32)
                     lram_block = Instance('DPSC512K',
                                           p_ECC_BYTE_SEL='BYTE_EN',
+                                          p_OUTREG_A='OUT_REG',
                                           i_DIA=datain,
                                           i_ADA=addr,
                                           i_CLK=ClockSignal(),
@@ -178,7 +179,7 @@ class NXLRAM(Module):
                                           i_WEA=wren,
                                           i_CSA=cs,
                                           i_RSTA=0b0,
-                                          i_CEOUTA=0b0,
+                                          i_CEOUTA=0b1,
                                           i_BENA_N=byte_enable_n,
                                           o_DOA=dataout,
                                           # port B read only
@@ -202,6 +203,7 @@ class NXLRAM(Module):
                     a_clk_en = Signal(reset=1)
                     lram_block = Instance('SP512K',
                                           p_ECC_BYTE_SEL='BYTE_EN',
+                                          p_OUTREG='OUT_REG',
                                           i_DI=datain,
                                           i_AD=addr,
                                           i_CLK=ClockSignal(),
@@ -209,7 +211,7 @@ class NXLRAM(Module):
                                           i_WE=wren,
                                           i_CS=cs,
                                           i_RSTOUT=0b0,
-                                          i_CEOUT=0b0,
+                                          i_CEOUT=0b1,
                                           i_BYTEEN_N=byte_enable_n,
                                           o_DO=dataout
                                           )
@@ -217,8 +219,12 @@ class NXLRAM(Module):
                 self.lram_blocks[d].append(lram_block)
                 self.specials += lram_block
 
-        self.sync += self.bus.ack.eq(self.bus.stb &
-                                     self.bus.cyc & ~self.bus.ack)
+        ack = Signal()
+        self.comb += ack.eq(self.bus.stb & self.bus.cyc)
+        ack_delayed = Signal()
+        # If we're reading (~wren) then ACK is delayed by one cycle.
+        self.sync += ack_delayed.eq(ack & ~wren & ~ack_delayed & ~self.bus.ack)
+        self.sync += self.bus.ack.eq((ack & wren & ~self.bus.ack) | ack_delayed)
 
         if init is not None:
             self.add_init(init)
