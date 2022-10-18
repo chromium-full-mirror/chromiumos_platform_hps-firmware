@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -345,6 +345,7 @@ class SaturateActivationPipelineTest(TestBase):
                 while not (yield self.dut.output.valid):
                     yield
                 self.assertEqual((yield self.dut.output.payload), expected)
+
         self.run_sim(process, False)
 
 
@@ -384,6 +385,7 @@ class PostProcessPipelineTest(TestBase):
                 while not (yield self.dut.output.valid):
                     yield
                 self.assertEqual((yield self.dut.output.payload), expected)
+
         self.run_sim(process, False)
 
 
@@ -463,12 +465,14 @@ class ReadingProducerTest(TestBase):
                     self.assertTrue((yield dut.output_data.valid))
                     self.assertEqual(
                         (yield dut.output_data.payload.as_unsigned()),
-                        addr + 100)
+                        addr + 100,
+                    )
                     yield dut.output_data.ready.eq(0)
 
     def test_it_reads(self):
         def process():
             yield from self.check(5, 1)
+
         self.run_sim(process, False)
 
     def test_it_resets(self):
@@ -477,6 +481,7 @@ class ReadingProducerTest(TestBase):
             yield from self.check(12, 4)
             yield from self.check(27, 2)
             yield from self.check(3, 3)
+
         self.run_sim(process, False)
 
 
@@ -491,7 +496,7 @@ class AccumulatorReaderTest(TestBase):
         # Order is cycle number when accumulator value will be produced
         order = [0, 1, 2, 3, 1, 2, 3, 4]
         size = 8
-        groups = [values[i:i + size] for i in range(0, len(values), size)]
+        groups = [values[i : i + size] for i in range(0, len(values), size)]
 
         # Send each group over a number of cycles
         for group in groups:
@@ -511,7 +516,7 @@ class AccumulatorReaderTest(TestBase):
         for expected_value in expected:
             while not (yield self.dut.output.valid):
                 yield
-            actual = (yield self.dut.output.payload)
+            actual = yield self.dut.output.payload
             self.assertEqual(expected_value, actual)
             yield
         # check no additional values
@@ -524,10 +529,12 @@ class AccumulatorReaderTest(TestBase):
 
         def set_values():
             yield from self.set_accumulators(data, 24)
+
         self.add_process(set_values)
 
         def process():
             yield from self.check_outputs(data)
+
         self.run_sim(process, False)
 
     def test_half_read(self):
@@ -538,10 +545,12 @@ class AccumulatorReaderTest(TestBase):
             # In half mode, set all values over just 4 cycles
             yield self.dut.half_mode.eq(True)
             yield from self.set_accumulators(all_data, 4)
+
         self.add_process(set_values)
 
         def process():
             yield from self.check_outputs(half_data)
+
         self.run_sim(process, False)
 
 
@@ -563,12 +572,10 @@ class StreamLimiterTest(TestBase):
             (2, 0, 1, 1, 0),
             (2, 0, 1, 1, 0),
             (2, 0, 1, 1, 0),
-
             # Do not allow next few
             (2, 0, 1, 0, 1),
             (2, 0, 0, 0, 0),
             (2, 0, 0, 0, 0),
-
             # Start running again, but do not pass on every cycle
             (2, 1, 0, 0, 0),
             (2, 0, 0, 1, 0),
@@ -595,8 +602,9 @@ class StreamLimiterTest(TestBase):
 
                 if running:
                     self.assertEqual(payload, (yield dut.stream_out.payload))
-                self.assertEqual(running and input_valid,
-                                 (yield dut.stream_out.valid))
+                self.assertEqual(
+                    running and input_valid, (yield dut.stream_out.valid)
+                )
 
                 self.assertEqual(finished, (yield dut.finished))
                 yield
@@ -626,24 +634,54 @@ class OutputWordAssemblerTest(TestBase):
         for value in expected:
             while not (yield self.dut.output.valid):
                 yield
-            actual = (yield self.dut.output.payload)
+            actual = yield self.dut.output.payload
             self.assertEqual(value, actual)
             yield
 
     def test_it_does_8_words(self):
         inputs = [
-            0x11, 0x12, 0x13, 0x14,
-            0x21, 0x22, 0x23, 0x24,
-            0x31, 0x32, 0x33, 0x34,
-            0x41, 0x42, 0x43, 0x44,
-            0x51, 0x52, 0x53, 0x54,
-            0x61, 0x62, 0x63, 0x64,
-            0x71, 0x72, 0x73, 0x74,
-            0x81, 0x82, 0x83, 0x84,
+            0x11,
+            0x12,
+            0x13,
+            0x14,
+            0x21,
+            0x22,
+            0x23,
+            0x24,
+            0x31,
+            0x32,
+            0x33,
+            0x34,
+            0x41,
+            0x42,
+            0x43,
+            0x44,
+            0x51,
+            0x52,
+            0x53,
+            0x54,
+            0x61,
+            0x62,
+            0x63,
+            0x64,
+            0x71,
+            0x72,
+            0x73,
+            0x74,
+            0x81,
+            0x82,
+            0x83,
+            0x84,
         ]
         expected = [
-            0x41312111, 0x42322212, 0x43332313, 0x44342414,
-            0x81716151, 0x82726252, 0x83736353, 0x84746454,
+            0x41312111,
+            0x42322212,
+            0x43332313,
+            0x44342414,
+            0x81716151,
+            0x82726252,
+            0x83736353,
+            0x84746454,
         ]
         self.add_process(lambda: (yield from self.send_inputs(inputs)))
         self.run_sim(lambda: (yield from self.check_expected(expected)), False)
@@ -654,13 +692,15 @@ class OutputWordAssemblerTest(TestBase):
 
         # Transform inputs to expected outputs
         def group(lst, size):
-            return [lst[i:i + size] for i in range(0, len(lst), size)]
+            return [lst[i : i + size] for i in range(0, len(lst), size)]
+
         expected = []
         for sixteen_bytes in group(inputs, 16):
             # pylint: disable=zip-builtin-not-iterating
             expected_words_as_bytes = zip(*group(sixteen_bytes, 4))
-            expected_words = [pack_vals(*word)
-                              for word in expected_words_as_bytes]
+            expected_words = [
+                pack_vals(*word) for word in expected_words_as_bytes
+            ]
             expected += expected_words
 
         # Run the test
@@ -669,21 +709,33 @@ class OutputWordAssemblerTest(TestBase):
 
     def test_it_handles_half_mode(self):
         inputs = [
-            0x11, 0x12,
-            0x21, 0x22,
-            0x31, 0x32,
-            0x41, 0x42,
-            0x51, 0x52,
-            0x61, 0x62,
-            0x71, 0x72,
-            0x81, 0x82,
+            0x11,
+            0x12,
+            0x21,
+            0x22,
+            0x31,
+            0x32,
+            0x41,
+            0x42,
+            0x51,
+            0x52,
+            0x61,
+            0x62,
+            0x71,
+            0x72,
+            0x81,
+            0x82,
         ]
         expected = [
-            0x41312111, 0x42322212,
-            0x81716151, 0x82726252,
+            0x41312111,
+            0x42322212,
+            0x81716151,
+            0x82726252,
         ]
         self.add_process(lambda: (yield from self.send_inputs(inputs)))
+
         def check():
             yield self.dut.half_mode.eq(1)
             yield from self.check_expected(expected)
+
         self.run_sim(check, False)

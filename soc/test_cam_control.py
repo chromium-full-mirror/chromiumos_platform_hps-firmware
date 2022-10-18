@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -57,9 +57,10 @@ class PixelProducerTest(TestCase):
             for _ in range(4):
                 yield
             yield self.pads.fvld.eq(0)
+
         run_simulation(
-            self.dut,
-            generators=[run(), self.assert_stream_content(frame)])
+            self.dut, generators=[run(), self.assert_stream_content(frame)]
+        )
 
     def test_it_handles_fvld(self):
         """Checks that pixels sent while fvld lowered are not recorded."""
@@ -81,9 +82,10 @@ class PixelProducerTest(TestCase):
             for (fvld, pixel) in PAD_DATA:
                 yield self.pads.fvld.eq(fvld)
                 yield from self.send_pixel(pixel)
+
         run_simulation(
-            self.dut,
-            generators=[run(), self.assert_stream_content(EXPECTED)])
+            self.dut, generators=[run(), self.assert_stream_content(EXPECTED)]
+        )
 
 
 def send(stream, data):
@@ -102,7 +104,7 @@ def receive(stream):
     yield
     while not (yield stream.valid):
         yield
-    result = (yield stream.data)
+    result = yield stream.data
     yield stream.ready.eq(0)
     return result
 
@@ -136,26 +138,33 @@ class WordPackerTest(TestCase):
 
     def test_it_packs_words(self):
         X = None
-        run_simulation(self.dut, generators=[
-            self.check_sequence([
-                # input: valid, data, ready
-                # then output: valid, data, ready
-                ((0, 0x01, X), (0, X, 0)),
-                ((0, 0x02, X), (0, X, 0)),
-                ((0, 0x00, X), (0, X, 0)),
-                ((1, 0x10, 1), (0, X, 1)),
-                ((1, 0x20, 1), (0, X, 1)),
-                ((1, 0x30, 1), (0, X, 1)),
-                ((1, 0x40, 1), (1, 0x40302010, 1)),
-                ((1, 0x50, 1), (0, X, 1)),
-                ((1, 0x60, 1), (0, X, 1)),
-                ((1, 0x70, 1), (0, X, 1)),
-                ((1, 0x80, 1), (1, 0x80706050, 1)),
-            ])])
+        run_simulation(
+            self.dut,
+            generators=[
+                self.check_sequence(
+                    [
+                        # input: valid, data, ready
+                        # then output: valid, data, ready
+                        ((0, 0x01, X), (0, X, 0)),
+                        ((0, 0x02, X), (0, X, 0)),
+                        ((0, 0x00, X), (0, X, 0)),
+                        ((1, 0x10, 1), (0, X, 1)),
+                        ((1, 0x20, 1), (0, X, 1)),
+                        ((1, 0x30, 1), (0, X, 1)),
+                        ((1, 0x40, 1), (1, 0x40302010, 1)),
+                        ((1, 0x50, 1), (0, X, 1)),
+                        ((1, 0x60, 1), (0, X, 1)),
+                        ((1, 0x70, 1), (0, X, 1)),
+                        ((1, 0x80, 1), (1, 0x80706050, 1)),
+                    ]
+                )
+            ],
+        )
 
 
 class CameraControlIntegrationTest(TestCase):
     """Integration test for CameraControl"""
+
     # pylint: disable=protected-access
 
     RAW_COLUMNS = 12
@@ -168,9 +177,11 @@ class CameraControlIntegrationTest(TestCase):
     @passive
     def run_camera(self):
         """Simulates camera signal on pads"""
+
         def wait(n):
             for _ in range(n):
                 yield
+
         pads = self.pads
         while True:
             yield from wait(100)
@@ -194,10 +205,10 @@ class CameraControlIntegrationTest(TestCase):
     def expected_word_for(self, row, column):
         result = 0
         for i in range(4):
-            b = (column + i) & 0xf
-            b += (row & 0xf) << 4
+            b = (column + i) & 0xF
+            b += (row & 0xF) << 4
             b += 128
-            b &= 0xff
+            b &= 0xFF
             result += b << (i * 8)
         return result
 
@@ -211,7 +222,7 @@ class CameraControlIntegrationTest(TestCase):
             while not (yield from self.dut._pixels_ready.read()):
                 waited += 1
                 if waited > 1000:
-                    self.fail(f'no data after waiting {waited} cycles')
+                    self.fail(f"no data after waiting {waited} cycles")
                 yield
             if row < start_row:
                 yield from self.dut._wait_row.write(1)
@@ -219,11 +230,13 @@ class CameraControlIntegrationTest(TestCase):
                 row += 1
                 continue
             # check transaction is a write with all necessary attributes
-            actual = (yield from self.dut._pixels.read())
+            actual = yield from self.dut._pixels.read()
             expected = self.expected_word_for(row, column)
             self.assertEqual(
-                actual, expected,
-                f'{actual:08x} != {expected:08x} @{row}, {column}')
+                actual,
+                expected,
+                f"{actual:08x} != {expected:08x} @{row}, {column}",
+            )
             # Reading the data should have cleared _pixels_ready.
             yield
             self.assertFalse((yield from self.dut._pixels_ready.read()))
@@ -261,9 +274,4 @@ class CameraControlIntegrationTest(TestCase):
                 yield
                 self.assertFalse((yield self.dut._pixels_ready.status))
 
-        run_simulation(
-            self.dut,
-            generators=[
-                run(),
-                self.run_camera()]
-        )
+        run_simulation(self.dut, generators=[run(), self.run_camera()])

@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,7 +75,8 @@ class EvenPixelAddressGenerator(SimpleElaboratable):
                     m.d.sync += [
                         self.addr.eq(pixel_row_begin_addr),
                         pixel_row_begin_addr.eq(
-                            pixel_row_begin_addr + self.INCREMENT_Y),
+                            pixel_row_begin_addr + self.INCREMENT_Y
+                        ),
                         pixel_x.eq(0),
                     ]
                 with m.Else():
@@ -86,7 +87,7 @@ class EvenPixelAddressGenerator(SimpleElaboratable):
                 self.addr.eq(self.base_addr),
                 pixel_row_begin_addr.eq(self.base_addr + self.INCREMENT_Y),
                 pixel_x.eq(0),
-                next_count.eq(0)
+                next_count.eq(0),
             ]
 
 
@@ -139,8 +140,7 @@ class ValueAddressGenerator(SimpleElaboratable):
             m.d.sync += count.eq(count + 1)  # Allow rollover
 
         next_row = Signal(18)
-        m.d.comb += self.addr_out.eq(Mux(count == 0,
-                                         self.start_addr, next_row))
+        m.d.comb += self.addr_out.eq(Mux(count == 0, self.start_addr, next_row))
         m.d.sync += next_row.eq(self.addr_out + self.INCREMENT_Y)
         m.d.comb += self.first.eq(running & (count == 0))
         m.d.comb += self.last.eq(running & (count == 3))
@@ -180,9 +180,9 @@ class ValueReader(SimpleElaboratable):
     def __init__(self):
         self.addr = Signal(18)
         self.ram_mux_phase = Signal(range(4))
-        self.ram_mux_addr = [Signal(14, name=f'rm_addr{i}') for i in range(4)]
-        self.ram_mux_data = [Signal(32, name=f'rm_data{i}') for i in range(4)]
-        self.data_out = [Signal(32, name=f'data_out{i}') for i in range(2)]
+        self.ram_mux_addr = [Signal(14, name=f"rm_addr{i}") for i in range(4)]
+        self.ram_mux_data = [Signal(32, name=f"rm_data{i}") for i in range(4)]
+        self.data_out = [Signal(32, name=f"data_out{i}") for i in range(2)]
 
     def elab(self, m):
         # This code covers 8 cases, determined by bits 1, 2 and 3 of self.addr.
@@ -203,7 +203,8 @@ class ValueReader(SimpleElaboratable):
         m.d.comb += block.eq(self.addr[4:])
         m.d.comb += self.ram_mux_addr[0].eq(block)
         m.d.comb += self.ram_mux_addr[3].eq(
-            Mux(self.ram_mux_phase == 3, block + 1, block))
+            Mux(self.ram_mux_phase == 3, block + 1, block)
+        )
 
         # Use phase to select the two required words to channels 0 & 3
         m.d.comb += self.ram_mux_phase.eq(self.addr[2:4])
@@ -267,27 +268,27 @@ class Mode0InputFetcher(SimpleElaboratable):
         self.start = Signal()
         self.base_addr = Signal(18)
         self.ram_mux_phase = Signal(range(4))
-        self.ram_mux_addr = [Signal(14, name=f'rm_addr{i}') for i in range(4)]
-        self.ram_mux_data = [Signal(32, name=f'rm_data{i}') for i in range(4)]
-        self.data_out = [Signal(32, name=f'data_out{i}') for i in range(4)]
+        self.ram_mux_addr = [Signal(14, name=f"rm_addr{i}") for i in range(4)]
+        self.ram_mux_data = [Signal(32, name=f"rm_data{i}") for i in range(4)]
+        self.data_out = [Signal(32, name=f"data_out{i}") for i in range(4)]
         self.first = Signal()
         self.last = Signal()
 
     def elab(self, m):
         # Generate pixel addresses
-        m.submodules['pixel_ag'] = pixel_ag = EvenPixelAddressGenerator()
+        m.submodules["pixel_ag"] = pixel_ag = EvenPixelAddressGenerator()
         m.d.comb += pixel_ag.base_addr.eq(self.base_addr)
         m.d.comb += pixel_ag.start.eq(self.start)
 
         # Generate value addresses from each pixel
-        m.submodules['value_ag'] = value_ag = ValueAddressGenerator()
+        m.submodules["value_ag"] = value_ag = ValueAddressGenerator()
         m.d.comb += value_ag.reset.eq(self.reset)
         m.d.comb += value_ag.start.eq(self.start)
         m.d.comb += value_ag.start_addr.eq(pixel_ag.addr)
         m.d.comb += pixel_ag.next.eq(value_ag.last)
 
         # Read values from given address
-        m.submodules['reader'] = reader = ValueReader()
+        m.submodules["reader"] = reader = ValueReader()
         m.d.comb += reader.addr.eq(value_ag.addr_out)
         m.d.comb += self.ram_mux_phase.eq(reader.ram_mux_phase)
         for i in range(4):

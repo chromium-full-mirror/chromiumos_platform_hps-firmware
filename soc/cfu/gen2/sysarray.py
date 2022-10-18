@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -69,10 +69,16 @@ class SystolicArray(SimpleElaboratable):
             The accumulator update strobe from each macc unit
     """
 
-    def __init__(self, specialize_nx=False, a_size=Constants.SYS_ARRAY_HEIGHT,
-                 b_size=Constants.SYS_ARRAY_WIDTH, n=4,
-                 a_shape=signed(9), b_shape=signed(8),
-                 accumulator_shape=signed(32)):
+    def __init__(
+        self,
+        specialize_nx=False,
+        a_size=Constants.SYS_ARRAY_HEIGHT,
+        b_size=Constants.SYS_ARRAY_WIDTH,
+        n=4,
+        a_shape=signed(9),
+        b_shape=signed(8),
+        accumulator_shape=signed(32),
+    ):
         self._specialize_nx = specialize_nx
         self._a_size = a_size
         self._b_size = b_size
@@ -81,31 +87,41 @@ class SystolicArray(SimpleElaboratable):
         self._b_shape = b_shape
         self._accumulator_shape = accumulator_shape
 
-        self.input_a = [Signal(unsigned(n * a_shape.width), name=f'input_a{i}')
-                        for i in range(a_size)]
-        self.input_b = [Signal(unsigned(n * b_shape.width), name=f'input_b{i}')
-                        for i in range(b_size)]
+        self.input_a = [
+            Signal(unsigned(n * a_shape.width), name=f"input_a{i}")
+            for i in range(a_size)
+        ]
+        self.input_b = [
+            Signal(unsigned(n * b_shape.width), name=f"input_b{i}")
+            for i in range(b_size)
+        ]
 
         self.first = Signal()
         self.last = Signal()
 
-        self.accumulator = [Signal(accumulator_shape)
-                            for _ in range(a_size * b_size)]
+        self.accumulator = [
+            Signal(accumulator_shape) for _ in range(a_size * b_size)
+        ]
         self.accumulator_new = [Signal() for _ in range(a_size * b_size)]
 
     def elab(self, m):
-        maccs = [[None for _ in range(self._b_size)]
-                 for _ in range(self._a_size)]
+        maccs = [
+            [None for _ in range(self._b_size)] for _ in range(self._a_size)
+        ]
         for i in range(self._a_size):
             for j in range(self._b_size):
                 klass = get_macc_block_class(self._specialize_nx)
-                macc = klass(self._n, self._a_shape, self._b_shape,
-                             self._accumulator_shape)
+                macc = klass(
+                    self._n,
+                    self._a_shape,
+                    self._b_shape,
+                    self._accumulator_shape,
+                )
                 maccs[i][j] = macc
 
         for i in range(self._a_size):
             for j in range(self._b_size):
-                m.submodules[f'macc_{i}_{j}'] = maccs[i][j]
+                m.submodules[f"macc_{i}_{j}"] = maccs[i][j]
                 a_in = self.input_a[i] if j == 0 else maccs[i][j - 1].output_a
                 b_in = self.input_b[j] if i == 0 else maccs[i - 1][j].output_b
                 if i == 0 and j == 0:
@@ -122,9 +138,11 @@ class SystolicArray(SimpleElaboratable):
                     maccs[i][j].input_a.eq(a_in),
                     maccs[i][j].input_b.eq(b_in),
                     maccs[i][j].input_first.eq(first_in),
-                    maccs[i][j]. input_last.eq(last_in),
+                    maccs[i][j].input_last.eq(last_in),
                     self.accumulator[acc_idx].eq(
-                        maccs[i][j].output_accumulator),
+                        maccs[i][j].output_accumulator
+                    ),
                     self.accumulator_new[acc_idx].eq(
-                        maccs[i][j].output_accumulator_new)
+                        maccs[i][j].output_accumulator_new
+                    ),
                 ]

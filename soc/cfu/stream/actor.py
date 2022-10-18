@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -43,7 +43,8 @@ class BinaryActor(SimpleElaboratable):
     def control(self, m):
         """Adds flow control to sink and source."""
         raise NotImplementedError(
-            'BinaryActor subclass must implement control()')
+            "BinaryActor subclass must implement control()"
+        )
 
     def transform(self, m, in_value, out_value):
         """Transforms input to output.
@@ -56,7 +57,8 @@ class BinaryActor(SimpleElaboratable):
           The transformed value
         """
         raise NotImplementedError(
-            'BinaryActor subclass must implement transform()')
+            "BinaryActor subclass must implement transform()"
+        )
 
 
 class BinaryCombinatorialActor(BinaryActor):
@@ -114,7 +116,8 @@ class BinaryPipelineActor(BinaryActor):
     def control(self, m: Module):
         m.d.comb += self.input.ready.eq(self.output.ready)
         m.d.comb += self.output.valid.eq(
-            self.delay(m, self.pipeline_cycles, self.input.valid))
+            self.delay(m, self.pipeline_cycles, self.input.valid)
+        )
 
     def transform(self, m, in_value, out_value):
         """Transforms input to output.

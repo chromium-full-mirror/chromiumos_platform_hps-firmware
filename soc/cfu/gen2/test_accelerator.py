@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,7 @@ from .conv2d_data import fetch_data
 
 def group(list_, size):
     """Separate list into sublists of size size"""
-    return [list_[i:i + size] for i in range(0, len(list_), size)]
+    return [list_[i : i + size] for i in range(0, len(list_), size)]
 
 
 def flatten(list_of_lists):
@@ -78,7 +78,8 @@ class AcceleratorCoreTest(TestBase):
         yield dut.config.input_channel_depth.eq(input_depth)
         yield dut.config.output_channel_depth.eq(output_depth)
         yield dut.config.num_output_values.eq(
-            self.NUM_OUTPUT_PIXELS * output_depth)
+            self.NUM_OUTPUT_PIXELS * output_depth
+        )
 
         yield from self.reset_dut()
 
@@ -114,10 +115,12 @@ class AcceleratorCoreTest(TestBase):
                 for i in range(4):
                     block = (yield self.dut.lram_addr[i]) - self.BASE_ADDR // 16
                     data_addr = block * 4 + i
-                    data_value = data.input_data[data_addr % len(
-                        data.input_data)]
+                    data_value = data.input_data[
+                        data_addr % len(data.input_data)
+                    ]
                     yield self.dut.lram_data[i].eq(data_value)
                 yield
+
         self.add_process(ram)
 
     def collect_output(self, data):
@@ -127,7 +130,7 @@ class AcceleratorCoreTest(TestBase):
         for _ in range(self.NUM_OUTPUT_PIXELS * data.output_dims[3] // 4):
             while not (yield self.dut.output.valid):
                 yield
-            collected.append((yield self.dut.output.payload) & 0xffff_ffff)
+            collected.append((yield self.dut.output.payload) & 0xFFFF_FFFF)
             yield
         # Check for a bit longer to ensure no more data than expected
         for _ in range(100):
@@ -138,21 +141,24 @@ class AcceleratorCoreTest(TestBase):
     def check_output(self, data, collected_data):
         # Check reordered output against expected
         for i, (actual, expected) in enumerate(
-                zip(collected_data, data.expected_output_data)):
+            zip(collected_data, data.expected_output_data)
+        ):
             self.assertEqual(
-                actual, expected, f' word {i}: ' +
-                f'actual {actual:08x} != expected {expected:08x} ')
-
+                actual,
+                expected,
+                f" word {i}: "
+                + f"actual {actual:08x} != expected {expected:08x} ",
+            )
 
     def test_convolution_05(self):
         # tests a conv2D with input and output depths of 16
-        data = fetch_data('sample_conv_05')
+        data = fetch_data("sample_conv_05")
         self.simulate_lram(data)
 
         def run():
             yield from self.configure(data)
             yield from self.start_dut()
-            actual_outputs = (yield from self.collect_output(data))
+            actual_outputs = yield from self.collect_output(data)
 
             # Reorder output words to match tflite expected order
             reordered_actual = []
@@ -165,16 +171,15 @@ class AcceleratorCoreTest(TestBase):
 
         self.run_sim(run, False)
 
-
     def test_convolution_06(self):
         # tests a conv2D for an input layer (i.e. Mode 0)
-        data = fetch_data('sample_conv_06')
+        data = fetch_data("sample_conv_06")
         self.simulate_lram(data)
 
         def run():
             yield from self.configure(data)
             yield from self.start_dut()
-            actual_outputs = (yield from self.collect_output(data))
+            actual_outputs = yield from self.collect_output(data)
 
             # Reorder output words to match tflite expected order
             reordered_actual = []
@@ -182,4 +187,5 @@ class AcceleratorCoreTest(TestBase):
                 reordered_actual += two_pixels[::2]
                 reordered_actual += two_pixels[1::2]
             self.check_output(data, reordered_actual)
+
         self.run_sim(run, False)

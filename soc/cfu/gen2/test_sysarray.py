@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -44,12 +44,12 @@ class SystolicArrayTest(TestBase):
             randlist(20, 256),
             randlist(20, 256),
             randlist(20, 256),
-            randlist(20, 256)]
-        b = [
-            randlist(20, 128),
-            randlist(20, 128)]
-        expected_outputs = [vector_multiply(a_list, b_list)
-                            for b_list in b for a_list in a]
+            randlist(20, 256),
+        ]
+        b = [randlist(20, 128), randlist(20, 128)]
+        expected_outputs = [
+            vector_multiply(a_list, b_list) for b_list in b for a_list in a
+        ]
         dut = self.dut
 
         # Get 4 values from a list and put it into an input of the
@@ -63,11 +63,13 @@ class SystolicArrayTest(TestBase):
 
         def set_input_a(input_index, value_index):
             yield from set_input(
-                input_index, value_index, a, dut.input_a, signed(9))
+                input_index, value_index, a, dut.input_a, signed(9)
+            )
 
         def set_input_b(input_index, value_index):
             yield from set_input(
-                input_index, value_index, b, dut.input_b, signed(8))
+                input_index, value_index, b, dut.input_b, signed(8)
+            )
 
         def process():
             new_value_found = [False for _ in range(8)]
@@ -84,11 +86,15 @@ class SystolicArrayTest(TestBase):
                 # Check accumulator values as they are ready
                 for acc_idx in range(8):
                     if (yield dut.accumulator_new[acc_idx]):
-                        self.assertFalse(new_value_found[acc_idx],
-                                         'should not get new value twice')
+                        self.assertFalse(
+                            new_value_found[acc_idx],
+                            "should not get new value twice",
+                        )
                         new_value_found[acc_idx] = True
-                        self.assertEqual((yield dut.accumulator[acc_idx]),
-                                         expected_outputs[acc_idx])
+                        self.assertEqual(
+                            (yield dut.accumulator[acc_idx]),
+                            expected_outputs[acc_idx],
+                        )
             # Check all 8 accumulators read
             self.assertTrue(all(new_value_found))
 

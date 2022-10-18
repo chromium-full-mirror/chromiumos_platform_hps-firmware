@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,10 +71,12 @@ class InstructionTestBase(TestBase):
                 4-tuples (funct7, in0, in1, out)
             trace: Whether to write a trace file to the cwd.
         """
+
         def process():
             for n, values in enumerate(data):
-                funct7, in0, in1, expected = values if len(
-                    values) == 4 else (0,) + values
+                funct7, in0, in1, expected = (
+                    values if len(values) == 4 else (0,) + values
+                )
                 yield self.dut.funct7.eq(funct7)
                 yield self.dut.in0.eq(in0)
                 yield self.dut.in1.eq(in1)
@@ -83,14 +85,17 @@ class InstructionTestBase(TestBase):
                 yield self.dut.start.eq(0)
                 while not (yield self.dut.done):
                     yield
-                actual = (yield self.dut.output)
+                actual = yield self.dut.output
                 if expected is not None:
                     self.assertEqual(
-                        actual, expected,
-                        f'\n  case {n}:   ' +
-                        f'in0={in0:08x}, in1={in1:08x}, ' +
-                        f'expected={expected:08x}, actual={actual:08x}')
+                        actual,
+                        expected,
+                        f"\n  case {n}:   "
+                        + f"in0={in0:08x}, in1={in1:08x}, "
+                        + f"expected={expected:08x}, actual={actual:08x}",
+                    )
                 yield
+
         self.run_sim(process, trace)
 
     def verify_against_reference(self, inputs, reference_fn, trace=False):
@@ -102,6 +107,7 @@ class InstructionTestBase(TestBase):
                 returns an integer.
             trace: Whether to write a trace file to the cwd.
         """
+
         def process():
             # pylint: disable=redefined-builtin
             for input in inputs:
@@ -110,24 +116,27 @@ class InstructionTestBase(TestBase):
                     yield self.dut.in0.eq(in0)
                     yield self.dut.in1.eq(in1)
                     expected = reference_fn(in0, in1)
-                    input_hex = f'0x{in0:08X}, 0x{in1:08X}'
+                    input_hex = f"0x{in0:08X}, 0x{in1:08X}"
                 else:
                     yield self.dut.in0.eq(input)
                     expected = reference_fn(input)
-                    input_hex = f'0x{input:08X}'
+                    input_hex = f"0x{input:08X}"
                 yield self.dut.start.eq(1)
                 yield
                 yield self.dut.start.eq(0)
                 while not (yield self.dut.done):
                     yield
-                actual = (yield self.dut.output)
+                actual = yield self.dut.output
                 self.assertEqual(
-                    actual, expected,
-                    f'\n  HEX: instruction({input_hex})' +
-                    f' expected: 0x{expected:08X} actual: 0x{actual:08X}' +
-                    f'\n  DEC: instruction({input})' +
-                    f' expected: {expected} actual: {actual}')
+                    actual,
+                    expected,
+                    f"\n  HEX: instruction({input_hex})"
+                    + f" expected: 0x{expected:08X} actual: 0x{actual:08X}"
+                    + f"\n  DEC: instruction({input})"
+                    + f" expected: {expected} actual: {actual}",
+                )
                 yield
+
         self.run_sim(process, trace)
 
 
@@ -176,29 +185,32 @@ class CfuBase(SimpleElaboratable):
     """
 
     def __init__(self):
-        self.cmd_valid = Signal(name='cmd_valid')
-        self.cmd_ready = Signal(name='cmd_ready')
-        self.cmd_function_id = Signal(
-            10, name='cmd_payload_function_id')
-        self.cmd_in0 = Signal(32, name='cmd_payload_inputs_0')
-        self.cmd_in1 = Signal(32, name='cmd_payload_inputs_1')
-        self.rsp_valid = Signal(name='rsp_valid')
-        self.rsp_ready = Signal(name='rsp_ready')
-        self.rsp_out = Signal(32, name='rsp_payload_outputs_0')
-        self.reset = Signal(name='reset')
-        self.lram_addr = [Signal(32, name=f'port{i}_addr') for i in range(4)]
-        self.lram_data = [Signal(32, name=f'port{i}_din') for i in range(4)]
-        self.ports = [
-            self.cmd_valid,
-            self.cmd_ready,
-            self.cmd_function_id,
-            self.cmd_in0,
-            self.cmd_in1,
-            self.rsp_valid,
-            self.rsp_ready,
-            self.rsp_out,
-            self.reset,
-        ] + self.lram_addr + self.lram_data
+        self.cmd_valid = Signal(name="cmd_valid")
+        self.cmd_ready = Signal(name="cmd_ready")
+        self.cmd_function_id = Signal(10, name="cmd_payload_function_id")
+        self.cmd_in0 = Signal(32, name="cmd_payload_inputs_0")
+        self.cmd_in1 = Signal(32, name="cmd_payload_inputs_1")
+        self.rsp_valid = Signal(name="rsp_valid")
+        self.rsp_ready = Signal(name="rsp_ready")
+        self.rsp_out = Signal(32, name="rsp_payload_outputs_0")
+        self.reset = Signal(name="reset")
+        self.lram_addr = [Signal(32, name=f"port{i}_addr") for i in range(4)]
+        self.lram_data = [Signal(32, name=f"port{i}_din") for i in range(4)]
+        self.ports = (
+            [
+                self.cmd_valid,
+                self.cmd_ready,
+                self.cmd_function_id,
+                self.cmd_in0,
+                self.cmd_in1,
+                self.rsp_valid,
+                self.rsp_ready,
+                self.rsp_out,
+                self.reset,
+            ]
+            + self.lram_addr
+            + self.lram_data
+        )
 
 
 class Cfu(CfuBase):
@@ -220,13 +232,14 @@ class Cfu(CfuBase):
         """Builds the list of eight instructions"""
         instruction_dict = self.elab_instructions(m)
 
-        assert all(k in range(8) for k in instruction_dict.keys()), (
-            'Instruction IDs must be integers from 0 to 7')
+        assert all(
+            k in range(8) for k in instruction_dict.keys()
+        ), "Instruction IDs must be integers from 0 to 7"
 
         # Add fallback instructions where needed
         for i in range(8):
             if i not in instruction_dict:
-                m.submodules[f'fallback{i}'] = fb = _FallbackInstruction()
+                m.submodules[f"fallback{i}"] = fb = _FallbackInstruction()
                 instruction_dict[i] = fb
 
         return list(instruction_dict[i] for i in range(8))
@@ -257,42 +270,45 @@ class Cfu(CfuBase):
             with m.If(current_function_done):
                 m.d.comb += self.rsp_valid.eq(1)
                 m.d.comb += self.rsp_out.eq(
-                    instruction_outputs[current_function_id])
+                    instruction_outputs[current_function_id]
+                )
                 with m.If(self.rsp_ready):
-                    m.next = 'WAIT_CMD'
+                    m.next = "WAIT_CMD"
                 with m.Else():
                     m.d.sync += stored_output.eq(
-                        instruction_outputs[current_function_id])
-                    m.next = 'WAIT_TRANSFER'
+                        instruction_outputs[current_function_id]
+                    )
+                    m.next = "WAIT_TRANSFER"
             with m.Else():
-                m.next = 'WAIT_INSTRUCTION'
+                m.next = "WAIT_INSTRUCTION"
 
         with m.FSM():
-            with m.State('WAIT_CMD'):
+            with m.State("WAIT_CMD"):
                 # We're waiting for a command from the CPU.
                 m.d.comb += current_function_id.eq(funct3)
                 m.d.comb += current_function_done.eq(
-                    instruction_dones[current_function_id])
+                    instruction_dones[current_function_id]
+                )
                 m.d.comb += self.cmd_ready.eq(1)
                 with m.If(self.cmd_valid):
-                    m.d.sync += stored_function_id.eq(
-                        self.cmd_function_id[:3])
+                    m.d.sync += stored_function_id.eq(self.cmd_function_id[:3])
                     m.d.comb += instruction_starts[current_function_id].eq(1)
                     check_instruction_done()
-            with m.State('WAIT_INSTRUCTION'):
+            with m.State("WAIT_INSTRUCTION"):
                 # An instruction is executing on the CFU. We're waiting until it
                 # completes.
                 m.d.comb += current_function_id.eq(stored_function_id)
                 m.d.comb += current_function_done.eq(
-                    instruction_dones[current_function_id])
+                    instruction_dones[current_function_id]
+                )
                 check_instruction_done()
-            with m.State('WAIT_TRANSFER'):
+            with m.State("WAIT_TRANSFER"):
                 # Instruction has completed, but the CPU isn't ready to receive
                 # the result.
                 m.d.comb += self.rsp_valid.eq(1)
                 m.d.comb += self.rsp_out.eq(stored_output)
                 with m.If(self.rsp_ready):
-                    m.next = 'WAIT_CMD'
+                    m.next = "WAIT_CMD"
 
         for instruction in instructions:
             m.d.comb += [
@@ -302,7 +318,7 @@ class Cfu(CfuBase):
             ]
 
         # tie "reset" and "rst" together (issue #110)
-        rst = ResetSignal('sync')
+        rst = ResetSignal("sync")
         m.d.comb += rst.eq(self.reset)
 
 
@@ -311,8 +327,9 @@ class CfuTestBase(TestBase):
     """Tests CFU ops independent of timing and handshaking."""
 
     def _unpack(self, inputs):
-        return inputs if len(inputs) == 4 else (
-            inputs[0], 0, inputs[1], inputs[2])
+        return (
+            inputs if len(inputs) == 4 else (inputs[0], 0, inputs[1], inputs[2])
+        )
 
     def run_ops(self, data, write_trace=False):
         """Runs the given ops through the CFU, checking results.
@@ -326,13 +343,14 @@ class CfuTestBase(TestBase):
             write_trace:
                 Whether to write a trace file to the cwd.
         """
+
         def process():
             for n, (inputs, expected) in enumerate(data):
                 function_id, funct7, in0, in1 = self._unpack(inputs)
                 # Set inputs and cmd_valid
                 yield self.dut.cmd_function_id.eq((funct7 << 3) | function_id)
-                yield self.dut.cmd_in0.eq(in0 & 0xffff_ffff)
-                yield self.dut.cmd_in1.eq(in1 & 0xffff_ffff)
+                yield self.dut.cmd_in0.eq(in0 & 0xFFFF_FFFF)
+                yield self.dut.cmd_in1.eq(in1 & 0xFFFF_FFFF)
                 yield self.dut.cmd_valid.eq(1)
                 yield self.dut.rsp_ready.eq(1)
                 yield
@@ -346,13 +364,15 @@ class CfuTestBase(TestBase):
 
                 # Ensure no errors, and output as expected
                 if expected is not None:
-                    actual = (yield self.dut.rsp_out)
-                    msg = (f'output {hex(actual)} != ' +
-                           f'{hex(expected & 0xffff_ffff)} ::: ' +
-                           f'function_id={function_id}, funct7={funct7}, ' +
-                           f' in0={in0} {hex(in0)}, in1={in1} {hex(in1)} ' +
-                           f'(n={n})')
-                    self.assertEqual(actual, expected & 0xffff_ffff, msg)
+                    actual = yield self.dut.rsp_out
+                    msg = (
+                        f"output {hex(actual)} != "
+                        + f"{hex(expected & 0xffff_ffff)} ::: "
+                        + f"function_id={function_id}, funct7={funct7}, "
+                        + f" in0={in0} {hex(in0)}, in1={in1} {hex(in1)} "
+                        + f"(n={n})"
+                    )
+                    self.assertEqual(actual, expected & 0xFFFF_FFFF, msg)
                 yield
 
         self.run_sim(process, write_trace)

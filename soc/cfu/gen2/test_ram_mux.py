@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -50,6 +50,7 @@ class RamMuxTest(TestBase):
                 if expected is not None:
                     for i in range(4):
                         self.assertEqual(
-                            (yield self.dut.data_out[i]), expected[i])
+                            (yield self.dut.data_out[i]), expected[i]
+                        )
 
         self.run_sim(process, False)

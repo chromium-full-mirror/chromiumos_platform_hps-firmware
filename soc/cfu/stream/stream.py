@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,7 +9,7 @@ from amaranth.hdl.rec import Layout
 from amaranth.hdl.rec import Record
 
 
-__all__ = ['PayloadDefinition', 'Endpoint', 'connect']
+__all__ = ["PayloadDefinition", "Endpoint", "connect"]
 
 
 class PayloadDefinition:
@@ -37,7 +37,7 @@ class PayloadDefinition:
         """
         if isinstance(obj, PayloadDefinition):
             return obj
-        return PayloadDefinition(payload_type=obj, src_loc_at=src_loc_at+1)
+        return PayloadDefinition(payload_type=obj, src_loc_at=src_loc_at + 1)
 
     def __init__(self, *, payload_type, src_loc_at=0):
         """Constructor.
@@ -49,11 +49,14 @@ class PayloadDefinition:
                 Number of stack frames to look upwards for source location.
         """
         self.payload_type = payload_type
-        self.stream_layout = Layout([
-            ('valid', Shape()),
-            ('ready', Shape()),
-            ('payload', payload_type),
-        ], src_loc_at=1 + src_loc_at)
+        self.stream_layout = Layout(
+            [
+                ("valid", Shape()),
+                ("ready", Shape()),
+                ("payload", payload_type),
+            ],
+            src_loc_at=1 + src_loc_at,
+        )
 
 
 class Endpoint:
@@ -72,9 +75,8 @@ class Endpoint:
         """
         self.definition = PayloadDefinition.cast(definition)
         self._record = Record(
-            self.definition.stream_layout,
-            name=name,
-            src_loc_at=1 + src_loc_at)
+            self.definition.stream_layout, name=name, src_loc_at=1 + src_loc_at
+        )
         self.valid = self._record.valid
         self.ready = self._record.ready
         self.payload = self._record.payload

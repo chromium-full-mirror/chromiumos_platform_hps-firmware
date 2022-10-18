@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,31 +30,38 @@ class SpiController(Module, AutoCSR):
     clock is initially low. Data clocked at low->high transition.
     """
 
-    def __init__(self, pads, sys_clk_freq,
-                 spi_clk_freq=DEFAULT_SPI_CLK_FREQ, loopback=False):
+    def __init__(
+        self,
+        pads,
+        sys_clk_freq,
+        spi_clk_freq=DEFAULT_SPI_CLK_FREQ,
+        loopback=False,
+    ):
         self.sys_clk_freq = sys_clk_freq
         self.loopback = loopback
         self._cr = CSRStorage(
             fields=[
-                bitfield('cs', 1, 1, 'CS line (bring low to select)'),
-                bitfield('en', 1, 0, 'Enable SPI')],
-            name='cr', description='SPI control register')
+                bitfield("cs", 1, 1, "CS line (bring low to select)"),
+                bitfield("en", 1, 0, "Enable SPI"),
+            ],
+            name="cr",
+            description="SPI control register",
+        )
         self._flags = CSRStatus(
             fields=[
-                bitfield('txe', 1, 1, 'TX buffer empty'),
-                bitfield('rxe', 1, 1, 'RX buffer empty'),
-                bitfield('ready', 1, 1, 'Peripheral ready'),
+                bitfield("txe", 1, 1, "TX buffer empty"),
+                bitfield("rxe", 1, 1, "RX buffer empty"),
+                bitfield("ready", 1, 1, "Peripheral ready"),
             ],
-            name='flags', description='SPI Status flags'
+            name="flags",
+            description="SPI Status flags",
         )
         self._txd = CSRStorage(
-            name='txd',
-            size=8,
-            description='Transmit data register')
+            name="txd", size=8, description="Transmit data register"
+        )
         self._rxd = CSRStatus(
-            name='rxd',
-            size=8,
-            description='Receive data register')
+            name="rxd", size=8, description="Receive data register"
+        )
         self.pads = pads
 
         # Prescaler
@@ -93,8 +100,9 @@ class SpiController(Module, AutoCSR):
 
         Does not allow changing CS during transmission.
         """
-        self.sync += If(~self.busy & self.ps_tick,
-                        self.pads.cs.eq(self._cr.fields.cs))
+        self.sync += If(
+            ~self.busy & self.ps_tick, self.pads.cs.eq(self._cr.fields.cs)
+        )
 
     def _connect_ready(self):
         """Connect the peripheral ready line - independent of all other state"""
@@ -118,17 +126,17 @@ class SpiController(Module, AutoCSR):
         """Prescaler logic"""
 
         # Counter
-        self.sync += If(self.ps_cnt[-1] == 1,
-                        self.ps_cnt.eq(self.ps_top)
-                        ).Else(
-                            self.ps_cnt.eq(self.ps_cnt - 1))
+        self.sync += If(self.ps_cnt[-1] == 1, self.ps_cnt.eq(self.ps_top)).Else(
+            self.ps_cnt.eq(self.ps_cnt - 1)
+        )
 
         # Phase
         self.sync += If(self.ps_cnt[-1] == 1, self.ps_pha.eq(~self.ps_pha))
 
         # Tick
-        self.sync += self.ps_tick.eq(~self.ps_tick &
-                                     self.ps_cnt[-1] & self.ps_pha)
+        self.sync += self.ps_tick.eq(
+            ~self.ps_tick & self.ps_cnt[-1] & self.ps_pha
+        )
 
     def _run_clock(self):
         """Outputs the SPI clock."""
@@ -148,37 +156,42 @@ class SpiController(Module, AutoCSR):
 
         # TX logic
         self.comb += self.pads.copi.eq(self.shift_register[-1])
-        self.sync += If(self.ps_tick,
-                        If(~self.busy & ~self._flags.fields.txe,
-                           self._flags.fields.txe.eq(1),
-                           self.bit_count.eq(7),
-                           self.shift_register.eq(self._txd.storage)
-                           ).Elif(self.busy,
-                                  self.bit_count.eq(self.bit_count - 1),
-                                  self.shift_register[1:].eq(
-                                      self.shift_register[:-1])
-                                  )
-                        )
+        self.sync += If(
+            self.ps_tick,
+            If(
+                ~self.busy & ~self._flags.fields.txe,
+                self._flags.fields.txe.eq(1),
+                self.bit_count.eq(7),
+                self.shift_register.eq(self._txd.storage),
+            ).Elif(
+                self.busy,
+                self.bit_count.eq(self.bit_count - 1),
+                self.shift_register[1:].eq(self.shift_register[:-1]),
+            ),
+        )
 
         # RX logic
-        self.sync += If(self.busy & self.ps_tick,
-                        self.shift_register[0].eq(din)
-                        )
+        self.sync += If(
+            self.busy & self.ps_tick, self.shift_register[0].eq(din)
+        )
 
         # Output data latch. Detects end of the busy state
         prev = Signal()
         self.sync += prev.eq(~self.busy)
-        self.sync += If(~prev & ~self.busy & self._flags.fields.rxe,
-                        self._rxd.status.eq(self.shift_register),
-                        self._flags.fields.rxe.eq(0)
-                        )
+        self.sync += If(
+            ~prev & ~self.busy & self._flags.fields.rxe,
+            self._rxd.status.eq(self.shift_register),
+            self._flags.fields.rxe.eq(0),
+        )
 
     def _reset_on_disable(self):
         """If disabled, then hold everything in reset"""
-        self.sync += If(~self._cr.fields.en,
-                        self.bit_count.eq(-1),
-                        self.ps_cnt.eq(self.ps_top),
-                        self._flags.fields.txe.eq(1),
-                        self._flags.fields.rxe.eq(1),
-                        self.pads.cs.eq(1),
-                        self.pads.clk.eq(0))
+        self.sync += If(
+            ~self._cr.fields.en,
+            self.bit_count.eq(-1),
+            self.ps_cnt.eq(self.ps_top),
+            self._flags.fields.txe.eq(1),
+            self._flags.fields.rxe.eq(1),
+            self.pads.cs.eq(1),
+            self.pads.clk.eq(0),
+        )

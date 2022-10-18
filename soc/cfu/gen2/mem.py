@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -77,7 +77,7 @@ class SinglePortMemory(SimpleElaboratable):
             wp.addr.eq(self.write_addr),
             wp.data.eq(self.write_data),
             rp.addr.eq(self.read_addr),
-            self.read_data.eq(rp.data)
+            self.read_data.eq(rp.data),
         ]
 
 
@@ -134,8 +134,8 @@ class LoopingCounter(SimpleElaboratable):
 
 
 LDR_PARAMS_LAYOUT = [
-    ('count', unsigned(16)),
-    ('repeats', unsigned(4)),
+    ("count", unsigned(16)),
+    ("repeats", unsigned(4)),
 ]
 
 

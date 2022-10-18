@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,9 +16,9 @@ from .utils import unsigned_upto
 
 
 FILTER_WRITE_COMMAND = [
-    ('store', range(Constants.NUM_FILTER_STORES)),
-    ('addr', range(Constants.FILTER_WORDS_PER_STORE)),
-    ('data', unsigned(32)),
+    ("store", range(Constants.NUM_FILTER_STORES)),
+    ("addr", range(Constants.FILTER_WORDS_PER_STORE)),
+    ("data", unsigned(32)),
 ]
 
 
@@ -46,8 +46,10 @@ class FilterStore(SimpleElaboratable):
     def __init__(self):
         self.write_input = Endpoint(FILTER_WRITE_COMMAND)
         self.size = Signal(unsigned_upto(Constants.FILTER_WORDS_PER_STORE))
-        self.values_out = [Signal(32, name=f'out_{i}')
-                           for i in range(Constants.NUM_FILTER_STORES)]
+        self.values_out = [
+            Signal(32, name=f"out_{i}")
+            for i in range(Constants.NUM_FILTER_STORES)
+        ]
         self.start = Signal()
 
     def elab(self, m):
@@ -56,16 +58,18 @@ class FilterStore(SimpleElaboratable):
         read_index = Signal(range(Constants.FILTER_WORDS_PER_STORE))
         running = Signal()
         with m.If(running):
-            m.d.sync += read_index.eq(Mux(read_index == self.size - 1,
-                                          0, read_index + 1))
+            m.d.sync += read_index.eq(
+                Mux(read_index == self.size - 1, 0, read_index + 1)
+            )
         with m.If(self.start):
             m.d.sync += running.eq(True)
             m.d.sync += read_index.eq(0)
 
         # set up each memory
         for i in range(Constants.NUM_FILTER_STORES):
-            m.submodules[f'mem{i}'] = mem = SinglePortMemory(
-                data_width=32, depth=Constants.FILTER_WORDS_PER_STORE)
+            m.submodules[f"mem{i}"] = mem = SinglePortMemory(
+                data_width=32, depth=Constants.FILTER_WORDS_PER_STORE
+            )
             # Handle writes to memory
             inp = self.write_input
             m.d.comb += [
@@ -79,11 +83,14 @@ class FilterStore(SimpleElaboratable):
                 # (and save a few LUTs and FFs)
                 m.d.comb += mem.read_addr.eq(read_index)
             else:
-                addr = Signal(range(-i, Constants.FILTER_WORDS_PER_STORE),
-                              name=f'addr_{i}')
+                addr = Signal(
+                    range(-i, Constants.FILTER_WORDS_PER_STORE),
+                    name=f"addr_{i}",
+                )
                 m.d.comb += addr.eq(read_index - i)
-                m.d.comb += mem.read_addr.eq(Mux(addr >= 0,
-                                                 addr, addr + self.size))
+                m.d.comb += mem.read_addr.eq(
+                    Mux(addr >= 0, addr, addr + self.size)
+                )
             m.d.comb += self.values_out[i].eq(mem.read_data)
 
         # Always ready to receive more data

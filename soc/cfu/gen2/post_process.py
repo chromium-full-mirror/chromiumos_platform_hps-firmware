@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,8 +25,8 @@ from .utils import unsigned_upto
 
 
 SRDHM_INPUT_LAYOUT = [
-    ('a', signed(32)),
-    ('b', signed(32)),
+    ("a", signed(32)),
+    ("b", signed(32)),
 ]
 
 
@@ -56,6 +56,7 @@ class SaturatingRoundingDoubleHighMul(BinaryPipelineActor):
 
     This pipeline neither provides nor respects back pressure.
     """
+
     PIPELINE_CYCLES = 3
 
     def __init__(self):
@@ -84,8 +85,8 @@ class SaturatingRoundingDoubleHighMul(BinaryPipelineActor):
 
 
 RDBPOT_INPUT_LAYOUT = [
-    ('dividend', signed(32)),  # The value to be divided
-    ('shift', unsigned(4)),    # The power of two by which to divide by
+    ("dividend", signed(32)),  # The value to be divided
+    ("shift", unsigned(4)),  # The power of two by which to divide by
 ]
 
 
@@ -102,6 +103,7 @@ class RoundingDivideByPowerOfTwo(BinaryPipelineActor):
 
     This pipeline neither provides nor respects back pressure.
     """
+
     PIPELINE_CYCLES = 3
 
     def __init__(self):
@@ -188,16 +190,16 @@ def delay(m, signal, cycles):
     """
     name = signal.name
     for i in range(cycles):
-        delayed = Signal.like(signal, name=f'{name}_delay_{i}')
+        delayed = Signal.like(signal, name=f"{name}_delay_{i}")
         m.d.sync += delayed.eq(signal)
         signal = delayed
     return signal
 
 
 POST_PROCESS_PARAMS = [
-    ('bias', signed(18)),
-    ('multiplier', signed(32)),
-    ('shift', unsigned(4)),
+    ("bias", signed(18)),
+    ("multiplier", signed(32)),
+    ("shift", unsigned(4)),
 ]
 
 POST_PROCESS_PARAMS_WIDTH = len(Record(POST_PROCESS_PARAMS))
@@ -228,9 +230,9 @@ class PostProcessPipeline(SimpleElaboratable):
     """
 
     PIPELINE_CYCLES = (
-        SaturatingRoundingDoubleHighMul.PIPELINE_CYCLES +
-        RoundingDivideByPowerOfTwo.PIPELINE_CYCLES +
-        SaturateActivationPipeline.PIPELINE_CYCLES
+        SaturatingRoundingDoubleHighMul.PIPELINE_CYCLES
+        + RoundingDivideByPowerOfTwo.PIPELINE_CYCLES
+        + SaturateActivationPipeline.PIPELINE_CYCLES
     )
 
     def __init__(self):
@@ -256,14 +258,17 @@ class PostProcessPipeline(SimpleElaboratable):
             srdhm.input.valid.eq(self.input.valid),
             self.params.ready.eq(self.input.valid),
             srdhm.input.payload.a.eq(
-                self.input.payload +
-                self.params.payload.bias),
+                self.input.payload + self.params.payload.bias
+            ),
             srdhm.input.payload.b.eq(self.params.payload.multiplier),
         ]
 
         # Connect the output of srdhm to rdbpot, along with the shift parameter
-        delayed_shift = delay(m, self.params.payload.shift,
-                              SaturatingRoundingDoubleHighMul.PIPELINE_CYCLES)
+        delayed_shift = delay(
+            m,
+            self.params.payload.shift,
+            SaturatingRoundingDoubleHighMul.PIPELINE_CYCLES,
+        )
         m.d.comb += [
             srdhm.output.ready.eq(rdbpot.input.ready),
             rdbpot.input.valid.eq(srdhm.output.valid),
@@ -284,8 +289,8 @@ class PostProcessPipeline(SimpleElaboratable):
 
 # Post Process size parameters
 POST_PROCESS_SIZES = [
-    ('depth', unsigned_upto(Constants.MAX_CHANNEL_DEPTH)),
-    ('repeats', unsigned_upto(Constants.SYS_ARRAY_HEIGHT)),
+    ("depth", unsigned_upto(Constants.MAX_CHANNEL_DEPTH)),
+    ("repeats", unsigned_upto(Constants.SYS_ARRAY_HEIGHT)),
 ]
 
 
@@ -376,7 +381,8 @@ class ReadingProducer(SimpleElaboratable):
         # Address generator
         m.submodules.addr_gen = addr_gen = LoopingAddressGenerator(
             depth=Constants.MAX_CHANNEL_DEPTH,
-            max_repeats=Constants.SYS_ARRAY_HEIGHT)
+            max_repeats=Constants.SYS_ARRAY_HEIGHT,
+        )
         m.d.comb += [
             addr_gen.params_input.payload.count.eq(self.sizes.depth),
             addr_gen.params_input.payload.repeats.eq(self.sizes.repeats),
@@ -386,7 +392,8 @@ class ReadingProducer(SimpleElaboratable):
 
         # FIFO with reset
         m.submodules.fifo = fifo = ResetInserter(self.reset)(
-            StreamFifo(type=POST_PROCESS_PARAMS, depth=3))
+            StreamFifo(type=POST_PROCESS_PARAMS, depth=3)
+        )
 
         # Generate new addresses while FIFO does not have data (i.e FIFO needs
         # to be primed) or FIFO is outputting data
@@ -440,9 +447,10 @@ class AccumulatorReader(SimpleElaboratable):
     """
 
     def __init__(self, accumulator_shape=signed(32)):
-        self.accumulator = [Signal(accumulator_shape,
-                                   name=f'acc_{i}') for i in range(8)]
-        self.accumulator_new = [Signal(name=f'acc_new_{i}') for i in range(8)]
+        self.accumulator = [
+            Signal(accumulator_shape, name=f"acc_{i}") for i in range(8)
+        ]
+        self.accumulator_new = [Signal(name=f"acc_new_{i}") for i in range(8)]
         self.half_mode = Signal()
         self.output = Endpoint(accumulator_shape)
 
@@ -452,7 +460,7 @@ class AccumulatorReader(SimpleElaboratable):
             m.d.sync += self.output.valid.eq(0)
 
         # Set flag to remember that value is available
-        flags = Array(Signal(name=f'flag_{i}') for i in range(8))
+        flags = Array(Signal(name=f"flag_{i}") for i in range(8))
         for i in range(8):
             with m.If(self.accumulator_new[i]):
                 m.d.sync += flags[i].eq(1)
@@ -463,8 +471,9 @@ class AccumulatorReader(SimpleElaboratable):
         with m.If(self.half_mode):
             # counts: 0, 1, 4, 5, 0 ...
             m.d.comb += next_index[1].eq(0)
-            m.d.comb += Cat(next_index[0], next_index[2]
-                            ).eq(Cat(index[0], index[2]) + 1)
+            m.d.comb += Cat(next_index[0], next_index[2]).eq(
+                Cat(index[0], index[2]) + 1
+            )
         with m.Else():
             m.d.comb += next_index.eq(index + 1)
 
@@ -581,15 +590,17 @@ class OutputWordAssembler(SimpleElaboratable):
         pixel_index = Signal(range(self._num_pixels))
         # shift registers to buffer 3 incoming values
         shift_registers = Array(
-            [Signal(24, name=f'sr_{i}') for i in range(self._num_pixels)])
+            [Signal(24, name=f"sr_{i}") for i in range(self._num_pixels)]
+        )
 
         last_pixel_index = Signal.like(pixel_index)
-        m.d.sync += last_pixel_index.eq(Mux(self.half_mode,
-                                            self._num_pixels // 2 - 1,
-                                            self._num_pixels - 1))
+        m.d.sync += last_pixel_index.eq(
+            Mux(self.half_mode, self._num_pixels // 2 - 1, self._num_pixels - 1)
+        )
         next_pixel_index = Signal.like(pixel_index)
-        m.d.comb += next_pixel_index.eq(Mux(pixel_index == last_pixel_index,
-                                            0, pixel_index + 1))
+        m.d.comb += next_pixel_index.eq(
+            Mux(pixel_index == last_pixel_index, 0, pixel_index + 1)
+        )
 
         m.d.comb += self.input.ready.eq(1)
         with m.If(self.input.is_transferring()):

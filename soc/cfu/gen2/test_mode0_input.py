@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -105,12 +105,12 @@ class ValueReaderTest(TestBase):
         # Create a value reader connected via a RamMux to memories simulating
         # LRAMs with each byte is set to the value of its byte address
         reader = ValueReader()
-        self.m.submodules['ram_mux'] = ram_mux = RamMux()
+        self.m.submodules["ram_mux"] = ram_mux = RamMux()
         self.m.d.comb += ram_mux.phase.eq(reader.ram_mux_phase)
 
         def make_ram(n, init):
             mem = Memory(width=32, depth=4, init=init)
-            self.m.submodules[f'rp{n}'] = rp = mem.read_port(transparent=False)
+            self.m.submodules[f"rp{n}"] = rp = mem.read_port(transparent=False)
             self.m.d.comb += [
                 ram_mux.lram_data[n].eq(rp.data),
                 rp.addr.eq(ram_mux.lram_addr[n]),
@@ -118,10 +118,43 @@ class ValueReaderTest(TestBase):
                 ram_mux.addr_in[n].eq(reader.ram_mux_addr[n]),
                 reader.ram_mux_data[n].eq(ram_mux.data_out[n]),
             ]
-        make_ram(0, [0x03020100, 0x13121110, 0x23222120, 0x33323130, ])
-        make_ram(1, [0x07060504, 0x17161514, 0x27262524, 0x37363534, ])
-        make_ram(2, [0x0b0a0908, 0x1b1a1918, 0x2b2a2928, 0x3b3a3938, ])
-        make_ram(3, [0x0f0e0d0c, 0x1f1e1d1c, 0x2f2e2d2c, 0x3f3e3d3c, ])
+
+        make_ram(
+            0,
+            [
+                0x03020100,
+                0x13121110,
+                0x23222120,
+                0x33323130,
+            ],
+        )
+        make_ram(
+            1,
+            [
+                0x07060504,
+                0x17161514,
+                0x27262524,
+                0x37363534,
+            ],
+        )
+        make_ram(
+            2,
+            [
+                0x0B0A0908,
+                0x1B1A1918,
+                0x2B2A2928,
+                0x3B3A3938,
+            ],
+        )
+        make_ram(
+            3,
+            [
+                0x0F0E0D0C,
+                0x1F1E1D1C,
+                0x2F2E2D2C,
+                0x3F3E3D3C,
+            ],
+        )
         return reader
 
     def test_it(self):
@@ -133,17 +166,17 @@ class ValueReaderTest(TestBase):
             (0x10, 0x13121110, 0x15141312),
             (0x12, 0x15141312, 0x17161514),
             (0x14, 0x17161514, 0x19181716),
-            (0x16, 0x19181716, 0x1b1a1918),
-            (0x18, 0x1b1a1918, 0x1d1c1b1a),
-            (0x1a, 0x1d1c1b1a, 0x1f1e1d1c),
-            (0x1c, 0x1f1e1d1c, 0x21201f1e),
-            (0x1e, 0x21201f1e, 0x23222120),
+            (0x16, 0x19181716, 0x1B1A1918),
+            (0x18, 0x1B1A1918, 0x1D1C1B1A),
+            (0x1A, 0x1D1C1B1A, 0x1F1E1D1C),
+            (0x1C, 0x1F1E1D1C, 0x21201F1E),
+            (0x1E, 0x21201F1E, 0x23222120),
             # Test more addresses from other blocks
             (0x00, 0x03020100, 0x05040302),
-            (0x06, 0x09080706, 0x0b0a0908),
-            (0x28, 0x2b2a2928, 0x2d2c2b2a),
-            (0x2a, 0x2d2c2b2a, 0x2f2e2d2c),
-            (0x2e, 0x31302f2e, 0x33323130),
+            (0x06, 0x09080706, 0x0B0A0908),
+            (0x28, 0x2B2A2928, 0x2D2C2B2A),
+            (0x2A, 0x2D2C2B2A, 0x2F2E2D2C),
+            (0x2E, 0x31302F2E, 0x33323130),
         ]
 
         def process():
@@ -165,12 +198,13 @@ class ValueReaderTest(TestBase):
 
 class Mode0InputFetcherTest(TestBase):
     """Tests Mode0InputFetcher class."""
+
     BASE_ADDR = 0xA0
 
     def create_dut(self):
         fetcher = Mode0InputFetcher()
         # Connect RAM Mux with simulated LRAMs containing data
-        self.m.submodules['ram_mux'] = ram_mux = RamMux()
+        self.m.submodules["ram_mux"] = ram_mux = RamMux()
         self.m.d.comb += ram_mux.phase.eq(fetcher.ram_mux_phase)
         for i in range(4):
             pad = [0] * (self.BASE_ADDR // 16)
@@ -184,11 +218,11 @@ class Mode0InputFetcherTest(TestBase):
                 ram_mux.addr_in[i].eq(fetcher.ram_mux_addr[i]),
                 fetcher.ram_mux_data[i].eq(ram_mux.data_out[i]),
             ]
-            self.m.submodules[f'rp{i}'] = rp
+            self.m.submodules[f"rp{i}"] = rp
         return fetcher
 
     def setUp(self):
-        self.data = fetch_data('sample_conv_06')
+        self.data = fetch_data("sample_conv_06")
         self.raw_input = self.data.raw_input_data
         super().setUp()
 
@@ -200,7 +234,7 @@ class Mode0InputFetcherTest(TestBase):
         row, col = index // 160, index % 160
         addr = row * 322 * 2 + col * 2
         return [
-            pack_vals(*self.raw_input[i: i + 4])
+            pack_vals(*self.raw_input[i : i + 4])
             for i in range(addr, addr + 4 * 322, 322)
         ]
 
@@ -243,7 +277,8 @@ class Mode0InputFetcherTest(TestBase):
                     if cycle == last_seen + i:
                         expected = self.expected_values(pixel)
                         self.assertEqual(
-                            actual[i], expected, msg=f'differ at pixel {pixel}')
+                            actual[i], expected, msg=f"differ at pixel {pixel}"
+                        )
                         pixel += 1
                 cycle += 1
                 yield

@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,14 +14,20 @@ from migen import Signal
 
 # CFU:CPU bus layout but just handshake signals
 cfu_bus_minimized_layout = [
-    ('cmd', [
-        ('valid', 1),
-        ('ready', 1),
-    ]),
-    ('rsp', [
-        ('valid', 1),
-        ('ready', 1),
-    ]),
+    (
+        "cmd",
+        [
+            ("valid", 1),
+            ("ready", 1),
+        ],
+    ),
+    (
+        "rsp",
+        [
+            ("valid", 1),
+            ("ready", 1),
+        ],
+    ),
 ]
 
 
@@ -41,32 +47,34 @@ class CfuCpuClockCtrl(Module):
         self.cfu_cen = Signal()
         self.cpu_cen = Signal()
 
-        self.submodules.fsm = fsm = FSM(reset_state='CPU_ENABLED')
+        self.submodules.fsm = fsm = FSM(reset_state="CPU_ENABLED")
 
-        fsm.act('CPU_ENABLED',
-                self.cpu_cen.eq(1),
-                self.cfu_cen.eq(0),
-
-                # If CPU has prepared a command, enable CFU
-                If(self.cfu_bus.cmd.valid,
-                   self.cfu_cen.eq(1),
-                   NextState('CFU_ENABLED'),
-                   )
-                )
-
-        fsm.act('CFU_ENABLED',
+        fsm.act(
+            "CPU_ENABLED",
+            self.cpu_cen.eq(1),
+            self.cfu_cen.eq(0),
+            # If CPU has prepared a command, enable CFU
+            If(
+                self.cfu_bus.cmd.valid,
                 self.cfu_cen.eq(1),
-                self.cpu_cen.eq(1),
+                NextState("CFU_ENABLED"),
+            ),
+        )
 
-                # Disable CPU if CFU is calculating response
-                If(~self.cfu_bus.rsp.valid & ~self.cfu_bus.cmd.valid,
-                   self.cpu_cen.eq(0),
-
-                   # Enable CPU and disable CFU if CPU received a response
-                   # and has no next command
-                   If(self.cfu_bus.cmd.ready,
-                      self.cpu_cen.eq(1),
-                      NextState('CPU_ENABLED'),
-                      )
-                   )
-                )
+        fsm.act(
+            "CFU_ENABLED",
+            self.cfu_cen.eq(1),
+            self.cpu_cen.eq(1),
+            # Disable CPU if CFU is calculating response
+            If(
+                ~self.cfu_bus.rsp.valid & ~self.cfu_bus.cmd.valid,
+                self.cpu_cen.eq(0),
+                # Enable CPU and disable CFU if CPU received a response
+                # and has no next command
+                If(
+                    self.cfu_bus.cmd.ready,
+                    self.cpu_cen.eq(1),
+                    NextState("CPU_ENABLED"),
+                ),
+            ),
+        )

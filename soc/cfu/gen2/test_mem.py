@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,7 +30,6 @@ class SinglePortMemoryTest(TestBase):
             ((9, 222, 1, 0), X),
             ((10, 333, 1, 0), X),
             ((11, 444, 1, 0), X),
-
             # Read back the four words in a different order
             ((0, 0, 0, 11), X),
             ((0, 0, 0, 8), 444),
@@ -50,6 +49,7 @@ class SinglePortMemoryTest(TestBase):
                 if rdata is not None:
                     self.assertEqual((yield dut.read_data), rdata)
                 yield
+
         self.run_sim(process, False)
 
 
@@ -98,6 +98,7 @@ class LoopingCounterTest(TestBase):
                 if last is not None:
                     self.assertEqual((yield dut.last), last)
                 yield
+
         self.run_sim(process, False)
 
 
@@ -133,4 +134,5 @@ class LoopingAddressGeneratorTest(TestBase):
             yield from check_addresses(16, 8)
             yield from check_addresses(15, 7)
             yield from check_addresses(12, 1)
+
         self.run_sim(process, False)

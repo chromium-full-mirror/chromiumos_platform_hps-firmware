@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -150,8 +150,8 @@ class StandardMaccBlock(MaccBlock):
         for i in range(self._n):
             a_bits = self.input_a.word_select(i, self._a_shape.width)
             b_bits = self.input_b.word_select(i, self._b_shape.width)
-            a = Signal(self._a_shape, name=f'a_{i}')
-            b = Signal(self._b_shape, name=f'b_{i}')
+            a = Signal(self._a_shape, name=f"a_{i}")
+            b = Signal(self._b_shape, name=f"b_{i}")
             m.d.comb += [
                 a.eq(a_bits),
                 b.eq(b_bits),
@@ -183,8 +183,7 @@ class NXMaccBlock(MaccBlock):
 
         # Explicitly instantiate the DSP macro
         m.submodules.dsp = Instance(
-            'MULTADDSUB9X9WIDE',
-
+            "MULTADDSUB9X9WIDE",
             i_CLK=ClockSignal(),
             i_CEA0A1=Const(1),
             i_CEA2A3=Const(1),
@@ -194,7 +193,6 @@ class NXMaccBlock(MaccBlock):
             i_CEPIPE=Const(1),
             i_CEOUT=Const(1),
             i_CECTRL=Const(1),
-
             i_RSTA0A1=ResetSignal(),
             i_RSTA2A3=ResetSignal(),
             i_RSTB0B1=ResetSignal(),
@@ -203,10 +201,8 @@ class NXMaccBlock(MaccBlock):
             i_RSTCTRL=ResetSignal(),
             i_RSTPIPE=ResetSignal(),
             i_RSTOUT=ResetSignal(),
-
             i_SIGNED=Const(1),
             i_ADDSUB=Const(0, unsigned(4)),
-
             i_A0=a0,
             i_B0=Cat(b0, b0[7]),
             i_A1=a1,
@@ -215,25 +211,23 @@ class NXMaccBlock(MaccBlock):
             i_B2=Cat(b2, b2[7]),
             i_A3=a3,
             i_B3=Cat(b3, b3[7]),
-
             i_C=Const(0, unsigned(54)),
             i_LOADC=self.input_first,
-
             o_Z=accumulator,
-
-            p_REGINPUTAB0='BYPASS',
-            p_REGINPUTAB1='BYPASS',
-            p_REGINPUTAB2='BYPASS',
-            p_REGINPUTAB3='BYPASS',
-            p_REGINPUTC='BYPASS',
-            p_REGADDSUB='BYPASS',
-            p_REGLOADC='BYPASS',
-            p_REGLOADC2='REGISTER',
-            p_REGPIPELINE='REGISTER',
-            p_REGOUTPUT='REGISTER',
-            p_RESETMODE='SYNC',
-            p_GSR='ENABLED',
+            p_REGINPUTAB0="BYPASS",
+            p_REGINPUTAB1="BYPASS",
+            p_REGINPUTAB2="BYPASS",
+            p_REGINPUTAB3="BYPASS",
+            p_REGINPUTC="BYPASS",
+            p_REGADDSUB="BYPASS",
+            p_REGLOADC="BYPASS",
+            p_REGLOADC2="REGISTER",
+            p_REGPIPELINE="REGISTER",
+            p_REGOUTPUT="REGISTER",
+            p_RESETMODE="SYNC",
+            p_GSR="ENABLED",
         )
+
 
 def get_macc_block_class(specialize_nx):
     return NXMaccBlock if specialize_nx else StandardMaccBlock

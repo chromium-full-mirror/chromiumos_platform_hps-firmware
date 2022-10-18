@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,10 +71,10 @@ class RamMux(SimpleElaboratable):
 
     def __init__(self):
         self.phase = Signal(range(4))
-        self.addr_in = [Signal(14, name=f'addr_in{i}') for i in range(4)]
-        self.data_out = [Signal(32, name=f'data_out{i}') for i in range(4)]
-        self.lram_addr = [Signal(14, name=f'lram_addr{i}') for i in range(4)]
-        self.lram_data = [Signal(32, name=f'lram_data{i}') for i in range(4)]
+        self.addr_in = [Signal(14, name=f"addr_in{i}") for i in range(4)]
+        self.data_out = [Signal(32, name=f"data_out{i}") for i in range(4)]
+        self.lram_addr = [Signal(14, name=f"lram_addr{i}") for i in range(4)]
+        self.lram_data = [Signal(32, name=f"lram_data{i}") for i in range(4)]
 
     def connect(self, m, sig_phase, inputs, outputs):
         """Connects inputs and outputs per the given phase."""

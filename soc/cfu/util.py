@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -93,8 +93,8 @@ class TestBase(unittest.TestCase):
         # Create DUT and add to simulator
         self.m = Module()
         self.dut = self.create_dut()
-        self.m.submodules['dut'] = self.dut
-        self.m.submodules['placeholder'] = _PlaceholderSyncModule()
+        self.m.submodules["dut"] = self.dut
+        self.m.submodules["placeholder"] = _PlaceholderSyncModule()
         self.sim = Simulator(self.m)
 
     def create_dut(self):
@@ -107,17 +107,19 @@ class TestBase(unittest.TestCase):
 
     def add_sim_clocks(self):
         """Add clocks as required by sim."""
-        self.sim.add_clock(1, domain='sync')
+        self.sim.add_clock(1, domain="sync")
 
     def run_sim(self, process, write_trace=False):
         self.add_process(process)
         self.add_sim_clocks()
         if write_trace:
-            with self.sim.write_vcd('zz.vcd', 'zz.gtkw'):
+            with self.sim.write_vcd("zz.vcd", "zz.gtkw"):
                 self.sim.run()
             # Discourage commiting code with tracing active
-            self.fail('Simulation tracing active. '
-                      'Turn off after debugging complete.')
+            self.fail(
+                "Simulation tracing active. "
+                "Turn off after debugging complete."
+            )
         else:
             self.sim.run()
 
@@ -155,7 +157,7 @@ class SequentialMemoryReader(SimpleElaboratable):
     def __init__(self, *, width, max_depth):
         self.width = width
         self.max_depth = max_depth
-        self.limit = Signal(range(max_depth+1))
+        self.limit = Signal(range(max_depth + 1))
         self.mem_addr = Signal(range(max_depth))
         self.mem_data = Signal(32)
         self.data = Signal(32)
@@ -174,7 +176,8 @@ class SequentialMemoryReader(SimpleElaboratable):
         m.d.sync += last_mem_addr.eq(self.mem_addr)
         incremented_addr = Signal.like(self.limit)
         m.d.comb += incremented_addr.eq(
-            Mux(last_mem_addr == self.limit - 1, 0, last_mem_addr + 1))
+            Mux(last_mem_addr == self.limit - 1, 0, last_mem_addr + 1)
+        )
         with m.If(self.restart):
             m.d.comb += self.mem_addr.eq(0)
         with m.Elif(was_next | was_restart):

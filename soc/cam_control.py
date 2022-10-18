@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,17 +21,19 @@ from migen import Signal
 
 # Defines the I/O input signals from the camera
 PAD_LAYOUT = [
-    ('lvld', 1),
-    ('fvld', 1),
-    ('pclk', 1),
-    ('data', 8),
+    ("lvld", 1),
+    ("fvld", 1),
+    ("pclk", 1),
+    ("data", 8),
 ]
 
 # Layouts for various streams
-_PIXEL_STREAM_LAYOUT = stream.EndpointDescription([
-    ('data', 8),  # The pixel value
-])
-_WORD_STREAM_LAYOUT = stream.EndpointDescription([('data', 32)])
+_PIXEL_STREAM_LAYOUT = stream.EndpointDescription(
+    [
+        ("data", 8),  # The pixel value
+    ]
+)
+_WORD_STREAM_LAYOUT = stream.EndpointDescription([("data", 32)])
 
 
 class PixelProducer(Module):
@@ -64,14 +66,16 @@ class PixelProducer(Module):
 
         # On pclk rising, while frame valid
         # Send item on output stream
-        self.sync += If(sigs.fvld & pclk_rising,
-                        self.output.valid.eq(1),
-                        self.output.data.eq(sigs.data),
-                        )
+        self.sync += If(
+            sigs.fvld & pclk_rising,
+            self.output.valid.eq(1),
+            self.output.data.eq(sigs.data),
+        )
 
         # Lower valid after a transfer
-        self.sync += If(self.output.ready & self.output.valid,
-                        self.output.valid.eq(0))
+        self.sync += If(
+            self.output.ready & self.output.valid, self.output.valid.eq(0)
+        )
 
     def _cross_domain(self, pads):
         """Bring signals save across from I/O Domain"""
@@ -80,7 +84,8 @@ class PixelProducer(Module):
             cross.lvld.eq(pads.lvld),
             cross.fvld.eq(pads.fvld),
             cross.pclk.eq(pads.pclk),
-            cross.data.eq(pads.data)]
+            cross.data.eq(pads.data),
+        ]
         for _ in range(2):
             cross_next = Record(PAD_LAYOUT)
             self.sync += cross_next.eq(cross)
@@ -117,41 +122,49 @@ class WordPacker(Module):
         byte1 = Signal(8)
         byte2 = Signal(8)
         self.comb += [
-            self.output.data.eq(
-                Cat(byte0, byte1, byte2, self.input.data)),
+            self.output.data.eq(Cat(byte0, byte1, byte2, self.input.data)),
         ]
 
-        self.submodules.fsm = FSM(reset_state='receive0')
-        self.fsm.act('receive0',
-                     self.input.ready.eq(1),
-                     self.output.valid.eq(0),
-                     If(self.input.valid & self.output.ready,
-                        NextValue(byte0, self.input.data),
-                        NextState('receive1'))
-                     )
-        self.fsm.act('receive1',
-                     self.input.ready.eq(1),
-                     self.output.valid.eq(0),
-                     If(~self.output.ready, NextState('receive0')),
-                     If(self.input.valid,
-                        NextValue(byte1, self.input.data),
-                        NextState('receive2'))
-                     )
-        self.fsm.act('receive2',
-                     self.input.ready.eq(1),
-                     self.output.valid.eq(0),
-                     If(~self.output.ready, NextState('receive0')),
-                     If(self.input.valid,
-                        NextValue(byte2, self.input.data),
-                        NextState('receive3'))
-                     )
-        self.fsm.act('receive3',
-                     self.input.ready.eq(self.output.ready),
-                     self.output.valid.eq(self.input.valid),
-                     If(~self.output.ready, NextState('receive0')),
-                     If(self.output.valid,
-                        NextState('receive0'))
-                     )
+        self.submodules.fsm = FSM(reset_state="receive0")
+        self.fsm.act(
+            "receive0",
+            self.input.ready.eq(1),
+            self.output.valid.eq(0),
+            If(
+                self.input.valid & self.output.ready,
+                NextValue(byte0, self.input.data),
+                NextState("receive1"),
+            ),
+        )
+        self.fsm.act(
+            "receive1",
+            self.input.ready.eq(1),
+            self.output.valid.eq(0),
+            If(~self.output.ready, NextState("receive0")),
+            If(
+                self.input.valid,
+                NextValue(byte1, self.input.data),
+                NextState("receive2"),
+            ),
+        )
+        self.fsm.act(
+            "receive2",
+            self.input.ready.eq(1),
+            self.output.valid.eq(0),
+            If(~self.output.ready, NextState("receive0")),
+            If(
+                self.input.valid,
+                NextValue(byte2, self.input.data),
+                NextState("receive3"),
+            ),
+        )
+        self.fsm.act(
+            "receive3",
+            self.input.ready.eq(self.output.ready),
+            self.output.valid.eq(self.input.valid),
+            If(~self.output.ready, NextState("receive0")),
+            If(self.output.valid, NextState("receive0")),
+        )
 
 
 class CameraControl(Module, AutoCSR):
@@ -165,33 +178,38 @@ class CameraControl(Module, AutoCSR):
     def __init__(self, *, pads):
         self._running = CSRStatus(
             1,
-            description='Set when transfer start is requested and reset when ' +
-            'transfer is complete.')
+            description="Set when transfer start is requested and reset when "
+            + "transfer is complete.",
+        )
         self._idle = CSRStatus(
-            1, description='Device may be started only when idle.')
+            1, description="Device may be started only when idle."
+        )
         self._reset = CSRStorage(
             1,
-            description='Write a 1 to this field to force the device ' +
-            'to reset')
+            description="Write a 1 to this field to force the device "
+            + "to reset",
+        )
         self._start_run = CSRStorage(
             1,
-            description='Writing a 1 to this field while idle starts ' +
-            'the transfer.')
+            description="Writing a 1 to this field while idle starts "
+            + "the transfer.",
+        )
         self._wait_row = CSRStorage(
             1,
-            description='Writing a 1 to this field while running waits ' +
-            'for the start of the next row.')
+            description="Writing a 1 to this field while running waits "
+            + "for the start of the next row.",
+        )
         self._pixels_ready = CSRStatus(
-            1, description='Whether we have 4 bytes of pixel data ready.')
-        self._pixels = CSRStatus(
-            32, description='4 bytes of pixel data.')
+            1, description="Whether we have 4 bytes of pixel data ready."
+        )
+        self._pixels = CSRStatus(32, description="4 bytes of pixel data.")
 
         # Contruct all modules
         modules_reset = Signal()
         modules = [
-            ('producer', PixelProducer(pads=pads)),
-            ('adder', Add128Pipeline()),
-            ('packer', WordPacker()),
+            ("producer", PixelProducer(pads=pads)),
+            ("adder", Add128Pipeline()),
+            ("packer", WordPacker()),
         ]
         for (name, module) in modules:
             wrapped = ResetInserter()(module)
@@ -206,66 +224,64 @@ class CameraControl(Module, AutoCSR):
 
         reset_requested = self._reset.re & self._reset.storage
         next_row_requested = self._wait_row.re & self._wait_row.storage
-        self.submodules.fsm = FSM(reset_state='fsm_reset')
+        self.submodules.fsm = FSM(reset_state="fsm_reset")
+        self.fsm.act("fsm_reset", modules_reset.eq(1), NextState("idle"))
         self.fsm.act(
-            'fsm_reset',
-            modules_reset.eq(1),
-            NextState('idle')
-        )
-        self.fsm.act(
-            'idle',
+            "idle",
             self._idle.status.eq(True),
             # When requested, start
-            If(self._start_run.re & self._start_run.storage,
-               NextState('waiting_for_frame')),
+            If(
+                self._start_run.re & self._start_run.storage,
+                NextState("waiting_for_frame"),
+            ),
             # When requested, reset
-            If(reset_requested, NextState('fsm_reset'))
+            If(reset_requested, NextState("fsm_reset")),
         )
         self.fsm.act(
-            'waiting_for_frame',
+            "waiting_for_frame",
             self._running.status.eq(True),
             self.packer.output.ready.eq(0),
             self._pixels_ready.status.eq(0),
-            If(self.producer.start_of_frame,
-               NextState('waiting_for_row')),
+            If(self.producer.start_of_frame, NextState("waiting_for_row")),
             # When requested, reset
-            If(reset_requested, NextState('fsm_reset'))
+            If(reset_requested, NextState("fsm_reset")),
         )
         self.fsm.act(
-            'waiting_for_row',
+            "waiting_for_row",
             self._running.status.eq(True),
             self.packer.output.ready.eq(0),
             self._pixels_ready.status.eq(0),
-            If(self.producer.start_of_row,
-               NextState('waiting_for_data')),
+            If(self.producer.start_of_row, NextState("waiting_for_data")),
             # When requested, reset
-            If(reset_requested, NextState('fsm_reset'))
+            If(reset_requested, NextState("fsm_reset")),
         )
         self.fsm.act(
-            'waiting_for_data',
+            "waiting_for_data",
             self._running.status.eq(True),
             self.packer.output.ready.eq(1),
-            If(self.packer.output.valid,
-               NextValue(self._pixels.status, self.packer.output.data),
-               self._pixels_ready.status.eq(1),
-               NextState('has_data')),
-            If(next_row_requested,
-               NextState('waiting_for_row')),
+            If(
+                self.packer.output.valid,
+                NextValue(self._pixels.status, self.packer.output.data),
+                self._pixels_ready.status.eq(1),
+                NextState("has_data"),
+            ),
+            If(next_row_requested, NextState("waiting_for_row")),
             # When requested, reset
-            If(reset_requested, NextState('fsm_reset'))
+            If(reset_requested, NextState("fsm_reset")),
         )
         self.fsm.act(
-            'has_data',
+            "has_data",
             self._running.status.eq(True),
             self.packer.output.ready.eq(1),
             self._pixels_ready.status.eq(1),
             # When the CPU reads the pixel data (we write to the bus), clear the
             # pixels_ready bit and return to the waiting state.
-            If(self._pixels.we,
-               self._pixels_ready.status.eq(0),
-               NextState('waiting_for_data')),
-            If(next_row_requested,
-               NextState('waiting_for_row')),
+            If(
+                self._pixels.we,
+                self._pixels_ready.status.eq(0),
+                NextState("waiting_for_data"),
+            ),
+            If(next_row_requested, NextState("waiting_for_row")),
             # When requested, reset
-            If(reset_requested, NextState('fsm_reset'))
+            If(reset_requested, NextState("fsm_reset")),
         )

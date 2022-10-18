@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,6 +24,7 @@ class PoolInstructionTest(InstructionTestBase):
     def test_it(self):
         def p(a, b, c, d):
             return pack_vals(a, b, c, d, offset=-128)
+
         DATA = [
             (0, 0, 0),
             # min case
@@ -31,8 +32,11 @@ class PoolInstructionTest(InstructionTestBase):
             (p(0, 0, 0, 0), p(0, 0, 0, 0), p(0, 0, 0, 0)),
             # Max case
             (p(255, 255, 255, 255), p(255, 255, 255, 255), None),
-            (p(255, 255, 255, 255), p(255, 255, 255, 255),
-             p(255, 255, 255, 255)),
+            (
+                p(255, 255, 255, 255),
+                p(255, 255, 255, 255),
+                p(255, 255, 255, 255),
+            ),
             # Arbitrary values
             (p(10, 20, 30, 40), p(50, 60, 70, 80), p(255, 255, 255, 255)),
             (p(10, 20, 30, 40), p(50, 60, 70, 80), p(50, 60, 70, 80)),
@@ -76,8 +80,9 @@ class HpsCfuTest(CfuTestBase):
                 for _ in range(num_filter_words_per_output):
                     value = filter_data[chan_data_index]
                     chan_data_index += 1
-                    yield self.do_set(Constants.REG_FILTER_WRITE,
-                                      (store << 16 | addr), value)
+                    yield self.do_set(
+                        Constants.REG_FILTER_WRITE, (store << 16 | addr), value
+                    )
                     addr += 1
             addr_base += num_filter_words_per_output
 
@@ -89,10 +94,11 @@ class HpsCfuTest(CfuTestBase):
         in_x_dim = data.input_dims[2]
         out_x_dim = data.output_dims[2]
         num_filter_values = (
-            output_chan_count *
-            data.filter_dims[1] *
-            data.filter_dims[2] *
-            data.filter_dims[3])
+            output_chan_count
+            * data.filter_dims[1]
+            * data.filter_dims[2]
+            * data.filter_dims[3]
+        )
         # values / 4 = bytes then /2 to get per store
         filter_words_per_store = num_filter_values // 4 // 2
 
@@ -109,8 +115,9 @@ class HpsCfuTest(CfuTestBase):
         yield do_set(C.REG_PIXEL_ADVANCE_Y, (input_depth // 16) * in_x_dim)
         yield do_set(C.REG_INPUT_CHANNEL_DEPTH, input_depth)
         yield do_set(C.REG_OUTPUT_CHANNEL_DEPTH, output_chan_count)
-        yield do_set(C.REG_NUM_OUTPUT_VALUES,
-                     self.NUM_OUTPUT_PIXELS * output_chan_count)
+        yield do_set(
+            C.REG_NUM_OUTPUT_VALUES, self.NUM_OUTPUT_PIXELS * output_chan_count
+        )
 
         # Toggle reset
         yield do_set(C.REG_ACCELERATOR_RESET, 0)
@@ -121,30 +128,35 @@ class HpsCfuTest(CfuTestBase):
             yield do_set(C.REG_POST_PROCESS_BIAS, data.output_biases[index])
             # Note: shift is stored as a negative number in tflite model
             yield do_set(C.REG_POST_PROCESS_SHIFT, -data.output_shifts[index])
-            yield do_set(C.REG_POST_PROCESS_MULTIPLIER,
-                         data.output_multipliers[index])
+            yield do_set(
+                C.REG_POST_PROCESS_MULTIPLIER, data.output_multipliers[index]
+            )
 
         # Load filters
-        yield from self.load_filter_data(data, output_chan_start,
-                                         output_chan_count)
+        yield from self.load_filter_data(
+            data, output_chan_start, output_chan_count
+        )
 
     def add_ram_process(self, data):
         """Adds logic for a RAM connected to the DUT."""
+
         def ram():
             yield Passive()
             while True:
                 for i in range(4):
-                    block = (yield self.dut.lram_addr[i])
+                    block = yield self.dut.lram_addr[i]
                     data_addr = (block - self.RAM_BASE_ADDR // 16) * 4 + i
-                    data_value = data.input_data[data_addr % len(
-                        data.input_data)]
+                    data_value = data.input_data[
+                        data_addr % len(data.input_data)
+                    ]
                     yield self.dut.lram_data[i].eq(data_value)
                 yield
+
         self.add_process(ram)
 
     def test_simple_05(self):
         """Tests a 4x4 convolution producing 16 channels per start."""
-        data = fetch_data('sample_conv_05')
+        data = fetch_data("sample_conv_05")
 
         self.add_ram_process(data)
 
@@ -161,9 +173,11 @@ class HpsCfuTest(CfuTestBase):
                 group = i // words_per_group
                 index_in_pixel = (i // 4) % words_per_pixel
                 pixel_in_group = i % 4
-                addr = (group * words_per_group +
-                        pixel_in_group * words_per_pixel +
-                        index_in_pixel)
+                addr = (
+                    group * words_per_group
+                    + pixel_in_group * words_per_pixel
+                    + index_in_pixel
+                )
                 expected = data.expected_output_data[addr]
                 yield self.do_get(expected)
 
@@ -171,7 +185,7 @@ class HpsCfuTest(CfuTestBase):
 
     def test_simple_06(self):
         """Tests a 4x4 convolution over an input layer."""
-        data = fetch_data('sample_conv_06')
+        data = fetch_data("sample_conv_06")
 
         self.add_ram_process(data)
 
@@ -189,9 +203,11 @@ class HpsCfuTest(CfuTestBase):
                 group = i // words_per_group
                 pixel_in_group = i % 2
                 index_in_pixel = (i // 2) % words_per_pixel
-                addr = (group * words_per_group +
-                        pixel_in_group * words_per_pixel +
-                        index_in_pixel)
+                addr = (
+                    group * words_per_group
+                    + pixel_in_group * words_per_pixel
+                    + index_in_pixel
+                )
                 expected = data.expected_output_data[addr]
                 yield self.do_get(expected)
 
@@ -199,7 +215,7 @@ class HpsCfuTest(CfuTestBase):
 
     def test_groups_of_four(self):
         """Tests a 4x4 convolution producing 4 channels per start."""
-        data = fetch_data('sample_conv_05')
+        data = fetch_data("sample_conv_05")
 
         self.add_ram_process(data)
 

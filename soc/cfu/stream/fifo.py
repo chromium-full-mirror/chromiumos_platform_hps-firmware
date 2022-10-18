@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -40,7 +40,8 @@ class StreamFifo(SimpleElaboratable):
 
     def elab(self, m: Module):
         m.submodules.wrapped = fifo = SyncFIFOBuffered(
-            depth=self.depth, width=len(self.input.payload))
+            depth=self.depth, width=len(self.input.payload)
+        )
 
         m.d.comb += [
             fifo.w_en.eq(self.input.valid),

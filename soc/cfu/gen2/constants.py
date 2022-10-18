@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -94,19 +94,25 @@ CC_FILE_TAIL = """#endif"""
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Write C header file with constants')
-    parser.add_argument('output', metavar='FILE', nargs='?',
-                        type=argparse.FileType('w'), default=sys.stdout,
-                        help='Where to send output')
+        description="Write C header file with constants"
+    )
+    parser.add_argument(
+        "output",
+        metavar="FILE",
+        nargs="?",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="Where to send output",
+    )
     args = parser.parse_args()
 
     with args.output as f:
         print(CC_FILE_HEADER, file=f)
         for name, value in vars(Constants).items():
-            if not name.startswith('_'):
-                print(f'#define {name} {value}', file=f)
+            if not name.startswith("_"):
+                print(f"#define {name} {value}", file=f)
         print(CC_FILE_TAIL, file=f)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

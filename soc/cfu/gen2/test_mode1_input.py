@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,6 +98,7 @@ class PixelAddressRepeaterTest(TestBase):
                     n += 1
                     yield dut.gen_addr.eq(n)
                 yield
+
         self.add_process(addr_generator)
 
         def process():
@@ -136,10 +137,9 @@ class ValueAddressGeneratorTest(TestBase):
         for row in range(4):
             for col in range(4):
                 for i in range(depth):
-                    expected += [start_addr +
-                                 row * num_blocks_y +
-                                 col * depth +
-                                 i] * 4
+                    expected += [
+                        start_addr + row * num_blocks_y + col * depth + i
+                    ] * 4
         # start generator and check output
         yield self.dut.start.eq(1)
         yield
@@ -152,18 +152,21 @@ class ValueAddressGeneratorTest(TestBase):
         def process():
             yield from self.config(200, 1, 100)
             yield from self.check(200, 1, 100)
+
         self.run_sim(process, False)
 
     def test_it_does_depth_64(self):
         def process():
             yield from self.config(2000, 4, 1000)
             yield from self.check(2000, 4, 1000)
+
         self.run_sim(process, False)
 
     def test_it_does_depth_48(self):
         def process():
             yield from self.config(2000, 3, 1000)
             yield from self.check(2000, 3, 1000)
+
         self.run_sim(process, False)
 
 
@@ -175,7 +178,7 @@ class Mode1InputFetcherTest(TestBase):
     def create_dut(self):
         fetcher = Mode1InputFetcher()
         # Connect RAM Mux with simulated LRAMs
-        self.m.submodules['ram_mux'] = ram_mux = RamMux()
+        self.m.submodules["ram_mux"] = ram_mux = RamMux()
         self.m.d.comb += ram_mux.phase.eq(fetcher.ram_mux_phase)
         for i in range(4):
             padding = [0] * (self.BASE_ADDR // 16)
@@ -189,11 +192,11 @@ class Mode1InputFetcherTest(TestBase):
                 ram_mux.addr_in[i].eq(fetcher.ram_mux_addr[i]),
                 fetcher.ram_mux_data[i].eq(ram_mux.data_out[i]),
             ]
-            self.m.submodules[f'rp{i}'] = rp
+            self.m.submodules[f"rp{i}"] = rp
         return fetcher
 
     def setUp(self):
-        self.data = fetch_data('sample_conv_05')
+        self.data = fetch_data("sample_conv_05")
         super().setUp()
 
     def pixel_input_values(self, index):
@@ -209,10 +212,10 @@ class Mode1InputFetcherTest(TestBase):
         pixel_y, pixel_x = pixel // out_x_dim, pixel % out_x_dim
         result = []
         for row in range(4):
-            row_start_addr = (
-                (pixel_y + row) * in_x_dim + pixel_x) * word_depth
-            result += data.input_data[row_start_addr:
-                                      row_start_addr + word_depth * 4]
+            row_start_addr = ((pixel_y + row) * in_x_dim + pixel_x) * word_depth
+            result += data.input_data[
+                row_start_addr : row_start_addr + word_depth * 4
+            ]
         return result
 
     def test_it(self):
@@ -265,7 +268,8 @@ class Mode1InputFetcherTest(TestBase):
                     if cycle == last_seen + i:
                         expected = self.pixel_input_values(pixel)
                         self.assertEqual(
-                            actual[i], expected, msg=f'differ at pixel {pixel}')
+                            actual[i], expected, msg=f"differ at pixel {pixel}"
+                        )
                         pixel += 1
                 cycle += 1
                 yield

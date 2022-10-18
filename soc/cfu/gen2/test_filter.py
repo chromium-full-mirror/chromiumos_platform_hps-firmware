@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,8 +25,11 @@ class FilterStoreTest(TestBase):
             for addr in range(512):
                 for store in range(2):
                     expected = 10000 + 1000 * store + (addr - store) % 512
-                    self.assertEqual((yield dut.values_out[store]), expected,
-                                     f'store={store}, addr={addr}')
+                    self.assertEqual(
+                        (yield dut.values_out[store]),
+                        expected,
+                        f"store={store}, addr={addr}",
+                    )
                 yield
 
     def test_it(self):

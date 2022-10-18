@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,10 +17,12 @@ from .stream import connect
 from .stream import Endpoint
 
 
-TEST_PAYLOAD_LAYOUT = Layout([
-    ('one', Shape(32)),
-    ('two', Shape(32)),
-])
+TEST_PAYLOAD_LAYOUT = Layout(
+    [
+        ("one", Shape(32)),
+        ("two", Shape(32)),
+    ]
+)
 
 
 class DataProducer(SimpleElaboratable):
@@ -78,9 +80,9 @@ class TestSinkSource(TestBase):
     def create_dut(self):
         m = Module()
         # pylint: disable=attribute-defined-outside-init
-        m.submodules['producer'] = self.producer = DataProducer()
+        m.submodules["producer"] = self.producer = DataProducer()
         # pylint: disable=attribute-defined-outside-init
-        m.submodules['consumer'] = self.consumer = DataConsumer()
+        m.submodules["consumer"] = self.consumer = DataConsumer()
         m.d.comb += connect(self.producer.output, self.consumer.input)
         return m
 
@@ -108,16 +110,14 @@ class TestSinkSource(TestBase):
                 yield Delay(0.1)
                 transferred, one_out, two_out = outputs
                 self.assertEqual(
-                    (yield self.consumer.transferred),
-                    transferred,
-                    f'cycle={n}')
+                    (yield self.consumer.transferred), transferred, f"cycle={n}"
+                )
                 self.assertEqual(
-                    (yield self.consumer.one_out),
-                    one_out,
-                    f'cycle={n}')
+                    (yield self.consumer.one_out), one_out, f"cycle={n}"
+                )
                 self.assertEqual(
-                    (yield self.consumer.two_out),
-                    two_out,
-                    f'cycle={n}')
+                    (yield self.consumer.two_out), two_out, f"cycle={n}"
+                )
                 yield
+
         self.run_sim(process, False)

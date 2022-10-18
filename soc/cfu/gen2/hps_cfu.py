@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,12 +71,12 @@ class GetInstruction(InstructionBase):
             with m.If(self.output_words.is_transferring()):
                 m.d.sync += self.output.eq(self.output_words.payload)
                 m.d.sync += self.done.eq(1)
-                m.next = 'WAIT_START'
+                m.next = "WAIT_START"
             with m.Else():
-                m.next = 'WAIT_OUTPUT'
+                m.next = "WAIT_OUTPUT"
 
         with m.FSM():
-            with m.State('WAIT_START'):
+            with m.State("WAIT_START"):
                 with m.If(self.start):
                     with m.If(self.funct7 == Constants.REG_VERIFY):
                         m.d.sync += self.output.eq(self.reg_verify_value)
@@ -86,7 +86,7 @@ class GetInstruction(InstructionBase):
                         m.d.sync += self.done.eq(1)
                     with m.Elif(self.funct7 == Constants.REG_OUTPUT_WORD):
                         get_output()
-            with m.State('WAIT_OUTPUT'):
+            with m.State("WAIT_OUTPUT"):
                 get_output()
 
 
@@ -178,14 +178,17 @@ class SetInstruction(InstructionBase):
                     m.d.sync += self.config.num_output_values.eq(self.in0)
                 with m.Case(Constants.REG_POST_PROCESS_BIAS):
                     m.d.sync += self.post_process_params.payload.bias.eq(
-                        self.in0s)
+                        self.in0s
+                    )
                 with m.Case(Constants.REG_POST_PROCESS_SHIFT):
                     m.d.sync += self.post_process_params.payload.shift.eq(
-                        self.in0)
+                        self.in0
+                    )
                 with m.Case(Constants.REG_POST_PROCESS_MULTIPLIER):
                     m.d.sync += [
                         self.post_process_params.payload.multiplier.eq(
-                            self.in0s),
+                            self.in0s
+                        ),
                         self.post_process_params.valid.eq(1),
                     ]
             m.d.sync += self.done.eq(1)
@@ -200,9 +203,9 @@ class PoolInstruction(InstructionBase):
 
     def elab(self, m):
         def max_(word0, word1):
-            result = [Signal(8, name=f'result{i}') for i in range(4)]
-            bytes0 = [word0[i:i + 8] for i in range(0, 32, 8)]
-            bytes1 = [word1[i:i + 8] for i in range(0, 32, 8)]
+            result = [Signal(8, name=f"result{i}") for i in range(4)]
+            bytes0 = [word0[i : i + 8] for i in range(0, 32, 8)]
+            bytes1 = [word1[i : i + 8] for i in range(0, 32, 8)]
             for r, b0, b1 in zip(result, bytes0, bytes1):
                 sb0 = Signal(signed(8))
                 m.d.comb += sb0.eq(b0)
@@ -234,13 +237,14 @@ class HpsCfu(Cfu):
         self._specialize_nx = specialize_nx
 
     def elab_instructions(self, m):
-        m.submodules['ping'] = ping = PingInstruction()
-        m.submodules['set'] = set_ = SetInstruction()
-        m.submodules['get'] = get = GetInstruction()
-        m.submodules['pool'] = pool = PoolInstruction()
-        m.submodules['core'] = core = AcceleratorCore(self._specialize_nx)
-        m.submodules['fifo'] = fifo = StreamFifo(
-            depth=Constants.OUTPUT_FIFO_DEPTH, type=unsigned(32))
+        m.submodules["ping"] = ping = PingInstruction()
+        m.submodules["set"] = set_ = SetInstruction()
+        m.submodules["get"] = get = GetInstruction()
+        m.submodules["pool"] = pool = PoolInstruction()
+        m.submodules["core"] = core = AcceleratorCore(self._specialize_nx)
+        m.submodules["fifo"] = fifo = StreamFifo(
+            depth=Constants.OUTPUT_FIFO_DEPTH, type=unsigned(32)
+        )
 
         # Connect set_ and get instructions to accelerator core and FIFO
         m.d.comb += [
