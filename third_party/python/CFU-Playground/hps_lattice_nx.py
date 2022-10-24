@@ -52,6 +52,7 @@ from migen import ClockSignal
 from migen import If
 from migen import Instance
 from migen import Module
+from migen import Mux
 from migen import Signal
 
 
@@ -168,10 +169,19 @@ class NXLRAM(Module):
                     b_clk_en = Signal(reset=1)
                     b_addr = Signal(14)
                     b_dout = Signal(32)
-                    b_dout_delayed = Signal(32)
+
+                    # Special care needs to be taken since the port B clock
+                    # enable signal can be turned on and off at any point. Port
+                    # B output needs to lag 2 cycles behind the port B address
+                    # input as though the clock enable had never been turned
+                    # off.
+
+                    latcher = GatedPassThrough()
+                    self.submodules += latcher
                     lram_block = Instance('DPSC512K',
                                           p_ECC_BYTE_SEL='BYTE_EN',
                                           p_OUTREG_A='OUT_REG',
+                                          p_OUTREG_B='OUT_REG',
                                           i_DIA=datain,
                                           i_ADA=addr,
                                           i_CLK=ClockSignal(),
@@ -189,15 +199,13 @@ class NXLRAM(Module):
                                           i_WEB=0b0,
                                           i_CSB=0b1,
                                           i_RSTB=0b0,
-                                          i_CEOUTB=0b0
+                                          i_CEOUTB=1,
                                           )
-                    # TODO(b/243330750): Use registered outputs in LRAM. For
-                    # now, this extra delay simulates the effect of using
-                    # registered outputs.
-                    self.sync += If(b_clk_en, b_dout_delayed.eq(b_dout))
+                    self.comb += latcher.clk_en.eq(b_clk_en)
+                    self.comb += latcher.data_in.eq(b_dout)
                     self.b_clk_ens.append(b_clk_en)
                     self.b_addrs.append(b_addr)
-                    self.b_douts.append(b_dout_delayed)
+                    self.b_douts.append(latcher.data_out)
 
                 else:
                     a_clk_en = Signal(reset=1)
@@ -238,3 +246,26 @@ class NXLRAM(Module):
                 chunk = data[offset:offset + 64*kB]
                 self.lram_blocks[d][w].items += initval_parameters(
                     chunk, self.width)
+
+
+class GatedPassThrough(Module):
+    """A pass-through that keeps previous value when disabled.
+
+    Wires data_in to data_out except when clk_en was disabled on the previous
+    cycle, in which case the previous value continues to be output. This behaves
+    the same as if:
+    self.sync += If(self.clk_en, self.data_in.eq(some_signal));
+    self.comb += self.data_out.eq(self.data_in);
+
+    But can be used when we can't control how/when data_in gets updated.
+    """
+    def __init__(self):
+        self.data_in = Signal(32)
+        self.clk_en = Signal()
+        self.data_out = Signal(32)
+
+        prev_clk_en = Signal()
+        saved = Signal(32)
+        self.sync += If(prev_clk_en, saved.eq(self.data_in))
+        self.sync += prev_clk_en.eq(self.clk_en)
+        self.comb += self.data_out.eq(Mux(prev_clk_en, self.data_in, saved))
