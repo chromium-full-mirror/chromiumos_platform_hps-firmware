@@ -16,8 +16,8 @@ from migen import Signal
 from .spi_controller import SpiController
 
 
-class DummyPads:
-    """Dummy pads for testing SpiController."""
+class FakePads:
+    """Fake pads for testing SpiController."""
 
     def __init__(self):
         self.cs = Signal()
@@ -42,7 +42,7 @@ class SpiControllerTest(TestCase):
     # pylint: disable=protected-access
 
     def setUp(self):
-        self.pads = DummyPads()
+        self.pads = FakePads()
         self.dut = SpiController(
             self.pads, sys_clk_freq=100, spi_clk_freq=10, loopback=False
         )
