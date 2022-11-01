@@ -17,7 +17,7 @@ For more information, refer to the
     * [ChromiumOS packages for HPS firmware](docs/packages.md)
 * How-to guides for developers
     * [Developing outside the ebuild](docs/outside_ebuild.md)
-    * [Developing outside the ChromeOS chroot](docs/working_outside_chroot.md)
+    * [Developing outside the ChromeOS chroot](docs/cargo_outside_chroot.md)
     * [Working with HPS proto2](docs/proto2.md)
     * [Releasing new firmware](docs/releasing.md)
     * [Running unsigned firmware on a DUT](docs/unsigned_firmware_on_dut.md)
