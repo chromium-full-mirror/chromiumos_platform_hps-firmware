@@ -21,7 +21,7 @@ hal = { package = "stm32g0xx-hal", version = "=0.1.5", features = ["rt", "stm32g
 
 [build-dependencies]
 anyhow = "1.0.38"
-ed25519-compact = { version = "1", default-features = false, features = [ "pem", "std" ] }
+ed25519-compact = { version = "1", default-features = false, features = [ "pem", "std", "opt_size" ] }
 mcu_common = { path = "../../mcu_common" }
 
 [features]
