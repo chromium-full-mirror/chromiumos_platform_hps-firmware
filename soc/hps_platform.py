@@ -138,6 +138,11 @@ _standard_build_template = [
     "{{",
     "yosys -l {build_name}.rpt {build_name}.ys",
     (
+        # Keep a timeout on this, since there's no obvious way to control
+        # timing internally. The code that invokes this template provides no
+        # way to pass `timeout=` as a param, so unfortunately, this is the best
+        # that can be done.
+        "timeout --foreground --kill-after=5s --signal=TERM 90m "
         "nextpnr-nexus "
         "--json {build_name}.json "
         "--pdc {build_name}.pdc "

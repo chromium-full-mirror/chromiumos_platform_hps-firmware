@@ -396,6 +396,7 @@ def main():
         "seed": args.nextpnr_seed,
     }
 
+    print(f"Building with seed {args.nextpnr_seed}")
     start_time = time.time()
     vns = builder.build(**builder_kwargs, run=not args.no_build)
     run_time = time.time() - start_time
