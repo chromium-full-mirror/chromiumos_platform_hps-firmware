@@ -17,7 +17,7 @@ pub unsafe fn initialize_logging() {
     {
         // SAFETY: Safe because interrupts are disabled.
         log::set_logger_racy(&rtt_logger::LOGGER).unwrap();
-        log::set_max_level(log::LevelFilter::Info);
+        log::set_max_level_racy(log::LevelFilter::Info);
     }
 }
 

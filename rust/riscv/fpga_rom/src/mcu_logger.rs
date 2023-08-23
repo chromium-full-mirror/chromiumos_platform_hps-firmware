@@ -12,8 +12,10 @@ static LOGGER: McuLogger = McuLogger;
 pub(crate) fn init_logging() {
     // SAFETY: Safe because we have no concurrency (single core and no
     // interrupts), so there's nothing to race.
-    unsafe { log::set_logger_racy(&LOGGER).unwrap() };
-    log::set_max_level(log::LevelFilter::Info);
+    unsafe {
+        log::set_logger_racy(&LOGGER).unwrap();
+        log::set_max_level_racy(log::LevelFilter::Info);
+    }
 }
 
 impl log::Log for McuLogger {
