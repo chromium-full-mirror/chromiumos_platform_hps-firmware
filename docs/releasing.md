@@ -5,6 +5,12 @@ ChromiumOS disk image under `/usr/lib/firmware/hps`. This is the firmware
 which hpsd will load and run on the user’s Chromebook. "Releasing" new
 firmware therefore means updating the signed images in `hps-firmware-images`.
 
+NOTE: since approximately OS version 15811, no new HPS firmware images are being
+built or signed. Releasing new images in the future will require re-enabling
+image building and signing, by reverting the changes in
+https://crrev.com/i/7027432 and https://crrev.com/c/5334546 or some other method
+that builds and signs the hps-firmware package automatically.
+
 Follow these steps:
 
 1. Choose a suitable brya-release build to take signed firmware from.
